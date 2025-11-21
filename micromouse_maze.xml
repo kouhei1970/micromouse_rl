@@ -342,170 +342,162 @@
     <geom name="v_wall_red_0_15" type="box" pos="0.0 2.7899999999999996 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_1_0" type="box" pos="0.18 0.09 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_1_0" type="box" pos="0.18 0.09 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_1_1" type="box" pos="0.18 0.27 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_1_1" type="box" pos="0.18 0.27 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_1_2" type="box" pos="0.18 0.44999999999999996 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_1_2" type="box" pos="0.18 0.44999999999999996 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_1_6" type="box" pos="0.18 1.1700000000000002 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_1_6" type="box" pos="0.18 1.1700000000000002 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_1_3" type="box" pos="0.18 0.63 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_1_3" type="box" pos="0.18 0.63 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_1_7" type="box" pos="0.18 1.35 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_1_7" type="box" pos="0.18 1.35 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_1_9" type="box" pos="0.18 1.71 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_1_9" type="box" pos="0.18 1.71 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_1_10" type="box" pos="0.18 1.89 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_1_10" type="box" pos="0.18 1.89 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_1_8" type="box" pos="0.18 1.53 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_1_8" type="box" pos="0.18 1.53 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_1_11" type="box" pos="0.18 2.07 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_1_11" type="box" pos="0.18 2.07 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_1_12" type="box" pos="0.18 2.25 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_1_12" type="box" pos="0.18 2.25 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_1_14" type="box" pos="0.18 2.61 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_1_14" type="box" pos="0.18 2.61 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_1_15" type="box" pos="0.18 2.7899999999999996 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_1_15" type="box" pos="0.18 2.7899999999999996 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_2_1" type="box" pos="0.36 0.27 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_2_1" type="box" pos="0.36 0.27 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_2_2" type="box" pos="0.36 0.44999999999999996 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_2_2" type="box" pos="0.36 0.44999999999999996 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_2_3" type="box" pos="0.36 0.63 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_2_3" type="box" pos="0.36 0.63 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_2_5" type="box" pos="0.36 0.9899999999999999 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_2_5" type="box" pos="0.36 0.9899999999999999 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_2_6" type="box" pos="0.36 1.1700000000000002 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_2_6" type="box" pos="0.36 1.1700000000000002 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_2_8" type="box" pos="0.36 1.53 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_2_8" type="box" pos="0.36 1.53 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_2_7" type="box" pos="0.36 1.35 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_2_7" type="box" pos="0.36 1.35 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_2_9" type="box" pos="0.36 1.71 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_2_9" type="box" pos="0.36 1.71 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_2_10" type="box" pos="0.36 1.89 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_2_10" type="box" pos="0.36 1.89 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_2_11" type="box" pos="0.36 2.07 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_2_11" type="box" pos="0.36 2.07 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_2_14" type="box" pos="0.36 2.61 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_2_14" type="box" pos="0.36 2.61 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_3_3" type="box" pos="0.54 0.63 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_3_3" type="box" pos="0.54 0.63 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_3_4" type="box" pos="0.54 0.8099999999999999 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_3_4" type="box" pos="0.54 0.8099999999999999 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_3_7" type="box" pos="0.54 1.35 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_3_7" type="box" pos="0.54 1.35 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_3_0" type="box" pos="0.54 0.09 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_3_0" type="box" pos="0.54 0.09 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_3_5" type="box" pos="0.54 0.9899999999999999 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_3_5" type="box" pos="0.54 0.9899999999999999 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_3_8" type="box" pos="0.54 1.53 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_3_8" type="box" pos="0.54 1.53 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_3_9" type="box" pos="0.54 1.71 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_3_9" type="box" pos="0.54 1.71 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_3_12" type="box" pos="0.54 2.25 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_3_12" type="box" pos="0.54 2.25 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_3_13" type="box" pos="0.54 2.4299999999999997 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_3_13" type="box" pos="0.54 2.4299999999999997 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_4_1" type="box" pos="0.72 0.27 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_4_1" type="box" pos="0.72 0.27 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_4_2" type="box" pos="0.72 0.44999999999999996 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_4_2" type="box" pos="0.72 0.44999999999999996 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_4_3" type="box" pos="0.72 0.63 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_4_3" type="box" pos="0.72 0.63 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_4_4" type="box" pos="0.72 0.8099999999999999 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_4_4" type="box" pos="0.72 0.8099999999999999 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_4_5" type="box" pos="0.72 0.9899999999999999 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_4_5" type="box" pos="0.72 0.9899999999999999 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_4_6" type="box" pos="0.72 1.1700000000000002 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_4_6" type="box" pos="0.72 1.1700000000000002 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_4_9" type="box" pos="0.72 1.71 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_4_9" type="box" pos="0.72 1.71 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_4_11" type="box" pos="0.72 2.07 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_4_11" type="box" pos="0.72 2.07 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_4_12" type="box" pos="0.72 2.25 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_4_12" type="box" pos="0.72 2.25 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_4_10" type="box" pos="0.72 1.89 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_4_10" type="box" pos="0.72 1.89 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_4_13" type="box" pos="0.72 2.4299999999999997 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_4_13" type="box" pos="0.72 2.4299999999999997 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_5_0" type="box" pos="0.8999999999999999 0.09 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_5_0" type="box" pos="0.8999999999999999 0.09 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_5_1" type="box" pos="0.8999999999999999 0.27 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_5_1" type="box" pos="0.8999999999999999 0.27 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_5_2" type="box" pos="0.8999999999999999 0.44999999999999996 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_5_2" type="box" pos="0.8999999999999999 0.44999999999999996 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_4_14" type="box" pos="0.72 2.61 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_4_14" type="box" pos="0.72 2.61 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_5_4" type="box" pos="0.8999999999999999 0.8099999999999999 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_5_4" type="box" pos="0.8999999999999999 0.8099999999999999 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_5_6" type="box" pos="0.8999999999999999 1.1700000000000002 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_5_6" type="box" pos="0.8999999999999999 1.1700000000000002 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_5_7" type="box" pos="0.8999999999999999 1.35 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_5_7" type="box" pos="0.8999999999999999 1.35 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_5_8" type="box" pos="0.8999999999999999 1.53 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_5_8" type="box" pos="0.8999999999999999 1.53 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_5_10" type="box" pos="0.8999999999999999 1.89 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_5_10" type="box" pos="0.8999999999999999 1.89 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_5_11" type="box" pos="0.8999999999999999 2.07 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_5_11" type="box" pos="0.8999999999999999 2.07 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_5_12" type="box" pos="0.8999999999999999 2.25 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_5_12" type="box" pos="0.8999999999999999 2.25 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_5_14" type="box" pos="0.8999999999999999 2.61 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_5_14" type="box" pos="0.8999999999999999 2.61 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_6_0" type="box" pos="1.08 0.09 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_6_0" type="box" pos="1.08 0.09 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_6_1" type="box" pos="1.08 0.27 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_6_1" type="box" pos="1.08 0.27 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_6_3" type="box" pos="1.08 0.63 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_6_3" type="box" pos="1.08 0.63 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_6_5" type="box" pos="1.08 0.9899999999999999 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_6_5" type="box" pos="1.08 0.9899999999999999 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_6_6" type="box" pos="1.08 1.1700000000000002 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_6_6" type="box" pos="1.08 1.1700000000000002 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_6_7" type="box" pos="1.08 1.35 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_6_7" type="box" pos="1.08 1.35 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_6_11" type="box" pos="1.08 2.07 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_6_11" type="box" pos="1.08 2.07 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_7_0" type="box" pos="1.26 0.09 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_7_0" type="box" pos="1.26 0.09 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_7_4" type="box" pos="1.26 0.8099999999999999 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_7_4" type="box" pos="1.26 0.8099999999999999 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_7_8" type="box" pos="1.26 1.53 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_7_8" type="box" pos="1.26 1.53 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_7_10" type="box" pos="1.26 1.89 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_7_10" type="box" pos="1.26 1.89 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_7_13" type="box" pos="1.26 2.4299999999999997 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_7_13" type="box" pos="1.26 2.4299999999999997 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_6_9" type="box" pos="1.08 1.71 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_6_9" type="box" pos="1.08 1.71 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_6_10" type="box" pos="1.08 1.89 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_6_10" type="box" pos="1.08 1.89 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_6_13" type="box" pos="1.08 2.4299999999999997 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_6_13" type="box" pos="1.08 2.4299999999999997 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_6_15" type="box" pos="1.08 2.7899999999999996 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_6_15" type="box" pos="1.08 2.7899999999999996 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_7_1" type="box" pos="1.26 0.27 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_7_1" type="box" pos="1.26 0.27 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_7_5" type="box" pos="1.26 0.9899999999999999 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_7_5" type="box" pos="1.26 0.9899999999999999 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_7_7" type="box" pos="1.26 1.35 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_7_7" type="box" pos="1.26 1.35 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_7_11" type="box" pos="1.26 2.07 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_7_11" type="box" pos="1.26 2.07 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_7_14" type="box" pos="1.26 2.61 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_7_14" type="box" pos="1.26 2.61 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_8_1" type="box" pos="1.44 0.27 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_8_1" type="box" pos="1.44 0.27 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_8_2" type="box" pos="1.44 0.44999999999999996 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_8_2" type="box" pos="1.44 0.44999999999999996 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_8_3" type="box" pos="1.44 0.63 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_8_3" type="box" pos="1.44 0.63 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_8_4" type="box" pos="1.44 0.8099999999999999 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_8_4" type="box" pos="1.44 0.8099999999999999 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_8_5" type="box" pos="1.44 0.9899999999999999 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_8_5" type="box" pos="1.44 0.9899999999999999 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_8_9" type="box" pos="1.44 1.71 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_8_9" type="box" pos="1.44 1.71 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_8_10" type="box" pos="1.44 1.89 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_8_10" type="box" pos="1.44 1.89 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_8_11" type="box" pos="1.44 2.07 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_8_11" type="box" pos="1.44 2.07 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_8_15" type="box" pos="1.44 2.7899999999999996 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_8_15" type="box" pos="1.44 2.7899999999999996 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_9_2" type="box" pos="1.6199999999999999 0.44999999999999996 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_9_2" type="box" pos="1.6199999999999999 0.44999999999999996 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_9_6" type="box" pos="1.6199999999999999 1.1700000000000002 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_9_6" type="box" pos="1.6199999999999999 1.1700000000000002 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_8_12" type="box" pos="1.44 2.25 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_8_12" type="box" pos="1.44 2.25 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_8_13" type="box" pos="1.44 2.4299999999999997 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_8_13" type="box" pos="1.44 2.4299999999999997 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_8_14" type="box" pos="1.44 2.61 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_8_14" type="box" pos="1.44 2.61 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_9_1" type="box" pos="1.6199999999999999 0.27 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_9_1" type="box" pos="1.6199999999999999 0.27 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_9_4" type="box" pos="1.6199999999999999 0.8099999999999999 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_9_4" type="box" pos="1.6199999999999999 0.8099999999999999 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_9_5" type="box" pos="1.6199999999999999 0.9899999999999999 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_9_5" type="box" pos="1.6199999999999999 0.9899999999999999 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_9_7" type="box" pos="1.6199999999999999 1.35 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_9_7" type="box" pos="1.6199999999999999 1.35 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_9_8" type="box" pos="1.6199999999999999 1.53 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_9_8" type="box" pos="1.6199999999999999 1.53 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_9_9" type="box" pos="1.6199999999999999 1.71 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_9_9" type="box" pos="1.6199999999999999 1.71 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_9_10" type="box" pos="1.6199999999999999 1.89 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_9_10" type="box" pos="1.6199999999999999 1.89 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_9_11" type="box" pos="1.6199999999999999 2.07 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_9_11" type="box" pos="1.6199999999999999 2.07 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_9_12" type="box" pos="1.6199999999999999 2.25 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_9_12" type="box" pos="1.6199999999999999 2.25 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_9_13" type="box" pos="1.6199999999999999 2.4299999999999997 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_9_13" type="box" pos="1.6199999999999999 2.4299999999999997 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_9_14" type="box" pos="1.6199999999999999 2.61 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_9_14" type="box" pos="1.6199999999999999 2.61 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_10_2" type="box" pos="1.7999999999999998 0.44999999999999996 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_10_2" type="box" pos="1.7999999999999998 0.44999999999999996 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_10_3" type="box" pos="1.7999999999999998 0.63 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_10_3" type="box" pos="1.7999999999999998 0.63 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_10_4" type="box" pos="1.7999999999999998 0.8099999999999999 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_10_4" type="box" pos="1.7999999999999998 0.8099999999999999 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_10_6" type="box" pos="1.7999999999999998 1.1700000000000002 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_10_6" type="box" pos="1.7999999999999998 1.1700000000000002 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_10_7" type="box" pos="1.7999999999999998 1.35 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_10_7" type="box" pos="1.7999999999999998 1.35 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_10_8" type="box" pos="1.7999999999999998 1.53 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_10_8" type="box" pos="1.7999999999999998 1.53 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_10_9" type="box" pos="1.7999999999999998 1.71 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_10_9" type="box" pos="1.7999999999999998 1.71 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_10_12" type="box" pos="1.7999999999999998 2.25 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_10_12" type="box" pos="1.7999999999999998 2.25 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_10_15" type="box" pos="1.7999999999999998 2.7899999999999996 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_10_15" type="box" pos="1.7999999999999998 2.7899999999999996 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_11_2" type="box" pos="1.98 0.44999999999999996 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_11_2" type="box" pos="1.98 0.44999999999999996 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_11_4" type="box" pos="1.98 0.8099999999999999 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_11_4" type="box" pos="1.98 0.8099999999999999 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_11_7" type="box" pos="1.98 1.35 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_11_7" type="box" pos="1.98 1.35 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_11_10" type="box" pos="1.98 1.89 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_11_10" type="box" pos="1.98 1.89 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_11_13" type="box" pos="1.98 2.4299999999999997 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_11_13" type="box" pos="1.98 2.4299999999999997 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_10_10" type="box" pos="1.7999999999999998 1.89 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_10_10" type="box" pos="1.7999999999999998 1.89 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_10_11" type="box" pos="1.7999999999999998 2.07 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_10_11" type="box" pos="1.7999999999999998 2.07 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_11_1" type="box" pos="1.98 0.27 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_11_1" type="box" pos="1.98 0.27 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_11_5" type="box" pos="1.98 0.9899999999999999 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_11_5" type="box" pos="1.98 0.9899999999999999 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_11_6" type="box" pos="1.98 1.1700000000000002 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_11_6" type="box" pos="1.98 1.1700000000000002 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_11_8" type="box" pos="1.98 1.53 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_11_8" type="box" pos="1.98 1.53 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_11_11" type="box" pos="1.98 2.07 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_11_11" type="box" pos="1.98 2.07 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_11_12" type="box" pos="1.98 2.25 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_11_12" type="box" pos="1.98 2.25 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_11_15" type="box" pos="1.98 2.7899999999999996 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_11_15" type="box" pos="1.98 2.7899999999999996 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_12_0" type="box" pos="2.16 0.09 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_12_0" type="box" pos="2.16 0.09 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_12_1" type="box" pos="2.16 0.27 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_12_1" type="box" pos="2.16 0.27 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_12_5" type="box" pos="2.16 0.9899999999999999 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_12_5" type="box" pos="2.16 0.9899999999999999 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_12_8" type="box" pos="2.16 1.53 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_12_8" type="box" pos="2.16 1.53 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_12_7" type="box" pos="2.16 1.35 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_12_7" type="box" pos="2.16 1.35 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_12_9" type="box" pos="2.16 1.71 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_12_9" type="box" pos="2.16 1.71 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_12_10" type="box" pos="2.16 1.89 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
@@ -522,40 +514,54 @@
     <geom name="v_wall_red_13_2" type="box" pos="2.34 0.44999999999999996 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_13_3" type="box" pos="2.34 0.63 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_13_3" type="box" pos="2.34 0.63 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_13_4" type="box" pos="2.34 0.8099999999999999 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_13_4" type="box" pos="2.34 0.8099999999999999 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_13_6" type="box" pos="2.34 1.1700000000000002 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_13_6" type="box" pos="2.34 1.1700000000000002 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_13_9" type="box" pos="2.34 1.71 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_13_9" type="box" pos="2.34 1.71 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_13_7" type="box" pos="2.34 1.35 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_13_7" type="box" pos="2.34 1.35 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_13_10" type="box" pos="2.34 1.89 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_13_10" type="box" pos="2.34 1.89 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_13_11" type="box" pos="2.34 2.07 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_13_11" type="box" pos="2.34 2.07 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_13_12" type="box" pos="2.34 2.25 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_13_12" type="box" pos="2.34 2.25 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_13_13" type="box" pos="2.34 2.4299999999999997 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_13_13" type="box" pos="2.34 2.4299999999999997 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_13_14" type="box" pos="2.34 2.61 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_13_14" type="box" pos="2.34 2.61 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_13_15" type="box" pos="2.34 2.7899999999999996 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_13_15" type="box" pos="2.34 2.7899999999999996 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_14_1" type="box" pos="2.52 0.27 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_14_1" type="box" pos="2.52 0.27 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_14_2" type="box" pos="2.52 0.44999999999999996 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_14_2" type="box" pos="2.52 0.44999999999999996 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_14_3" type="box" pos="2.52 0.63 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_14_3" type="box" pos="2.52 0.63 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_14_4" type="box" pos="2.52 0.8099999999999999 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_14_4" type="box" pos="2.52 0.8099999999999999 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_14_5" type="box" pos="2.52 0.9899999999999999 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_14_5" type="box" pos="2.52 0.9899999999999999 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_14_7" type="box" pos="2.52 1.35 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_14_7" type="box" pos="2.52 1.35 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_14_8" type="box" pos="2.52 1.53 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_14_8" type="box" pos="2.52 1.53 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_14_11" type="box" pos="2.52 2.07 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_14_11" type="box" pos="2.52 2.07 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_14_12" type="box" pos="2.52 2.25 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_14_12" type="box" pos="2.52 2.25 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_14_13" type="box" pos="2.52 2.4299999999999997 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_14_13" type="box" pos="2.52 2.4299999999999997 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_15_1" type="box" pos="2.6999999999999997 0.27 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_15_1" type="box" pos="2.6999999999999997 0.27 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_15_2" type="box" pos="2.6999999999999997 0.44999999999999996 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_15_2" type="box" pos="2.6999999999999997 0.44999999999999996 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_15_3" type="box" pos="2.6999999999999997 0.63 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_15_3" type="box" pos="2.6999999999999997 0.63 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_15_5" type="box" pos="2.6999999999999997 0.9899999999999999 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_15_5" type="box" pos="2.6999999999999997 0.9899999999999999 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_15_6" type="box" pos="2.6999999999999997 1.1700000000000002 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_15_6" type="box" pos="2.6999999999999997 1.1700000000000002 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_15_8" type="box" pos="2.6999999999999997 1.53 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_15_8" type="box" pos="2.6999999999999997 1.53 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_15_9" type="box" pos="2.6999999999999997 1.71 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_15_9" type="box" pos="2.6999999999999997 1.71 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
-    <geom name="v_wall_white_15_10" type="box" pos="2.6999999999999997 1.89 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
-    <geom name="v_wall_red_15_10" type="box" pos="2.6999999999999997 1.89 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_15_12" type="box" pos="2.6999999999999997 2.25 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_15_12" type="box" pos="2.6999999999999997 2.25 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_15_13" type="box" pos="2.6999999999999997 2.4299999999999997 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_15_13" type="box" pos="2.6999999999999997 2.4299999999999997 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
+    <geom name="v_wall_white_15_14" type="box" pos="2.6999999999999997 2.61 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
+    <geom name="v_wall_red_15_14" type="box" pos="2.6999999999999997 2.61 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_16_0" type="box" pos="2.88 0.09 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
     <geom name="v_wall_red_16_0" type="box" pos="2.88 0.09 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="v_wall_white_16_1" type="box" pos="2.88 0.27 0.024" size="0.006 0.08399999999999999 0.024" material="mat_wall_white"/>
@@ -590,50 +596,50 @@
     <geom name="v_wall_red_16_15" type="box" pos="2.88 2.7899999999999996 0.049" size="0.006 0.08399999999999999 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_0_0" type="box" pos="0.09 0.0 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_0_0" type="box" pos="0.09 0.0 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_0_4" type="box" pos="0.09 0.72 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_0_4" type="box" pos="0.09 0.72 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_0_6" type="box" pos="0.09 1.08 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_0_6" type="box" pos="0.09 1.08 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_0_14" type="box" pos="0.09 2.52 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_0_14" type="box" pos="0.09 2.52 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_0_2" type="box" pos="0.09 0.36 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_0_2" type="box" pos="0.09 0.36 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_0_5" type="box" pos="0.09 0.8999999999999999 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_0_5" type="box" pos="0.09 0.8999999999999999 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_0_10" type="box" pos="0.09 1.7999999999999998 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_0_10" type="box" pos="0.09 1.7999999999999998 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_0_13" type="box" pos="0.09 2.34 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_0_13" type="box" pos="0.09 2.34 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_0_16" type="box" pos="0.09 2.88 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_0_16" type="box" pos="0.09 2.88 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_1_0" type="box" pos="0.27 0.0 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_1_0" type="box" pos="0.27 0.0 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_1_2" type="box" pos="0.27 0.36 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_1_2" type="box" pos="0.27 0.36 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_1_1" type="box" pos="0.27 0.18 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_1_1" type="box" pos="0.27 0.18 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_1_4" type="box" pos="0.27 0.72 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_1_4" type="box" pos="0.27 0.72 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_1_5" type="box" pos="0.27 0.8999999999999999 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_1_5" type="box" pos="0.27 0.8999999999999999 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_1_8" type="box" pos="0.27 1.44 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_1_8" type="box" pos="0.27 1.44 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_1_10" type="box" pos="0.27 1.7999999999999998 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_1_10" type="box" pos="0.27 1.7999999999999998 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_1_6" type="box" pos="0.27 1.08 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_1_6" type="box" pos="0.27 1.08 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_1_9" type="box" pos="0.27 1.6199999999999999 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_1_9" type="box" pos="0.27 1.6199999999999999 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_1_11" type="box" pos="0.27 1.98 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_1_11" type="box" pos="0.27 1.98 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_1_12" type="box" pos="0.27 2.16 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_1_12" type="box" pos="0.27 2.16 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_1_13" type="box" pos="0.27 2.34 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_1_13" type="box" pos="0.27 2.34 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_1_14" type="box" pos="0.27 2.52 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_1_14" type="box" pos="0.27 2.52 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_1_15" type="box" pos="0.27 2.6999999999999997 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_1_15" type="box" pos="0.27 2.6999999999999997 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_1_16" type="box" pos="0.27 2.88 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_1_16" type="box" pos="0.27 2.88 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_2_0" type="box" pos="0.44999999999999996 0.0 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_2_0" type="box" pos="0.44999999999999996 0.0 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_2_1" type="box" pos="0.44999999999999996 0.18 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_2_1" type="box" pos="0.44999999999999996 0.18 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_2_2" type="box" pos="0.44999999999999996 0.36 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_2_2" type="box" pos="0.44999999999999996 0.36 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_2_3" type="box" pos="0.44999999999999996 0.54 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_2_3" type="box" pos="0.44999999999999996 0.54 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_2_7" type="box" pos="0.44999999999999996 1.26 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_2_7" type="box" pos="0.44999999999999996 1.26 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_2_10" type="box" pos="0.44999999999999996 1.7999999999999998 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_2_10" type="box" pos="0.44999999999999996 1.7999999999999998 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_2_12" type="box" pos="0.44999999999999996 2.16 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_2_12" type="box" pos="0.44999999999999996 2.16 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_2_13" type="box" pos="0.44999999999999996 2.34 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_2_13" type="box" pos="0.44999999999999996 2.34 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_2_4" type="box" pos="0.44999999999999996 0.72 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_2_4" type="box" pos="0.44999999999999996 0.72 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_2_5" type="box" pos="0.44999999999999996 0.8999999999999999 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_2_5" type="box" pos="0.44999999999999996 0.8999999999999999 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_2_8" type="box" pos="0.44999999999999996 1.44 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_2_8" type="box" pos="0.44999999999999996 1.44 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_2_11" type="box" pos="0.44999999999999996 1.98 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_2_11" type="box" pos="0.44999999999999996 1.98 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_2_14" type="box" pos="0.44999999999999996 2.52 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_2_14" type="box" pos="0.44999999999999996 2.52 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_2_15" type="box" pos="0.44999999999999996 2.6999999999999997 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_2_15" type="box" pos="0.44999999999999996 2.6999999999999997 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_2_16" type="box" pos="0.44999999999999996 2.88 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
@@ -642,96 +648,100 @@
     <geom name="h_wall_red_3_0" type="box" pos="0.63 0.0 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_3_1" type="box" pos="0.63 0.18 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_3_1" type="box" pos="0.63 0.18 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_3_2" type="box" pos="0.63 0.36 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_3_2" type="box" pos="0.63 0.36 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_3_5" type="box" pos="0.63 0.8999999999999999 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_3_5" type="box" pos="0.63 0.8999999999999999 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_3_6" type="box" pos="0.63 1.08 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_3_6" type="box" pos="0.63 1.08 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_3_3" type="box" pos="0.63 0.54 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_3_3" type="box" pos="0.63 0.54 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_3_4" type="box" pos="0.63 0.72 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_3_4" type="box" pos="0.63 0.72 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_3_7" type="box" pos="0.63 1.26 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_3_7" type="box" pos="0.63 1.26 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_3_9" type="box" pos="0.63 1.6199999999999999 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_3_9" type="box" pos="0.63 1.6199999999999999 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_3_8" type="box" pos="0.63 1.44 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_3_8" type="box" pos="0.63 1.44 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_3_11" type="box" pos="0.63 1.98 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_3_11" type="box" pos="0.63 1.98 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_3_14" type="box" pos="0.63 2.52 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_3_14" type="box" pos="0.63 2.52 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_3_12" type="box" pos="0.63 2.16 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_3_12" type="box" pos="0.63 2.16 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_3_15" type="box" pos="0.63 2.6999999999999997 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_3_15" type="box" pos="0.63 2.6999999999999997 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_3_16" type="box" pos="0.63 2.88 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_3_16" type="box" pos="0.63 2.88 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_4_0" type="box" pos="0.8099999999999999 0.0 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_4_0" type="box" pos="0.8099999999999999 0.0 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_4_1" type="box" pos="0.8099999999999999 0.18 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_4_1" type="box" pos="0.8099999999999999 0.18 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_4_3" type="box" pos="0.8099999999999999 0.54 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_4_3" type="box" pos="0.8099999999999999 0.54 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_4_4" type="box" pos="0.8099999999999999 0.72 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_4_4" type="box" pos="0.8099999999999999 0.72 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_4_5" type="box" pos="0.8099999999999999 0.8999999999999999 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_4_5" type="box" pos="0.8099999999999999 0.8999999999999999 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_4_6" type="box" pos="0.8099999999999999 1.08 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_4_6" type="box" pos="0.8099999999999999 1.08 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_4_8" type="box" pos="0.8099999999999999 1.44 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_4_8" type="box" pos="0.8099999999999999 1.44 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_4_10" type="box" pos="0.8099999999999999 1.7999999999999998 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_4_10" type="box" pos="0.8099999999999999 1.7999999999999998 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_4_14" type="box" pos="0.8099999999999999 2.52 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_4_14" type="box" pos="0.8099999999999999 2.52 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_4_15" type="box" pos="0.8099999999999999 2.6999999999999997 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_4_15" type="box" pos="0.8099999999999999 2.6999999999999997 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_4_9" type="box" pos="0.8099999999999999 1.6199999999999999 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_4_9" type="box" pos="0.8099999999999999 1.6199999999999999 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_4_11" type="box" pos="0.8099999999999999 1.98 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_4_11" type="box" pos="0.8099999999999999 1.98 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_4_12" type="box" pos="0.8099999999999999 2.16 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_4_12" type="box" pos="0.8099999999999999 2.16 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_4_13" type="box" pos="0.8099999999999999 2.34 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_4_13" type="box" pos="0.8099999999999999 2.34 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_4_16" type="box" pos="0.8099999999999999 2.88 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_4_16" type="box" pos="0.8099999999999999 2.88 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_5_0" type="box" pos="0.9899999999999999 0.0 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_5_0" type="box" pos="0.9899999999999999 0.0 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_5_4" type="box" pos="0.9899999999999999 0.72 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_5_4" type="box" pos="0.9899999999999999 0.72 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_5_2" type="box" pos="0.9899999999999999 0.36 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_5_2" type="box" pos="0.9899999999999999 0.36 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_5_3" type="box" pos="0.9899999999999999 0.54 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_5_3" type="box" pos="0.9899999999999999 0.54 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_5_5" type="box" pos="0.9899999999999999 0.8999999999999999 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_5_5" type="box" pos="0.9899999999999999 0.8999999999999999 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_5_6" type="box" pos="0.9899999999999999 1.08 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_5_6" type="box" pos="0.9899999999999999 1.08 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_5_8" type="box" pos="0.9899999999999999 1.44 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_5_8" type="box" pos="0.9899999999999999 1.44 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_5_9" type="box" pos="0.9899999999999999 1.6199999999999999 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_5_9" type="box" pos="0.9899999999999999 1.6199999999999999 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_5_10" type="box" pos="0.9899999999999999 1.7999999999999998 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_5_10" type="box" pos="0.9899999999999999 1.7999999999999998 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_5_12" type="box" pos="0.9899999999999999 2.16 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_5_12" type="box" pos="0.9899999999999999 2.16 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_5_13" type="box" pos="0.9899999999999999 2.34 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_5_13" type="box" pos="0.9899999999999999 2.34 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_5_14" type="box" pos="0.9899999999999999 2.52 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_5_14" type="box" pos="0.9899999999999999 2.52 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_5_15" type="box" pos="0.9899999999999999 2.6999999999999997 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_5_15" type="box" pos="0.9899999999999999 2.6999999999999997 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_5_16" type="box" pos="0.9899999999999999 2.88 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_5_16" type="box" pos="0.9899999999999999 2.88 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_6_0" type="box" pos="1.1700000000000002 0.0 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_6_0" type="box" pos="1.1700000000000002 0.0 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_6_2" type="box" pos="1.1700000000000002 0.36 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_6_2" type="box" pos="1.1700000000000002 0.36 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_6_3" type="box" pos="1.1700000000000002 0.54 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_6_3" type="box" pos="1.1700000000000002 0.54 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_6_4" type="box" pos="1.1700000000000002 0.72 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_6_4" type="box" pos="1.1700000000000002 0.72 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_6_5" type="box" pos="1.1700000000000002 0.8999999999999999 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_6_5" type="box" pos="1.1700000000000002 0.8999999999999999 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_6_6" type="box" pos="1.1700000000000002 1.08 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_6_6" type="box" pos="1.1700000000000002 1.08 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_6_7" type="box" pos="1.1700000000000002 1.26 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_6_7" type="box" pos="1.1700000000000002 1.26 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_6_9" type="box" pos="1.1700000000000002 1.6199999999999999 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_6_9" type="box" pos="1.1700000000000002 1.6199999999999999 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_6_10" type="box" pos="1.1700000000000002 1.7999999999999998 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_6_10" type="box" pos="1.1700000000000002 1.7999999999999998 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_6_11" type="box" pos="1.1700000000000002 1.98 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_6_11" type="box" pos="1.1700000000000002 1.98 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_6_12" type="box" pos="1.1700000000000002 2.16 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_6_12" type="box" pos="1.1700000000000002 2.16 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_6_13" type="box" pos="1.1700000000000002 2.34 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_6_13" type="box" pos="1.1700000000000002 2.34 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_6_14" type="box" pos="1.1700000000000002 2.52 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_6_14" type="box" pos="1.1700000000000002 2.52 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_6_16" type="box" pos="1.1700000000000002 2.88 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_6_16" type="box" pos="1.1700000000000002 2.88 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_7_0" type="box" pos="1.35 0.0 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_7_0" type="box" pos="1.35 0.0 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_7_2" type="box" pos="1.35 0.36 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_7_2" type="box" pos="1.35 0.36 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_7_3" type="box" pos="1.35 0.54 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_7_3" type="box" pos="1.35 0.54 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_7_1" type="box" pos="1.35 0.18 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_7_1" type="box" pos="1.35 0.18 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_7_4" type="box" pos="1.35 0.72 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_7_4" type="box" pos="1.35 0.72 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_7_6" type="box" pos="1.35 1.08 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_7_6" type="box" pos="1.35 1.08 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_7_7" type="box" pos="1.35 1.26 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_7_7" type="box" pos="1.35 1.26 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_7_9" type="box" pos="1.35 1.6199999999999999 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_7_9" type="box" pos="1.35 1.6199999999999999 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_7_12" type="box" pos="1.35 2.16 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_7_12" type="box" pos="1.35 2.16 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_7_13" type="box" pos="1.35 2.34 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_7_13" type="box" pos="1.35 2.34 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_7_10" type="box" pos="1.35 1.7999999999999998 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_7_10" type="box" pos="1.35 1.7999999999999998 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_7_15" type="box" pos="1.35 2.6999999999999997 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_7_15" type="box" pos="1.35 2.6999999999999997 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_7_16" type="box" pos="1.35 2.88 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
@@ -740,56 +750,56 @@
     <geom name="h_wall_red_8_0" type="box" pos="1.53 0.0 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_8_1" type="box" pos="1.53 0.18 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_8_1" type="box" pos="1.53 0.18 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_8_5" type="box" pos="1.53 0.8999999999999999 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_8_5" type="box" pos="1.53 0.8999999999999999 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_8_3" type="box" pos="1.53 0.54 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_8_3" type="box" pos="1.53 0.54 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_8_6" type="box" pos="1.53 1.08 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_8_6" type="box" pos="1.53 1.08 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_8_7" type="box" pos="1.53 1.26 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_8_7" type="box" pos="1.53 1.26 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_8_12" type="box" pos="1.53 2.16 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_8_12" type="box" pos="1.53 2.16 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_8_14" type="box" pos="1.53 2.52 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_8_14" type="box" pos="1.53 2.52 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_8_9" type="box" pos="1.53 1.6199999999999999 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_8_9" type="box" pos="1.53 1.6199999999999999 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_8_10" type="box" pos="1.53 1.7999999999999998 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_8_10" type="box" pos="1.53 1.7999999999999998 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_8_13" type="box" pos="1.53 2.34 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_8_13" type="box" pos="1.53 2.34 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_8_16" type="box" pos="1.53 2.88 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_8_16" type="box" pos="1.53 2.88 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_9_0" type="box" pos="1.71 0.0 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_9_0" type="box" pos="1.71 0.0 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_9_1" type="box" pos="1.71 0.18 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_9_1" type="box" pos="1.71 0.18 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_9_2" type="box" pos="1.71 0.36 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_9_2" type="box" pos="1.71 0.36 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_9_3" type="box" pos="1.71 0.54 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_9_3" type="box" pos="1.71 0.54 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_9_4" type="box" pos="1.71 0.72 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_9_4" type="box" pos="1.71 0.72 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_9_5" type="box" pos="1.71 0.8999999999999999 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_9_5" type="box" pos="1.71 0.8999999999999999 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_9_6" type="box" pos="1.71 1.08 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_9_6" type="box" pos="1.71 1.08 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_9_11" type="box" pos="1.71 1.98 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_9_11" type="box" pos="1.71 1.98 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_9_8" type="box" pos="1.71 1.44 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_9_8" type="box" pos="1.71 1.44 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_9_9" type="box" pos="1.71 1.6199999999999999 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_9_9" type="box" pos="1.71 1.6199999999999999 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_9_12" type="box" pos="1.71 2.16 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_9_12" type="box" pos="1.71 2.16 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_9_13" type="box" pos="1.71 2.34 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_9_13" type="box" pos="1.71 2.34 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_9_14" type="box" pos="1.71 2.52 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_9_14" type="box" pos="1.71 2.52 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_9_15" type="box" pos="1.71 2.6999999999999997 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_9_15" type="box" pos="1.71 2.6999999999999997 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_9_16" type="box" pos="1.71 2.88 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_9_16" type="box" pos="1.71 2.88 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_10_0" type="box" pos="1.89 0.0 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_10_0" type="box" pos="1.89 0.0 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_10_1" type="box" pos="1.89 0.18 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_10_1" type="box" pos="1.89 0.18 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_10_3" type="box" pos="1.89 0.54 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_10_3" type="box" pos="1.89 0.54 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_10_4" type="box" pos="1.89 0.72 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_10_4" type="box" pos="1.89 0.72 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_10_5" type="box" pos="1.89 0.8999999999999999 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_10_5" type="box" pos="1.89 0.8999999999999999 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_10_6" type="box" pos="1.89 1.08 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_10_6" type="box" pos="1.89 1.08 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_10_7" type="box" pos="1.89 1.26 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_10_7" type="box" pos="1.89 1.26 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_10_9" type="box" pos="1.89 1.6199999999999999 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_10_9" type="box" pos="1.89 1.6199999999999999 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_10_11" type="box" pos="1.89 1.98 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_10_11" type="box" pos="1.89 1.98 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_10_12" type="box" pos="1.89 2.16 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_10_12" type="box" pos="1.89 2.16 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_10_8" type="box" pos="1.89 1.44 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_10_8" type="box" pos="1.89 1.44 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_10_10" type="box" pos="1.89 1.7999999999999998 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_10_10" type="box" pos="1.89 1.7999999999999998 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_10_13" type="box" pos="1.89 2.34 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_10_13" type="box" pos="1.89 2.34 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_10_14" type="box" pos="1.89 2.52 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_10_14" type="box" pos="1.89 2.52 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_10_16" type="box" pos="1.89 2.88 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
@@ -798,6 +808,8 @@
     <geom name="h_wall_red_11_0" type="box" pos="2.07 0.0 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_11_2" type="box" pos="2.07 0.36 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_11_2" type="box" pos="2.07 0.36 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_11_3" type="box" pos="2.07 0.54 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_11_3" type="box" pos="2.07 0.54 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_11_4" type="box" pos="2.07 0.72 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_11_4" type="box" pos="2.07 0.72 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_11_6" type="box" pos="2.07 1.08 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
@@ -806,82 +818,68 @@
     <geom name="h_wall_red_11_7" type="box" pos="2.07 1.26 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_11_9" type="box" pos="2.07 1.6199999999999999 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_11_9" type="box" pos="2.07 1.6199999999999999 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_11_12" type="box" pos="2.07 2.16 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_11_12" type="box" pos="2.07 2.16 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_11_13" type="box" pos="2.07 2.34 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_11_13" type="box" pos="2.07 2.34 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_11_14" type="box" pos="2.07 2.52 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_11_14" type="box" pos="2.07 2.52 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_11_15" type="box" pos="2.07 2.6999999999999997 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_11_15" type="box" pos="2.07 2.6999999999999997 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_11_16" type="box" pos="2.07 2.88 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_11_16" type="box" pos="2.07 2.88 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_12_0" type="box" pos="2.25 0.0 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_12_0" type="box" pos="2.25 0.0 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_12_3" type="box" pos="2.25 0.54 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_12_3" type="box" pos="2.25 0.54 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_12_4" type="box" pos="2.25 0.72 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_12_4" type="box" pos="2.25 0.72 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_12_5" type="box" pos="2.25 0.8999999999999999 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_12_5" type="box" pos="2.25 0.8999999999999999 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_12_7" type="box" pos="2.25 1.26 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_12_7" type="box" pos="2.25 1.26 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_12_8" type="box" pos="2.25 1.44 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_12_8" type="box" pos="2.25 1.44 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_12_9" type="box" pos="2.25 1.6199999999999999 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_12_9" type="box" pos="2.25 1.6199999999999999 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_12_13" type="box" pos="2.25 2.34 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_12_13" type="box" pos="2.25 2.34 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_12_14" type="box" pos="2.25 2.52 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_12_14" type="box" pos="2.25 2.52 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_12_16" type="box" pos="2.25 2.88 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_12_16" type="box" pos="2.25 2.88 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_13_0" type="box" pos="2.4299999999999997 0.0 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_13_0" type="box" pos="2.4299999999999997 0.0 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_13_1" type="box" pos="2.4299999999999997 0.18 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_13_1" type="box" pos="2.4299999999999997 0.18 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_13_5" type="box" pos="2.4299999999999997 0.8999999999999999 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_13_5" type="box" pos="2.4299999999999997 0.8999999999999999 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_13_7" type="box" pos="2.4299999999999997 1.26 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_13_7" type="box" pos="2.4299999999999997 1.26 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_13_8" type="box" pos="2.4299999999999997 1.44 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_13_8" type="box" pos="2.4299999999999997 1.44 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_13_10" type="box" pos="2.4299999999999997 1.7999999999999998 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_13_10" type="box" pos="2.4299999999999997 1.7999999999999998 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_13_13" type="box" pos="2.4299999999999997 2.34 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_13_13" type="box" pos="2.4299999999999997 2.34 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_13_6" type="box" pos="2.4299999999999997 1.08 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_13_6" type="box" pos="2.4299999999999997 1.08 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_13_9" type="box" pos="2.4299999999999997 1.6199999999999999 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_13_9" type="box" pos="2.4299999999999997 1.6199999999999999 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_13_11" type="box" pos="2.4299999999999997 1.98 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_13_11" type="box" pos="2.4299999999999997 1.98 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_13_12" type="box" pos="2.4299999999999997 2.16 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_13_12" type="box" pos="2.4299999999999997 2.16 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_13_14" type="box" pos="2.4299999999999997 2.52 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_13_14" type="box" pos="2.4299999999999997 2.52 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_13_15" type="box" pos="2.4299999999999997 2.6999999999999997 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_13_15" type="box" pos="2.4299999999999997 2.6999999999999997 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_13_16" type="box" pos="2.4299999999999997 2.88 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_13_16" type="box" pos="2.4299999999999997 2.88 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_14_0" type="box" pos="2.61 0.0 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_14_0" type="box" pos="2.61 0.0 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_14_1" type="box" pos="2.61 0.18 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_14_1" type="box" pos="2.61 0.18 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_14_2" type="box" pos="2.61 0.36 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_14_2" type="box" pos="2.61 0.36 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_14_5" type="box" pos="2.61 0.8999999999999999 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_14_5" type="box" pos="2.61 0.8999999999999999 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_14_6" type="box" pos="2.61 1.08 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_14_6" type="box" pos="2.61 1.08 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_14_7" type="box" pos="2.61 1.26 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_14_7" type="box" pos="2.61 1.26 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_14_8" type="box" pos="2.61 1.44 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_14_8" type="box" pos="2.61 1.44 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_14_10" type="box" pos="2.61 1.7999999999999998 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_14_10" type="box" pos="2.61 1.7999999999999998 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_14_12" type="box" pos="2.61 2.16 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_14_12" type="box" pos="2.61 2.16 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_14_13" type="box" pos="2.61 2.34 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_14_13" type="box" pos="2.61 2.34 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_14_14" type="box" pos="2.61 2.52 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_14_14" type="box" pos="2.61 2.52 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_14_11" type="box" pos="2.61 1.98 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_14_11" type="box" pos="2.61 1.98 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_14_15" type="box" pos="2.61 2.6999999999999997 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_14_15" type="box" pos="2.61 2.6999999999999997 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_14_16" type="box" pos="2.61 2.88 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_14_16" type="box" pos="2.61 2.88 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_15_0" type="box" pos="2.7899999999999996 0.0 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_15_0" type="box" pos="2.7899999999999996 0.0 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_15_5" type="box" pos="2.7899999999999996 0.8999999999999999 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_15_5" type="box" pos="2.7899999999999996 0.8999999999999999 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_15_7" type="box" pos="2.7899999999999996 1.26 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_15_7" type="box" pos="2.7899999999999996 1.26 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_15_8" type="box" pos="2.7899999999999996 1.44 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_15_8" type="box" pos="2.7899999999999996 1.44 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_15_12" type="box" pos="2.7899999999999996 2.16 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_15_12" type="box" pos="2.7899999999999996 2.16 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
-    <geom name="h_wall_white_15_14" type="box" pos="2.7899999999999996 2.52 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
-    <geom name="h_wall_red_15_14" type="box" pos="2.7899999999999996 2.52 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_15_4" type="box" pos="2.7899999999999996 0.72 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_15_4" type="box" pos="2.7899999999999996 0.72 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
+    <geom name="h_wall_white_15_11" type="box" pos="2.7899999999999996 1.98 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
+    <geom name="h_wall_red_15_11" type="box" pos="2.7899999999999996 1.98 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <geom name="h_wall_white_15_16" type="box" pos="2.7899999999999996 2.88 0.024" size="0.08399999999999999 0.006 0.024" material="mat_wall_white"/>
     <geom name="h_wall_red_15_16" type="box" pos="2.7899999999999996 2.88 0.049" size="0.08399999999999999 0.006 0.001" material="mat_wall_red"/>
     <body name="mouse" pos="0.09 0.09 0.012">
@@ -932,8 +930,8 @@
     </body>
   </worldbody>
   <actuator>
-    <velocity name="act_left" joint="left_wheel_joint" kv="0.005" ctrlrange="-30 30"/>
-    <velocity name="act_right" joint="right_wheel_joint" kv="0.005" ctrlrange="-30 30"/>
+    <motor name="act_left" joint="left_wheel_joint" gear="0.003" ctrllimited="true" ctrlrange="-3 3"/>
+    <motor name="act_right" joint="right_wheel_joint" gear="0.003" ctrllimited="true" ctrlrange="-3 3"/>
   </actuator>
   <sensor>
     <rangefinder name="LF" site="sensor_left_front" cutoff="0.15"/>

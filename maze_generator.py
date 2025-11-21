@@ -494,11 +494,11 @@ class MicromouseMazeGenerator:
 
         # Actuators
         print("DEBUG: Adding actuators")
-        # Using velocity actuators to maintain control script compatibility, but tuning for new mass.
-        # Total mass ~ 0.11kg (50g*2 + 4.65g + etc) -> ~105g.
-        # Previous stable kv was 0.005 for similar mass.
-        ET.SubElement(actuator, 'velocity', {'name': 'act_left', 'joint': 'left_wheel_joint', 'kv': '0.005', 'ctrlrange': '-30 30'})
-        ET.SubElement(actuator, 'velocity', {'name': 'act_right', 'joint': 'right_wheel_joint', 'kv': '0.005', 'ctrlrange': '-30 30'})
+        # Change to motor actuator for voltage control simulation
+        # gear="0.003" implies 1V input generates 0.003 Nm torque (approx for small DC motor)
+        # ctrlrange="-3 3" limits input voltage to +/- 3V
+        ET.SubElement(actuator, 'motor', {'name': 'act_left', 'joint': 'left_wheel_joint', 'gear': '0.003', 'ctrllimited': 'true', 'ctrlrange': '-3 3'})
+        ET.SubElement(actuator, 'motor', {'name': 'act_right', 'joint': 'right_wheel_joint', 'gear': '0.003', 'ctrllimited': 'true', 'ctrlrange': '-3 3'})
         print(f"DEBUG: Actuator content: {ET.tostring(actuator)}")
         print("DEBUG: Actuators added")
 

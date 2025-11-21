@@ -34,21 +34,22 @@ def main():
                         k=1
                     )[0]
                     
+                    # Voltage control values (max 3.0V)
                     if action_type == 'forward':
-                        left_vel = 25.0
-                        right_vel = 25.0
+                        left_vel = 1.5
+                        right_vel = 1.5
                         action_duration = random.uniform(1.0, 3.0)
                     elif action_type == 'backward':
-                        left_vel = -20.0
-                        right_vel = -20.0
+                        left_vel = -1.5
+                        right_vel = -1.5
                         action_duration = random.uniform(0.5, 1.5)
                     elif action_type == 'turn_left':
-                        left_vel = -15.0
-                        right_vel = 15.0
+                        left_vel = -1.0
+                        right_vel = 1.0
                         action_duration = random.uniform(0.3, 0.8)
                     elif action_type == 'turn_right':
-                        left_vel = 15.0
-                        right_vel = -15.0
+                        left_vel = 1.0
+                        right_vel = -1.0
                         action_duration = random.uniform(0.3, 0.8)
                     else: # stop
                         left_vel = 0.0
