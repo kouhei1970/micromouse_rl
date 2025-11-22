@@ -3,3 +3,10 @@ __pycache__/
 .venv/
 .DS_Store
 MUJOCO_LOG.TXT
+
+# Generated artifacts
+logs/
+outputs/
+models/*.zip
+!models/phase1_open.zip
+!models/phase1_test_model.zip

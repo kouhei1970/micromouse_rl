@@ -1,77 +1,57 @@
-# Micromouse MuJoCo Simulation
+# Micromouse Reinforcement Learning Project
 
-This project is a simulation environment for Micromouse competitions using the [MuJoCo](https://mujoco.org/) physics engine. It provides a procedural maze generator and a realistic robot model with sensors, suitable for developing and testing reinforcement learning algorithms or classic control strategies.
+This project aims to train a Micromouse agent using Reinforcement Learning (RL) with MuJoCo physics engine.
+The project is divided into phases to incrementally build the agent's capabilities.
 
-## Features
+## Project Structure
 
-*   **Procedural Maze Generation**: Generates a random 16x16 Micromouse maze using a depth-first search algorithm.
-    *   Compliant with standard Micromouse maze dimensions (180mm cell size).
-    *   Includes a dedicated 2x2 goal area in the center (coordinates 7,7 to 8,8) with no internal walls or pillars.
-    *   Configurable start position (default is 0,0).
-*   **Realistic Robot Model**:
-    *   Based on a reference design with specific dimensions and mass properties.
-    *   Differential drive kinematics.
-    *   **Sensors**: 4 distance sensors (LF, LS, RF, RS) visualized as semi-transparent red indicators (cylinder + sphere tip).
-    *   **Physics**: Includes friction, damping, and actuator dynamics tuned for the mouse's mass (~100g).
-*   **Simulation & Control**:
-    *   `control_mouse.py`: A sample control script that demonstrates random movement (Forward, Backward, Turn Left/Right, Stop) to verify kinematics and physics stability.
-    *   Real-time visualization using the MuJoCo viewer.
+```text
+micromouse_rl/
+├── models/                     # Trained models (.zip)
+│   ├── phase1_open.zip         # Phase 1: Open field navigation
+│   └── phase2_slalom.zip       # Phase 2: Slalom turn
+├── common/                     # Common utilities and base classes
+├── phase1_open/                # Phase 1: Open Field Task
+├── phase2_slalom/              # Phase 2: Slalom Turn Task
+├── assets/                     # MuJoCo XML assets and textures
+├── docs/                       # Documentation
+└── outputs/                    # Generated outputs (videos, logs)
+```
 
-## Requirements
+## Phases
 
-*   Python 3.x
-*   [MuJoCo](https://pypi.org/project/mujoco/)
-*   [NumPy](https://numpy.org/)
+### Phase 1: Open Field
+Focuses on basic stability and velocity control in an open space.
+- **Goal**: Move forward and turn to target coordinates.
+- **Status**: Completed.
 
-## Installation
-
-1.  Clone this repository:
-    ```bash
-    git clone <repository-url>
-    cd micromouse_mujoco
-    ```
-
-2.  Create a virtual environment (optional but recommended):
-    ```bash
-    python -m venv .venv
-    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-    ```
-
-3.  Install dependencies:
-    ```bash
-    pip install -r requirements.txt
-    ```
+### Phase 2: Slalom Turn
+Focuses on navigating a specific L-shaped turn (Slalom).
+- **Goal**: Navigate from start to goal through a turn without hitting walls.
+- **Status**: In Progress (Refining simulation accuracy).
 
 ## Usage
 
-### 1. Generate the Maze and Robot Model
-Run the generator script to create the `micromouse_maze.xml` file. This file contains the full definition of the maze geometry and the robot.
+### Prerequisites
+- Python 3.10+
+- MuJoCo
+- Gymnasium
+- Stable Baselines3
 
+### Running Scripts
+Run scripts from the project root directory.
+
+**Example: Generate Slalom Maze**
 ```bash
-python maze_generator.py
+python phase2_slalom/generate_maze.py
 ```
 
-### 2. Run the Simulation
-Execute the control script to launch the MuJoCo viewer and see the mouse in action.
-
+**Example: Train Slalom Agent**
 ```bash
-# Standard Python execution
-python control_mouse.py
-
-# On macOS, if you encounter issues with the viewer, try using mjpython
-mjpython control_mouse.py
+python phase2_slalom/train.py
 ```
 
-The mouse will perform random movements. You can observe the sensor visualizations and the physics interactions with the walls.
-
-## File Structure
-
-*   `maze_generator.py`: Main script to generate the MJCF (XML) file. Handles maze logic and robot XML construction.
-*   `control_mouse.py`: Script to load the generated XML and run the simulation loop with a simple controller.
-*   `micromouse_maze.xml`: The generated output file (do not edit manually if you plan to regenerate).
-*   `sample_micromouse.xml`: Reference XML file used for robot specifications.
-*   `requirements.txt`: Python dependencies.
-
-## License
-
-[MIT License](LICENSE) (or specify your license)
+**Example: Create Slalom Video**
+```bash
+python phase2_slalom/create_video.py
+```
