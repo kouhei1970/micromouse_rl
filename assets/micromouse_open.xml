@@ -7,9 +7,9 @@
   </visual>
   <asset>
     <texture name="tex_floor" type="2d" builtin="checker" rgb1=".2 .3 .4" rgb2=".1 .2 .3" width="512" height="512"/>
-    <material name="mat_floor" texture="tex_floor" texrepeat="1111 1111" reflectance="0.3"/>
-    <material name="mat_wall_white" rgba="1 1 1 1"/>
-    <material name="mat_wall_red" rgba="1 0 0 1"/>
+    <material name="mat_floor" texture="tex_floor" texrepeat="100 100" reflectance="0.3"/>
+    <material name="mat_wall" rgba="1 1 1 1"/>
+    <material name="mat_wall_top" rgba="0.8 0 0 1"/>
     <material name="mat_post" rgba="1 1 1 1"/>
     <material name="mat_pcb" rgba="0.1 0.1 0.1 1" specular="0.5" shininess="0.5"/>
     <material name="mat_tire" rgba="0.1 0.1 0.1 1" reflectance="0.1"/>
@@ -21,7 +21,7 @@
     <mesh name="coner" vertex="0 0 -0.0008  0.036 0 -0.0008  0.026 0.01 -0.0008  0 0.01 -0.0008  0 0 0.0008  0.036 0 0.0008  0.026 0.01 0.0008  0 0.01 0.0008"/>
   </asset>
   <worldbody>
-    <geom name="floor" pos="0 0 0" size="100 100 0.1" type="plane" material="mat_floor"/>
+    <geom name="floor" pos="0 0 0" size="9 9 0.1" type="plane" material="mat_floor"/>
     <light diffuse=".5 .5 .5" pos="0 0 4" dir="0 0 -1"/>
     <body name="mouse" pos="0 0 0.012">
       <freejoint name="root"/>

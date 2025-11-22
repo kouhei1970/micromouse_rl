@@ -81,9 +81,10 @@ class SlalomMazeGenerator(MicromouseMazeGenerator):
         
         asset = ET.SubElement(mujoco, 'asset')
         ET.SubElement(asset, 'texture', {'name': 'tex_floor', 'type': '2d', 'builtin': 'checker', 'rgb1': '.2 .3 .4', 'rgb2': '.1 .2 .3', 'width': '512', 'height': '512'})
-        ET.SubElement(asset, 'material', {'name': 'mat_floor', 'texture': 'tex_floor', 'texrepeat': '44.44 44.44', 'reflectance': '0.3'})
-        ET.SubElement(asset, 'material', {'name': 'mat_wall', 'rgba': '0.9 0.9 0.9 1'})
-        ET.SubElement(asset, 'material', {'name': 'mat_wall_top', 'rgba': '1.0 0.0 0.0 1'})
+        ET.SubElement(asset, 'material', {'name': 'mat_floor', 'texture': 'tex_floor', 'texrepeat': '20 20', 'reflectance': '0.3'})
+        ET.SubElement(asset, 'material', {'name': 'mat_wall', 'rgba': '1 1 1 1'})
+        ET.SubElement(asset, 'material', {'name': 'mat_wall_top', 'rgba': '0.8 0 0 1'})
+        ET.SubElement(asset, 'material', {'name': 'mat_post', 'rgba': '0.9 0.9 0.9 1'})
         
         # Mouse Materials (Same as before)
         ET.SubElement(asset, 'material', {'name': 'mat_pcb', 'rgba': '0.1 0.1 0.1 1', 'specular': '0.5', 'shininess': '0.5'})
@@ -98,8 +99,10 @@ class SlalomMazeGenerator(MicromouseMazeGenerator):
         worldbody = ET.SubElement(mujoco, 'worldbody')
         
         # Floor
-        ET.SubElement(worldbody, 'geom', {'name': 'floor', 'pos': '0.9 0.9 0', 'size': '2 2 0.1', 'type': 'plane', 'material': 'mat_floor'})
-        ET.SubElement(worldbody, 'light', {'diffuse': '.5 .5 .5', 'pos': '0.9 0.9 4', 'dir': '0 0 -1'})
+        # Size 1.8m half-extent -> 3.6m full width. 3.6 / 0.18 = 20 repeats.
+        # Pos at 1.44, 1.44, 0 ensures grid aligns with origin (post center) and covers the maze (0 to 2.88).
+        ET.SubElement(worldbody, 'geom', {'name': 'floor', 'pos': '1.44 1.44 0', 'size': '1.8 1.8 0.1', 'type': 'plane', 'material': 'mat_floor'})
+        ET.SubElement(worldbody, 'light', {'diffuse': '.5 .5 .5', 'pos': '1.44 1.44 4', 'dir': '0 0 -1'})
 
         # --- Generate Walls based on v_walls and h_walls ---
         # Cell size = 0.18m. Wall thickness = 0.012m. Wall height = 0.05m.
@@ -112,37 +115,84 @@ class SlalomMazeGenerator(MicromouseMazeGenerator):
         for x in range(4):
             for y in range(4):
                 # Center of the cell
-                cx = x * cell_size
-                cy = y * cell_size
+                cx = x * cell_size + 0.09
+                cy = y * cell_size + 0.09
+                
+                # Add Posts at intersections (x*0.18, y*0.18)
+                # We add posts at (x, y), (x+1, y), (x, y+1), (x+1, y+1)
+                # To avoid duplicates, we can just add posts at (x, y) for all x, y in range(0, 17)
+                # But here we just add posts around the cells we are building.
+                # Let's just add posts at (x*0.18, y*0.18) for x,y in 0..4
+                pass
+
+        # Add Posts (Grid Intersections)
+        # Range 0 to 4 covers the area we are interested in (3x3 cells -> 4x4 posts)
+        for px in range(5):
+            for py in range(5):
+                post_x = px * cell_size
+                post_y = py * cell_size
+                ET.SubElement(worldbody, 'geom', {
+                    'name': f'post_{px}_{py}',
+                    'type': 'box',
+                    'pos': f'{post_x} {post_y} {wall_height/2}',
+                    'size': f'{wall_thickness/2} {wall_thickness/2} {wall_height/2}',
+                    'material': 'mat_post'
+                })
+
+        for x in range(4):
+            for y in range(4):
+                # Center of the cell
+                cx = x * cell_size + 0.09
+                cy = y * cell_size + 0.09
                 
                 # Vertical Wall (West)
                 if self.v_walls[x, y] == 1:
                     # Position: Left edge of cell
                     wx = cx - half_cell
                     wy = cy
+                    # Wall Body (White)
                     ET.SubElement(worldbody, 'geom', {
                         'name': f'vwall_{x}_{y}',
                         'type': 'box',
                         'pos': f'{wx} {wy} {wall_height/2}',
-                        'size': f'{wall_thickness/2} {half_cell} {wall_height/2}',
+                        'size': f'{wall_thickness/2} {half_cell - wall_thickness/2} {wall_height/2}', # Shorten slightly to avoid z-fighting with posts? No, posts are at corners.
+                        # Actually, wall length is 168mm (0.168). Half is 0.084.
+                        # Cell size 0.18. Post 0.012. Space between posts = 0.18 - 0.012 = 0.168.
+                        # So wall length fits exactly between posts.
+                        # Box size is half-size. So 0.084.
+                        # 0.084 is exactly (0.18 - 0.012)/2.
+                        'size': f'{wall_thickness/2} {0.084} {wall_height/2}',
                         'material': 'mat_wall'
                     })
-                
-                # Vertical Wall (East) - Only for the last column, or we can just check x+1
-                # Actually, v_walls[x+1, y] handles the east wall of cell x.
-                # So we just iterate x up to max.
+                    # Wall Top (Red)
+                    ET.SubElement(worldbody, 'geom', {
+                        'name': f'vwall_top_{x}_{y}',
+                        'type': 'box',
+                        'pos': f'{wx} {wy} {wall_height + 0.0005}',
+                        'size': f'{wall_thickness/2} {0.084} 0.0005',
+                        'material': 'mat_wall_top'
+                    })
                 
                 # Horizontal Wall (South)
                 if self.h_walls[x, y] == 1:
                     # Position: Bottom edge of cell
                     wx = cx
                     wy = cy - half_cell
+                    # Wall Body (White)
                     ET.SubElement(worldbody, 'geom', {
                         'name': f'hwall_{x}_{y}',
                         'type': 'box',
                         'pos': f'{wx} {wy} {wall_height/2}',
-                        'size': f'{half_cell} {wall_thickness/2} {wall_height/2}',
+                        'size': f'{0.084} {wall_thickness/2} {wall_height/2}',
                         'material': 'mat_wall'
+                    })
+                    # Wall Top (Red)
+                    ET.SubElement(worldbody, 'geom', {
+                        'name': f'hwall_top_{x}_{y}',
+                        'type': 'box',
+                        'pos': f'{wx} {wy} {wall_height + 0.0005}',
+                        'size': f'{0.084} {wall_thickness/2} 0.0005',
+                        'material': 'mat_wall_top'
                     })
 
         # Add Mouse
@@ -157,11 +207,10 @@ class SlalomMazeGenerator(MicromouseMazeGenerator):
         print(f"Maze generated and saved to {filename}")
 
     def add_mouse(self, worldbody, actuator, sensor, contact):
-        # Start at (0,0) which is at (0,0) in world coordinates?
-        # In our loop: cx = x * 0.18. For x=0, cx=0.
-        # So (0,0) cell center is at (0,0).
-        start_x = 0
-        start_y = 0
+        # Start at (0,0) in Maze Coordinates
+        # Metric: (0.09, 0.09)
+        start_x = 0.09
+        start_y = 0.09
         start_z = 0.002
         
         mouse_body = ET.SubElement(worldbody, 'body', {'name': 'mouse', 'pos': f'{start_x} {start_y} {start_z}', 'euler': '0 0 90'})
@@ -170,8 +219,8 @@ class SlalomMazeGenerator(MicromouseMazeGenerator):
         # Camera (Top-Down View to verify alignment)
         ET.SubElement(mouse_body, 'camera', {
             'name': 'track',
-            'mode': 'fixed',
-            'pos': '0 0 0.6',
+            'mode': 'trackcom',
+            'pos': '0 0 0.8',
             'xyaxes': '0 -1 0 1 0 0',
             'fovy': '45'
         })

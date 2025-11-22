@@ -13,8 +13,12 @@ def main():
     env = MicromouseSlalomEnv(render_mode="rgb_array")
     
     model_path = "models/phase2_slalom.zip"
-    print(f"Loading model from {model_path}...")
-    model = PPO.load(model_path)
+    model = None
+    if os.path.exists(model_path):
+        print(f"Loading model from {model_path}...")
+        model = PPO.load(model_path)
+    else:
+        print(f"Model {model_path} not found. Using random actions for visualization.")
 
     print("Recording video...")
     obs, _ = env.reset()
@@ -23,7 +27,13 @@ def main():
     
     # Run for one episode
     for i in range(1000):
-        action, _ = model.predict(obs, deterministic=True)
+        if model:
+            action, _ = model.predict(obs, deterministic=True)
+        else:
+            action = env.action_space.sample()
+            # For smoother random movement, maybe just go straight?
+            # action = np.array([0.2, 0.0]) 
+            
         obs, reward, terminated, truncated, info = env.step(action)
         
         frame = env.render()

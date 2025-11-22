@@ -45,10 +45,10 @@ class OpenMazeGenerator(MicromouseMazeGenerator):
         # Assets (Materials and Textures)
         asset = ET.SubElement(mujoco, 'asset')
         ET.SubElement(asset, 'texture', {'name': 'tex_floor', 'type': '2d', 'builtin': 'checker', 'rgb1': '.2 .3 .4', 'rgb2': '.1 .2 .3', 'width': '512', 'height': '512'})
-        # 90mm squares. Floor is 200m wide. 200 / (0.09 * 2) = 1111.11
-        ET.SubElement(asset, 'material', {'name': 'mat_floor', 'texture': 'tex_floor', 'texrepeat': '1111 1111', 'reflectance': '0.3'})
-        ET.SubElement(asset, 'material', {'name': 'mat_wall_white', 'rgba': '1 1 1 1'})
-        ET.SubElement(asset, 'material', {'name': 'mat_wall_red', 'rgba': '1 0 0 1'})
+        # 0.18m squares. Floor is 18m wide (size 9). 18 / 0.18 = 100
+        ET.SubElement(asset, 'material', {'name': 'mat_floor', 'texture': 'tex_floor', 'texrepeat': '100 100', 'reflectance': '0.3'})
+        ET.SubElement(asset, 'material', {'name': 'mat_wall', 'rgba': '1 1 1 1'})
+        ET.SubElement(asset, 'material', {'name': 'mat_wall_top', 'rgba': '0.8 0 0 1'})
         ET.SubElement(asset, 'material', {'name': 'mat_post', 'rgba': '1 1 1 1'})
         
         # Mouse Materials
@@ -66,13 +66,13 @@ class OpenMazeGenerator(MicromouseMazeGenerator):
         # Worldbody
         worldbody = ET.SubElement(mujoco, 'worldbody')
         
-        # Floor - HUGE OPEN SPACE
-        ET.SubElement(worldbody, 'geom', {'name': 'floor', 'pos': '0 0 0', 'size': '100 100 0.1', 'type': 'plane', 'material': 'mat_floor'})
+        # Floor - Open Space (18m x 18m)
+        ET.SubElement(worldbody, 'geom', {'name': 'floor', 'pos': '0 0 0', 'size': '9 9 0.1', 'type': 'plane', 'material': 'mat_floor'})
         
         # Light
         ET.SubElement(worldbody, 'light', {'diffuse': '.5 .5 .5', 'pos': '0 0 4', 'dir': '0 0 -1'})
 
-        # NO POSTS OR WALLS for the infinite open field experiment
+        # NO POSTS OR WALLS for the open field experiment
         
         # Add Mouse
         actuator = ET.SubElement(mujoco, 'actuator')
