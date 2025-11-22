@@ -56,6 +56,13 @@ class MicromouseSlalomEnv(gym.Env):
         self.current_step = 0
         self.last_distance = 0.0
         
+        # Low-Level Control Frequency Settings
+        # Phase 1 trained with 5 simulation steps per action (200Hz control)
+        # High-Level Policy will run at 10Hz (100ms per step)
+        # So we need 20 Low-Level steps per 1 High-Level step.
+        # 20 * 5ms = 100ms
+        self.low_level_steps = 20
+        
         # For rendering
         self.render_fps = 60
 
@@ -94,77 +101,66 @@ class MicromouseSlalomEnv(gym.Env):
         target_v = np.clip(action[0], 0.0, 0.5)
         target_omega = np.clip(action[1], -3.0, 3.0)
         
-        # --- 1. Low-Level Control Loop ---
-        # We run the low-level controller for one step.
-        # Note: In a real hierarchy, the high-level might run at a lower frequency.
-        # For now, let's run them at the same frequency (1:1) or maybe 1:10?
-        # Let's try 1:1 first for simplicity, or maybe 1:5 to give time for the low-level to act.
-        # If we run 1:1, the high-level sees every state.
+        collision = False
+        terminated = False
+        truncated = False
         
-        # Let's do 1 step for now.
+        # --- Hierarchical Control Loop ---
+        # Run Low-Level Controller for multiple steps
+        for _ in range(self.low_level_steps):
+            # 1. Construct observation for Low-Level Model
+            # Phase 1 Obs: [LF, LS, RF, RS, LinV, AngV, LatAcc, TgtLin, TgtAng]
+            
+            data = self.data.sensordata
+            distances = data[:4].copy()
+            distances[distances < 0] = 0.15 # Max range replacement
+            
+            wheel_radius = 0.0135
+            left_vel = self.data.qvel[6] * wheel_radius
+            right_vel = self.data.qvel[7] * wheel_radius
+            linear_velocity = (left_vel + right_vel) / 2.0
+            
+            angular_velocity = data[9] # Gyro Z
+            lateral_accel = data[5]    # Accel Y
+            
+            low_level_obs = np.concatenate([
+                distances,
+                [linear_velocity],
+                [angular_velocity],
+                [lateral_accel],
+                [target_v],
+                [target_omega]
+            ]).astype(np.float32)
+            
+            # 2. Predict motor action
+            low_level_action, _ = self.low_level_model.predict(low_level_obs, deterministic=True)
+            
+            # 3. Apply to motors (Scale from [-1, 1] to [-3V, 3V])
+            self.data.ctrl[0] = low_level_action[0] * 3.0
+            self.data.ctrl[1] = low_level_action[1] * 3.0
+            
+            # 4. Step simulation (5 times to match Phase 1 training)
+            for _ in range(5):
+                mujoco.mj_step(self.model, self.data)
+            
+            # 5. Check for collision immediately
+            new_distances = self.data.sensordata[:4].copy()
+            valid_distances = new_distances[new_distances >= 0]
+            if len(valid_distances) > 0 and np.min(valid_distances) < 0.02:
+                collision = True
+                break
         
-        # Construct observation for Low-Level Model
-        # Phase 1 Obs: [LF, LS, RF, RS, LinV, AngV, LatAcc, TgtLin, TgtAng]
-        
-        # Get current physical state
-        data = self.data.sensordata
-        distances = data[:4].copy()
-        distances[distances < 0] = 0.15 # Max range replacement
-        
-        wheel_radius = 0.0135
-        left_vel = self.data.qvel[6] * wheel_radius
-        right_vel = self.data.qvel[7] * wheel_radius
-        linear_velocity = (left_vel + right_vel) / 2.0
-        
-        angular_velocity = data[9] # Gyro Z
-        lateral_accel = data[5]    # Accel Y
-        
-        low_level_obs = np.concatenate([
-            distances,
-            [linear_velocity],
-            [angular_velocity],
-            [lateral_accel],
-            [target_v],
-            [target_omega]
-        ]).astype(np.float32)
-        
-        # Predict motor action
-        low_level_action, _ = self.low_level_model.predict(low_level_obs, deterministic=True)
-        
-        # Apply to motors (Scale from [-1, 1] to [-3V, 3V])
-        self.data.ctrl[0] = low_level_action[0] * 3.0
-        self.data.ctrl[1] = low_level_action[1] * 3.0
-        
-        # Step simulation
-        mujoco.mj_step(self.model, self.data)
-        
-        # --- 2. Calculate Reward & Check Termination ---
+        # --- Calculate Reward & Check Termination ---
         
         # Current state
         current_pos = self.data.qpos[0:2]
         dist_to_goal = np.linalg.norm(current_pos - self.goal_pos)
-        
-        # Check collision
-        # If any sensor is very close to 0, or if we detect contact (more complex)
-        # Simple check: if any distance sensor < 0.02 (2cm)
-        # Note: sensordata returns -1 if no hit.
-        # We need to check the raw sensor values from the step we just took.
-        # Let's re-read sensors after step.
-        new_distances = self.data.sensordata[:4].copy()
-        # Filter -1
-        valid_distances = new_distances[new_distances >= 0]
-        collision = False
-        if len(valid_distances) > 0 and np.min(valid_distances) < 0.02:
-            collision = True
             
         # Reward Components
         r_goal = 0.0
         r_collision = 0.0
         r_progress = 0.0
         r_time = -0.1
-        
-        terminated = False
-        truncated = False
         
         # Goal Reached
         if dist_to_goal < self.goal_threshold:
