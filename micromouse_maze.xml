@@ -940,6 +940,10 @@
     <rangefinder name="RS" site="sensor_right_side" cutoff="0.15"/>
     <accelerometer name="Accel" site="accerometer"/>
     <gyro name="Gyro" site="gyro"/>
+    <jointpos name="left_encoder_pos" joint="left_wheel_joint"/>
+    <jointpos name="right_encoder_pos" joint="right_wheel_joint"/>
+    <jointvel name="left_encoder_vel" joint="left_wheel_joint"/>
+    <jointvel name="right_encoder_vel" joint="right_wheel_joint"/>
   </sensor>
   <contact>
     <exclude body1="mouse" body2="left_wheel"/>

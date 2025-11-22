@@ -1,2 +1,4 @@
 mujoco
 numpy
+gymnasium
+stable-baselines3
