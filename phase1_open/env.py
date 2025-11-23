@@ -151,8 +151,8 @@ class MicromouseEnv(gym.Env):
         info = {
             "target_lin": self.target_linear_velocity,
             "target_ang": self.target_angular_velocity,
-            "linear_vel": linear_vel,
-            "angular_vel": angular_vel
+            "actual_lin": linear_vel,
+            "actual_ang": angular_vel
         }
         
         if self.render_mode == "human":

@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<mujoco model="micromouse_16x16">
+<mujoco model="micromouse_3x3">
   <compiler angle="degree" coordinate="local" inertiafromgeom="true"/>
   <option timestep="0.001" gravity="0 0 -9.81"/>
   <visual>
@@ -23,7 +23,55 @@
   <worldbody>
     <geom name="floor" size="9 9 0.1" type="plane" material="mat_floor"/>
     <light diffuse=".5 .5 .5" pos="0 0 3" dir="0 0 -1"/>
-    <body name="mouse" pos="0 0 0.002" euler="0 0 90">
+    <geom name="post_0_0" type="box" size="0.006 0.006 0.025" pos="0.0 0.0 0.025" material="mat_post"/>
+    <geom name="post_0_1" type="box" size="0.006 0.006 0.025" pos="0.0 0.18 0.025" material="mat_post"/>
+    <geom name="post_0_2" type="box" size="0.006 0.006 0.025" pos="0.0 0.36 0.025" material="mat_post"/>
+    <geom name="post_0_3" type="box" size="0.006 0.006 0.025" pos="0.0 0.54 0.025" material="mat_post"/>
+    <geom name="post_1_0" type="box" size="0.006 0.006 0.025" pos="0.18 0.0 0.025" material="mat_post"/>
+    <geom name="post_1_1" type="box" size="0.006 0.006 0.025" pos="0.18 0.18 0.025" material="mat_post"/>
+    <geom name="post_1_2" type="box" size="0.006 0.006 0.025" pos="0.18 0.36 0.025" material="mat_post"/>
+    <geom name="post_1_3" type="box" size="0.006 0.006 0.025" pos="0.18 0.54 0.025" material="mat_post"/>
+    <geom name="post_2_0" type="box" size="0.006 0.006 0.025" pos="0.36 0.0 0.025" material="mat_post"/>
+    <geom name="post_2_1" type="box" size="0.006 0.006 0.025" pos="0.36 0.18 0.025" material="mat_post"/>
+    <geom name="post_2_2" type="box" size="0.006 0.006 0.025" pos="0.36 0.36 0.025" material="mat_post"/>
+    <geom name="post_2_3" type="box" size="0.006 0.006 0.025" pos="0.36 0.54 0.025" material="mat_post"/>
+    <geom name="post_3_0" type="box" size="0.006 0.006 0.025" pos="0.54 0.0 0.025" material="mat_post"/>
+    <geom name="post_3_1" type="box" size="0.006 0.006 0.025" pos="0.54 0.18 0.025" material="mat_post"/>
+    <geom name="post_3_2" type="box" size="0.006 0.006 0.025" pos="0.54 0.36 0.025" material="mat_post"/>
+    <geom name="post_3_3" type="box" size="0.006 0.006 0.025" pos="0.54 0.54 0.025" material="mat_post"/>
+    <geom name="v_wall_0_0" type="box" size="0.006 0.08399999999999999 0.025" pos="0.0 0.09 0.025" material="mat_wall"/>
+    <geom name="v_wall_top_0_0" type="box" size="0.006 0.08399999999999999 0.001" pos="0.0 0.09 0.05" material="mat_wall_top"/>
+    <geom name="v_wall_0_1" type="box" size="0.006 0.08399999999999999 0.025" pos="0.0 0.27 0.025" material="mat_wall"/>
+    <geom name="v_wall_top_0_1" type="box" size="0.006 0.08399999999999999 0.001" pos="0.0 0.27 0.05" material="mat_wall_top"/>
+    <geom name="v_wall_0_2" type="box" size="0.006 0.08399999999999999 0.025" pos="0.0 0.44999999999999996 0.025" material="mat_wall"/>
+    <geom name="v_wall_top_0_2" type="box" size="0.006 0.08399999999999999 0.001" pos="0.0 0.44999999999999996 0.05" material="mat_wall_top"/>
+    <geom name="v_wall_2_0" type="box" size="0.006 0.08399999999999999 0.025" pos="0.36 0.09 0.025" material="mat_wall"/>
+    <geom name="v_wall_top_2_0" type="box" size="0.006 0.08399999999999999 0.001" pos="0.36 0.09 0.05" material="mat_wall_top"/>
+    <geom name="v_wall_2_1" type="box" size="0.006 0.08399999999999999 0.025" pos="0.36 0.27 0.025" material="mat_wall"/>
+    <geom name="v_wall_top_2_1" type="box" size="0.006 0.08399999999999999 0.001" pos="0.36 0.27 0.05" material="mat_wall_top"/>
+    <geom name="v_wall_3_0" type="box" size="0.006 0.08399999999999999 0.025" pos="0.54 0.09 0.025" material="mat_wall"/>
+    <geom name="v_wall_top_3_0" type="box" size="0.006 0.08399999999999999 0.001" pos="0.54 0.09 0.05" material="mat_wall_top"/>
+    <geom name="v_wall_3_1" type="box" size="0.006 0.08399999999999999 0.025" pos="0.54 0.27 0.025" material="mat_wall"/>
+    <geom name="v_wall_top_3_1" type="box" size="0.006 0.08399999999999999 0.001" pos="0.54 0.27 0.05" material="mat_wall_top"/>
+    <geom name="v_wall_3_2" type="box" size="0.006 0.08399999999999999 0.025" pos="0.54 0.44999999999999996 0.025" material="mat_wall"/>
+    <geom name="v_wall_top_3_2" type="box" size="0.006 0.08399999999999999 0.001" pos="0.54 0.44999999999999996 0.05" material="mat_wall_top"/>
+    <geom name="h_wall_0_0" type="box" size="0.08399999999999999 0.006 0.025" pos="0.09 0.0 0.025" material="mat_wall"/>
+    <geom name="h_wall_top_0_0" type="box" size="0.08399999999999999 0.006 0.001" pos="0.09 0.0 0.05" material="mat_wall_top"/>
+    <geom name="h_wall_0_1" type="box" size="0.08399999999999999 0.006 0.025" pos="0.09 0.18 0.025" material="mat_wall"/>
+    <geom name="h_wall_top_0_1" type="box" size="0.08399999999999999 0.006 0.001" pos="0.09 0.18 0.05" material="mat_wall_top"/>
+    <geom name="h_wall_0_3" type="box" size="0.08399999999999999 0.006 0.025" pos="0.09 0.54 0.025" material="mat_wall"/>
+    <geom name="h_wall_top_0_3" type="box" size="0.08399999999999999 0.006 0.001" pos="0.09 0.54 0.05" material="mat_wall_top"/>
+    <geom name="h_wall_1_0" type="box" size="0.08399999999999999 0.006 0.025" pos="0.27 0.0 0.025" material="mat_wall"/>
+    <geom name="h_wall_top_1_0" type="box" size="0.08399999999999999 0.006 0.001" pos="0.27 0.0 0.05" material="mat_wall_top"/>
+    <geom name="h_wall_1_2" type="box" size="0.08399999999999999 0.006 0.025" pos="0.27 0.36 0.025" material="mat_wall"/>
+    <geom name="h_wall_top_1_2" type="box" size="0.08399999999999999 0.006 0.001" pos="0.27 0.36 0.05" material="mat_wall_top"/>
+    <geom name="h_wall_1_3" type="box" size="0.08399999999999999 0.006 0.025" pos="0.27 0.54 0.025" material="mat_wall"/>
+    <geom name="h_wall_top_1_3" type="box" size="0.08399999999999999 0.006 0.001" pos="0.27 0.54 0.05" material="mat_wall_top"/>
+    <geom name="h_wall_2_0" type="box" size="0.08399999999999999 0.006 0.025" pos="0.44999999999999996 0.0 0.025" material="mat_wall"/>
+    <geom name="h_wall_top_2_0" type="box" size="0.08399999999999999 0.006 0.001" pos="0.44999999999999996 0.0 0.05" material="mat_wall_top"/>
+    <geom name="h_wall_2_3" type="box" size="0.08399999999999999 0.006 0.025" pos="0.44999999999999996 0.54 0.025" material="mat_wall"/>
+    <geom name="h_wall_top_2_3" type="box" size="0.08399999999999999 0.006 0.001" pos="0.44999999999999996 0.54 0.05" material="mat_wall_top"/>
+    <body name="mouse" pos="0.09 0.09 0.002" euler="0 0 90">
       <freejoint name="root"/>
       <camera name="track" mode="trackcom" pos="0 0 0.8" xyaxes="0 -1 0 1 0 0" fovy="45"/>
       <geom name="mein_body1" type="box" size="0.05 0.03 0.0008" rgba="0.05 0.4 0.15 1" pos="0 0 0.002" mass="4.65e-3"/>

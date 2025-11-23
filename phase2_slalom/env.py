@@ -9,7 +9,7 @@ from stable_baselines3 import PPO
 class MicromouseSlalomEnv(gym.Env):
     metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 60}
 
-    def __init__(self, render_mode=None, xml_file="assets/micromouse_slalom.xml", model_path="models/phase1_open.zip", max_steps=2000):
+    def __init__(self, render_mode=None, xml_file="assets/micromouse_slalom.xml", model_path="models/phase1_open.zip", max_steps=40000):
         self.render_mode = render_mode
         self.max_steps = max_steps
         
@@ -58,10 +58,10 @@ class MicromouseSlalomEnv(gym.Env):
         
         # Low-Level Control Frequency Settings
         # Phase 1 trained with 5 simulation steps per action (200Hz control)
-        # High-Level Policy will run at 10Hz (100ms per step)
-        # So we need 20 Low-Level steps per 1 High-Level step.
-        # 20 * 5ms = 100ms
-        self.low_level_steps = 20
+        # High-Level Policy will run at 200Hz (5ms per step) to match Low-Level.
+        # So we need 1 Low-Level step per 1 High-Level step.
+        # 1 * 5ms = 5ms
+        self.low_level_steps = 1
         
         # For rendering
         self.render_fps = 60

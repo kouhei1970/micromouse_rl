@@ -24,8 +24,11 @@ def main():
     checkpoint_callback = CheckpointCallback(save_freq=10000, save_path='./outputs/phase2_slalom/checkpoints/', name_prefix='ppo_slalom')
     
     # Train
-    # 200k steps might be enough for this simple task since the low-level is already stable.
-    model.learn(total_timesteps=200000, callback=checkpoint_callback)
+    # 200k steps at 10Hz = 20,000s.
+    # At 200Hz, 200k steps = 1,000s.
+    # To get similar experience time, we need 20x steps = 4,000,000.
+    # Let's try 1,000,000 steps first (5,000s = 1.4 hours of sim time).
+    model.learn(total_timesteps=1000000, callback=checkpoint_callback)
     
     print("Training complete.")
     

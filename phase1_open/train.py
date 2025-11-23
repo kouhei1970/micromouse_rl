@@ -4,14 +4,18 @@ from stable_baselines3.common.callbacks import CheckpointCallback
 from stable_baselines3.common.monitor import Monitor
 import sys
 import os
+import datetime
 sys.path.append(os.getcwd())
 from phase1_open.env import MicromouseEnv
+from common.visualization import plot_learning_curve
 import numpy as np
 
 def main():
     # Create environment with Open Maze
     env = MicromouseEnv(render_mode=None, xml_file="assets/micromouse_open.xml")
-    env = Monitor(env, filename="logs/phase1_open")
+    log_dir = "logs/phase1_open"
+    os.makedirs(log_dir, exist_ok=True)
+    env = Monitor(env, filename=os.path.join(log_dir, "monitor"))
     
     # Instantiate the agent
     model_dir = "models"
@@ -29,12 +33,16 @@ def main():
     print("Starting training in Open Field...")
     # Train for sufficient steps to master velocity tracking
     checkpoint_callback = CheckpointCallback(save_freq=50000, save_path='./logs/', name_prefix='ppo_micromouse_open')
-    model.learn(total_timesteps=200000, callback=checkpoint_callback)
+    model.learn(total_timesteps=1000000, callback=checkpoint_callback)
     print("Training complete.")
     
     # Save the model
     model.save(model_path)
     print(f"Model saved to {model_path}")
+    
+    # Plot Learning Curve
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    plot_learning_curve(log_dir, f"outputs/phase1_open/learning_curve_{timestamp}.png")
     
     # Test the trained agent
     print("Testing trained agent...")
