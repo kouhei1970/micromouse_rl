@@ -151,34 +151,69 @@ class MicromouseSlalomEnv(gym.Env):
                 break
         
         # --- Calculate Reward & Check Termination ---
-        
+
         # Current state
         current_pos = self.data.qpos[0:2]
         dist_to_goal = np.linalg.norm(current_pos - self.goal_pos)
-            
+
+        # Get sensor distances for wall proximity
+        sensor_distances = self.data.sensordata[:4].copy()
+        sensor_distances[sensor_distances < 0] = 0.15
+        min_wall_dist = np.min(sensor_distances)
+
+        # Get current velocity
+        wheel_radius = 0.0135
+        left_vel = self.data.qvel[6] * wheel_radius
+        right_vel = self.data.qvel[7] * wheel_radius
+        linear_vel = (left_vel + right_vel) / 2.0
+
+        # Calculate heading to goal
+        dx = self.goal_pos[0] - current_pos[0]
+        dy = self.goal_pos[1] - current_pos[1]
+        angle_to_goal = np.arctan2(dy, dx)
+        q = self.data.qpos[3:7]
+        w, x, y, z = q
+        yaw = np.arctan2(2*(w*z + x*y), 1 - 2*(y*y + z*z))
+        heading_error = abs(angle_to_goal - yaw)
+        heading_error = min(heading_error, 2*np.pi - heading_error)  # 正規化
+
         # Reward Components
         r_goal = 0.0
         r_collision = 0.0
         r_progress = 0.0
-        r_time = -0.1
-        
-        # Goal Reached
+        r_wall_proximity = 0.0
+        r_heading = 0.0
+        r_velocity = 0.0
+        r_time = -0.01  # 時間ペナルティを軽減
+
+        # 1. Goal Reached（大きなボーナス）
         if dist_to_goal < self.goal_threshold:
-            r_goal = 100.0
+            r_goal = 500.0
             terminated = True
             print("Goal Reached!")
-            
-        # Collision
+
+        # 2. Collision（ペナルティを軽減）
         if collision:
-            r_collision = -100.0
+            r_collision = -20.0
             terminated = True
-            # print("Collision!")
-            
-        # Progress
-        r_progress = 10.0 * (self.last_distance - dist_to_goal)
+
+        # 3. Progress（ゴールに近づく報酬）
+        r_progress = 50.0 * (self.last_distance - dist_to_goal)
         self.last_distance = dist_to_goal
-        
-        reward = r_goal + r_collision + r_progress + r_time
+
+        # 4. Wall Proximity（壁に近いとペナルティ）
+        if min_wall_dist < 0.05:
+            r_wall_proximity = -2.0 * (0.05 - min_wall_dist) / 0.05
+
+        # 5. Heading（ゴール方向を向いている報酬）
+        # heading_errorが0に近いほど高い報酬
+        r_heading = 0.5 * (1.0 - heading_error / np.pi)
+
+        # 6. Velocity（前進している報酬）
+        if linear_vel > 0:
+            r_velocity = 0.3 * min(linear_vel, 0.5)  # 最大0.15
+
+        reward = r_goal + r_collision + r_progress + r_wall_proximity + r_heading + r_velocity + r_time
         
         if self.current_step >= self.max_steps:
             truncated = True
