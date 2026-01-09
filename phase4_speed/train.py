@@ -34,16 +34,20 @@ def main():
 
     model_path = "models/phase4_speed.zip"
 
+    # TensorBoardログディレクトリ
+    tensorboard_log = "logs/phase4_tensorboard"
+
     # 既存モデルがあれば継続訓練
     if os.path.exists(model_path):
         print(f"Loading existing model from {model_path} to continue training...")
-        model = PPO.load(model_path, env=env, verbose=1)
+        model = PPO.load(model_path, env=env, verbose=1, tensorboard_log=tensorboard_log)
     else:
         print("Creating NEW model for Phase 4 Speed Learning")
         model = PPO(
             "MlpPolicy",
             env,
             verbose=1,
+            tensorboard_log=tensorboard_log,
             learning_rate=3e-4,
             n_steps=2048,
             batch_size=64,

@@ -23,12 +23,15 @@ def main():
     model_name = "phase1_open"
     model_path = os.path.join(model_dir, f"{model_name}.zip")
     
+    # TensorBoardログディレクトリ
+    tensorboard_log = "logs/phase1_tensorboard"
+
     if os.path.exists(model_path):
         print(f"Loading existing model from {model_path} to continue training...")
-        model = PPO.load(model_path, env=env, verbose=1)
+        model = PPO.load(model_path, env=env, verbose=1, tensorboard_log=tensorboard_log)
     else:
         print("Creating NEW model for Open Field")
-        model = PPO("MlpPolicy", env, verbose=1)
+        model = PPO("MlpPolicy", env, verbose=1, tensorboard_log=tensorboard_log)
     
     print("Starting training in Open Field...")
     # Train for sufficient steps to master velocity tracking

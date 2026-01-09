@@ -1,6 +1,9 @@
 """
 Phase 4: ゴールマーカー付きデモ動画の作成
-MuJoCoのトップダウンカメラで撮影し、ゴール位置を赤いマーカーで表示
+MuJoCoのトップダウンカメラで撮影し、ゴール位置をMuJoCoネイティブマーカーで表示
+
+マーカーはMuJoCo XML内のジオメトリとして追加され、
+物理シミュレーションには影響を与えない（contype=0, conaffinity=0）
 """
 import os
 import sys
@@ -13,12 +16,17 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from stable_baselines3 import PPO
 from phase4_speed.env import MicromouseSpeedEnv
+from common.demo_xml_builder import (
+    generate_demo_xml,
+    update_marker_colors,
+    cleanup_demo_xml
+)
 
 
 class TopDownRenderer:
     """真上からのカメラでレンダリング"""
 
-    def __init__(self, model, data, width=800, height=800):
+    def __init__(self, model, data, width=800, height=800, maze_size=7):
         self.model = model
         self.data = data
         self.width = width
@@ -28,8 +36,8 @@ class TopDownRenderer:
         # カメラ設定（真上から）
         self.camera = mujoco.MjvCamera()
         self.camera.type = mujoco.mjtCamera.mjCAMERA_FREE
-        # 7x7迷路の中心 (0.63, 0.63)
-        maze_center = 7 * 0.18 / 2
+        # 迷路の中心
+        maze_center = maze_size * 0.18 / 2
         self.camera.lookat[:] = [maze_center, maze_center, 0]
         self.camera.distance = 2.0  # カメラ距離
         self.camera.azimuth = 90    # 方位角
@@ -41,45 +49,6 @@ class TopDownRenderer:
 
     def close(self):
         self.renderer.close()
-
-
-def world_to_pixel_topdown(world_pos, maze_size, img_size):
-    """ワールド座標をピクセル座標に変換（真上視点）"""
-    maze_extent = maze_size * 0.18
-    # ワールド座標 [0, maze_extent] → ピクセル座標 [0, img_size]
-    # カメラが中心を見ているので、適切にオフセット
-    margin = 0.15  # カメラの余白
-    scale = img_size[0] / (maze_extent + 2 * margin)
-
-    px = int((world_pos[0] + margin) * scale)
-    py = int(img_size[1] - (world_pos[1] + margin) * scale)  # Y軸反転
-
-    return (px, py)
-
-
-def draw_markers(frame, goal_pos, intermediate_pos, robot_pos, maze_size=7,
-                 intermediate_reached=False, goal_reached=False):
-    """フレームにマーカーを描画"""
-    h, w = frame.shape[:2]
-
-    # ゴールマーカー（赤）
-    goal_px = world_to_pixel_topdown(goal_pos, maze_size, (w, h))
-    color_goal = (0, 255, 0) if goal_reached else (0, 0, 255)  # 到達したら緑
-    cv2.circle(frame, goal_px, 20, color_goal, 3)
-    cv2.circle(frame, goal_px, 6, color_goal, -1)
-    label = "GOAL!" if goal_reached else "GOAL"
-    cv2.putText(frame, label, (goal_px[0] - 25, goal_px[1] - 25),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.5, color_goal, 2)
-
-    # 中間マーカー（オレンジ）
-    if intermediate_pos is not None:
-        int_px = world_to_pixel_topdown(intermediate_pos, maze_size, (w, h))
-        color_int = (0, 255, 0) if intermediate_reached else (0, 165, 255)
-        cv2.circle(frame, int_px, 12, color_int, 2)
-
-    # スタート位置への矢印（任意で追加可能）
-
-    return frame
 
 
 def draw_info_overlay(frame, step, speed, goal_dist, episode, total_reward,
@@ -148,9 +117,13 @@ def set_robot_orientation_toward_target(env, target_pos):
 
 def create_demo_video(model_path, output_path, num_episodes=3, max_steps=1000,
                       face_target=True):
-    """ゴールマーカー付きデモ動画を作成
+    """ゴールマーカー付きデモ動画を作成（MuJoCoネイティブマーカー版）
 
     Args:
+        model_path: 学習済みモデルのパス
+        output_path: 出力動画のパス
+        num_episodes: エピソード数
+        max_steps: 最大ステップ数
         face_target: Trueの場合、スポーン時に中間目標を向く
     """
 
@@ -167,11 +140,33 @@ def create_demo_video(model_path, output_path, num_episodes=3, max_steps=1000,
 
     frames = []
     renderer = None
+    demo_xml_path = None
 
     for episode in range(num_episodes):
         obs, _ = env.reset()
         total_reward = 0
         goal_reached = False
+
+        # 以前のデモXMLをクリーンアップ
+        if demo_xml_path:
+            cleanup_demo_xml(demo_xml_path)
+
+        # マーカー付きデモ用XMLを生成
+        demo_xml_path = generate_demo_xml(
+            source_xml_path=env.xml_file,
+            goal_cell=env.goal_cell,
+            intermediate_cell=env.intermediate_cell,
+            cell_size=0.18
+        )
+
+        # デモ用モデルをロード
+        demo_model = mujoco.MjModel.from_xml_path(demo_xml_path)
+        demo_data = mujoco.MjData(demo_model)
+
+        # 環境からデモモデルに状態をコピー
+        demo_data.qpos[:] = env.data.qpos[:]
+        demo_data.qvel[:] = env.data.qvel[:]
+        mujoco.mj_forward(demo_model, demo_data)
 
         # デモ時は中間目標を向くように設定
         if face_target and env.intermediate_cell is not None:
@@ -180,6 +175,9 @@ def create_demo_video(model_path, output_path, num_episodes=3, max_steps=1000,
                 env.intermediate_cell[1] * 0.18 + 0.09
             ])
             direction = set_robot_orientation_toward_target(env, target_pos)
+            # デモモデルにも反映
+            demo_data.qpos[:] = env.data.qpos[:]
+            mujoco.mj_forward(demo_model, demo_data)
             # 観測を更新
             obs = env._get_obs()
         else:
@@ -188,16 +186,7 @@ def create_demo_video(model_path, output_path, num_episodes=3, max_steps=1000,
         # レンダラーを作成/更新
         if renderer is not None:
             renderer.close()
-        renderer = TopDownRenderer(env.model, env.data)
-
-        # ゴール位置と中間位置
-        goal_pos = env.goal_pos
-        intermediate_pos = None
-        if env.intermediate_cell is not None:
-            intermediate_pos = np.array([
-                env.intermediate_cell[0] * 0.18 + 0.09,
-                env.intermediate_cell[1] * 0.18 + 0.09
-            ])
+        renderer = TopDownRenderer(demo_model, demo_data, maze_size=7)
 
         print(f"\nEpisode {episode + 1}:")
         print(f"  Start: {env.start_cell} ({direction})")
@@ -209,26 +198,27 @@ def create_demo_video(model_path, output_path, num_episodes=3, max_steps=1000,
             obs, reward, terminated, truncated, info = env.step(action)
             total_reward += reward
 
+            # 環境の状態をデモデータに同期
+            demo_data.qpos[:] = env.data.qpos[:]
+            demo_data.qvel[:] = env.data.qvel[:]
+            mujoco.mj_forward(demo_model, demo_data)
+
             # 正しいゴール判定: 距離が閾値以下
             if info['dist_to_goal'] < 0.05:
                 goal_reached = True
+
+            # マーカー色を動的に更新
+            update_marker_colors(
+                demo_model,
+                goal_reached=goal_reached,
+                intermediate_reached=env.intermediate_reached
+            )
 
             # フレームをレンダリング
             frame = renderer.render()
             frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
 
-            # ロボット位置
-            robot_pos = env.data.qpos[0:2]
-
-            # マーカーを描画
-            frame = draw_markers(
-                frame, goal_pos, intermediate_pos, robot_pos,
-                maze_size=7,
-                intermediate_reached=env.intermediate_reached,
-                goal_reached=goal_reached
-            )
-
-            # 情報オーバーレイ
+            # 情報オーバーレイ（テキストのみ）
             frame = draw_info_overlay(
                 frame, step, info['actual_lin'], info['dist_to_goal'],
                 episode + 1, total_reward,
@@ -251,6 +241,10 @@ def create_demo_video(model_path, output_path, num_episodes=3, max_steps=1000,
     if renderer is not None:
         renderer.close()
     env.close()
+
+    # 一時XMLをクリーンアップ
+    if demo_xml_path:
+        cleanup_demo_xml(demo_xml_path)
 
     # 動画を保存
     print(f"\nSaving video to {output_path}...")

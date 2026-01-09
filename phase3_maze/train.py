@@ -34,16 +34,20 @@ def main():
 
     model_path = "models/phase3_maze.zip"
 
+    # TensorBoardログディレクトリ
+    tensorboard_log = "logs/phase3_tensorboard"
+
     # Check if model exists for continued training
     if os.path.exists(model_path):
         print(f"Loading existing model from {model_path} to continue training...")
-        model = PPO.load(model_path, env=env, verbose=1)
+        model = PPO.load(model_path, env=env, verbose=1, tensorboard_log=tensorboard_log)
     else:
         print("Creating NEW model for Phase 3 Maze Navigation")
         model = PPO(
             "MlpPolicy",
             env,
             verbose=1,
+            tensorboard_log=tensorboard_log,
             learning_rate=3e-4,
             n_steps=2048,
             batch_size=64,
