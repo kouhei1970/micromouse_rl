@@ -11,3 +11,4 @@
 ## 目次
 
 - [note_001: 研究プログラム発足 — 現状監査と憲章制定](note_001_program_kickoff.md)
+- [note_002: 関連研究調査 — 新規性の評価](note_002_related_work.md)
