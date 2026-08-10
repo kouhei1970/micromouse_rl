@@ -305,6 +305,108 @@
       "e_structural": 0,
       "d_true_med": 72.0,
       "dir": "/Users/kouhei/tmp/github/micromouse_rl/competition/results/exp007/contest_reference/l0c_slalom_20260811_074936"
+    },
+    {
+      "arm": "eval_v2_short",
+      "policy": "adachi_classical",
+      "n": 20,
+      "a": 1.0,
+      "b": 1.0,
+      "c": 0.6,
+      "d_med": 22.85999999972411,
+      "d_min": 15.13000000001027,
+      "d_max": 34.989999999172596,
+      "e_med": 1.0007522227712582,
+      "e_undef": 0,
+      "explore": 28.31499999997885,
+      "per_cell": 1.1505397727164173,
+      "nruns_med": 5.0,
+      "nruns_max": 5,
+      "imp_med": 0.16396624837972734,
+      "imp_p25": 0.042685689994177795,
+      "imp_p75": 0.4187622784566327,
+      "imp_max": 0.6940650308311856,
+      "imp_n": 20,
+      "after_med": 4.0,
+      "after_min": 4,
+      "after_max": 4,
+      "n_after_eq1": 0,
+      "gap_med": 27.37499999935268,
+      "gap_max": 101.46000000042712,
+      "e_fixed_med": 1.0007522227712582,
+      "e_fixed_max": 1.0033769523036795,
+      "e_fixed_n": 20,
+      "e_structural": 0,
+      "d_true_med": 20.0,
+      "dir": "/Users/kouhei/tmp/github/micromouse_rl/competition/results/exp007/eval_v2_short/adachi_classical_20260811_080633"
+    },
+    {
+      "arm": "eval_v2_short",
+      "policy": "l0b_straightrun",
+      "n": 20,
+      "a": 1.0,
+      "b": 1.0,
+      "c": 0.85,
+      "d_med": 17.199999999835853,
+      "d_min": 10.370000000049515,
+      "d_max": 28.169999999333868,
+      "e_med": 1.180617344041297,
+      "e_undef": 0,
+      "explore": 22.829999999991745,
+      "per_cell": 0.8644374999917712,
+      "nruns_med": 5.0,
+      "nruns_max": 5,
+      "imp_med": 0.23128158927549053,
+      "imp_p25": 0.1342495904070099,
+      "imp_p75": 0.4285511019141439,
+      "imp_max": 0.7125518512902087,
+      "imp_n": 20,
+      "after_med": 4.0,
+      "after_min": 4,
+      "after_max": 4,
+      "n_after_eq1": 0,
+      "gap_med": 21.114999999800688,
+      "gap_max": 49.990000000183485,
+      "e_fixed_med": 1.180617344041297,
+      "e_fixed_max": 3.0799309949121487,
+      "e_fixed_n": 20,
+      "e_structural": 0,
+      "d_true_med": 20.0,
+      "dir": "/Users/kouhei/tmp/github/micromouse_rl/competition/results/exp007/eval_v2_short/l0b_straightrun_20260811_080633"
+    },
+    {
+      "arm": "eval_v2_short",
+      "policy": "l0c_slalom",
+      "n": 20,
+      "a": 1.0,
+      "b": 1.0,
+      "c": 1.0,
+      "d_med": 4.420000000021105,
+      "d_min": 3.100000000014802,
+      "d_max": 6.310000000030129,
+      "e_med": 1.5008382285776247,
+      "e_undef": 0,
+      "explore": 7.779999999998585,
+      "per_cell": 0.22576086956629537,
+      "nruns_med": 5.0,
+      "nruns_max": 5,
+      "imp_med": 0.44489833496850295,
+      "imp_p25": 0.309412493397478,
+      "imp_p75": 0.6578694817642785,
+      "imp_max": 0.7892736486475516,
+      "imp_n": 20,
+      "after_med": 4.0,
+      "after_min": 4,
+      "after_max": 4,
+      "n_after_eq1": 0,
+      "gap_med": 8.7750000000419,
+      "gap_max": 20.429999999971642,
+      "e_fixed_med": 1.5008382285776247,
+      "e_fixed_max": 3.838445807754628,
+      "e_fixed_n": 20,
+      "e_structural": 0,
+      "d_true_med": 20.0,
+      "dir": "/Users/kouhei/tmp/github/micromouse_rl/competition/results/exp007/eval_v2_short/l0c_slalom_20260811_080633"
     }
   ],
   "per_maze": {
@@ -1020,6 +1122,252 @@
       "maze_16MM2021H_Kansai": {
         "best_time": 12.409999999706542,
         "d_true": 58
+      }
+    },
+    "eval_v2_short/adachi_classical": {
+      "maze_1000": {
+        "best_time": 18.85999999955402,
+        "d_true": 19
+      },
+      "maze_1001": {
+        "best_time": 34.989999999172596,
+        "d_true": 26
+      },
+      "maze_1002": {
+        "best_time": 22.719999999462743,
+        "d_true": 22
+      },
+      "maze_1003": {
+        "best_time": 30.01999999929012,
+        "d_true": 25
+      },
+      "maze_1004": {
+        "best_time": 28.85999999931755,
+        "d_true": 21
+      },
+      "maze_1005": {
+        "best_time": 18.410000000087905,
+        "d_true": 16
+      },
+      "maze_1006": {
+        "best_time": 17.989999999574593,
+        "d_true": 19
+      },
+      "maze_1007": {
+        "best_time": 23.859999999435786,
+        "d_true": 20
+      },
+      "maze_1008": {
+        "best_time": 23.86999999943555,
+        "d_true": 20
+      },
+      "maze_1009": {
+        "best_time": 16.670000000005988,
+        "d_true": 16
+      },
+      "maze_1010": {
+        "best_time": 15.13000000001027,
+        "d_true": 15
+      },
+      "maze_1011": {
+        "best_time": 22.729999999991865,
+        "d_true": 20
+      },
+      "maze_1012": {
+        "best_time": 20.999999999503416,
+        "d_true": 16
+      },
+      "maze_1013": {
+        "best_time": 23.99000000011455,
+        "d_true": 19
+      },
+      "maze_1014": {
+        "best_time": 27.759999999980142,
+        "d_true": 23
+      },
+      "maze_1015": {
+        "best_time": 25.309999999401498,
+        "d_true": 22
+      },
+      "maze_1016": {
+        "best_time": 22.98999999945636,
+        "d_true": 20
+      },
+      "maze_1017": {
+        "best_time": 19.950000000095258,
+        "d_true": 17
+      },
+      "maze_1018": {
+        "best_time": 23.689999999439806,
+        "d_true": 21
+      },
+      "maze_1019": {
+        "best_time": 20.569999999513584,
+        "d_true": 19
+      }
+    },
+    "eval_v2_short/l0b_straightrun": {
+      "maze_1000": {
+        "best_time": 12.630000000060306,
+        "d_true": 19
+      },
+      "maze_1001": {
+        "best_time": 28.169999999333868,
+        "d_true": 26
+      },
+      "maze_1002": {
+        "best_time": 15.579999999631582,
+        "d_true": 22
+      },
+      "maze_1003": {
+        "best_time": 22.70999999946298,
+        "d_true": 25
+      },
+      "maze_1004": {
+        "best_time": 23.539999999443353,
+        "d_true": 21
+      },
+      "maze_1005": {
+        "best_time": 13.750000000065654,
+        "d_true": 16
+      },
+      "maze_1006": {
+        "best_time": 11.580000000055293,
+        "d_true": 19
+      },
+      "maze_1007": {
+        "best_time": 18.079999999672495,
+        "d_true": 20
+      },
+      "maze_1008": {
+        "best_time": 18.090000000086377,
+        "d_true": 20
+      },
+      "maze_1009": {
+        "best_time": 11.710000000055913,
+        "d_true": 16
+      },
+      "maze_1010": {
+        "best_time": 10.370000000049515,
+        "d_true": 15
+      },
+      "maze_1011": {
+        "best_time": 17.38999999958878,
+        "d_true": 20
+      },
+      "maze_1012": {
+        "best_time": 16.859999999601314,
+        "d_true": 16
+      },
+      "maze_1013": {
+        "best_time": 18.849999999554257,
+        "d_true": 19
+      },
+      "maze_1014": {
+        "best_time": 21.09999999950105,
+        "d_true": 23
+      },
+      "maze_1015": {
+        "best_time": 18.709999999557567,
+        "d_true": 22
+      },
+      "maze_1016": {
+        "best_time": 17.070000000081507,
+        "d_true": 20
+      },
+      "maze_1017": {
+        "best_time": 15.069999999643642,
+        "d_true": 17
+      },
+      "maze_1018": {
+        "best_time": 17.3299999995902,
+        "d_true": 21
+      },
+      "maze_1019": {
+        "best_time": 14.680000000070095,
+        "d_true": 19
+      }
+    },
+    "eval_v2_short/l0c_slalom": {
+      "maze_1000": {
+        "best_time": 3.4500000000164732,
+        "d_true": 19
+      },
+      "maze_1001": {
+        "best_time": 6.310000000030129,
+        "d_true": 26
+      },
+      "maze_1002": {
+        "best_time": 4.400000000021009,
+        "d_true": 22
+      },
+      "maze_1003": {
+        "best_time": 5.780000000027599,
+        "d_true": 25
+      },
+      "maze_1004": {
+        "best_time": 5.1900000000247815,
+        "d_true": 21
+      },
+      "maze_1005": {
+        "best_time": 3.6000000000171894,
+        "d_true": 16
+      },
+      "maze_1006": {
+        "best_time": 3.3500000000159957,
+        "d_true": 19
+      },
+      "maze_1007": {
+        "best_time": 4.659999999990026,
+        "d_true": 20
+      },
+      "maze_1008": {
+        "best_time": 4.5900000000219165,
+        "d_true": 20
+      },
+      "maze_1009": {
+        "best_time": 3.290000000001637,
+        "d_true": 16
+      },
+      "maze_1010": {
+        "best_time": 3.100000000014802,
+        "d_true": 15
+      },
+      "maze_1011": {
+        "best_time": 4.890000000023349,
+        "d_true": 20
+      },
+      "maze_1012": {
+        "best_time": 3.8700000000184787,
+        "d_true": 16
+      },
+      "maze_1013": {
+        "best_time": 4.400000000021009,
+        "d_true": 19
+      },
+      "maze_1014": {
+        "best_time": 5.210000000024877,
+        "d_true": 23
+      },
+      "maze_1015": {
+        "best_time": 4.9900000000238265,
+        "d_true": 22
+      },
+      "maze_1016": {
+        "best_time": 4.4400000000212,
+        "d_true": 20
+      },
+      "maze_1017": {
+        "best_time": 3.810000000018192,
+        "d_true": 17
+      },
+      "maze_1018": {
+        "best_time": 4.5500000000217256,
+        "d_true": 21
+      },
+      "maze_1019": {
+        "best_time": 3.780000000018049,
+        "d_true": 19
       }
     }
   }
