@@ -2527,14 +2527,32 @@ def test_14_contact_health(params, xml_dir, D):
     ok_pen = max_pen_3 < 0.006
     checks.append(dict(name="max_penetration_v3", expected="<6mm", actual=max_pen_3, tol="-", ok=ok_pen))
 
+    # すり抜け掃引の速度は「公称 v_max の 1.5 倍」を維持する（教授裁定 2026-08-10）。
+    # 1.5 倍は、学習方策が予期せぬ挙動（衝突反動・片輪浮上・限界を突く走り）をしても
+    # 壁をすり抜けないことの担保。r2 時代は v_max=3.26 に対し 5.0 m/s（1.53 倍）だったが、
+    # r3 のモータ変更で v_max=3.84 に上がり 1.30 倍へ縮んでいたため引き上げる。
+    # v_max はモデル読込値から実行時導出する（ハードコード禁止の原則）。
+    # 静的接地からキャスタ法線力と実効摩擦を実測して v_max を導出する
+    # （静的検査 S1/S2 と同じ手法。数値ハードコードなし）
+    _sim_vm = MouseSim(str(Path(xml_dir) / "open_floor.xml"), params=params)
+    _h_vm = get_handles(_sim_vm.model)
+    _sim_vm.full_reset(cell=(0, 0), heading_deg=0)
+    settle_contact(_sim_vm.model, _sim_vm.data, _h_vm)
+    _loads = measure_contacts(_sim_vm.model, _sim_vm.data, _h_vm)
+    _mu_c = (_loads.mu_caster if _loads.mu_caster is not None
+             else parse_mu_caster(params))
+    v_max_nominal = (2.0 * D.gainprm0 * D.voltage_limit / D.r - 2.0 * D.tau_c / D.r
+                     - _mu_c * _loads.N_caster) / D.c_eff
+    v_sweep = 1.5 * v_max_nominal
     tunnel_any = False
     max_pen_5 = 0.0
     for phase in range(21):
-        pen5, tun = build_and_run(5.0, phase)
+        pen5, tun = build_and_run(v_sweep, phase)
         max_pen_5 = max(max_pen_5, pen5)
         tunnel_any = tunnel_any or tun
     ok_tunnel = not tunnel_any
-    checks.append(dict(name="tunneling_v5", expected=False, actual=tunnel_any, tol="-", ok=ok_tunnel))
+    checks.append(dict(name="tunneling_v_1_5x_vmax", expected=False, actual=tunnel_any,
+                        tol=f"v_sweep={v_sweep:.2f} m/s (=1.5x v_max {v_max_nominal:.2f})", ok=ok_tunnel))
 
     ok, msg = _finish("ContactHealth_wall_penetration", checks,
                        calib=dict(max_pen_3=max_pen_3, max_pen_5=max_pen_5))
