@@ -44,10 +44,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## セッション再開手順
 
-1. `git log -5 --oneline` と直近コミットの Next steps を確認
-2. `research_notes/` の最新ノートを読む
-3. `git status` で未コミット変更を確認（学生セッションの作業中ファイルの可能性あり — 勝手に消さない・コミットしない）
-4. 役割が不明なら、まず教授セッション宛て（ListAgents で確認）に SendMessage で確認
+1. **自分の引き継ぎメモ `handover/<役割>.md` を読む**（規約は `docs/SESSION_HANDOVER.md`）
+2. `git log -5 --oneline` と直近コミットの Next steps を確認
+3. `research_notes/` の最新ノートを読む
+4. `git status` で未コミット変更を確認（他セッションの作業中ファイルの可能性あり — 勝手に消さない・コミットしない）
+5. 役割が不明なら、まず教授セッション宛て（ListAgents で確認）に SendMessage で確認
+
+## 引き継ぎメモの維持（必須）
+
+長時間稼働すると動作が重くなり作業途中で停止することがあるため、**定期的にまとめてセッションを入れ替える**運用とする。各セッションは `handover/<役割>.md` に現況（進行中タスク・未コミット変更・直近の裁定・詰まっている点・次にやること）を**常時維持**すること。更新の契機はコミット時・作業の区切り・**中断するとき**。詳細は `docs/SESSION_HANDOVER.md`。
 
 ## 環境
 
