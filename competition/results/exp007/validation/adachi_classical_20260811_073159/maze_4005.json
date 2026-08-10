@@ -1,0 +1,68 @@
+{
+  "maze_id": "maze_4005",
+  "seed": 4005,
+  "policy": {
+    "name": "adachi_classical",
+    "requires_privileged": true
+  },
+  "protocol": {
+    "time_budget": 420.0,
+    "max_runs": 5,
+    "control_hz": 100,
+    "collision_force_threshold": 1.0,
+    "stuck_window_s": 20.0,
+    "stuck_disp_m": 0.05,
+    "protocol_version": "frontedge-23d004d"
+  },
+  "runs": [
+    {
+      "index": 1,
+      "t_start": 0.22000000000000017,
+      "t_end": 79.3600000001969,
+      "run_time": 79.1400000001969,
+      "outcome": "goal",
+      "max_progress_cells": 54,
+      "path_length_m": 10.899212149969028,
+      "collision_pos": null,
+      "visited_cells": 60,
+      "path_efficiency": 1.1213181224247972
+    },
+    {
+      "index": 2,
+      "t_start": 156.01999999976655,
+      "t_end": 223.9799999981595,
+      "run_time": 67.95999999839296,
+      "outcome": "goal",
+      "max_progress_cells": 54,
+      "path_length_m": 9.482658329830619,
+      "collision_pos": null,
+      "visited_cells": 54,
+      "path_efficiency": 0.9755821326986235
+    },
+    {
+      "index": 3,
+      "t_start": 295.4199999964702,
+      "t_end": 363.3499999948639,
+      "run_time": 67.92999999839367,
+      "outcome": "goal",
+      "max_progress_cells": 54,
+      "path_length_m": 9.475955544941376,
+      "collision_pos": null,
+      "visited_cells": 54,
+      "path_efficiency": 0.9748925457758619
+    }
+  ],
+  "incidents": [],
+  "best_time": 67.92999999839367,
+  "success": true,
+  "kpi": {
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 79.1400000001969,
+    "fast_time": 67.92999999839367,
+    "improvement_ratio": 0.14164771293625655,
+    "first_fast_time": 67.95999999839296,
+    "first_fast_efficiency": 1.0004416310908288
+  }
+}

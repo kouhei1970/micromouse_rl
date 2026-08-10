@@ -1,0 +1,99 @@
+{
+  "purpose": "評価帯の妥当性を測るための参照。**評価帯ではない**（マイルストーン判定に使わない）",
+  "selection": "competition/reference_mazes/contest/ のうち ゴールが中央2x2 かつ D_true が窓[45,110]内",
+  "n": 18,
+  "mazes": [
+    {
+      "npz": "maze_16MM2012CX.npz",
+      "source": "16MM2012CX.maze",
+      "d_true": 69
+    },
+    {
+      "npz": "maze_16MM2013CX.npz",
+      "source": "16MM2013CX.maze",
+      "d_true": 105
+    },
+    {
+      "npz": "maze_16MM2014CX.npz",
+      "source": "16MM2014CX.maze",
+      "d_true": 104
+    },
+    {
+      "npz": "maze_16MM2015CX.npz",
+      "source": "16MM2015CX.maze",
+      "d_true": 85
+    },
+    {
+      "npz": "maze_16MM2015C_Chubu.npz",
+      "source": "16MM2015C_Chubu.maze",
+      "d_true": 54
+    },
+    {
+      "npz": "maze_16MM2016CX.npz",
+      "source": "16MM2016CX.maze",
+      "d_true": 74
+    },
+    {
+      "npz": "maze_16MM2016C_Chubu.npz",
+      "source": "16MM2016C_Chubu.maze",
+      "d_true": 85
+    },
+    {
+      "npz": "maze_16MM2016C_Kyushu.npz",
+      "source": "16MM2016C_Kyushu.maze",
+      "d_true": 63
+    },
+    {
+      "npz": "maze_16MM2017CX.npz",
+      "source": "16MM2017CX.maze",
+      "d_true": 99
+    },
+    {
+      "npz": "maze_16MM2017CX_pre.npz",
+      "source": "16MM2017CX_pre.maze",
+      "d_true": 47
+    },
+    {
+      "npz": "maze_16MM2017C_East.npz",
+      "source": "16MM2017C_East.maze",
+      "d_true": 70
+    },
+    {
+      "npz": "maze_16MM2017C_student.npz",
+      "source": "16MM2017C_student.maze",
+      "d_true": 103
+    },
+    {
+      "npz": "maze_16MM2018CX.npz",
+      "source": "16MM2018CX.maze",
+      "d_true": 84
+    },
+    {
+      "npz": "maze_16MM2018C_student.npz",
+      "source": "16MM2018C_student.maze",
+      "d_true": 48
+    },
+    {
+      "npz": "maze_16MM2019CX.npz",
+      "source": "16MM2019CX.maze",
+      "d_true": 75
+    },
+    {
+      "npz": "maze_16MM2019C_student.npz",
+      "source": "16MM2019C_student.maze",
+      "d_true": 60
+    },
+    {
+      "npz": "maze_16MM2020C_student.npz",
+      "source": "16MM2020C_student.maze",
+      "d_true": 70
+    },
+    {
+      "npz": "maze_16MM2021H_Kansai.npz",
+      "source": "16MM2021H_Kansai.maze",
+      "d_true": 58
+    }
+  ],
+  "provenance": "kerikun11/micromouse-maze-data (MIT, (c) 2020 Ryotaro Onuki), commit 762ed2b6。詳細は competition/reference_mazes/README.md",
+  "note": "ファイル名を maze_<面名>.npz にしてあるのは、評価器 evaluate_all が maze_*.npz しか拾わないため。中身は competition/reference_mazes/contest/ の contest_<面名>.npz と同一（seed=-1、start/goals のメタデータ付き）"
+}
