@@ -93,8 +93,12 @@ class MouseMazeEnvV2(gym.Env):
 
         # action: Box(-1,1,(2,)) -> ×3.0 で電圧
         self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(2,), dtype=np.float32)
-        # observation: Box(-inf,inf,(14,))
-        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(14,), dtype=np.float32)
+        # observation: 次元は MouseSim の観測（距離センサ本数 n + accel3 + gyro3 + 車輪2）
+        # に一致させる。r6 でセンサが 6→4 本になり 14→12 次元へ変わったため、
+        # 固定値ではなく実際の観測長から導出する（構成変更で API 契約が壊れるのを防ぐ）
+        obs_dim = int(self.sim.observation().shape[0])
+        self.observation_space = spaces.Box(low=-np.inf, high=np.inf,
+                                             shape=(obs_dim,), dtype=np.float32)
 
         self._step_count = 0
 
