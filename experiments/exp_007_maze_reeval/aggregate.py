@@ -90,6 +90,7 @@ def main():
                         if bt[m] is not None and D.get((arm, m))]
             # 面ごとの JSON から連続量を拾う（二値化した割合だけを見ない。教授指示）
             nruns, n_after, imp, gaps = [], [], [], []
+            e_valid, n_e_structural = [], 0
             for mf in sorted(glob.glob(os.path.join(os.path.dirname(p), "maze_*.json"))
                              + glob.glob(os.path.join(os.path.dirname(p), "contest_*.json"))):
                 jm = json.load(open(mf, encoding="utf-8"))
@@ -107,6 +108,18 @@ def main():
                 # 走行時間そのものではなく「走行時間 + 帰還時間」である
                 for a, b in zip(runs, runs[1:]):
                     gaps.append(b["t_start"] - a["t_end"])
+                # (e) の再定義（研究計画書 §2 修正・2026-08-11）:
+                #   (e) = 初回の最短走行タイム ÷ 探索後の走行の最良タイム。
+                #   **探索後にゴールした走行が 1 本しかない面では、初回＝最良なので
+                #   (e)=1.00 が構造的に確定し、測定になっていない。**そういう面は
+                #   未定義として除外し、件数を別に数える。
+                lg = [r for r in runs if gr and r["t_start"] > gr[0]["t_end"]
+                      and r["outcome"] == "goal" and r.get("run_time") is not None]
+                ev = jm["kpi"].get("first_fast_efficiency")
+                if len(lg) >= 2 and ev is not None:
+                    e_valid.append(ev)
+                elif len(lg) == 1:
+                    n_e_structural += 1
             rows.append(dict(
                 arm=arm, policy=pol, n=j["n_mazes"],
                 a=k["a_goal_reached"]["rate"], b=k["b_fast_run_done"]["rate"],
@@ -133,6 +146,9 @@ def main():
                 n_after_eq1=sum(1 for a in n_after if a == 1),
                 gap_med=float(np.median(gaps)) if gaps else None,
                 gap_max=float(np.max(gaps)) if gaps else None,
+                e_fixed_med=float(np.median(e_valid)) if e_valid else None,
+                e_fixed_max=float(np.max(e_valid)) if e_valid else None,
+                e_fixed_n=len(e_valid), e_structural=n_e_structural,
                 d_true_med=(float(np.median([D[(arm, m)] for m in bt if D.get((arm, m))]))
                             if bt else None),
                 dir=os.path.dirname(p),
@@ -180,8 +196,16 @@ def main():
               f"{fmt(r['after_med'], 0) + '(' + str(r['after_min']) + '〜' + str(r['after_max']) + ')':>17}"
               f"{str(r['n_after_eq1']) + '/' + str(r['n']):>11}"
               f"{fmt(r['gap_med'], 1, ' s'):>12}")
-    print("  ※ 探索後の走行が 1 回だけの面では (e) は自動的に 1.00 になり測定にならない")
     print("  ※ 帰還 = 走行と走行の間の時間（スタートへ戻る時間）。持ち時間はこれにも食われる")
+
+    print("\n【(e) の修正版】探索後にゴールした走行が 1 本の面は構造的に 1.00 になるので未定義に落とす")
+    print(f"{'腕':<34}{'方式':<32}{'(e) 評価器の値':>14}{'(e) 修正版':>12}{'最大':>8}"
+          f"{'有効 n':>8}{'構造的に1.00':>13}{'ゴール0本':>10}")
+    for r in rows:
+        n_none = r["n"] - r["e_fixed_n"] - r["e_structural"]
+        print(f"{ARMS[r['arm']]:<34}{POLICIES[r['policy']]:<32}"
+              f"{fmt(r['e_med'], 3):>14}{fmt(r['e_fixed_med'], 3):>12}"
+              f"{fmt(r['e_fixed_max'], 3):>8}{r['e_fixed_n']:>8}{r['e_structural']:>13}{n_none:>10}")
 
     print("\n【新旧比較】経路長が伸びたときのタイムの変化（同一方策・同一コード）")
     print(f"{'方式':<32}{'是正前 (d)':>12}{'是正後eval (d)':>16}{'倍率':>8}"
