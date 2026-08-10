@@ -60,6 +60,10 @@ def _run_one_trial(env: CorridorEnv, policy_fn, trial_seed: int) -> dict:
     sign_flips = [0, 0]
     outcome = None
     collision_flag = False
+    # 経路中心線からの横偏差（2026-08-10 追加。滑らかにしたぶん壁へ寄っていないかを見る）
+    lat_max = float(info.get("lateral_m", 0.0))
+    lat_sq_sum = float(info.get("lateral_m", 0.0)) ** 2
+    lat_count = 1
 
     while True:
         action = np.asarray(policy_fn(obs), dtype=np.float64).reshape(-1)
@@ -75,6 +79,10 @@ def _run_one_trial(env: CorridorEnv, policy_fn, trial_seed: int) -> dict:
         n_steps += 1
 
         obs, reward, terminated, truncated, info = env.step(action)
+        lat = float(info.get("lateral_m", 0.0))
+        lat_max = max(lat_max, lat)
+        lat_sq_sum += lat * lat
+        lat_count += 1
 
         if terminated or truncated:
             goal_flag = bool(info.get("goal"))
@@ -116,6 +124,8 @@ def _run_one_trial(env: CorridorEnv, policy_fn, trial_seed: int) -> dict:
         action_diff_rms=action_diff_rms,
         sign_flip_rate_left=sign_flip_rate_left,
         sign_flip_rate_right=sign_flip_rate_right,
+        lateral_max_m=lat_max,
+        lateral_rms_m=math.sqrt(lat_sq_sum / max(lat_count, 1)),
     )
 
 
@@ -185,6 +195,8 @@ def evaluate_corridor(policy_fn, course_dir=DEFAULT_COURSE_DIR, n_trials=DEFAULT
     diff_rms_list = [r["action_diff_rms"] for r in all_trials]
     flip_left_list = [r["sign_flip_rate_left"] for r in all_trials]
     flip_right_list = [r["sign_flip_rate_right"] for r in all_trials]
+    lat_max_list = [r["lateral_max_m"] for r in all_trials]
+    lat_rms_list = [r["lateral_rms_m"] for r in all_trials]
 
     summary = dict(
         n_courses=len(course_seeds),
@@ -199,6 +211,9 @@ def evaluate_corridor(policy_fn, course_dir=DEFAULT_COURSE_DIR, n_trials=DEFAULT
         action_diff_rms_mean=float(np.mean(diff_rms_list)) if diff_rms_list else None,
         sign_flip_rate_left_mean=float(np.mean(flip_left_list)) if flip_left_list else None,
         sign_flip_rate_right_mean=float(np.mean(flip_right_list)) if flip_right_list else None,
+        lateral_max_m_max=float(np.max(lat_max_list)) if lat_max_list else None,
+        lateral_max_m_mean=float(np.mean(lat_max_list)) if lat_max_list else None,
+        lateral_rms_m_mean=float(np.mean(lat_rms_list)) if lat_rms_list else None,
         deterministic=bool(deterministic),
         seed=int(seed),
         gamma=float(gamma),

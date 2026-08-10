@@ -74,6 +74,7 @@ import numpy as np
 from mouse.corridor_gen import (
     generate_course,
     initial_heading_deg,
+    lateral_deviation,
     path_cell_centers,
     path_cumulative_lengths,
     remaining_path_length,
@@ -350,6 +351,9 @@ class CorridorEnv(gym.Env):
         total = self._cum_lengths[-1]
         progress_m = total - remaining_m
         mean_speed = (progress_m / sim_time) if sim_time > 0 else 0.0
+        # 経路中心線からの横偏差 [m]（評価指標。2026-08-10 教授指示で追加）
+        x, y, _yaw = self.sim.privileged_pose()
+        lateral_m = lateral_deviation(self._path_centers, x, y)
         return {
             "course_seed": self.course["seed"],
             "n_cells": self.course["n_cells"],
@@ -359,6 +363,7 @@ class CorridorEnv(gym.Env):
             "goal": bool(goal),
             "sim_time": float(sim_time),
             "mean_speed": float(mean_speed),
+            "lateral_m": float(lateral_m),
         }
 
     # ------------------------------------------------------------------

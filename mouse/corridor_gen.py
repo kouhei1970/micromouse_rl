@@ -302,6 +302,36 @@ def remaining_path_length(centers, cum_lengths, x: float, y: float) -> float:
     return best_remaining
 
 
+def lateral_deviation(centers, x: float, y: float) -> float:
+    """現在位置 (x,y) の、経路中心線からの横偏差（垂直距離）[m] を返す。
+
+    経路のセル中心を結んだ折れ線に (x,y) を射影し、最も近い線分への垂線の長さを
+    返す（線分の外へは出ないよう t を [0,1] にクランプする）。符号は持たせない。
+
+    用途: exp_006 以降の評価指標（2026-08-10 教授指示）。行動を滑らかにしたぶん
+    機体が壁へ寄っていないかを見る。区画は 180 mm、機体幅は 72 mm なので、
+    中心線から片側 54 mm で壁に接触する計算になる（壁厚 12 mm を差し引くと 48 mm）。
+
+    注意: competition/baseline_*.py の kp_lateral が使う「横偏差」は制御用の
+    符号つき誤差であり、こちらは評価用の絶対値。定義が異なる。
+    """
+    best = None
+    for i in range(len(centers) - 1):
+        x0, y0 = centers[i]
+        x1, y1 = centers[i + 1]
+        seg_dx, seg_dy = x1 - x0, y1 - y0
+        seg_len_sq = seg_dx * seg_dx + seg_dy * seg_dy
+        if seg_len_sq < 1e-12:
+            t = 0.0
+        else:
+            t = ((x - x0) * seg_dx + (y - y0) * seg_dy) / seg_len_sq
+            t = min(max(t, 0.0), 1.0)
+        d = math.hypot(x - (x0 + t * seg_dx), y - (y0 + t * seg_dy))
+        if best is None or d < best:
+            best = d
+    return best
+
+
 def save_course(course: dict, out_dir, params: RobotParams = None):
     """course dict を npz + XML として out_dir に保存する。
     戻り値: (npz_path, xml_path)"""
