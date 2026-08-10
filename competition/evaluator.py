@@ -53,6 +53,7 @@ from collections import deque
 from datetime import datetime
 from pathlib import Path
 
+import mujoco
 import numpy as np
 
 from mouse.mjcf import build_maze_robot_xml
@@ -67,10 +68,119 @@ from mouse.sim import MouseSim
 #              ことができる」。300 秒は設定誤りで規定違反だった）。
 #             あわせて評価迷路を規定準拠版（ゴール入口1箇所・壁づたい走行不可・
 #             複数経路）へ差し替え（competition/maze_gen_v2.py）
-PROTOCOL_VERSION = "23d004d"
+#   frontedge = 計時の判定点を機体中心から**機体前端**へ変更（NTF 注意 8 の光軸
+#             「始点の区画と次の区画との境／終点の入口部分」に対応）。あわせて
+#             ゴール到達後は区画内で停止するまで走行を継続させる（計時は通過時刻で確定）。
+#             2026-08-10 ユーザ指摘「ゴール区画に入り切らないで終わっている」の是正
+PROTOCOL_VERSION = "frontedge-23d004d"
 DEFAULT_CELL_SIZE = 0.18
 DEFAULT_STUCK_WINDOW_S = 20.0
 DEFAULT_STUCK_DISP_M = 0.05
+# ゴール到達後、区画内で停止するまで走行を継続させる際の上限時間と停止判定速度
+GOAL_STOP_TIMEOUT_S = 5.0
+GOAL_STOP_SPEED_MPS = 0.02
+
+
+
+# ==========================================================================
+# 計時の判定点（機体前端）
+# ==========================================================================
+# NTF 規定「注意」8: 「光軸は水平であり、床面より 1cm の高さにある。位置：
+#   始点のセンサ 始点の区画と次の区画との境／終点のセンサ 終点の入口部分」
+# 実競技では**入口部分に張られた光軸を機体が遮った瞬間**に計時が切り替わる。
+# これは機体中心ではなく**機体の最前部（前端）**が境界を通過した瞬間である。
+# 2026-08-10 ユーザ指摘「ゴール区画に入り切らないで終わっている」を受けた是正。
+def front_offset(model, data, mouse_body_id) -> float:
+    """機体前端の機体座標 +x オフセット [m] を**モデルから導出**する。
+
+    mouse サブツリーの全 geom について AABB の 8 隅を機体座標へ写し、
+    +x 方向の最大値を取る（定数のハードコードは禁止 — 研究計画書の原則）。
+    姿勢に依らない幾何量なので評価開始時に一度だけ計算すればよい。
+    """
+    bodies = {mouse_body_id}
+    for b in range(model.nbody):
+        p = b
+        while p != 0:
+            p = model.body_parentid[p]
+            if p == mouse_body_id:
+                bodies.add(b)
+                break
+    bpos = data.xpos[mouse_body_id]
+    bmat = data.xmat[mouse_body_id].reshape(3, 3)
+    best = 0.0
+    for g in range(model.ngeom):
+        if model.geom_bodyid[g] not in bodies:
+            continue
+        c = data.geom_xpos[g]
+        R = data.geom_xmat[g].reshape(3, 3)
+        ctr, hs = model.geom_aabb[g][:3], model.geom_aabb[g][3:]
+        for sx in (-1, 1):
+            for sy in (-1, 1):
+                for sz in (-1, 1):
+                    world = c + R @ (ctr + np.array([sx * hs[0], sy * hs[1], sz * hs[2]]))
+                    local_x = float((bmat.T @ (world - bpos))[0])
+                    best = max(best, local_x)
+    return best
+
+
+def front_point(x: float, y: float, yaw: float, offset: float):
+    """機体中心 (x,y)・方位 yaw から、機体前端の世界座標 (x,y) を返す。"""
+    return x + offset * math.cos(yaw), y + offset * math.sin(yaw)
+
+
+def body_footprint(model, data, mouse_body_id):
+    """機体の平面上の外形（機体座標での x,y 範囲）を**モデルから導出**して
+    (x_min, x_max, y_min, y_max) を返す。
+
+    ゴール成立判定（機体全体がゴール区画の内側に入ったか）に使う。
+    front_offset と同じく AABB の 8 隅を機体座標へ写して包絡を取る
+    （寸法のハードコードは禁止 — r6 のセンサ本数不一致と同じ失敗を繰り返さないため）。
+    """
+    bodies = {mouse_body_id}
+    for b in range(model.nbody):
+        p = b
+        while p != 0:
+            p = model.body_parentid[p]
+            if p == mouse_body_id:
+                bodies.add(b)
+                break
+    bpos = data.xpos[mouse_body_id]
+    bmat = data.xmat[mouse_body_id].reshape(3, 3)
+    xs, ys = [], []
+    for g in range(model.ngeom):
+        if model.geom_bodyid[g] not in bodies:
+            continue
+        c = data.geom_xpos[g]
+        R = data.geom_xmat[g].reshape(3, 3)
+        ctr, hs = model.geom_aabb[g][:3], model.geom_aabb[g][3:]
+        for sx in (-1, 1):
+            for sy in (-1, 1):
+                for sz in (-1, 1):
+                    world = c + R @ (ctr + np.array([sx * hs[0], sy * hs[1], sz * hs[2]]))
+                    loc = bmat.T @ (world - bpos)
+                    xs.append(float(loc[0]))
+                    ys.append(float(loc[1]))
+    return min(xs), max(xs), min(ys), max(ys)
+
+
+def body_fully_inside(x: float, y: float, yaw: float, footprint, bounds) -> bool:
+    """機体全体が矩形 bounds=(x0,x1,y0,y1) の内側に完全に入っているか。
+
+    NTF 規定の運用（ユーザ教示 2026-08-10）: ゴールは
+    「先端がゴールセンサを通過 → タイム暫定確定」「機体全体がゴール区画に
+    完全に入る → 走行成立」の 2 段階。先端だけ入って引き返した走行は無効。
+    機体外形の 4 隅を姿勢で回転させて内包を判定する。
+    """
+    x0, x1, y0, y1 = bounds
+    fx0, fx1, fy0, fy1 = footprint
+    c, s = math.cos(yaw), math.sin(yaw)
+    for lx in (fx0, fx1):
+        for ly in (fy0, fy1):
+            wx = x + lx * c - ly * s
+            wy = y + lx * s + ly * c
+            if not (x0 <= wx < x1 and y0 <= wy < y1):
+                return False
+    return True
 
 
 # ==========================================================================
@@ -259,7 +369,7 @@ def maze_kpi(runs) -> dict:
       fast_time         最短走行タイム（(b) の走行のうち最速）[s]
       improvement_ratio 短縮率 = 1 - fast_time/explore_time（(b) 不成立なら None）
     """
-    goal_runs = [r for r in runs if r["outcome"] == "goal"]
+    goal_runs = [r for r in runs if r["outcome"] == "goal" and r.get("run_time") is not None]
     if not goal_runs:
         return {"goal_reached": False, "fast_run_done": False, "fast_run_effective": False,
                 "explore_time": None, "fast_time": None, "improvement_ratio": None}
@@ -391,8 +501,14 @@ class CompetitionEvaluator:
         run_count = 0
         cur = None  # 進行中の走行の作業変数（dict）
 
-        x, y, _yaw = sim.privileged_pose()
-        prev_in_start = in_start_region(x, y, cell_size)
+        # 計時の判定点は機体前端（NTF 注意 8 の光軸に対応）。オフセットはモデルから導出
+        mouse_bid = mujoco.mj_name2id(sim.model, mujoco.mjtObj.mjOBJ_BODY, "mouse")
+        f_off = front_offset(sim.model, sim.data, mouse_bid)
+        footprint = body_footprint(sim.model, sim.data, mouse_bid)
+        goal_bounds = goal_region_bounds(width, height, cell_size)
+        x, y, yaw = sim.privileged_pose()
+        fx, fy = front_point(x, y, yaw, f_off)
+        prev_in_start = in_start_region(fx, fy, cell_size)
         segment_start_t = sim.sim_time
         ring.push(sim.sim_time, x, y)
 
@@ -407,18 +523,22 @@ class CompetitionEvaluator:
             vl, vr = policy.act(obs)
             result = sim.step_control(float(vl), float(vr))
             t = result["sim_time"]
-            x, y, _yaw = sim.privileged_pose()
+            x, y, yaw = sim.privileged_pose()
             ring.push(t, x, y)
+            fx, fy = front_point(x, y, yaw, f_off)
 
-            in_start = in_start_region(x, y, cell_size)
-            in_goal = in_goal_region(x, y, width, height, cell_size)
+            in_start = in_start_region(fx, fy, cell_size)
+            in_goal = in_goal_region(fx, fy, width, height, cell_size)
             is_stuck, _disp = ring.check_stuck(t, x, y, segment_start_t, self.stuck_disp_m)
             time_up = t >= self.time_budget
 
             if state == "RUN_ACTIVE":
                 cur["path_len"] += math.hypot(x - cur["prev_xy"][0], y - cur["prev_xy"][1])
                 cur["prev_xy"] = (x, y)
-                cell = pos_to_cell(x, y, width, height, cell_size)
+                # 進捗セルの判定も**前端基準**に揃える（計時が前端通過で確定するため、
+                # 中心基準のままだと「ゴールしたのに進捗が 1 区画足りない」という
+                # 不整合が出る。2026-08-10 前端基準化に伴う整合）
+                cell = pos_to_cell(fx, fy, width, height, cell_size)
                 cur["visited"].add(cell)
                 cell_dist = dist_map.get(cell)
                 if cell_dist is not None and (cur["min_goal_dist"] is None or cell_dist < cur["min_goal_dist"]):
@@ -462,6 +582,44 @@ class CompetitionEvaluator:
                     cur = None
 
                     if outcome == "goal":
+                        # 【2 段階のゴール判定】（ユーザ教示 2026-08-10）
+                        #  ① 先端がゴールセンサ（入口）を通過 → タイムを暫定確定（上で記録済み）
+                        #  ② **機体全体がゴール区画の内側に完全に入る** → 走行成立
+                        #  ③ ②を満たさないまま区画を出た/時間切れ → 暫定タイムを破棄し失敗扱い
+                        # 成立後は実機と同じく区画内で停止するまで走行を継続する
+                        # （この間の時間は走行タイムに含めない）。
+                        stop_deadline = t + GOAL_STOP_TIMEOUT_S
+                        confirmed = body_fully_inside(x, y, yaw, footprint, goal_bounds)
+                        while sim.sim_time < stop_deadline and sim.sim_time < self.time_budget:
+                            res_s = sim.step_control(*(float(a) for a in policy.act(sim.observation())))
+                            gx_, gy_, gyaw_ = sim.privileged_pose()
+                            if not confirmed:
+                                confirmed = body_fully_inside(gx_, gy_, gyaw_, footprint, goal_bounds)
+                            v_fwd, _om = sim.privileged_velocity()
+                            if confirmed and abs(v_fwd) < GOAL_STOP_SPEED_MPS:
+                                break
+                            if res_s["collision"] or res_s["tipped"]:
+                                incidents.append({"t": res_s["sim_time"], "kind": "collision_in_goal",
+                                                   "pos": list(sim.privileged_pose()[:2])})
+                                break
+                        t = sim.sim_time
+                        if not confirmed:
+                            # ③ 機体全体が区画内に入らなかった → 暫定タイムを破棄し失敗に変更
+                            runs[-1]["outcome"] = "goal_not_contained"
+                            runs[-1]["run_time"] = None
+                            runs[-1]["t_end"] = t
+                            outcome = "goal_not_contained"
+                        x, y, yaw = sim.privileged_pose()
+                        fx, fy = front_point(x, y, yaw, f_off)
+                        in_start = in_start_region(fx, fy, cell_size)
+                        ring.push(t, x, y)
+                        if outcome == "goal_not_contained":
+                            # 失敗扱い → 係員回収してスタートへ戻す
+                            sim.reset_to_start(cell=(0, 0), heading_deg=90.0)
+                            policy.on_retrieval()
+                            x, y, yaw = sim.privileged_pose()
+                            fx, fy = front_point(x, y, yaw, f_off)
+                            in_start = True
                         state = "FREE"
                         segment_start_t = t
                         prev_in_start = in_start
@@ -472,7 +630,8 @@ class CompetitionEvaluator:
                     else:  # collision / tipover / stuck: 係員回収
                         sim.reset_to_start(cell=(0, 0), heading_deg=90.0)
                         policy.on_retrieval()
-                        x, y, _yaw = sim.privileged_pose()
+                        x, y, yaw = sim.privileged_pose()
+                        fx, fy = front_point(x, y, yaw, f_off)
                         state = "FREE"
                         prev_in_start = True
                         segment_start_t = t
@@ -492,7 +651,8 @@ class CompetitionEvaluator:
                     incidents.append({"t": t, "kind": incident_kind, "pos": [x, y]})
                     sim.reset_to_start(cell=(0, 0), heading_deg=90.0)
                     policy.on_retrieval()
-                    x, y, _yaw = sim.privileged_pose()
+                    x, y, yaw = sim.privileged_pose()
+                    fx, fy = front_point(x, y, yaw, f_off)
                     prev_in_start = True
                     segment_start_t = t
                 else:
@@ -530,7 +690,7 @@ class CompetitionEvaluator:
             policy.on_run_end("timeout")
             cur = None
 
-        goal_runs = [r for r in runs if r["outcome"] == "goal"]
+        goal_runs = [r for r in runs if r["outcome"] == "goal" and r.get("run_time") is not None]
         best_time = min((r["run_time"] for r in goal_runs), default=None)
         success = best_time is not None
 
