@@ -66,7 +66,16 @@ d_detect の見積り（bind_sim() で sim.params から導出。ハードコー
 v_cap でクリップされる（要求値がすでに上限未満ならそのまま）。
 
 **既定値 v_max=0.6 m/s は、この物理上限 0.857 m/s よりさらに保守的な整定値**
-（validation seed 4000-4002 での実測）。L0-a から流用した横偏差・方位PDの
+（validation seed 4000-4002 での実測）。
+
+> 【2026-08-10 是正】以下の「stuck が頻発する」記述は **kp_heading=3.0 を
+> 流用していた当時のもの**である。原因は下記のとおり「L0-a の低速向けゲインを
+> 速度2倍のまま使っていたこと」であり、kp_heading を速度に比例させて 6.0 に
+> 上げたことで、検証帯20面・100走行で**衝突0・スタック0**になった
+> （是正前は同条件でスタック7件）。v_max を物理上限まで詰められるかは未検証で、
+> 既定値は 0.6 のままにしてある（速度上限の再設定は別途の課題）。
+
+L0-a から流用した横偏差・方位PDの
 ゲイン（kp_heading/kp_lateral/kd_heading）は L0-a の低速（v_max=0.3）向けに
 調整されたものであり、v_max を物理上限近く（0.7〜0.8 m/s）まで上げると、
 1区画の急な台形加減速の終端で「方位偏差を戻すトルク」と「横偏差を戻す
@@ -132,7 +141,19 @@ class StraightRunPolicy(MousePolicy):
     def __init__(self,
                  v_max: float = 0.6, a_forward: float = 3.4, detect_margin: float = 0.6,
                  kp_turn: float = 8.0, kd_turn: float = 0.6, turn_omega_limit: float = 10.0,
-                 kp_heading: float = 3.0, kp_lateral: float = 8.0, kd_heading: float = 0.35,
+                 # 【2026-08-10 是正】kp_heading 3.0 -> 6.0。
+                 # 3.0 は L0-a の v_max=0.3 m/s 向けに調整された値をそのまま流用した
+                 # ものだったが、L0-b は v_max=0.6 m/s（2倍）で走る。方位偏差 e_psi が
+                 # 横位置に効く速さは v*e_psi なので、**同じ空間分解能で誤差を潰すには
+                 # 速度に比例した方位ゲインが要る**。速度が2倍なら kp_heading も2倍。
+                 # 検証帯 seed 4000-4019（20面・100走行）での実測:
+                 #   kp_heading= 3.0: 衝突0 / **スタック7** / 失敗率 7.0% / 探索中央 27.22s
+                 #   kp_heading= 6.0: 衝突0 /   スタック0   / 失敗率 0.0% / 探索中央 23.18s
+                 # kp_lateral・kd_heading はほぼ効かない（5面で 2.0〜8.0 / 0.35〜0.70 の
+                 # どれでも失敗率0%・タイム差 0.1s 未満）。感度はこの1つのゲインに集中する。
+                 # 「方式ごとに最適値が違う」のではなく「動作点（速度）が違えば必要な
+                 # ゲインが違う」。詳細は research_notes/note_007（層(2)）。
+                 kp_heading: float = 6.0, kp_lateral: float = 8.0, kd_heading: float = 0.35,
                  kp_wheel: float = 0.05,
                  turn_done_deg: float = 2.0, turn_done_gyro: float = 0.2,
                  forward_done_dist: float = 0.02, forward_done_speed: float = 0.05,
