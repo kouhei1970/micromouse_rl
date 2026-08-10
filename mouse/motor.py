@@ -1,7 +1,7 @@
 """
 mouse/motor.py
 ================
-DC モータ（Mabuchi FA-130RA-18100 相当、3V定格）+ 減速ギアの電気モデル。
+DC モータ（FAULHABER 1717T003SR、コアレス、3V定格。計画書 r3）+ 減速ギアの電気モデル。
 
 【参照実装であり、実行時のシミュレーションでは使用しない】
 実行時は MuJoCo の <general> アクチュエータ（電気項: gainprm/biasprm）+

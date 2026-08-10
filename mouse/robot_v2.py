@@ -104,6 +104,10 @@ def add_micromouse_v2(worldbody, actuator, sensor, contact,
     # （機能的に等価であることは実測確認済み）を撤去し、下記 <contact><pair> による
     # 明示指定に一本化する（<pair> は摩擦結合則より優先され、かつ静的検査（計画書 §7 S2）
     # が <pair> 前提のため）。geom 自体は無摩擦の設計意図を表す friction="0 0 0" のまま。
+    # r4（計画書コミット 360ab5b）: 3点接地化。前キャスターは接地、後キャスターは
+    # 静止時クリアランス 0.4mm のバンプストップ（後傾時のみ接地する安全ストッパ）。
+    # 4点接地では平面支持に必要な3点を超える冗長支持となり、接触ソルバの荷重配分が
+    # 走行中に振動する（静力学的不静定。検証スイート初回実行 8/14 の共通根因）。
     ET.SubElement(mouse_body, 'geom', {
         'name': 'caster_front', 'type': 'sphere', 'size': '0.002',
         'pos': '0.045 0 0.002', 'rgba': '0.5 0.5 0.5 1', 'friction': '0 0 0',
@@ -111,7 +115,8 @@ def add_micromouse_v2(worldbody, actuator, sensor, contact,
     })
     ET.SubElement(mouse_body, 'geom', {
         'name': 'caster_back', 'type': 'sphere', 'size': '0.002',
-        'pos': '-0.045 0 0.002', 'rgba': '0.5 0.5 0.5 1', 'friction': '0 0 0',
+        'pos': f'-0.045 0 {0.002 + params.caster_rear_clearance}',
+        'rgba': '0.5 0.5 0.5 1', 'friction': '0 0 0',
         'mass': str(params.mass_caster)
     })
 

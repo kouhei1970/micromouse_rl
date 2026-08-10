@@ -52,8 +52,25 @@ from common.output_manager import OutputManager
 # ======================================================================
 # 定数（計画書 §6 共通規約(v)。qacc 監視の2閾値のみ、ここに集約）
 # ======================================================================
-QACC_STRICT = 1.0e4   # rad/s^2: 接触過渡を含まない滑らか力学のテスト
 QACC_LOOSE = 1.0e6    # rad/s^2: 全テスト共通の数値発散検出（真の発散 6.6e7 級を検出）
+
+
+def qacc_strict_limit(params=None):
+    """滑らか力学テスト用の厳格 qacc 閾値 [rad/s^2]（計画書 r4、コミット 360ab5b）。
+
+    r4 で固定値 1e4 を廃止し「解析起動過渡の 2 倍」の実行時導出へ変更:
+        limit = 2 * (gainprm0 * V_max - tau_c) / (I_w + armature)
+    理由: コアレス化（r3）で armature=1.475e-6 となり、3V ステップの正当な起動角加速度
+    が解析値 1.39e4 rad/s^2 に達し、固定値 1e4 では接触ゼロの空中試験（Test0）でも
+    誤検出するため。ハードコード禁止原則の帰結でもある。
+    """
+    p = params if params is not None else RobotParams()
+    wheel_inertia = 0.5 * p.mass_wheel * p.wheel_radius ** 2
+    alpha0 = (p.gainprm0 * p.voltage_limit - p.wheel_frictionloss) / (wheel_inertia + p.armature)
+    return 2.0 * alpha0
+
+
+QACC_STRICT = qacc_strict_limit()   # rad/s^2（r4: 実行時導出。r3 パラメータで ≈2.78e4）
 
 # データシート整合アンカー（計画書 r3。FAULHABER 1717T003SR 公式カタログ値）。
 # これは「モデルから導出する期待値」ではなく外部実機カタログとの独立照合であり、
@@ -334,7 +351,7 @@ def run_logged(model, data, duration, ctrl_fn, tracker=None, log_every=2, t0=Non
     n_steps = int(round(duration / dt))
     h = get_handles(model)
     t_list, qposl, qposr, qvell, qvelr = [], [], [], [], []
-    vfwd, xs, ys, yaws, pitches = [], [], [], [], []
+    vfwd, vlat, xs, ys, yaws, pitches = [], [], [], [], [], []
     sensord, actf = [], []
     for step in range(n_steps):
         t_rel = data.time - t0
@@ -348,6 +365,7 @@ def run_logged(model, data, duration, ctrl_fn, tracker=None, log_every=2, t0=Non
             xmat = data.xmat[h.mouse_body_id].reshape(3, 3)
             v_world = data.qvel[h.root_dof_adr:h.root_dof_adr + 3]
             v_fwd = float(np.dot(v_world, xmat[:, 0]))
+            v_lat = float(np.dot(v_world, xmat[:, 1]))  # 機体ローカル y 軸方向速度（横滑り検出用。r5確定）
             qadr = h.root_qpos_adr
             t_list.append(data.time - t0)
             qposl.append(float(data.qpos[model.jnt_qposadr[h.left_wheel_joint_id]]))
@@ -355,6 +373,7 @@ def run_logged(model, data, duration, ctrl_fn, tracker=None, log_every=2, t0=Non
             qvell.append(float(data.qvel[h.left_dof]))
             qvelr.append(float(data.qvel[h.right_dof]))
             vfwd.append(v_fwd)
+            vlat.append(v_lat)
             xs.append(float(data.qpos[qadr]))
             ys.append(float(data.qpos[qadr + 1]))
             yaws.append(float(np.arctan2(xmat[1, 0], xmat[0, 0])))
@@ -363,7 +382,7 @@ def run_logged(model, data, duration, ctrl_fn, tracker=None, log_every=2, t0=Non
             actf.append(data.actuator_force.copy())
     return dict(
         t=np.array(t_list), qpos_l=np.array(qposl), qpos_r=np.array(qposr),
-        qvel_l=np.array(qvell), qvel_r=np.array(qvelr), v_fwd=np.array(vfwd),
+        qvel_l=np.array(qvell), qvel_r=np.array(qvelr), v_fwd=np.array(vfwd), v_lat=np.array(vlat),
         x=np.array(xs), y=np.array(ys), yaw=np.array(yaws), pitch=np.array(pitches),
         sensordata=np.array(sensord) if sensord else np.zeros((0, 12)),
         actuator_force=np.array(actf) if actf else np.zeros((0, 2)),
@@ -795,6 +814,20 @@ def test_03_pivot_turn(params, open_xml, D):
     contacts_pulse = measure_contacts_avg(sim.model, sim.data, h, ctrl=(0.0, 0.0), n_samples=50)
     N_c_pulse = contacts_pulse.N_caster
     mu_caster_pulse = contacts_pulse.mu_caster if contacts_pulse.mu_caster is not None else parse_mu_caster(params)
+
+    # r5 確定（2026-08-10 教授承認）: スクラブ項（車輪幅スリップ抵抗）の較正値。
+    # note_004_r4_diagnostics.py の切り分け実験（キャスターμ≈0化 → +0.37rad/sのみ理論と厳密一致、
+    # さらに frictionloss=0 → 欠損トルク ≈3.2mN·mが残存）により、円柱車輪の線接触が MuJoCo の
+    # 2点接触に離散化され、超信地旋回中の接触点間（車輪幅方向）速度差スリップが実効捩れ抵抗
+    # τ_scrub=μ_floor_slide*η_meas*M*g*w_wheel/2 を生む機序と特定済み（現行条件で理論−実測 -4%、
+    # frictionloss=0条件で -0.3% の定量一致）。η_meas は本テストの静定接地実測（S1 と同一手法）、
+    # μ_floor_slide は d.contact 実測、w_wheel は geom_size からの実行時導出でハードコードしない。
+    N_w_pulse = contacts_pulse.N_wheel
+    mu_floor_slide = (contacts_pulse.mu_wheel if contacts_pulse.mu_wheel is not None
+                       else float(params.floor_friction.split()[0]))
+    eta_meas = N_w_pulse / D.Mg if D.Mg > 0 else float('nan')
+    model_for_wheel = mujoco.MjModel.from_xml_path(open_xml)
+    w_wheel = 2.0 * float(model_for_wheel.geom_size[h.left_wheel_geom_id][1])
     pulse_V = 0.3
     pulse_T = 0.05
     t0 = sim.data.time
@@ -846,16 +879,20 @@ def test_03_pivot_turn(params, open_xml, D):
     term_drive = 2 * (D.gainprm0 / D.r) * V0 * (D.L / 2.0)
     term_coulomb = 2 * (D.tau_c / D.r) * (D.L / 2.0)
     term_caster = mu_caster * N_c * D.caster_arm
-    Omega_ss_theory = (term_drive - term_coulomb - term_caster) / D.b_rot
+    # r5 確定（2026-08-10 教授承認）: スクラブ項（車輪幅の2点接触離散化による速度差スリップ抵抗）を追加。
+    # w_wheel/eta_meas/mu_floor_slide は上の (a) 較正ブロックで実行時導出済み（ハードコード禁止）。
+    term_scrub = mu_floor_slide * eta_meas * D.M * D.g * w_wheel / 2.0
+    Omega_ss_theory = (term_drive - term_coulomb - term_caster - term_scrub) / D.b_rot
 
-    I_zz_for_theory = I_zz_meas if (np.isfinite(I_zz_meas) and I_zz_meas > 0) else None
-    calib_note = "Test3(a) 較正値使用"
-    if I_zz_for_theory is None:
-        model_tmp = mujoco.MjModel.from_xml_path(open_xml)
-        I_zz_for_theory = compute_izz_breakdown(model_tmp)['total_izz']
-        calib_note = "Test3(a) 較正失敗のためパラレルアクシス静的値でフォールバック"
-    I_eff_theory = I_zz_for_theory + wheel_term
+    # r5 確定（2026-08-10 教授承認）: τ3 の期待値は静的合成 Izz（パラレルアクシス、compute_izz_breakdown）を
+    # 常に使用する。パルス法同定 I_zz_meas は削除せず算出・記録は続けるが「参考記録」に格下げし
+    # 合否判定からは外す（スクラブのクーロン抵抗がパルス応答を鈍らせ、I を過大評価する系統誤差が
+    # あるため。note_004_r4_diagnostics.py の切り分けで確認済み）。
+    model_tmp = mujoco.MjModel.from_xml_path(open_xml)
+    I_zz_static = compute_izz_breakdown(model_tmp)['total_izz']
+    I_eff_theory = I_zz_static + wheel_term
     tau3_theory = I_eff_theory / D.b_rot
+    calib_note = "τ3期待値は静的合成Izzを使用（r5確定）。I_zz_meas(パルス法)は参考記録のみ"
 
     tail = max(1, len(omega_z) // 20)
     omega_wheel_ss = float(np.mean((np.abs(logb['qvel_l'][-tail:]) + np.abs(logb['qvel_r'][-tail:])) / 2.0))
@@ -866,6 +903,19 @@ def test_03_pivot_turn(params, open_xml, D):
     dy = float(logb['y'][-1] - logb['y'][0])
     com_disp = float(np.hypot(dx, dy))
 
+    # r5 確定（2026-08-10 教授承認）: CoM 変位判定を「純ピボット（旋回中心=車軸上）なら変位ゼロ」から
+    # 「旋回中心=車軸上、CG は車軸前方 x_cg だけオフセットしている設計（r4 の3点接地化・
+    # CG前方配置）のため、CG 自体は半径 |x_cg| で公転する」という設計帰結に合わせて改訂。
+    # x_cg はモデルから実行時導出（mj_forward の運動学解決のみ、compute_tipover_margin と同じ手法）。
+    model_cg = mujoco.MjModel.from_xml_path(open_xml)
+    data_cg = mujoco.MjData(model_cg)
+    h_cg = get_handles(model_cg)
+    data_cg.qpos[h_cg.root_qpos_adr:h_cg.root_qpos_adr + 3] = [0.0, 0.0, 0.05]
+    data_cg.qpos[h_cg.root_qpos_adr + 3:h_cg.root_qpos_adr + 7] = [1.0, 0.0, 0.0, 0.0]
+    mujoco.mj_forward(model_cg, data_cg)
+    x_cg = float(data_cg.subtree_com[h_cg.mouse_body_id][0] - data_cg.qpos[h_cg.root_qpos_adr])
+    com_disp_limit = 2.0 * abs(x_cg) + 0.002
+
     ok_L = np.isfinite(L_inf) and abs(L_inf - params.tread) / params.tread <= 0.05
     checks.append(dict(name="tread_L_inf", expected=params.tread, actual=L_inf, tol="5%", ok=ok_L))
 
@@ -875,17 +925,24 @@ def test_03_pivot_turn(params, open_xml, D):
     ok_omega3 = abs(Omega_ss_meas - Omega_ss_theory) / abs(Omega_ss_theory) <= 0.15 if Omega_ss_theory != 0 else False
     checks.append(dict(name="Omega_ss", expected=Omega_ss_theory, actual=Omega_ss_meas, tol="15%", ok=ok_omega3))
 
-    ok_pivot = com_disp <= 0.002
-    checks.append(dict(name="com_displacement_pure_pivot", expected="<=2mm", actual=com_disp, tol="-", ok=ok_pivot))
+    ok_pivot = com_disp <= com_disp_limit
+    checks.append(dict(name="com_displacement_pure_pivot", expected=f"<=2*|x_cg|+2mm={com_disp_limit*1000:.3f}mm",
+                        actual=com_disp, tol="-", ok=ok_pivot, note=f"x_cg={x_cg*1000:.3f}mm(r5確定)"))
 
     qacc_ok, qacc_msg = tracker.check(strict_limit=QACC_STRICT)
     checks.append(dict(name="qacc_monitor_strict", expected="OK", actual=qacc_msg, tol="strict", ok=qacc_ok))
 
     CALIB['test3_Izz_meas'] = I_zz_meas
     CALIB['test3_I_eff_meas'] = I_eff_meas
+    CALIB['test3_Izz_static'] = I_zz_static
+    CALIB['test3_I_eff_theory'] = I_eff_theory
+    CALIB['test3_eta_meas'] = eta_meas
     ok, msg = _finish("Test3_pivot_turn", checks, calib=dict(
-        I_zz_meas=I_zz_meas, I_eff_meas=I_eff_meas, wheel_term=wheel_term, L_inf=L_inf,
-        Omega_ss_meas=Omega_ss_meas, tau3_meas=tau3_meas, note=calib_note))
+        I_zz_meas_pulse_reference=I_zz_meas, I_eff_meas_pulse_reference=I_eff_meas,
+        I_zz_static=I_zz_static, I_eff_theory=I_eff_theory, wheel_term=wheel_term, L_inf=L_inf,
+        Omega_ss_meas=Omega_ss_meas, tau3_meas=tau3_meas, eta_meas=eta_meas,
+        mu_floor_slide=mu_floor_slide, w_wheel=w_wheel, term_scrub=term_scrub,
+        x_cg=x_cg, com_disp_limit=com_disp_limit, note=calib_note))
     assert ok, msg
 
 
@@ -1222,23 +1279,39 @@ def test_05_steady_turn(params, open_xml, D):
     Kp_v = 1.0         # 速度 P ゲイン（古典制御・学習なし。試験治具パラメータ）
     Vff = (v_ref * D.c_eff + 2 * D.tau_c / D.r + mu_caster * N_c) * D.r / (2 * D.gainprm0)
 
-    # ヨーレート制御: 純 P フィードバックは b_rot が極小(r3 コアレス化で低慣性・低粘性)の
-    # ため容易に不安定化することを実測で確認した（Kp_yaw=0.05 で |Ω| が発散的に増大し
-    # qacc が 1e5 台に達した）。Test3 の定常トルク釣合い式を線形近似した差動電圧の
-    # フィードフォワード Kff_yaw（微小 ΔV あたりの定常 Ω 応答の逆数）を主とし、
-    # 小さな P ゲインを補正のみに使う設計に変更（テスト側の明白な実装バグ＝制御不安定
-    # の修正。物理の期待値そのものは変更していない）。曲率指令もランプして急変を避ける。
-    #
-    # 追加の発見: 速度ループも Kp_v を高くとって t=0 で電圧指令を急変させると、
-    # 4点接地の不静定性由来のチャタリング（本報告書の他の発見事項と同一現象）が
-    # 誘発され、瞬間的に qacc が 1e4〜1e5 台まで跳ねることを実測で確認した。
-    # 助走の速度指令自体を 0.6s かけて滑らかにランプすることでこれを大幅に抑制できる
-    # （物理の期待値は変更せず、試験治具の起動手順のみを穏やかにする改善）。
-    Kff_yaw = D.b_rot * D.r / (2 * D.gainprm0 * (D.L / 2.0))
-    Kp_yaw = 0.1 * Kff_yaw
-    ramp_rate = 6.0  # kappa/s
+    # r5 確定（2026-08-10 教授承認）: ヨーレート制御を、フィードフォワード主体（r4実装）から
+    # 教授指示の古典 PI 閉ループへ変更する（ΔV = Kp*(Ω_ref-Ω) + Ki*∫、Ω_ref = v_ref*κ）。
+    # プラント（差動電圧 ΔV → ヨーレート Ω）を一次遅れとしてモデル化する:
+    #   Ω(s)/ΔV(s) = K_plant/(τ_plant s + 1)、K_plant = K_drive/b_rot、τ_plant = I_eff_yaw/b_rot
+    # （K_drive: 差動電圧1Vあたりのヨートルク[= Test3のterm_drive/V0と同型]。I_eff_yaw は
+    # Test3(r5)と同じ静的合成 Izz ベースで実行時導出。r4 実装の純 P フィードバックは b_rot が
+    # 極小[r3コアレス化で低慣性・低粘性]のためプラントゲイン K_plant が巨大になり、素朴な
+    # ゲインで容易に不安定化することを実測確認済み[Kp_yaw=0.05でqacc発散]。本設計はプラント
+    # 定数 b_rot, I_eff で正規化した極配置PIのため、この問題を構造的に回避する）。
+    # 極配置: 閉ループを 2 次遅れ ζ=1.0（臨界制動、オーバーシュートなし）・
+    # ωn = k_bandwidth/τ_plant（k_bandwidth=5、開ループプラントの5倍速応答）に配置し、
+    #   Ki = ωn^2 * τ_plant / K_plant、Kp = (2*ζ*ωn*τ_plant - 1) / K_plant
+    # で導出する（ζ, k_bandwidth は試験治具の設計選定値。数値はここに明記しCALIBにも記録）。
+    K_drive = 2 * (D.gainprm0 / D.r) * (D.L / 2.0)
+    izz_model = mujoco.MjModel.from_xml_path(open_xml)
+    I_eff_yaw = (compute_izz_breakdown(izz_model)['total_izz']
+                 + 2 * (D.I_w + D.armature) * (D.L / (2 * D.r)) ** 2)
+    tau_plant = I_eff_yaw / D.b_rot
+    K_plant = K_drive / D.b_rot
+    zeta_design = 1.0     # 臨界制動（試験治具設計値）
+    k_bandwidth = 5.0     # 閉ループ帯域 = 開ループプラントの5倍（試験治具設計値）
+    omega_n = k_bandwidth / tau_plant
+    Ki_yaw = omega_n ** 2 * tau_plant / K_plant
+    Kp_yaw = (2.0 * zeta_design * omega_n * tau_plant - 1.0) / K_plant
+    ramp_rate = 6.0  # kappa/s（曲率指令の急変回避。試験治具パラメータ、物理期待値ではない）
+    dt_phys = float(sim.model.opt.timestep)
+
+    # r5 確定（2026-08-10 教授承認）: 各κ段の整定時間 ≥ 4*τ_v（D.tau_v で実行時導出 ≈0.124s → 0.5s
+    # 以上）。マージンを見て 4.5*τ_v を採用する。
+    hold_dur = 4.5 * D.tau_v
 
     kappa_state = {'target': 0.0, 'ramp': 0.0}
+    yaw_state = {'integral': 0.0}
 
     def make_warmup_ctrl(ramp_dur=0.6):
         def ctrl_fn(t):
@@ -1256,15 +1329,27 @@ def test_05_steady_turn(params, open_xml, D):
             xmat = sim.data.xmat[h.mouse_body_id].reshape(3, 3)
             v_meas = float(np.dot(v_world, xmat[:, 0]))
             omega_meas = float(sim.data.sensordata[11])
-            step = ramp_rate * params.physics_dt
+            step = ramp_rate * dt_phys
             if kappa_state['ramp'] < kappa_state['target']:
                 kappa_state['ramp'] = min(kappa_state['target'], kappa_state['ramp'] + step)
             elif kappa_state['ramp'] > kappa_state['target']:
                 kappa_state['ramp'] = max(kappa_state['target'], kappa_state['ramp'] - step)
             omega_ref = v_ref * kappa_state['ramp']
             Vbase = Vff + Kp_v * (v_ref - v_meas)
-            Vdiff = Kff_yaw * omega_ref + Kp_yaw * (omega_ref - omega_meas)
-            return Vbase + Vdiff, Vbase - Vdiff
+            err_yaw = omega_ref - omega_meas
+            yaw_state['integral'] += err_yaw * dt_phys
+            # アンチワインドアップ（積分クランプ）: 積分項単独で ±voltage_limit を超えて
+            # 指令できないよう積分値を制限する。試験治具の標準的な古典PI実装作法であり、
+            # 数値ハードコード禁止の対象である「物理期待値」ではなく制御則の健全性条件。
+            integral_bound = params.voltage_limit / Ki_yaw if Ki_yaw > 0 else 0.0
+            yaw_state['integral'] = float(np.clip(yaw_state['integral'], -integral_bound, integral_bound))
+            Vdiff = Kp_yaw * err_yaw + Ki_yaw * yaw_state['integral']
+            # 符号規約（実測確認済み・テスト側の実装バグ修正）: 本モデルでは
+            # 右輪電圧>左輪電圧 が正の omega_z（gyro/世界系）を生む（左右逆ではない）。
+            # r4実装は Vbase+Vdiff を左輪に加えており符号が逆だった（Kff_yawが正の
+            # フィードフォワードとして常に逆方向に効いていたため、r4のTest5不合格の
+            # 一因だったと推定される）。Vdiff は右輪に加える。
+            return Vbase - Vdiff, Vbase + Vdiff
         return ctrl_fn
 
     # 助走: 速度を v_ref まで滑らかに立ち上げる
@@ -1273,46 +1358,115 @@ def test_05_steady_turn(params, open_xml, D):
                t0=t0, voltage_limit=params.voltage_limit)
 
     kappas = np.linspace(0.0, 20.0, 15)
+    omega_ref_level = v_ref * kappas
+    a_lat_theory_linear = v_ref ** 2 * kappas
+    a_lat_max_theory = (mu_wheel * N_w + mu_caster * N_c) / D.M
+    # 直線域マスクは kappa（既知の等差数列）のみに依存し、スイープ実行前に確定する。
+    # kappa は昇順のため lin_mask は必ず先頭側の連続区間（プレフィックス）になる。
+    lin_mask = a_lat_theory_linear <= 0.5 * a_lat_max_theory
+    n_lin = int(np.sum(lin_mask))
+
+    # r5 確定（2026-08-10 教授承認）: 破綻検出に第3条件を追加する。
+    # (i) ヨーレートが Ω_ref から 50% 以上乖離、(ii) 横滑り角 β がテール窓で発散
+    # （線形回帰スロープ |dβ/dt| が閾値超）、に加えて
+    # (iii) a_lat が直線域フィット（lin_mask 区間の直線）のトレンドから 30% 以上急落する
+    # 状態が 2 段連続、のいずれかで機械判定する。(iii) は「Ω は正しく追従し続けるが
+    # a_lat が実質ゼロへ崩壊する」差動駆動特有のスピンアウトモード（先行レビューで診断済み:
+    # Ω偏差<1%を維持したまま a_lat が 8.6→0.07 m/s^2 に崩壊し、qacc 7〜9e4 の接触過渡を
+    # 伴う。(i)(ii) だけでは検出が1〜4段遅れていた）を捕捉するために追加した。
+    # 破綻を検出した時点でκランプを終了し、以降の高κ段はシミュレートしない。
+    BETA_DIVERGE_THRESH = 0.5   # rad/s（テール窓終端でβがこの速さ以上で成長=未整定とみなす治具閾値）
+    A_LAT_DROP_THRESH = 0.30    # 直線トレンドからの急落率閾値（教授承認値）
+
     a_lat_meas = []
-    for kappa in kappas:
+    omega_meas_level = []
+    beta_slope_level = []
+    qacc_pre_step_snapshots = []  # [i] = tracker.max_abs（κ段 i 実行直前のスナップショット）
+    slope_lin, intercept_lin, r2_lin = float('nan'), float('nan'), float('nan')
+    prev_drop = False
+    breakdown_idx = None
+    breakdown_reason = None
+
+    for i, kappa in enumerate(kappas):
+        qacc_pre_step_snapshots.append(tracker.max_abs)
         kappa_state['target'] = float(kappa)
+        # 各κ段の開始時に積分状態をリセットする（各段を独立な新しい定常動作点への
+        # ステップ応答として評価する設計。段をまたいだ積分ワインドアップの蓄積を防ぐ）。
+        yaw_state['integral'] = 0.0
         t0k = sim.data.time
-        logk = run_logged(sim.model, sim.data, duration=0.5, ctrl_fn=make_ctrl(), tracker=tracker,
+        logk = run_logged(sim.model, sim.data, duration=hold_dur, ctrl_fn=make_ctrl(), tracker=tracker,
                            log_every=2, t0=t0k, voltage_limit=params.voltage_limit)
-        n_tail = max(1, int(round(0.3 / (logk['t'][1] - logk['t'][0])))) if len(logk['t']) > 1 else 1
+        # テール窓 = ホールド末尾40%（hold_dur を 4*tau_v 基準に変更したため絶対時間でなく
+        # 割合窓とし、hold_dur の値によらず妥当なマージンを確保する）
+        n_tail = max(1, int(round(0.4 * len(logk['t']))))
         # 中央値を使用（4点接地の不静定性由来の散発的チャタリングスパイクに対して
         # 平均よりロバスト。報告書「計画書との矛盾・懸念」参照）
         a_lat = float(np.median(logk['sensordata'][-n_tail:, 7]))
         a_lat_meas.append(a_lat)
-    a_lat_meas = np.array(a_lat_meas)
+        omega_tail = float(np.median(logk['sensordata'][-n_tail:, 11]))
+        omega_meas_level.append(omega_tail)
+        beta_tail = np.arctan2(logk['v_lat'][-n_tail:], logk['v_fwd'][-n_tail:])
+        if n_tail >= 3:
+            beta_slope, _, _ = linreg(logk['t'][-n_tail:], beta_tail)
+        else:
+            beta_slope = 0.0
+        beta_slope_level.append(float(beta_slope))
 
-    a_lat_theory_linear = v_ref ** 2 * kappas
-    a_lat_max_theory = (mu_wheel * N_w + mu_caster * N_c) / D.M
+        if n_lin >= 3 and (i + 1) == n_lin:
+            # 直線域点が出揃った直後にトレンド直線を1回だけフィットする
+            slope_lin, intercept_lin, r2_lin = linreg(
+                kappas[:n_lin], np.abs(np.array(a_lat_meas[:n_lin])))
 
-    deviation = (a_lat_theory_linear - np.abs(a_lat_meas)) / np.maximum(a_lat_theory_linear, 1e-9)
-    onset_idx = None
-    for i in range(1, len(kappas)):
-        if deviation[i - 1] > 0.15 and deviation[i] > 0.15:
-            onset_idx = i - 1
+        cond1 = cond2 = False
+        if i >= 1:
+            denom = abs(omega_ref_level[i])
+            dev = abs(omega_meas_level[i] - omega_ref_level[i]) / denom if denom > 0 else 0.0
+            cond1 = dev >= 0.5
+            cond2 = abs(beta_slope_level[i]) > BETA_DIVERGE_THRESH
+
+        cur_drop = False
+        if i >= n_lin and np.isfinite(slope_lin):
+            trend = slope_lin * kappa + intercept_lin
+            if trend > 0:
+                cur_drop = (trend - abs(a_lat_meas[i])) / trend >= A_LAT_DROP_THRESH
+        cond3 = cur_drop and prev_drop
+        prev_drop = cur_drop
+
+        if cond1 or cond2 or cond3:
+            breakdown_idx = i
+            breakdown_reason = ('omega_deviation' if cond1 else
+                                 'beta_divergence' if cond2 else
+                                 'a_lat_trend_drop_2consecutive')
             break
-    if onset_idx is None:
-        onset_idx = max(0, len(kappas) - 3)
-    plateau_meas = float(np.mean(np.abs(a_lat_meas[onset_idx:])))
 
-    ok_plateau = abs(plateau_meas - a_lat_max_theory) / a_lat_max_theory <= 0.15
-    checks.append(dict(name="plateau_a_lat_max", expected=a_lat_max_theory, actual=plateau_meas, tol="15%",
-                        ok=ok_plateau))
+    a_lat_meas = np.array(a_lat_meas)
+    omega_meas_level = np.array(omega_meas_level)
+    beta_slope_level = np.array(beta_slope_level)
+    n_run = len(a_lat_meas)
 
-    lin_mask = a_lat_theory_linear <= 0.5 * a_lat_max_theory
-    if np.sum(lin_mask) >= 3:
-        slope_lin, intercept_lin, r2_lin = linreg(kappas[lin_mask], np.abs(a_lat_meas[lin_mask]))
+    if breakdown_idx is not None:
+        back = 2 if breakdown_reason == 'a_lat_trend_drop_2consecutive' else 1
+        plateau_src_idx = max(0, breakdown_idx - back)
+        plateau_meas = float(abs(a_lat_meas[plateau_src_idx]))
+        qacc_strict_reference = qacc_pre_step_snapshots[plateau_src_idx + 1]
+        plateau_note = (f"破綻検出[{breakdown_reason}]: kappa[{breakdown_idx}]={kappas[breakdown_idx]:.2f}rad/m。"
+                         f"直前(idx={plateau_src_idx})の点を『破綻直前の最大持続a_lat』に採用。"
+                         f"以降のκ段はシミュレート打ち切り")
     else:
-        slope_lin, intercept_lin, r2_lin = float('nan'), float('nan'), float('nan')
+        plateau_meas = float(abs(a_lat_meas[-1]))
+        qacc_strict_reference = tracker.max_abs
+        plateau_note = "sweep内(kappa<=20)で破綻未検出。最終kappa点を『最大持続a_lat』として採用"
+
+    ratio_plateau = plateau_meas / a_lat_max_theory if a_lat_max_theory > 0 else float('nan')
+    ok_plateau = np.isfinite(ratio_plateau) and (0.60 <= ratio_plateau <= 1.10)
+    checks.append(dict(name="plateau_a_lat_max", expected=f"60%-110% of {a_lat_max_theory:.3f}(上限参考値)",
+                        actual=plateau_meas, tol="60%-110%", ok=ok_plateau, note=plateau_note))
+
     ok_lin_r2 = np.isfinite(r2_lin) and r2_lin >= 0.95
     checks.append(dict(name="linear_region_r2", expected=">=0.95", actual=r2_lin, tol="-", ok=ok_lin_r2))
 
     idxs_lin = np.where(lin_mask)[0]
-    idxs_lin = idxs_lin[idxs_lin > 0][:3]
+    idxs_lin = idxs_lin[(idxs_lin > 0) & (idxs_lin < n_run)][:3]
     pt_ok = True
     for i in idxs_lin:
         expect_pt = a_lat_theory_linear[i]
@@ -1327,12 +1481,27 @@ def test_05_steady_turn(params, open_xml, D):
     checks.append(dict(name="plateau_within_benchmark_range_G", expected="[0.5,1.5]G", actual=plateau_G, tol="-",
                         ok=ok_range))
 
-    qacc_ok, qacc_msg = tracker.check(strict_limit=QACC_STRICT)
+    # r5 確定（2026-08-10 教授承認）: strict qacc 判定は破綻前区間（qacc_strict_reference。
+    # plateau 採用点までの累積最大値）にのみ適用する。NaN/Inf・QACC_LOOSE の共通監視
+    # （計画書§6共通規約(v)(a)）は破綻段を含む全区間に適用する（全テスト共通の安全網であり、
+    # Test5 固有のスコープ限定の対象外）。
+    if tracker.bad:
+        qacc_ok, qacc_msg = False, "NaN/Inf が qacc/qvel/qpos に検出された"
+    elif tracker.max_abs >= QACC_LOOSE:
+        qacc_ok, qacc_msg = False, f"max|qacc|={tracker.max_abs:.3e} >= QACC_LOOSE({QACC_LOOSE:.0e})"
+    else:
+        qacc_ok = bool(qacc_strict_reference < QACC_STRICT)
+        qacc_msg = f"max|qacc|(破綻前区間)={qacc_strict_reference:.3e} rad/s^2 (全区間max={tracker.max_abs:.3e})"
     checks.append(dict(name="qacc_monitor_strict", expected="OK", actual=qacc_msg, tol="strict", ok=qacc_ok))
 
     ok, msg = _finish("Test5_steady_turn", checks, calib=dict(
         a_lat_max_theory=a_lat_max_theory, plateau_meas=plateau_meas, plateau_G=plateau_G,
-        kappas=kappas.tolist(), a_lat_meas=a_lat_meas.tolist()))
+        breakdown_idx=breakdown_idx, breakdown_reason=breakdown_reason, n_run=n_run, n_lin=n_lin,
+        slope_lin=slope_lin, intercept_lin=intercept_lin, r2_lin=r2_lin,
+        qacc_strict_reference=qacc_strict_reference, qacc_full_max=tracker.max_abs,
+        kappas_run=kappas[:n_run].tolist(), a_lat_meas=a_lat_meas.tolist(),
+        omega_meas_level=omega_meas_level.tolist(), beta_slope_level=beta_slope_level.tolist(),
+        Kp_yaw=Kp_yaw, Ki_yaw=Ki_yaw, tau_plant=tau_plant, K_plant=K_plant, hold_dur=hold_dur))
     assert ok, msg
 
 
@@ -1434,7 +1603,9 @@ def test_06_sensors(params, open_xml, xml_dir, D):
         dict(name="accel_static_z", expected=g, actual=float(accel_static[2]), tol="0.05", ok=ok_az),
     ]
 
-    # --- Gyro 独立クロスチェック: data.xmat の有限差分 vs gyro センサ生値 ---
+    # r5 確定（2026-08-10 教授承認）: Gyro 独立クロスチェックを「平面仮定 d(yaw)/dt vs gyro_z」相当の
+    # z 成分単独比較から、隣接ログの回転行列差分から機体系角速度ベクトル ω_body を算出する
+    # 3 軸照合（ω×=R^T・(dR/dt) の反対称成分を x,y,z 全成分について取り出す）へ変更する。
     # 物理サブステップ毎（間引きなし）にログし、中心差分の打ち切り誤差を最小化する。
     sim3 = MouseSim(open_xml, params=params)
     h3 = get_handles(sim3.model)
@@ -1448,30 +1619,118 @@ def test_06_sensors(params, open_xml, xml_dir, D):
         sim3.data.ctrl[1] = -1.0
         mujoco.mj_step(sim3.model, sim3.data)
         xmats.append(sim3.data.xmat[h3.mouse_body_id].reshape(3, 3).copy())
-        gyros.append(float(sim3.data.sensordata[11]))
+        gyros.append(sim3.data.sensordata[9:12].copy())
         ts.append(float(sim3.data.time))
     # 中心差分（xmat[i-1], xmat[i+1] から時刻 ts[i] 上の角速度を推定）を用いる。
     # 前進差分 (xmat[i],xmat[i+1])/dt は時刻 ts[i]+dt/2 の値を表すため gyro[i]
     # （時刻 ts[i] の瞬時値）と比べると半ステップ分ずれ、急な角加速度期間で有意な
     # 誤差が出るバグがあった（テスト側の明白な実装バグとして修正）。
-    omega_fd = []
-    gyro_center = []
-    for i in range(1, len(xmats) - 1):
-        R1, R2 = xmats[i - 1], xmats[i + 1]
-        dR = R1.T @ R2
-        dt_i = ts[i + 1] - ts[i - 1]
-        wz = (dR[1, 0] - dR[0, 1]) / 2.0 / dt_i
-        omega_fd.append(wz)
-        gyro_center.append(gyros[i])
-    omega_fd = np.array(omega_fd)
-    gyro_center = np.array(gyro_center)
-    skip = min(10, max(0, len(omega_fd) - 1))
-    err = np.abs(omega_fd[skip:] - gyro_center[skip:])
-    ok_gyro = bool(len(err) > 0 and np.all(err <= 0.01))
-    checks.append(dict(name="gyro_vs_xmat_finite_diff", expected="<=0.01 rad/s", actual=float(np.max(err)) if len(err) else float('nan'),
-                        tol="0.01", ok=ok_gyro))
+    def _omega_body_from_xmats(xmats_seq, ts_seq):
+        """隣接ログの回転行列差分から機体系角速度ベクトル ω_body=[wx,wy,wz] を
+        中心差分で算出する（ω×=R^T・(dR/dt) の反対称成分。r5確定）。"""
+        out = []
+        for i in range(1, len(xmats_seq) - 1):
+            R1, R2 = xmats_seq[i - 1], xmats_seq[i + 1]
+            dR = R1.T @ R2
+            dt_i = ts_seq[i + 1] - ts_seq[i - 1]
+            skew = (dR - dR.T) / 2.0
+            out.append(np.array([skew[2, 1], skew[0, 2], skew[1, 0]]) / dt_i)
+        return np.array(out) if out else np.zeros((0, 3))
+
+    # r5 確定（2026-08-10 教授承認）: ジャイロ3軸照合は、比較前に両信号（Gyroセンサ値と
+    # xmat差分角速度）へ同一のローパスフィルタを適用する。カットオフ 100Hz = 制御周期
+    # （control_dt=0.01s の逆数）。センサ較正の検証は制御帯域で行うのが目的整合であり、
+    # 接触ソルバ由来の物理サブステップ周期(1〜2kHz域)の数値チャタリングは制御ループには
+    # 現れないため照合対象から除外するのが妥当、という設計判断。scipy 未導入のため
+    # 単純な1次IIR（指数移動平均）をフォワード・バックワード両方向に適用してゼロ位相化する
+    # （filtfilt 相当。numpy のみで実装）。
+    def _lowpass_filtfilt_1axis(x, dt, fcut):
+        x = np.asarray(x, dtype=np.float64)
+        if len(x) == 0:
+            return x
+        rc = 1.0 / (2.0 * np.pi * fcut)
+        alpha = dt / (rc + dt)
+
+        def _forward(sig):
+            y = np.empty_like(sig)
+            y[0] = sig[0]
+            for k in range(1, len(sig)):
+                y[k] = y[k - 1] + alpha * (sig[k] - y[k - 1])
+            return y
+
+        fwd = _forward(x)
+        return _forward(fwd[::-1])[::-1]
+
+    def _lowpass_filtfilt(arr, dt, fcut):
+        """arr: (N,3) 配列。列（軸）ごとに独立にゼロ位相ローパスを適用する。"""
+        if arr.size == 0:
+            return arr
+        return np.stack([_lowpass_filtfilt_1axis(arr[:, k], dt, fcut) for k in range(arr.shape[1])], axis=1)
+
+    GYRO_LPF_CUTOFF_HZ = 1.0 / params.control_dt  # = 100Hz（制御周期の逆数）
+
+    # 離散恒等式に基づく比較対象の補正（テスト側の明白な実装バグ修正）:
+    # MuJoCo の半陰的積分では xmat の中心差分（区間 [i-1, i+1]、ステップ i と i+1 の
+    # 回転を跨ぐ）は厳密に (ω[i]+ω[i+1])/2 に対応する（ω[k] は step k 後の qvel =
+    # gyro の読み値）。旧実装は瞬時値 ω[i] と比較しており、差 = 隣接サブステップ間の
+    # 速度ジャンプの半分が残差として現れていた（接触チャタリング時に顕在化。
+    # LPF 後残差 0.083/0.0137 rad/s の主因）。比較対象を 2 サンプル平均に修正する。
+    def _gyro_matched_to_fd(gyros_seq):
+        """FD（中心 i、ステップ i と i+1 を跨ぐ）に整合する (ω[i]+ω[i+1])/2 の系列。"""
+        arr = np.array(gyros_seq)
+        if len(arr) < 3:
+            return np.zeros((0, 3))
+        return 0.5 * (arr[1:-1] + arr[2:])
+
+    omega_fd = _omega_body_from_xmats(xmats, ts)
+    gyro_center = _gyro_matched_to_fd(gyros)
+    omega_fd_f = _lowpass_filtfilt(omega_fd, dt_phys, GYRO_LPF_CUTOFF_HZ)
+    gyro_center_f = _lowpass_filtfilt(gyro_center, dt_phys, GYRO_LPF_CUTOFF_HZ)
+    skip = min(10, max(0, len(omega_fd_f) - 1))
+    err = np.abs(omega_fd_f[skip:] - gyro_center_f[skip:])
+    ok_gyro = bool(err.size > 0 and np.all(err <= 0.05))
+    checks.append(dict(name="gyro_vs_xmat_3axis_dynamic", expected="<=0.05 rad/s (100Hz LPF後)",
+                        actual=float(np.max(err)) if err.size else float('nan'), tol="0.05", ok=ok_gyro))
+
+    # r5 確定（2026-08-10 教授承認）: Test1 の直進定常区間（回転がほぼゼロの状況）でも
+    # 同じ 3 軸クロスチェック（同一 100Hz LPF 適用後に比較）を課す。動的区間より厳しい
+    # 許容 0.01 rad/s を課す。
+    t1_snap = CALIB.get('test1_05V_final_state')
+    if t1_snap is not None:
+        sim4 = MouseSim(open_xml, params=params)
+        h4 = get_handles(sim4.model)
+        sim4.data.qpos[:] = t1_snap['qpos']
+        sim4.data.qvel[:] = t1_snap['qvel']
+        mujoco.mj_forward(sim4.model, sim4.data)
+        n_steps4 = int(round(0.2 / dt_phys))
+        xmats4, gyros4, ts4 = [], [], []
+        for step in range(n_steps4):
+            sim4.data.ctrl[0] = 0.5
+            sim4.data.ctrl[1] = 0.5
+            mujoco.mj_step(sim4.model, sim4.data)
+            xmats4.append(sim4.data.xmat[h4.mouse_body_id].reshape(3, 3).copy())
+            gyros4.append(sim4.data.sensordata[9:12].copy())
+            ts4.append(float(sim4.data.time))
+        omega_fd4 = _omega_body_from_xmats(xmats4, ts4)
+        gyro_center4 = _gyro_matched_to_fd(gyros4)  # 離散恒等式に整合する 2 サンプル平均（上記参照）
+        omega_fd4_f = _lowpass_filtfilt(omega_fd4, dt_phys, GYRO_LPF_CUTOFF_HZ)
+        gyro_center4_f = _lowpass_filtfilt(gyro_center4, dt_phys, GYRO_LPF_CUTOFF_HZ)
+        skip4 = min(10, max(0, len(omega_fd4_f) - 1))
+        err4 = np.abs(omega_fd4_f[skip4:] - gyro_center4_f[skip4:])
+        ok_gyro_static = bool(err4.size > 0 and np.all(err4 <= 0.01))
+        checks.append(dict(name="gyro_vs_xmat_3axis_test1_straight", expected="<=0.01 rad/s (100Hz LPF後)",
+                            actual=float(np.max(err4)) if err4.size else float('nan'), tol="0.01",
+                            ok=ok_gyro_static))
+    else:
+        checks.append(dict(name="gyro_vs_xmat_3axis_test1_straight", expected="Test1 スナップショット利用可能",
+                            actual="欠落", tol="-", ok=False, note="CALIB['test1_05V_final_state'] が無い"))
 
     # --- 動的 Accel-X: Test1 の a0=v_ss/tau_v 系列と一致 ---
+    # r5 確定（2026-08-10 教授承認）: 判定を相対誤差(分母フロア0.02)から絶対値+相対の混合判定
+    # |err| <= max(10%*|a_theory|, 0.05 m/s^2) へ変更する。指数減衰する a_theory がゼロへ
+    # 近づく領域（t>0.35s）で相対誤差の分母が縮小し、背景チャタリングのノイズフロア
+    # （実測0.01〜0.03 m/s^2程度）に対して相対誤差が病的に発散していたことの是正
+    # （数値そのものは変更せず、判定式を目的に整合させる）。
     t1log = CALIB.get('test1_accelx_log')
     if t1log is not None:
         tt = t1log['t']
@@ -1482,20 +1741,21 @@ def test_06_sensors(params, open_xml, xml_dir, D):
         # ノイズが乗るため、点ごとの比較ではなく ±25ms の窓平均で比較する
         # （報告書「計画書との矛盾・懸念」の発見事項に対するロバスト化。実装バグ修正）。
         sample_ts = np.arange(0.05, min(1.0, tt[-1]), 0.1)
-        errs = []
+        abs_errs, bounds = [], []
         for st in sample_ts:
             window = (tt >= st - 0.025) & (tt <= st + 0.025)
             if not np.any(window):
                 continue
             a_theory = (v_ss_th / tau_v_th) * np.exp(-st / tau_v_th)
             a_meas = float(np.mean(ax[window]))
-            denom = max(abs(a_theory), 0.02)
-            errs.append(abs(a_meas - a_theory) / denom)
-        errs = np.array(errs)
-        ok_accel_dyn = bool(len(errs) > 0 and np.median(errs) <= 0.10)
-        checks.append(dict(name="accel_x_dynamic_vs_test1", expected="<=10% (median)",
-                            actual=float(np.median(errs)) if len(errs) else float('nan'), tol="10%",
-                            ok=ok_accel_dyn))
+            abs_errs.append(abs(a_meas - a_theory))
+            bounds.append(max(0.10 * abs(a_theory), 0.05))
+        abs_errs = np.array(abs_errs)
+        bounds = np.array(bounds)
+        ok_accel_dyn = bool(len(abs_errs) > 0 and np.all(abs_errs <= bounds))
+        margin = float(np.max(abs_errs - bounds)) if len(abs_errs) else float('nan')
+        checks.append(dict(name="accel_x_dynamic_vs_test1", expected="|err|<=max(10%|a_theory|,0.05m/s^2)",
+                            actual=f"max(|err|-bound)={margin:.4f}", tol="mixed", ok=ok_accel_dyn))
     else:
         checks.append(dict(name="accel_x_dynamic_vs_test1", expected="Test1 ログ利用可能", actual="欠落",
                             tol="-", ok=False, note="CALIB['test1_accelx_log'] が無い"))
@@ -1632,119 +1892,452 @@ def test_07_energy(params, open_xml, D):
 # Test 8: 急制動ピッチ安定（計画書 §6 Test8。動的部は qacc (a)のみ=loose）
 # ======================================================================
 def test_08_braking_pitch(params, open_xml, D):
+    # r5 確定（2026-08-10 教授承認）: Test8 を二部構成に改訂する。
+    #  (a) 実用制動試験: v≈2.5m/s まで加速→ctrl=[0,0]（短絡ブレーキ。プラギングなし）で
+    #      停止までログし、ピッチ・荷重移動・復帰を検証する（RL方策が通常発行する制動）。
+    #  (b) 乱用耐性試験（教授指示。検収待ちマーク不要）: v≈2.5m/sから ctrl=[-3,-3] を1.0s
+    #      印加（プラギング=逆転制動。RL方策が指令しうる最悪入力）し、転倒しないことのみを
+    #      確認する。ピッチ最大値は記録のみで合否対象外
+    #      （機序: note_004_r4_diagnostics.py 実験1でプラギング反動トルク ≈0.09N·m ≫
+    #      重力復元 ≈0.006N·m と確定済み。後傾ホッピングは軽量・高トルク車の実在物理であり
+    #      「転倒しないか」のみを問う）。
+    # 静的判定（転倒余裕）・qacc監視方針（loose）は従来どおり。
     checks = []
     margin_info = compute_tipover_margin(params, open_xml, D)
     ok_margin = margin_info['margin'] >= 1.5
     checks.append(dict(name="static_tipover_margin", expected=">=1.5", actual=margin_info['margin'], tol="-",
                         ok=ok_margin))
 
-    tracker = QaccTracker()
-    sim = MouseSim(open_xml, params=params)
-    h = get_handles(sim.model)
-    sim.full_reset(cell=(0, 0), heading_deg=0)
-    settle_contact(sim.model, sim.data, h)
-    contacts_static = measure_contacts_avg(sim.model, sim.data, h, ctrl=(0.0, 0.0), n_samples=100)
+    V_TARGET = 2.5  # m/s（計画書 r5 Test8(a)/(b) 共通の助走目標速度。手順の設定値であり期待値ではない）
+    x_f = margin_info['x_f']
+    z_cg = margin_info['z_cg']
+
+    def _accelerate_to(sim, tracker, v_target, max_time=3.0):
+        """ctrl=[Vmax,Vmax] で v_target [m/s] に到達するまで加速する（到達可否を返す）。
+        固定時間でなく速度到達を停止条件とする（note_004_r4_diagnostics.py 実験1と同じ手順）。"""
+        max_steps = int(round(max_time / params.physics_dt))
+        steps = 0
+        while sim.privileged_velocity()[0] < v_target and steps < max_steps:
+            sim.data.ctrl[0] = params.voltage_limit
+            sim.data.ctrl[1] = params.voltage_limit
+            mujoco.mj_step(sim.model, sim.data)
+            tracker.update(sim.data)
+            steps += 1
+        return sim.privileged_velocity()[0] >= v_target
+
+    # ------------------------------------------------------------------
+    # (a) 実用制動試験（r5確定）
+    # ------------------------------------------------------------------
+    tracker_a = QaccTracker()
+    sim_a = MouseSim(open_xml, params=params)
+    h_a = get_handles(sim_a.model)
+    sim_a.full_reset(cell=(0, 0), heading_deg=0)
+    settle_contact(sim_a.model, sim_a.data, h_a)
+    contacts_static = measure_contacts_avg(sim_a.model, sim_a.data, h_a, ctrl=(0.0, 0.0), n_samples=100)
     N_front_static = contacts_static.N_front
-    N_back_static = contacts_static.N_back
-    xmat0 = sim.data.xmat[h.mouse_body_id].reshape(3, 3)
+    xmat0 = sim_a.data.xmat[h_a.mouse_body_id].reshape(3, 3)
     pitch0 = float(np.arcsin(np.clip(-xmat0[2, 0], -1.0, 1.0)))
 
-    t0a = sim.data.time
-    run_logged(sim.model, sim.data, duration=1.2,
-               ctrl_fn=lambda t: (params.voltage_limit, params.voltage_limit), tracker=tracker,
-               log_every=2, t0=t0a, voltage_limit=params.voltage_limit)
+    reached_a = _accelerate_to(sim_a, tracker_a, V_TARGET)
+    checks.append(dict(name="8a_reached_v_target", expected=f">={V_TARGET} m/s",
+                        actual=sim_a.privileged_velocity()[0], tol="-", ok=reached_a))
 
-    floor_id = h.floor_geom_id
-    front_id = h.caster_front_geom_id
-    back_id = h.caster_back_geom_id
+    floor_id = h_a.floor_geom_id
+    front_id = h_a.caster_front_geom_id
+    back_id = h_a.caster_back_geom_id
     res6 = np.zeros(6)
-    dt = float(sim.model.opt.timestep)
-    n_steps = int(round(0.5 / dt))
-    t0b = sim.data.time
-    b_t, b_pitch, b_Nf, b_Nb, b_v = [], [], [], [], []
-    for step in range(n_steps):
-        sim.data.ctrl[0] = -params.voltage_limit
-        sim.data.ctrl[1] = -params.voltage_limit
-        mujoco.mj_step(sim.model, sim.data)
-        tracker.update(sim.data)
-        if (step + 1) % 2 == 0:
-            xmat = sim.data.xmat[h.mouse_body_id].reshape(3, 3)
+    dt_a = float(sim_a.model.opt.timestep)
+    t0brake = sim_a.data.time
+    a_t, a_pitch, a_Nf, a_Nb, a_v = [], [], [], [], []
+    t_stop_a = None
+    max_brake_steps = int(round(2.5 / dt_a))
+    LOG_EVERY_A = 2
+    # 【発見・実装上の理由】物理サブステップ単位の単発 d.contact 読み取りは、他の全テストで
+    # 既知の「4点/3点接地の不静定性由来のチャタリング」（measure_contacts_avg のdocstring
+    # 参照）と同一機序で、走行中の前キャスター接触が log_every 窓内で 0↔実測値の間を毎ステップ
+    # 交互に往復することを実測で確認した（減速の物理量そのもの[荷重移動 ΔN_f]は健全で
+    # 8a_load_transfer_dNf_3point は合格する）。他テストの measure_contacts_avg と同じ
+    # 考え方で、log_every 窓内の全サブステップを時間平均してから記録する（テスト側の
+    # 明白な実装バグ修正。合否閾値[静止時1%]の数値自体は変更しない）。
+    #
+    # r5 確定（2026-08-10 教授承認）: 接地品質判定（8a_front_caster_contact_quality）専用に、
+    # 制御周期 control_dt（=100Hz、Test6のLPFカットオフと同一の「センサ較正の検証は制御帯域で
+    # 行う」設計思想）幅で別途時間平均した a_Nf_ctrl 系列を追加で記録する。実測診断の結果、
+    # 上記 LOG_EVERY_A=2(1ms)窓の平均でも接地喪失イベントが1〜8ms周期で多発し（各イベント
+    # 自体は50ms未満で全て解消するが）時間比率が71%まで低下する一方、10ms(=control_dt)窓
+    # 平均では96%まで回復することを実測確認した（20ms窓では100%）。ピッチ・速度・荷重移動
+    # 等の他量は従来どおり LOG_EVERY_A=2 のまま変更しない。
+    CONTROL_WINDOW_STEPS = max(1, int(round(params.control_dt / dt_a)))
+    Nf_accum = Nb_accum = 0.0
+    Nf_ctrl_accum = 0.0
+    a_t_ctrl, a_Nf_ctrl = [], []
+    for step in range(max_brake_steps):
+        sim_a.data.ctrl[0] = 0.0
+        sim_a.data.ctrl[1] = 0.0
+        mujoco.mj_step(sim_a.model, sim_a.data)
+        tracker_a.update(sim_a.data)
+        Nf_step = Nb_step = 0.0
+        for i in range(sim_a.data.ncon):
+            c = sim_a.data.contact[i]
+            pair = (c.geom1, c.geom2)
+            if floor_id in pair:
+                other = c.geom1 if c.geom2 == floor_id else c.geom2
+                mujoco.mj_contactForce(sim_a.model, sim_a.data, i, res6)
+                nf = abs(float(res6[0]))
+                if other == front_id:
+                    Nf_step += nf
+                elif other == back_id:
+                    Nb_step += nf
+        Nf_accum += Nf_step
+        Nb_accum += Nb_step
+        Nf_ctrl_accum += Nf_step
+        if (step + 1) % CONTROL_WINDOW_STEPS == 0:
+            a_t_ctrl.append(sim_a.data.time - t0brake)
+            a_Nf_ctrl.append(Nf_ctrl_accum / CONTROL_WINDOW_STEPS)
+            Nf_ctrl_accum = 0.0
+        if (step + 1) % LOG_EVERY_A == 0:
+            xmat = sim_a.data.xmat[h_a.mouse_body_id].reshape(3, 3)
             pitch = float(np.arcsin(np.clip(-xmat[2, 0], -1.0, 1.0)))
-            Nf = 0.0
-            Nb = 0.0
-            for i in range(sim.data.ncon):
-                c = sim.data.contact[i]
-                pair = (c.geom1, c.geom2)
-                if floor_id in pair:
-                    other = c.geom1 if c.geom2 == floor_id else c.geom2
-                    mujoco.mj_contactForce(sim.model, sim.data, i, res6)
-                    nf = abs(float(res6[0]))
-                    if other == front_id:
-                        Nf += nf
-                    elif other == back_id:
-                        Nb += nf
-            v_fwd = float(np.dot(sim.data.qvel[h.root_dof_adr:h.root_dof_adr + 3], xmat[:, 0]))
-            b_t.append(sim.data.time - t0b)
-            b_pitch.append(pitch)
-            b_Nf.append(Nf)
-            b_Nb.append(Nb)
-            b_v.append(v_fwd)
-    b_t = np.array(b_t)
-    b_pitch = np.array(b_pitch)
-    b_Nf = np.array(b_Nf)
-    b_Nb = np.array(b_Nb)
-    b_v = np.array(b_v)
+            Nf = Nf_accum / LOG_EVERY_A
+            Nb = Nb_accum / LOG_EVERY_A
+            Nf_accum = Nb_accum = 0.0
+            v_fwd = sim_a.privileged_velocity()[0]
+            t_rel = sim_a.data.time - t0brake
+            a_t.append(t_rel)
+            a_pitch.append(pitch)
+            a_Nf.append(Nf)
+            a_Nb.append(Nb)
+            a_v.append(v_fwd)
+            if t_stop_a is None and v_fwd <= 0.0:
+                t_stop_a = t_rel
+            if t_stop_a is not None and t_rel >= t_stop_a + 1.0:
+                break
+    a_t = np.array(a_t)
+    a_pitch = np.array(a_pitch)
+    a_Nf = np.array(a_Nf)
+    a_v = np.array(a_v)
 
-    max_pitch_deg = float(np.degrees(np.max(np.abs(b_pitch))))
-    ok_pitch = max_pitch_deg <= 3.0
-    min_Nf = float(np.min(b_Nf))
-    ok_contact = min_Nf > 0.01 * N_front_static if N_front_static > 0 else False
+    ok_reached_stop = t_stop_a is not None
+    checks.append(dict(name="8a_reached_full_stop", expected=True, actual=ok_reached_stop, tol="-",
+                        ok=ok_reached_stop))
 
-    t0c = sim.data.time
-    run_logged(sim.model, sim.data, duration=1.0, ctrl_fn=lambda t: (0.0, 0.0), tracker=tracker,
-               log_every=2, t0=t0c, voltage_limit=params.voltage_limit)
-    xmat_final = sim.data.xmat[h.mouse_body_id].reshape(3, 3)
-    pitch_final = float(np.arcsin(np.clip(-xmat_final[2, 0], -1.0, 1.0)))
-    pitch_recover_deg = float(np.degrees(abs(pitch_final - pitch0)))
-    ok_recover = pitch_recover_deg <= 0.5
+    mask_braking = (a_t <= t_stop_a) if ok_reached_stop else np.ones_like(a_t, dtype=bool)
+    max_pitch_deg_a = float(np.degrees(np.max(np.abs(a_pitch[mask_braking])))) if np.any(mask_braking) else float('nan')
+    min_Nf_a = float(np.min(a_Nf[mask_braking])) if np.any(mask_braking) else float('nan')
 
-    checks += [
-        dict(name="dynamic_max_pitch_deg", expected="<=3deg", actual=max_pitch_deg, tol="-", ok=ok_pitch),
-        dict(name="dynamic_min_front_caster_force", expected=f">{0.01*N_front_static:.5f}N", actual=min_Nf,
-             tol="-", ok=ok_contact),
-        dict(name="dynamic_pitch_recovery_deg", expected="<=0.5deg", actual=pitch_recover_deg, tol="-",
-             ok=ok_recover),
+    ok_pitch_a = np.isfinite(max_pitch_deg_a) and max_pitch_deg_a <= 3.0
+    checks.append(dict(name="8a_max_pitch_deg", expected="<=3deg", actual=max_pitch_deg_a, tol="-", ok=ok_pitch_a))
+
+    # r5 確定（2026-08-10 教授承認）: 前キャスター接地判定を「常時 min>1%静止時」の単一点
+    # 判定から、「(A) 制動サンプルの95%以上で法線力>静止時1% かつ (B) 接地喪失
+    # （<1%静止時）の連続区間はすべて50ms以内に回復」の2条件へ変更する。実測診断の結果、
+    # 全開巡航→短絡ブレーキ切替の瞬間に前キャスターを含む全接点が数ms間完全に浮く実在の
+    # 跳ね（qacc最大1.6e5、荷重移動は理論と整合）が生じることを確認しており、瞬間的な
+    # 接地喪失そのものは前転の予兆ではない。前転（転倒）検出の本体はピッチ・転倒・復帰判定
+    # （8a_max_pitch_deg・8a_pitch_recovery_1s_after_stop_deg 等）で別途担保しているため、
+    # 本判定は「短時間の跳ねは許容しつつ、持続的な接地喪失・多発する接地喪失は不合格」と
+    # する準静的な接地品質判定に位置づける。
+    threshold_Nf = 0.01 * N_front_static
+    a_t_ctrl = np.array(a_t_ctrl)
+    a_Nf_ctrl = np.array(a_Nf_ctrl)
+    mask_ctrl = (a_t_ctrl <= t_stop_a) if ok_reached_stop else np.ones_like(a_t_ctrl, dtype=bool)
+    a_t_b = a_t_ctrl[mask_ctrl]
+    a_Nf_b = a_Nf_ctrl[mask_ctrl]
+    n_brake_samples = int(len(a_Nf_b))
+    if n_brake_samples > 0:
+        lost = a_Nf_b <= threshold_Nf
+        frac_contact_ok = 1.0 - float(np.mean(lost))
+        ok_frac = frac_contact_ok >= 0.95
+
+        max_loss_dur = 0.0
+        run_start_t = None
+        run_end_t = None
+        sample_dt_a = float(a_t_b[1] - a_t_b[0]) if n_brake_samples > 1 else dt_a * CONTROL_WINDOW_STEPS
+        for idx in range(n_brake_samples):
+            if lost[idx]:
+                if run_start_t is None:
+                    run_start_t = a_t_b[idx]
+                run_end_t = a_t_b[idx]
+            else:
+                if run_start_t is not None:
+                    max_loss_dur = max(max_loss_dur, run_end_t - run_start_t + sample_dt_a)
+                    run_start_t = None
+        if run_start_t is not None:
+            max_loss_dur = max(max_loss_dur, run_end_t - run_start_t + sample_dt_a)
+        ok_recovery = max_loss_dur <= 0.05
+    else:
+        frac_contact_ok, max_loss_dur = float('nan'), float('nan')
+        ok_frac = ok_recovery = False
+
+    ok_contact_a = bool(ok_frac and ok_recovery)
+    checks.append(dict(
+        name="8a_front_caster_contact_quality",
+        expected=">=95%接地 かつ 接地喪失連続区間<=50ms",
+        actual=f"接地率={frac_contact_ok*100:.1f}% 最大喪失連続時間={max_loss_dur*1000:.1f}ms",
+        tol="-", ok=ok_contact_a))
+
+    # 荷重移動検証（3点接地の準静的予測。制動開始直後の準定常区間で評価。r4式を踏襲）
+    if ok_reached_stop:
+        mask_q = (a_t >= 0.02) & (a_t <= min(0.2, t_stop_a))
+    else:
+        mask_q = np.zeros_like(a_t, dtype=bool)
+    if np.any(mask_q):
+        dNf_a = float(np.mean(a_Nf[mask_q]) - N_front_static)
+        a_meas_a = float(np.mean(np.gradient(a_v, a_t)[mask_q]))
+    else:
+        dNf_a, a_meas_a = float('nan'), float('nan')
+    x_w = float(sim_a.model.body('left_wheel').pos[0])
+    dN_theory_a = D.M * abs(a_meas_a) * z_cg / (x_f - x_w) if np.isfinite(a_meas_a) else float('nan')
+    ok_loadtransfer_a = bool(np.isfinite(dN_theory_a) and dN_theory_a != 0
+                              and abs(dNf_a - dN_theory_a) / dN_theory_a <= 0.30)
+    checks.append(dict(name="8a_load_transfer_dNf_3point", expected=dN_theory_a, actual=dNf_a, tol="±30%",
+                        ok=ok_loadtransfer_a))
+
+    if ok_reached_stop:
+        mask_recover = a_t >= t_stop_a + 1.0
+        pitch_recover_deg_a = (float(np.degrees(abs(a_pitch[mask_recover][0] - pitch0)))
+                                if np.any(mask_recover) else float('nan'))
+    else:
+        pitch_recover_deg_a = float('nan')
+    ok_recover_a = np.isfinite(pitch_recover_deg_a) and pitch_recover_deg_a <= 0.5
+    checks.append(dict(name="8a_pitch_recovery_1s_after_stop_deg", expected="<=0.5deg",
+                        actual=pitch_recover_deg_a, tol="-", ok=ok_recover_a))
+
+    qacc_ok_a, qacc_msg_a = tracker_a.check(strict_limit=None)
+    checks.append(dict(name="8a_qacc_monitor_loose", expected="OK", actual=qacc_msg_a, tol="loose", ok=qacc_ok_a))
+
+    # ------------------------------------------------------------------
+    # (b) 乱用耐性試験（教授指示。検収待ちマーク不要）
+    # ------------------------------------------------------------------
+    tracker_b = QaccTracker()
+    sim_b = MouseSim(open_xml, params=params)
+    h_b = get_handles(sim_b.model)
+    sim_b.full_reset(cell=(0, 0), heading_deg=0)
+    settle_contact(sim_b.model, sim_b.data, h_b)
+    reached_b = _accelerate_to(sim_b, tracker_b, V_TARGET)
+    checks.append(dict(name="8b_reached_v_target", expected=f">={V_TARGET} m/s",
+                        actual=sim_b.privileged_velocity()[0], tol="-", ok=reached_b))
+
+    dt_b = float(sim_b.model.opt.timestep)
+    n_plug = int(round(1.0 / dt_b))
+    min_zaxis = 1.0
+    max_pitch_plug_deg = 0.0
+    for _ in range(n_plug):
+        sim_b.data.ctrl[0] = -params.voltage_limit
+        sim_b.data.ctrl[1] = -params.voltage_limit
+        mujoco.mj_step(sim_b.model, sim_b.data)
+        tracker_b.update(sim_b.data)
+        xmat = sim_b.data.xmat[h_b.mouse_body_id].reshape(3, 3)
+        min_zaxis = min(min_zaxis, float(xmat[2, 2]))
+        pitch_deg = float(np.degrees(np.arcsin(np.clip(-xmat[2, 0], -1.0, 1.0))))
+        max_pitch_plug_deg = max(max_pitch_plug_deg, abs(pitch_deg))
+
+    rec_t, rec_pitch = [], []
+    n_rec = int(round(1.2 / dt_b))
+    t0rec = sim_b.data.time
+    for step in range(n_rec):
+        sim_b.data.ctrl[0] = 0.0
+        sim_b.data.ctrl[1] = 0.0
+        mujoco.mj_step(sim_b.model, sim_b.data)
+        tracker_b.update(sim_b.data)
+        xmat = sim_b.data.xmat[h_b.mouse_body_id].reshape(3, 3)
+        min_zaxis = min(min_zaxis, float(xmat[2, 2]))
+        if (step + 1) % 2 == 0:
+            rec_t.append(sim_b.data.time - t0rec)
+            rec_pitch.append(float(np.degrees(np.arcsin(np.clip(-xmat[2, 0], -1.0, 1.0)))))
+    rec_t = np.array(rec_t)
+    rec_pitch = np.array(rec_pitch)
+    idx_1s = int(np.argmin(np.abs(rec_t - 1.0))) if len(rec_t) else None
+    pitch_1s_after_deg = float(abs(rec_pitch[idx_1s])) if idx_1s is not None else float('nan')
+
+    ok_no_tip = min_zaxis > params.tipover_zaxis_threshold
+    checks.append(dict(name="8b_no_tipover", expected=f">{params.tipover_zaxis_threshold}", actual=min_zaxis,
+                        tol="-", ok=ok_no_tip,
+                        note=f"最大ピッチ(記録のみ・合否対象外)={max_pitch_plug_deg:.2f}deg"))
+
+    ok_pitch_recover_b = np.isfinite(pitch_1s_after_deg) and pitch_1s_after_deg <= 1.0
+    checks.append(dict(name="8b_pitch_recovery_1s_deg", expected="<=1deg", actual=pitch_1s_after_deg, tol="-",
+                        ok=ok_pitch_recover_b))
+
+    qacc_ok_b, qacc_msg_b = tracker_b.check(strict_limit=None)
+    checks.append(dict(name="8b_qacc_monitor_loose", expected="OK", actual=qacc_msg_b, tol="loose", ok=qacc_ok_b))
+
+    calib = dict(margin=margin_info, a_part=dict(a_meas=a_meas_a, dNf=dNf_a, dN_theory=dN_theory_a,
+                                                  t_stop=t_stop_a, max_pitch_deg=max_pitch_deg_a,
+                                                  min_Nf=min_Nf_a, frac_contact_ok=frac_contact_ok,
+                                                  max_loss_dur_ms=max_loss_dur * 1000.0),
+                 b_part=dict(max_pitch_plug_deg=max_pitch_plug_deg, min_zaxis=min_zaxis,
+                             pitch_1s_after_deg=pitch_1s_after_deg))
+    ok, msg = _finish("Test8_braking_pitch", checks, calib)
+    assert ok, msg
+
+
+# ======================================================================
+# Test 9: 直進方向安定性（ヨー外乱減衰）— 教授指示 2026-08-10 新設（検収待ちマーク不要）
+# 前キャスター支持+CG前方配置（r4 の3点接地化）の直進安定性を、ヨー外乱インパルス後の
+# 減衰で実測担保する。v ∈ {0.5, 2.0, v_max付近} の3水準で、定電圧整定→ヨー外乱→2sログ
+# →減衰判定を行う。qacc は loose 分類（外乱インパルス+高速水準のスリップ可能性のため）。
+# ======================================================================
+def test_09_yaw_stability(params, open_xml, D):
+    checks = []
+    calib_levels = {}
+
+    # 静的接地・v_max目安の実行時導出（Test1の定常式 v_ss(V) を V について逆算する）
+    sim0 = MouseSim(open_xml, params=params)
+    h0 = get_handles(sim0.model)
+    sim0.full_reset(cell=(0, 0), heading_deg=0)
+    settle_contact(sim0.model, sim0.data, h0)
+    contacts0 = measure_contacts_avg(sim0.model, sim0.data, h0, ctrl=(0.0, 0.0), n_samples=100)
+    N_c_static = contacts0.N_caster
+    mu_caster = contacts0.mu_caster if contacts0.mu_caster is not None else parse_mu_caster(params)
+    mu_wheel = contacts0.mu_wheel if contacts0.mu_wheel is not None else 1.0
+
+    def v_ss_of_V(V0):
+        return (2 * (D.gainprm0 / D.r) * V0 - 2 * (D.tau_c / D.r) - mu_caster * N_c_static) / D.c_eff
+
+    def V_of_v_target(v_target):
+        return (v_target * D.c_eff + 2 * D.tau_c / D.r + mu_caster * N_c_static) * D.r / (2 * D.gainprm0)
+
+    v_max_est = v_ss_of_V(params.voltage_limit)
+    levels = [
+        ("low_0.5", 0.5),
+        ("mid_2.0", 2.0),
+        ("high_0.95vmax", 0.95 * v_max_est),
     ]
 
-    mask_q = (b_t >= 0.1) & (b_t <= 0.3)
-    if np.any(mask_q):
-        dNf = float(np.mean(b_Nf[mask_q]) - N_front_static)
-        dNr = float(np.mean(b_Nb[mask_q]) - N_back_static)
-        a_meas = float(np.mean(np.gradient(b_v, b_t)[mask_q]))
-    else:
-        dNf, dNr, a_meas = float('nan'), float('nan'), float('nan')
-    x_f = margin_info['x_f']
-    x_r = margin_info['x_r']
-    z_cg = margin_info['z_cg']
-    dN_theory = 2 * D.M * abs(a_meas) * z_cg / (x_f - x_r) if np.isfinite(a_meas) else float('nan')
-    dN_meas = dNf - dNr
-    ok_loadtransfer = (np.isfinite(dN_theory) and dN_theory != 0
-                         and abs(dN_meas - dN_theory) / dN_theory <= 0.30)
-    checks.append(dict(name="load_transfer_dNf_minus_dNr", expected=dN_theory, actual=dN_meas, tol="±30%",
-                        ok=ok_loadtransfer))
+    # ヨー有効慣性 I_eff（Test3/Test5 r5 と同じ静的合成 Izz ベースで実行時導出）
+    izz_model = mujoco.MjModel.from_xml_path(open_xml)
+    h_izz = get_handles(izz_model)
+    wheel_term = 2 * (D.I_w + D.armature) * (D.L / (2 * D.r)) ** 2
+    I_eff = compute_izz_breakdown(izz_model)['total_izz'] + wheel_term
+    x_f = abs(float(izz_model.geom_pos[h_izz.caster_front_geom_id][0]))
 
-    qacc_ok, qacc_msg = tracker.check(strict_limit=None)
-    checks.append(dict(name="qacc_monitor_loose", expected="OK", actual=qacc_msg, tol="loose", ok=qacc_ok))
+    PULSE_DUR = 0.01     # s（教授指示の外乱印加時間）
+    OMEGA_TARGET = 1.0   # rad/s（教授指示の目安擾乱量）
+    tau_pulse = I_eff * OMEGA_TARGET / PULSE_DUR   # 印加トルク[N・m]（I_eff 実行時導出により算出）
+    HEADING_BOUND = 0.1  # rad（後半1sの方位変化がこれ以下なら「増幅していない」とみなす治具閾値）
 
-    calib = dict(margin=margin_info, a_meas=a_meas, dNf=dNf, dNr=dNr, dN_theory=dN_theory)
-    ok, msg = _finish("Test8_braking_pitch", checks, calib)
+    for label, v_target in levels:
+        sim = MouseSim(open_xml, params=params)
+        h = get_handles(sim.model)
+        tracker = QaccTracker()
+        sim.full_reset(cell=(0, 0), heading_deg=0)
+        settle_contact(sim.model, sim.data, h, tracker=tracker)
+
+        V0 = float(np.clip(V_of_v_target(v_target), -params.voltage_limit, params.voltage_limit))
+        settle_dur = 6.0 * D.tau_v  # >=6*tau_v でほぼ完全整定（残留 <exp(-6)=0.25%）
+        t0 = sim.data.time
+        log_settle = run_logged(sim.model, sim.data, duration=settle_dur, ctrl_fn=lambda t: (V0, V0),
+                                 tracker=tracker, log_every=2, t0=t0, voltage_limit=params.voltage_limit)
+        v_settled = float(np.mean(log_settle['v_fwd'][-20:]))
+
+        # ヨー外乱インパルスを data.qfrc_applied（フリージョイントのヨー回転DOF）に0.01s印加する。
+        # DOF 割付けは root_dof_adr+5（世界座標系 z 軸回りトルク。worldbody直結の free joint では
+        # 角速度DOFが世界座標系で表現されることをサンドボックス実験で確認済み）。
+        yaw_dof = h.root_dof_adr + 5
+        dt_phys = float(sim.model.opt.timestep)
+        n_pulse = max(1, int(round(PULSE_DUR / dt_phys)))
+        x0, y0, yaw0 = sim.privileged_pose()
+        for _ in range(n_pulse):
+            sim.data.ctrl[0] = V0
+            sim.data.ctrl[1] = V0
+            sim.data.qfrc_applied[yaw_dof] = tau_pulse
+            mujoco.mj_step(sim.model, sim.data)
+            tracker.update(sim.data)
+        sim.data.qfrc_applied[yaw_dof] = 0.0
+
+        t0log = sim.data.time
+        log = run_logged(sim.model, sim.data, duration=2.0, ctrl_fn=lambda t: (V0, V0), tracker=tracker,
+                          log_every=2, t0=t0log, voltage_limit=params.voltage_limit)
+
+        omega = log['sensordata'][:, 11]
+        t = log['t']
+        omega0 = float(omega[0])
+
+        # 判定1: 外乱後1sでヨーレートが初期擾乱の10%以下
+        idx_1s = int(np.argmax(t >= 1.0)) if np.any(t >= 1.0) else len(t) - 1
+        window_1s = (t >= max(0.0, t[idx_1s] - 0.02)) & (t <= t[idx_1s] + 0.02)
+        omega_1s = float(np.mean(np.abs(omega[window_1s]))) if np.any(window_1s) else float(abs(omega[idx_1s]))
+        ok_decay = abs(omega0) > 1e-9 and omega_1s <= 0.10 * abs(omega0)
+        checks.append(dict(name=f"decay_10pct_{label}", expected=f"<=10%*|omega0|={0.10*abs(omega0):.4f}rad/s",
+                            actual=omega_1s, tol="10%", ok=ok_decay))
+
+        # 判定2: ヘディングが発散しない（新しい定常方位への整定は可 — 非ホロノミック系では
+        # 方位は積分器であり、「擾乱が増幅しない」ことが判定基準。ω が判定1で減衰済みなら、
+        # 後半1s [1s,2s] での方位変化がごく小さいことが「増幅していない」ことの直接証拠になる。
+        # 新しい定常方位そのものの値は合否対象外。教材コメントとして本文に明記する。
+        mask_1s = (t >= max(0.0, t[idx_1s] - 0.05)) & (t <= t[idx_1s] + 0.05)
+        yaw_at_1s = float(np.mean(log['yaw'][mask_1s])) if np.any(mask_1s) else float(log['yaw'][idx_1s])
+        yaw_at_2s = float(log['yaw'][-1])
+        heading_drift_2nd_half = abs(yaw_at_2s - yaw_at_1s)
+        ok_heading = heading_drift_2nd_half <= HEADING_BOUND
+        checks.append(dict(name=f"heading_bounded_{label}", expected=f"<={HEADING_BOUND}rad(1s->2s方位変化)",
+                            actual=heading_drift_2nd_half, tol="-", ok=ok_heading))
+
+        # 判定3: 横変位が有界（<0.5m）。外乱直前の進行方向を基準とした横方向変位で評価する
+        dx = log['x'] - x0
+        dy = log['y'] - y0
+        lateral = -np.sin(yaw0) * dx + np.cos(yaw0) * dy
+        max_lateral = float(np.max(np.abs(lateral)))
+        ok_lateral = max_lateral < 0.5
+        checks.append(dict(name=f"lateral_bounded_{label}", expected="<0.5m", actual=max_lateral, tol="-",
+                            ok=ok_lateral))
+
+        # 参考記録（合否対象外）: 前スキッドのヨー減衰解析式 M_damp=-(mu_c*N_c*x_f^2/v)*omega
+        # による減衰時定数のオーダー照合と、車輪差動逆起電力減衰 b_rot を含む合成参考値
+        # tau_yaw≈I_eff/(b_rot+mu_c*N_c*x_f^2/v)。すべて実行時導出。
+        v_for_damp = v_settled if abs(v_settled) > 1e-6 else v_target
+        c_yaw_caster = mu_caster * N_c_static * x_f ** 2 / abs(v_for_damp)
+        c_yaw_total = D.b_rot + c_yaw_caster
+        tau_yaw_theory = I_eff / c_yaw_total if c_yaw_total > 0 else float('nan')
+        _, tau_yaw_meas, r2_decay = fit_first_order_rise(t, omega, y0=omega0)
+
+        slip_saturation_max = None
+        if label.startswith("high"):
+            # 高速水準のみ: 車輪接触の横力/(mu*法線力) 飽和率の最大値を併記する（合否対象外）
+            slip_ratios = []
+            force6 = np.zeros(6)
+            wheel_geoms = {h.left_wheel_geom_id, h.right_wheel_geom_id}
+            for _ in range(int(round(0.5 / dt_phys))):
+                sim.data.ctrl[0] = V0
+                sim.data.ctrl[1] = V0
+                mujoco.mj_step(sim.model, sim.data)
+                tracker.update(sim.data)
+                for i in range(sim.data.ncon):
+                    c = sim.data.contact[i]
+                    pair = (c.geom1, c.geom2)
+                    if h.floor_geom_id in pair:
+                        other = c.geom1 if c.geom2 == h.floor_geom_id else c.geom2
+                        if other in wheel_geoms:
+                            mujoco.mj_contactForce(sim.model, sim.data, i, force6)
+                            normal = abs(float(force6[0]))
+                            tangential = float(np.hypot(force6[1], force6[2]))
+                            if normal > 1e-9:
+                                slip_ratios.append(tangential / (mu_wheel * normal))
+            slip_saturation_max = float(np.max(slip_ratios)) if slip_ratios else float('nan')
+
+        qacc_ok, qacc_msg = tracker.check(strict_limit=None)
+        checks.append(dict(name=f"qacc_monitor_loose_{label}", expected="OK", actual=qacc_msg, tol="loose",
+                            ok=qacc_ok))
+
+        calib_levels[label] = dict(
+            v_target=v_target, V0=V0, v_settled=v_settled, omega0=omega0, omega_1s=omega_1s,
+            tau_yaw_theory=tau_yaw_theory, tau_yaw_meas=tau_yaw_meas, decay_fit_r2=r2_decay,
+            c_yaw_caster=c_yaw_caster, c_yaw_total=c_yaw_total,
+            heading_drift_2nd_half=heading_drift_2nd_half, max_lateral=max_lateral,
+            slip_saturation_max=slip_saturation_max,
+        )
+
+    CALIB['test9_levels'] = calib_levels
+    ok, msg = _finish("Test9_yaw_stability", checks, calib=dict(
+        v_max_est=v_max_est, I_eff=I_eff, tau_pulse=tau_pulse, x_f=x_f, levels=calib_levels))
     assert ok, msg
 
 
 # ======================================================================
 # S1: 質量・慣性（計画書 §7 S1、モデル読込+短い静定のみ）
 # ======================================================================
-def test_09_s1_mass_inertia(params, open_xml, D):
+def test_10_s1_mass_inertia(params, open_xml, D):
     checks = []
     model = mujoco.MjModel.from_xml_path(open_xml)
     h = get_handles(model)
@@ -1791,7 +2384,7 @@ def test_09_s1_mass_inertia(params, open_xml, D):
 # ======================================================================
 # S2: 接触（計画書 §7 S2）
 # ======================================================================
-def test_10_s2_contact(params, open_xml, xml_dir):
+def test_11_s2_contact(params, open_xml, xml_dir):
     checks = []
     sim = MouseSim(open_xml, params=params)
     h = get_handles(sim.model)
@@ -1833,7 +2426,7 @@ def test_10_s2_contact(params, open_xml, xml_dir):
 # ======================================================================
 # S3: センサ（計画書 §7 S3）
 # ======================================================================
-def test_11_s3_sensors(params, open_xml):
+def test_12_s3_sensors(params, open_xml):
     checks = []
     model = mujoco.MjModel.from_xml_path(open_xml)
     data = mujoco.MjData(model)
@@ -1883,7 +2476,7 @@ def test_11_s3_sensors(params, open_xml):
 # ======================================================================
 # S4: 転倒余裕（計画書 §7 S4）
 # ======================================================================
-def test_12_s4_tipover(params, open_xml, D):
+def test_13_s4_tipover(params, open_xml, D):
     margin_info = compute_tipover_margin(params, open_xml, D)
     ok = margin_info['margin'] >= 1.5
     checks = [dict(name="tipover_margin", expected=">=1.5", actual=margin_info['margin'], tol="-", ok=ok)]
@@ -1894,7 +2487,7 @@ def test_12_s4_tipover(params, open_xml, D):
 # ======================================================================
 # 接触健全性（計画書 §7、C2 是正の最終確認）
 # ======================================================================
-def test_13_contact_health(params, xml_dir, D):
+def test_14_contact_health(params, xml_dir, D):
     checks = []
     M = D.M
     dt = params.physics_dt

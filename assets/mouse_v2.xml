@@ -30,13 +30,13 @@
       <freejoint name="root"/>
       <camera name="track" mode="trackcom" pos="0 0 0.8" xyaxes="0 -1 0 1 0 0" fovy="45"/>
       <geom name="mein_body1" type="box" size="0.05 0.03 0.0008" rgba="0.05 0.4 0.15 1" pos="0 0 0.002" friction="0.4 0.005 1e-4" mass="0.029"/>
-      <geom name="battery" type="box" size="0.0125 0.015 0.004" pos="-0.015 0 0.007" material="mat_battery" mass="0.02"/>
+      <geom name="battery" type="box" size="0.0125 0.015 0.004" pos="0.025 0 0.007" material="mat_battery" mass="0.02"/>
       <geom name="mein_body2" type="mesh" mesh="coner" friction="0.4 0.005 1e-4" rgba="0.05 0.4 0.15 1" pos="0.014 0.03 0.002" mass="0.0015"/>
       <geom name="mein_body3" type="mesh" mesh="coner" friction="0.4 0.005 1e-4" rgba="0.05 0.4 0.15 1" pos="0.014 -0.03 0.002" mass="0.0015" euler="180 0 0"/>
       <geom name="mein_body4" type="mesh" mesh="coner" friction="0.4 0.005 1e-4" rgba="0.05 0.4 0.15 1" pos="-0.014 0.03 0.002" mass="0.0015" euler="0 180 0"/>
       <geom name="mein_body5" type="mesh" mesh="coner" friction="0.4 0.005 1e-4" rgba="0.05 0.4 0.15 1" pos="-0.014 -0.03 0.002" mass="0.0015" euler="180 180 0"/>
       <geom name="caster_front" type="sphere" size="0.002" pos="0.045 0 0.002" rgba="0.5 0.5 0.5 1" friction="0 0 0" mass="0.001"/>
-      <geom name="caster_back" type="sphere" size="0.002" pos="-0.045 0 0.002" rgba="0.5 0.5 0.5 1" friction="0 0 0" mass="0.001"/>
+      <geom name="caster_back" type="sphere" size="0.002" pos="-0.045 0 0.0024000000000000002" rgba="0.5 0.5 0.5 1" friction="0 0 0" mass="0.001"/>
       <body name="motorbox1" pos="0 -0.018 0.0135">
         <geom type="box" size="0.0117 0.0135 0.0117" rgba="0.1 0.1 0.1 1" mass="0.018"/>
       </body>
@@ -104,7 +104,7 @@
   <contact>
     <exclude body1="mouse" body2="left_wheel"/>
     <exclude body1="mouse" body2="right_wheel"/>
-    <pair geom1="caster_front" geom2="floor" friction="0.08 0.08 0.005 1e-4 1e-4"/>
-    <pair geom1="caster_back" geom2="floor" friction="0.08 0.08 0.005 1e-4 1e-4"/>
+    <pair geom1="caster_front" geom2="floor" friction="0.08 0.08 1e-4 1e-4 1e-4"/>
+    <pair geom1="caster_back" geom2="floor" friction="0.08 0.08 1e-4 1e-4 1e-4"/>
   </contact>
 </mujoco>

@@ -8,7 +8,8 @@ mouse_v2 確定値）であり、本ファイルでは同表の値を一字一�
 （独自の丸め・変更はしない）。棄却済み所見 R1/R2（同計画書 §2.2）の数値は使用しない。
 
 rev.A（旧草稿）からの主な変更点:
-  - DC モータ電気定数を FA-130RA-18100(3V定格) 相当・減速比 5:1 に更新
+  - DC モータ電気定数を rev.B で FA-130RA-18100(3V定格) 相当に、計画書 r3 で
+    FAULHABER 1717T003SR（コアレス）に更新（減速比 5:1 は共通）
   - 車輪ジョイントに frictionloss（乾性摩擦）を新設、damping を縮小
   - 電池ボディを新設し mein_body1 の質量から分離
   - 接触摩擦（床・機体外殻/壁・キャスター<pair>）と solref を明示値化
@@ -47,12 +48,18 @@ class RobotParams:
     mass_sensor_geom: float = 0.00025
     # 電池（新規。1S LiPo 相当、低位置搭載で転倒余裕確保。minor所見(1)の是正）[kg]
     mass_battery: float = 0.020
-    # 合計 = 0.035 + 4*0.0015 + 2*0.001 + 2*0.015 + 2*0.005 + 12*0.00025 + 0.020 = 0.106 kg
+    # 合計 = 0.029 + 4*0.0015 + 2*0.001 + 2*0.018 + 2*0.005 + 12*0.00025 + 0.020 = 0.106 kg（r3）
     # 慣性は XML compiler の inertiafromgeom="true" により各 geom 質量から自動計算される。
 
     # 電池ボディ geom（mouse body 直下に追加。計画書 §4.2/§5 手順1-3）
     battery_size: str = "0.0125 0.015 0.004"   # box half-size [m]
-    battery_pos: str = "-0.015 0 0.007"        # 機体座標系での位置 [m]（低位置搭載）
+    # r4（3点接地化）: CG を車軸前方 3〜10mm に置くため電池を前方搭載
+    # （x=+0.025 で CG_x ≈ +5.8mm。前キャスター静的荷重 ≈13% Mg ≥5% を満たす。
+    #  x 範囲 12.5〜37.5mm はモータ箱(〜11.7mm)と干渉しない）
+    battery_pos: str = "0.025 0 0.007"         # 機体座標系での位置 [m]（低位置・前方搭載）
+    # r4: 後キャスターは静止時クリアランス 0.4mm のバンプストップ（後傾時のみ接地。
+    # 4点接地の静力学的不静定＝接触ソルバの荷重配分振動を解消する3点接地化）
+    caster_rear_clearance: float = 0.0004      # [m]
 
     # ------------------------------------------------------------------
     # DC モータ電気モデル（FAULHABER 1717T003SR、コアレス、3V定格。計画書 §4.1/§4.2 改訂 r3
@@ -113,7 +120,10 @@ class RobotParams:
     # M1 前に感度分析推奨。摩擦力は μ_c×法線力として接触ソルバが毎ステップ計算するため、
     # 加減速の荷重移動による摩擦力の増減が自動で再現される（Test8 で検証）。
     # 結合則(要素ごとmax)より優先される<pair>で指定する。
-    caster_pair_friction: str = "0.08 0.08 0.005 1e-4 1e-4"
+    # r4（コミット 360ab5b）: 捩れ摩擦成分を 0.005→1e-4 に縮小（微小接触パッチ ~0.1mm の
+    # 物理的整合。0.005 では捩れ抗トルク ≈1e-3 N·m が滑り摩擦項と同オーダーになり非物理。
+    # Test3 の Ω_ss +30% 系統乖離と I_zz パルス同定 1.9 倍異常の推定原因として裁定）
+    caster_pair_friction: str = "0.08 0.08 1e-4 1e-4 1e-4"
     # 接触ソルバ softness（C2 是正。timeconst=0.002s。既定[0.02,1]は機体スケールに対し過大に柔らかい）
     solref: str = "0.002 1"
 
@@ -137,17 +147,17 @@ class RobotParams:
     # ------------------------------------------------------------------
     @property
     def armature(self) -> float:
-        """車輪ジョイントの armature = N^2 * J_rotor [kg・m^2]（計画書 §4.2: 公称 8.0e-6）。"""
+        """車輪ジョイントの armature = N^2 * J_rotor [kg・m^2]（計画書 §4.2 r3: 公称 1.475e-6）。"""
         return (self.gear_ratio ** 2) * self.rotor_inertia
 
     @property
     def gainprm0(self) -> float:
-        """<general> アクチュエータ gainprm[0] = N*Kt/R [N・m/V]（計画書 §4.1/§4.2: 公称 7.5704e-3）。"""
+        """<general> アクチュエータ gainprm[0] = N*Kt/R [N・m/V]（計画書 §4.1/§4.2 r3: 公称 9.252e-3）。"""
         return self.gear_ratio * self.motor_Kt / self.motor_R
 
     @property
     def biasprm2(self) -> float:
-        """<general> アクチュエータ biasprm[2] = -N^2*Kt*Ke/R [N・m・s/rad]（計画書 §4.1/§4.2: 公称 -8.187e-5）。
+        """<general> アクチュエータ biasprm[2] = -N^2*Kt*Ke/R [N・m・s/rad]（計画書 §4.1/§4.2 r3: 公称 -9.16e-5）。
 
         biasprm は ctrl=0 でも作用する（V=0 は端子短絡ブレーキを表す。計画書 §4.1 注意）。
         """
