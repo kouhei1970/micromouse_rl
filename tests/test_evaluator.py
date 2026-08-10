@@ -508,6 +508,30 @@ def test6_kpi_metrics():
     record("kpi_later_run_defined_by_start", True, k["goal_reached"], ok,
            f"初回ゴールは t_end 最小で決定（fast_run_done={k['fast_run_done']}）")
 
+    # (6b) 指標 (e) 初回最短走行効率 = 初回の最短走行 ÷ 最良（研究計画書 §2）
+    #      走行2が 40s、走行3が 20s なら (e) = 40/20 = 2.0（探索不足）
+    k = maze_kpi([run(1, "goal", 0.0, 100.0), run(2, "goal", 200.0, 240.0),
+                   run(3, "goal", 300.0, 320.0)])
+    ok = (abs(k["first_fast_time"] - 40.0) < 1e-9 and abs(k["fast_time"] - 20.0) < 1e-9
+          and abs(k["first_fast_efficiency"] - 2.0) < 1e-9)
+    all_ok = all_ok and ok
+    record("kpi_e_first_fast_efficiency", 2.0, k["first_fast_efficiency"], ok,
+           "初回最短40s / 最良20s")
+
+    # (6c) 初回の最短走行がそのまま最良なら (e) = 1.00（理想）
+    k = maze_kpi([run(1, "goal", 0.0, 100.0), run(2, "goal", 200.0, 220.0),
+                   run(3, "goal", 300.0, 325.0)])
+    ok = abs(k["first_fast_efficiency"] - 1.0) < 1e-9
+    all_ok = all_ok and ok
+    record("kpi_e_ideal_is_one", 1.0, k["first_fast_efficiency"], ok)
+
+    # (6d) 最短走行が成立しない面は (e) 未定義（None）
+    k = maze_kpi([run(1, "goal", 0.0, 100.0)])
+    ok = (k["first_fast_efficiency"] is None and k["first_fast_time"] is None)
+    all_ok = all_ok and ok
+    record("kpi_e_undefined_when_no_fast_run", None, k["first_fast_efficiency"], ok,
+           "未定義の面は件数を別途集計する（未定義を除いた中央値だけ見ると失敗面が多い方が有利に見えるため）")
+
     # (7) 集計: 3 迷路（到達3・最短成立2・有効1）
     mazes = [
         {"maze_id": "m1", "best_time": 100.0, "runs": [run(1, "goal", 0.0, 100.0)]},
@@ -518,7 +542,9 @@ def test6_kpi_metrics():
     ]
     agg = aggregate_kpi(mazes)
     ok = (agg["a_goal_reached"]["n"] == 3 and agg["b_fast_run_done"]["n"] == 2
-          and agg["c_fast_run_effective"]["n"] == 2)
+          and agg["c_fast_run_effective"]["n"] == 2
+          and agg["e_first_fast_efficiency"]["n_defined"] == 2
+          and agg["e_first_fast_efficiency"]["n_undefined"] == 1)
     all_ok = all_ok and ok
     record("kpi_aggregate_counts", "a=3,b=2,c=2",
            f"a={agg['a_goal_reached']['n']},b={agg['b_fast_run_done']['n']},c={agg['c_fast_run_effective']['n']}",

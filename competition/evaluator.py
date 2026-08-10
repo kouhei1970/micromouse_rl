@@ -372,7 +372,8 @@ def maze_kpi(runs) -> dict:
     goal_runs = [r for r in runs if r["outcome"] == "goal" and r.get("run_time") is not None]
     if not goal_runs:
         return {"goal_reached": False, "fast_run_done": False, "fast_run_effective": False,
-                "explore_time": None, "fast_time": None, "improvement_ratio": None}
+                "explore_time": None, "fast_time": None, "improvement_ratio": None,
+                "first_fast_time": None, "first_fast_efficiency": None}
 
     first_goal = min(goal_runs, key=lambda r: r["t_end"])
     explore_time = float(first_goal["run_time"])
@@ -380,9 +381,17 @@ def maze_kpi(runs) -> dict:
     later_goals = [r for r in goal_runs if r["t_start"] > first_goal["t_end"]]
     if not later_goals:
         return {"goal_reached": True, "fast_run_done": False, "fast_run_effective": False,
-                "explore_time": explore_time, "fast_time": None, "improvement_ratio": None}
+                "explore_time": explore_time, "fast_time": None, "improvement_ratio": None,
+                "first_fast_time": None, "first_fast_efficiency": None}
 
     fast_time = float(min(r["run_time"] for r in later_goals))
+    # (e) 初回最短走行効率 = 初回の最短走行タイム ÷ その迷路での最良タイム
+    #  （研究計画書 §2、コミット e8b7896）。1.00 が理想で、大きいほど探索不足。
+    #  「初回の最短走行」= 初回ゴール到達より後に開始した走行のうち**最初に成立したもの**
+    #  （(b) の定義と整合）。成立しなかった面は未定義（None）とし、件数を別途集計する。
+    first_fast = min(later_goals, key=lambda r: r["t_start"])
+    first_fast_time = float(first_fast["run_time"])
+    first_fast_efficiency = (first_fast_time / fast_time) if fast_time > 0 else None
     ratio = 1.0 - (fast_time / explore_time) if explore_time > 0 else None
     # 憲章の「10% 以上短い」に忠実に閉区間で判定する。ちょうど 10% の入力
     # （例 100.0s → 90.0s）は 2 進浮動小数点では 0.09999999999999998 となり
@@ -390,13 +399,24 @@ def maze_kpi(runs) -> dict:
     return {"goal_reached": True, "fast_run_done": True,
             "fast_run_effective": bool(ratio is not None and ratio >= 0.10 - 1e-9),
             "explore_time": explore_time, "fast_time": fast_time,
-            "improvement_ratio": ratio}
+            "improvement_ratio": ratio,
+            "first_fast_time": first_fast_time,
+            "first_fast_efficiency": first_fast_efficiency}
 
 
 def aggregate_kpi(maze_results) -> dict:
     """迷路ごとの結果 dict 列から 4 指標のサマリを作る（憲章 §2）。
     過去の結果 JSON（kpi 欄なし）にも使えるよう、kpi が無ければ runs から算出する。"""
-    kpis = [r.get("kpi") or maze_kpi(r["runs"]) for r in maze_results]
+    # 保存済み kpi 欄があってもキーが欠けていれば runs から再計算する
+    # （指標を追加した後に過去の結果 JSON を再集計できるようにするため。
+    #  実際、(e) を追加した際に古い JSON の kpi 欄が None を返す不具合が出た）
+    def _kpi_of(r):
+        k = r.get("kpi")
+        if not k or "first_fast_efficiency" not in k:
+            return maze_kpi(r["runs"])
+        return k
+
+    kpis = [_kpi_of(r) for r in maze_results]
     n = len(kpis)
     a = sum(1 for k in kpis if k["goal_reached"])
     b = sum(1 for k in kpis if k["fast_run_done"])
@@ -404,6 +424,9 @@ def aggregate_kpi(maze_results) -> dict:
     explore = [k["explore_time"] for k in kpis if k["explore_time"] is not None]
     fast = [k["fast_time"] for k in kpis if k["fast_time"] is not None]
     best = [r["best_time"] for r in maze_results if r.get("best_time") is not None]
+    eff = [k["first_fast_efficiency"] for k in kpis if k.get("first_fast_efficiency") is not None]
+    per_maze_eff = {r.get("maze_id", f"maze_{i}"): (k.get("first_fast_efficiency"))
+                    for i, (r, k) in enumerate(zip(maze_results, kpis))}
     return {
         "n_mazes": n,
         "a_goal_reached": {"n": a, "rate": (a / n) if n else None},
@@ -417,6 +440,18 @@ def aggregate_kpi(maze_results) -> dict:
         },
         "explore_time": {"median": float(np.median(explore)) if explore else None},
         "fast_time": {"median": float(np.median(fast)) if fast else None},
+        # (e) 初回最短走行効率（研究計画書 §2）。**未定義（初回の最短走行が
+        # 成立しなかった面）の件数を必ず併記する** — 未定義を除いた中央値だけを
+        # 見ると、失敗面が多い方が有利に見えてしまうため
+        "e_first_fast_efficiency": {
+            "median": float(np.median(eff)) if eff else None,
+            "mean": float(np.mean(eff)) if eff else None,
+            "min": float(np.min(eff)) if eff else None,
+            "max": float(np.max(eff)) if eff else None,
+            "n_defined": len(eff),
+            "n_undefined": n - len(eff),
+            "per_maze": per_maze_eff,
+        },
     }
 
 

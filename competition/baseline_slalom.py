@@ -367,6 +367,26 @@ class ReferencePath:
         self.length = float(s[-1]) if len(s) else 0.0
 
 
+def build_line_path(p0, p1, heading: float, stop_at_end: bool, ds: float = 0.005) -> ReferencePath:
+    """p0からp1への単純な直線経路を密サンプルする（円弧なし）。実際の車体
+    現在位置から目標セル中心までの短い減速停止経路を作るのに使う
+    （_replan()の「先頭セル自体での方位転換」フォールバック。区画中心
+    ではなく実位置を始点にするのは、動いたままその場旋回を始めて位置が
+    ずれる不具合がスモークテストで見つかったため）。"""
+    length = math.hypot(p1[0] - p0[0], p1[1] - p0[1])
+    n = max(2, int(round(length / ds)) + 1)
+    t = np.linspace(0.0, length, n)
+    if length > 1e-9:
+        ux, uy = (p1[0] - p0[0]) / length, (p1[1] - p0[1]) / length
+    else:
+        ux, uy = math.cos(heading), math.sin(heading)
+    xs = p0[0] + ux * t
+    ys = p0[1] + uy * t
+    heads = np.full(n, heading)
+    curvs = np.zeros(n)
+    return ReferencePath(t, xs, ys, heads, curvs, stop_at_end)
+
+
 def build_reference_path(cells, directions, heading_in: str, corner_radii,
                           cell_size: float, stop_at_end: bool, ds: float = 0.005) -> ReferencePath:
     """セル列 cells（区画座標、長さm>=1）と directions（cells[i]→cells[i+1]の
@@ -459,7 +479,10 @@ def build_speed_profile(s_arr, curv_arr, v_ceil_straight: float, a_lat: float,
                          a_max: float, v_creep: float, stop_at_end: bool) -> np.ndarray:
     """曲率依存の速度上限包絡線（v_turn=sqrt(a_lat/|curvature|)、設計文書§2.2）
     を作り、前後2パス（CNC等で標準的な時間最適速度包絡線の手法）で
-    前後進加速度 a_max の制約を反映する。
+    前後進加速度 a_max の制約を反映する。これは経路上の位置 s だけに依存する
+    「その地点で許される速度の上限」であり、車体が実際に今どの速度で走って
+    いるかは考慮しない（張り替え直後の実速度との整合は、この関数ではなく
+    制御側のレートリミット済み速度設定値で取る。_do_drive_control参照）。
 
     速度指令の下限（クリープ、設計文書§10-2）を v_ceil に明示的に折り込む
     （stop_at_end の場合のみ終端1点を0にしてクリープ下限を上書きする＝
@@ -673,6 +696,14 @@ class SlalomPolicy(MousePolicy):
         self._pending_dir_after_turn = None
         self._turn_target_yaw = None
         self._last_sensed_cell = None
+        # 速度指令のレートリミット済み設定値（L0-a/L0-bの_fwd_v_setpointと
+        # 同じ考え方）。build_speed_profileが作る速度上限は経路上の位置
+        # だけに依存する空間的な値であり、張り替え直後に車体が実際どの
+        # 速度で走っているかは知らない。カーソル参照点の速度をそのまま
+        # 指令すると、張り替え直後に指令が不連続に跳ぶ（スモークテストで
+        # 確認: ヨー発散→壁衝突）。ここでティックごとにa_max/a_latで
+        # レートリミットしてから使うことで滑らかにする。
+        self._v_setpoint = 0.0
         if self._wheel_pi_l is not None:
             self._wheel_pi_l.reset()
             self._wheel_pi_r.reset()
@@ -906,6 +937,7 @@ class SlalomPolicy(MousePolicy):
         self._pending_dir_after_turn = direction
         self._state = "TURN_INPLACE"
         self._path = None
+        self._v_setpoint = 0.0
         if self._wheel_pi_l is not None:
             self._wheel_pi_l.reset()
             self._wheel_pi_r.reset()
@@ -917,13 +949,24 @@ class SlalomPolicy(MousePolicy):
 
         探索走行では次の1〜2区画ぶんだけ軌道生成し v_explore に抑える。
         最短走行（初回ゴール到達後）は既知地図で目標セルまでの全経路を
-        一括生成する（§2.3）。"""
+        一括生成する（§2.3）。
+
+        require_known_exit=True は両モード共通で常に適用する。理由:
+        実装時のスモークテストで、最短走行(一括生成)が「一度も訪れていない
+        セル」を経由するflood-fill最短経路（未知壁=壁なしの楽観的既定値を
+        使用）を一括で軌道化し、実際には壁があり衝突する不具合を確認した
+        （経路決定自体は楽観的規則のままでよいが、円弧つき軌道の生成に
+        コミットするのは既知区間に限るべき、というのはL0-bの_known_openと
+        同じ考え方）。既知地図が最短経路の全区間をカバーしていれば
+        「一括生成」は変わらず成立し、未知区間に達したときだけ1区画ずつの
+        チェーンに自動的に縮退する（次にその区画へ到達しセンスした時点で
+        続きが伸びる）。"""
         cur_cell = pos_to_cell(x, y, self.width, self.height, self.cell_size)
         for _attempt in range(3):
             max_cells = (self.explore_horizon_cells if not self._explored_once
                          else self.width * self.height)
             chain = self._build_chain(cur_cell, self._heading_dir, max_cells,
-                                       require_known_exit=not self._explored_once)
+                                       require_known_exit=True)
             cells = chain["cells"]
 
             if len(cells) >= 2:
@@ -954,7 +997,25 @@ class SlalomPolicy(MousePolicy):
                 return
 
             if chain["need_turn_to"] is not None:
-                self._enter_turn_inplace(chain["need_turn_to"])
+                # 現在セル自体で方位転換が必要（滑らかな進入余地なし）。
+                # 実際の車体現在位置(x,y)からそのセル中心までの短い直線減速
+                # 停止経路を挟んでから、その場旋回へ移る（動いたままいきなり
+                # 回頭を始めると位置がずれる不具合がスモークテストで見つかった
+                # ため。cells[0]=start_cellなのでその中心を目標点にする）。
+                target_xy = ((cells[0][0] + 0.5) * self.cell_size, (cells[0][1] + 0.5) * self.cell_size)
+                if math.hypot(target_xy[0] - x, target_xy[1] - y) > 1e-3:
+                    path = build_line_path((x, y), target_xy, _HEADING_RAD[self._heading_dir],
+                                            stop_at_end=True, ds=self.path_ds)
+                    v_ceil = self.v_explore if not self._explored_once else self.v_cap
+                    path.speed = build_speed_profile(path.s, path.curvature, v_ceil, self.a_lat,
+                                                      self.a_max, self.v_creep, True)
+                    self._path = path
+                    self._cursor = 0
+                    self._path_end_reason = "pre_turn"
+                    self._pending_dir_after_turn = chain["need_turn_to"]
+                    self._state = "DRIVE"
+                else:
+                    self._enter_turn_inplace(chain["need_turn_to"])
                 return
 
             if chain["reached_target"]:
@@ -976,6 +1037,14 @@ class SlalomPolicy(MousePolicy):
             self._enter_turn_inplace(self._pending_dir_after_turn)
             return
         if reason in ("goal", "start"):
+            # ゴール停止(v_ref=0まで減速)直後は、車輪PIの積分項が減速中の
+            # 負の誤差を蓄積したまま残っている。反転直後は v_ref が
+            # 0→巡航速度へ不連続に飛ぶため、この古い積分値がそのまま
+            # 上乗せされて大きな過渡応答（ヨー発散）を起こす不具合を
+            # スモークテストで確認した。TURN_INPLACE遷移時と同様にここでも
+            # リセットする。
+            self._wheel_pi_l.reset()
+            self._wheel_pi_r.reset()
             self._flip_target_mode()
         self._replan(x, y, yaw)
 
@@ -1050,7 +1119,19 @@ class SlalomPolicy(MousePolicy):
         px, py = float(path.x[idx]), float(path.y[idx])
         phead = float(path.heading[idx])
         pcurv = float(path.curvature[idx])
-        v_ref = float(path.speed[idx])
+        v_target = float(path.speed[idx])
+
+        # 速度指令のレートリミット（_reset_run_stateのdocstring参照）。
+        # カーソル参照点の空間的な速度上限へ、a_maxで加減速しながら追従する
+        # 設定値を毎ティック更新する。張り替え直後（カーソル0に戻る等）でも
+        # 車体の実際の速度から連続的にしか変化しないため、指令の不連続な
+        # 跳びによる過渡応答（ヨー発散）を防ぐ。
+        dv = self.a_max * self.control_dt
+        if self._v_setpoint < v_target:
+            self._v_setpoint = min(v_target, self._v_setpoint + dv)
+        else:
+            self._v_setpoint = max(v_target, self._v_setpoint - dv)
+        v_ref = self._v_setpoint
 
         ux, uy = math.cos(phead), math.sin(phead)
         rel_x, rel_y = x - px, y - py
