@@ -71,38 +71,81 @@ def measure(model_path: Path, course_dir: str, n_trials: int):
     )
 
 
+def _mean(xs):
+    return float(sum(xs) / len(xs)) if xs else None
+
+
+def successful_trial_stats(s):
+    """**壁接触なし完走した試行だけ**に限った指標を per_course から再集計する。
+
+    2026-08-11 教授指摘: `evaluate_corridor` の要約は失敗走行を含む全試行の平均で、
+    横偏差の最大値は「失敗走行＝定義上壁に当たっている」を含むためほぼ自明になる。
+    符号反転も同様に、完走できなかった方策の値が混ざる。
+    **滑らかさと横偏差は、完走した走行そのもので見る。**
+    """
+    ok = [t for pc in s["per_course"] for t in pc["trials"]
+          if t["no_contact_complete"]]
+    if not ok:
+        return dict(n=0, flip=None, speed=None, sec_per_cell=None,
+                    lat_max_mm=None, lat_rms_mm=None)
+    return dict(
+        n=len(ok),
+        flip=_mean([0.5 * (t["sign_flip_rate_left"] + t["sign_flip_rate_right"])
+                    for t in ok]),
+        speed=_mean([t["mean_speed"] for t in ok]),
+        sec_per_cell=_mean([t["sec_per_cell"] for t in ok
+                            if t["sec_per_cell"] is not None]),
+        lat_max_mm=max(t["lateral_max_m"] for t in ok) * 1000.0,
+        lat_rms_mm=_mean([t["lateral_rms_m"] for t in ok]) * 1000.0,
+    )
+
+
 def row(label, seed, s):
-    flip = 0.5 * ((s["sign_flip_rate_left_mean"] or 0.0)
-                  + (s["sign_flip_rate_right_mean"] or 0.0))
-    spc = s["mean_sec_per_cell"]
     comp = s["no_contact_completion_rate"]
-    # 3 基準の同時達成（速度は完走試行がないと測れないので None は未達扱い）
-    ok = (flip < CRIT_FLIP_PER_S and comp >= CRIT_COMPLETION
-          and spc is not None and spc <= CRIT_SEC_PER_CELL)
+    suc = successful_trial_stats(s)
+    # 3 基準は**完走した走行の指標**で判定する（別の方策・別の走行の指標を混ぜない）
+    ok = (comp >= CRIT_COMPLETION and suc["flip"] is not None
+          and suc["flip"] < CRIT_FLIP_PER_S
+          and suc["sec_per_cell"] is not None
+          and suc["sec_per_cell"] <= CRIT_SEC_PER_CELL)
     return dict(
         label=label, seed=seed, completion=comp,
         collision=s["collision_rate"], timeout=s["timeout_rate"],
-        speed=s["mean_forward_speed_mps"], sec_per_cell=spc, flip=flip,
-        lat_max_mm=(s["lateral_max_m_max"] or 0.0) * 1000.0,
-        lat_rms_mm=(s["lateral_rms_m_mean"] or 0.0) * 1000.0,
+        n_success=suc["n"],
+        # 完走走行のみ（主。これを判定と報告に使う）
+        speed=suc["speed"], sec_per_cell=suc["sec_per_cell"], flip=suc["flip"],
+        lat_max_mm=suc["lat_max_mm"], lat_rms_mm=suc["lat_rms_mm"],
+        # 全試行（従。過去の記録との照合用に残す）
+        flip_all=0.5 * ((s["sign_flip_rate_left_mean"] or 0.0)
+                        + (s["sign_flip_rate_right_mean"] or 0.0)),
+        lat_max_mm_all=(s["lateral_max_m_max"] or 0.0) * 1000.0,
+        lat_rms_mm_all=(s["lateral_rms_m_mean"] or 0.0) * 1000.0,
         all_criteria=ok,
     )
 
 
 def print_table(title, rows, n_desc):
-    print("\n" + "=" * 104)
+    print("\n" + "=" * 112)
     print(f"{title}（{n_desc}）")
-    print("=" * 104)
-    print(f"{'条件':<12}{'seed':>5}{'完走率':>9}{'衝突':>7}{'時間切れ':>9}"
+    print("**速度・反転・横偏差はすべて『壁接触なし完走した走行のみ』の集計**")
+    print("=" * 112)
+    print(f"{'条件':<12}{'seed':>5}{'完走率':>8}{'衝突':>7}{'時切':>7}{'成功n':>7}"
           f"{'速度[m/s]':>11}{'s/区画':>9}{'反転[回/s]':>12}"
           f"{'横偏差最大[mm]':>15}{'RMS[mm]':>10}{'3基準':>7}")
     for r in rows:
-        spc = f"{r['sec_per_cell']:.3f}" if r["sec_per_cell"] is not None else "—"
-        spd = f"{r['speed']:.3f}" if r["speed"] is not None else "—"
-        print(f"{r['label']:<12}{r['seed']:>5}{r['completion']:>9.2f}{r['collision']:>7.2f}"
-              f"{r['timeout']:>9.2f}{spd:>11}{spc:>9}{r['flip']:>12.1f}"
-              f"{r['lat_max_mm']:>15.1f}{r['lat_rms_mm']:>10.1f}"
+        def f(key, fmt):
+            return format(r[key], fmt) if r[key] is not None else "—"
+        print(f"{r['label']:<12}{r['seed']:>5}{r['completion']:>8.2f}{r['collision']:>7.2f}"
+              f"{r['timeout']:>7.2f}{r['n_success']:>7}"
+              f"{f('speed', '.3f'):>11}{f('sec_per_cell', '.3f'):>9}"
+              f"{f('flip', '.1f'):>12}{f('lat_max_mm', '.1f'):>15}"
+              f"{f('lat_rms_mm', '.1f'):>10}"
               f"{'✅' if r['all_criteria'] else '—':>7}")
+    print("\n  参考: 全試行（失敗を含む）での値 — 過去の記録との照合用")
+    print(f"{'条件':<12}{'seed':>5}{'反転[回/s]':>12}{'横偏差最大[mm]':>16}{'RMS[mm]':>10}")
+    for r in rows:
+        print(f"{r['label']:<12}{r['seed']:>5}{r['flip_all']:>12.1f}"
+              f"{r['lat_max_mm_all']:>16.1f}{r['lat_rms_mm_all']:>10.1f}")
 
 
 def print_success_rate(rows):
@@ -120,8 +163,14 @@ def print_success_rate(rows):
         comps = " ".join(f"{r['completion']:.2f}" for r in rs)
         flips = " ".join(f"{r['flip']:.1f}" for r in ok) if ok else "（成功なし）"
         print(f"{label:<12}{f'{len(ok)} / {len(rs)}':>20}{comps:>34}{flips:>28}")
-    print("\n  ※ 反転は**完走できた方策そのもの**の値のみを並べている。"
-          "完走できない方策の反転と混ぜない")
+    print("\n  ※ 反転は**完走できた方策の、完走した走行のみ**の値。"
+          "別の方策・別の走行の指標と混ぜない")
+    for label, rs in by_label.items():
+        ok = [r for r in rs if r["completion"] >= CRIT_COMPLETION]
+        if len(ok) >= 2:
+            fl = [r["flip"] for r in ok]
+            print(f"  {label}: 反転の範囲 {min(fl):.1f}〜{max(fl):.1f} 回/s"
+                  f"（成功 {len(ok)} seed）")
 
 
 def main():
