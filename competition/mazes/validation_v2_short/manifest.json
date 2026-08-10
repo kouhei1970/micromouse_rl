@@ -1,0 +1,252 @@
+{
+  "generator": "competition/maze_gen_v2.py",
+  "rules": [
+    "IEEE R2SAC 4.3 (gateway=1, start 3 walls)",
+    "IEEE R2SAC 4.5 (wall-follower cannot reach goal, multiple paths)",
+    "NTF 注意9 (no walls/posts inside goal)",
+    "NTF 2-4 (every post has >=1 wall except goal center; outer walls complete)"
+  ],
+  "extra_open_target": 30,
+  "mazes": [
+    {
+      "seed": 4000,
+      "attempts": 1,
+      "cycles": 35,
+      "open_edges": 290,
+      "gateway": [
+        "v",
+        9,
+        7
+      ],
+      "extra_opened": 30
+    },
+    {
+      "seed": 4001,
+      "attempts": 1,
+      "cycles": 34,
+      "open_edges": 289,
+      "gateway": [
+        "h",
+        8,
+        9
+      ],
+      "extra_opened": 30
+    },
+    {
+      "seed": 4002,
+      "attempts": 1,
+      "cycles": 34,
+      "open_edges": 289,
+      "gateway": [
+        "v",
+        7,
+        8
+      ],
+      "extra_opened": 30
+    },
+    {
+      "seed": 4003,
+      "attempts": 1,
+      "cycles": 36,
+      "open_edges": 291,
+      "gateway": [
+        "h",
+        8,
+        9
+      ],
+      "extra_opened": 30
+    },
+    {
+      "seed": 4004,
+      "attempts": 1,
+      "cycles": 34,
+      "open_edges": 289,
+      "gateway": [
+        "v",
+        7,
+        7
+      ],
+      "extra_opened": 30
+    },
+    {
+      "seed": 4005,
+      "attempts": 1,
+      "cycles": 35,
+      "open_edges": 290,
+      "gateway": [
+        "h",
+        8,
+        9
+      ],
+      "extra_opened": 30
+    },
+    {
+      "seed": 4006,
+      "attempts": 1,
+      "cycles": 35,
+      "open_edges": 290,
+      "gateway": [
+        "v",
+        9,
+        7
+      ],
+      "extra_opened": 30
+    },
+    {
+      "seed": 4007,
+      "attempts": 1,
+      "cycles": 37,
+      "open_edges": 292,
+      "gateway": [
+        "v",
+        9,
+        7
+      ],
+      "extra_opened": 30
+    },
+    {
+      "seed": 4008,
+      "attempts": 1,
+      "cycles": 36,
+      "open_edges": 291,
+      "gateway": [
+        "h",
+        8,
+        7
+      ],
+      "extra_opened": 30
+    },
+    {
+      "seed": 4009,
+      "attempts": 1,
+      "cycles": 34,
+      "open_edges": 289,
+      "gateway": [
+        "h",
+        7,
+        9
+      ],
+      "extra_opened": 30
+    },
+    {
+      "seed": 4010,
+      "attempts": 1,
+      "cycles": 33,
+      "open_edges": 288,
+      "gateway": [
+        "h",
+        7,
+        7
+      ],
+      "extra_opened": 30
+    },
+    {
+      "seed": 4011,
+      "attempts": 1,
+      "cycles": 36,
+      "open_edges": 291,
+      "gateway": [
+        "h",
+        7,
+        9
+      ],
+      "extra_opened": 30
+    },
+    {
+      "seed": 4012,
+      "attempts": 1,
+      "cycles": 34,
+      "open_edges": 289,
+      "gateway": [
+        "v",
+        7,
+        8
+      ],
+      "extra_opened": 30
+    },
+    {
+      "seed": 4013,
+      "attempts": 1,
+      "cycles": 35,
+      "open_edges": 290,
+      "gateway": [
+        "h",
+        7,
+        9
+      ],
+      "extra_opened": 30
+    },
+    {
+      "seed": 4014,
+      "attempts": 1,
+      "cycles": 33,
+      "open_edges": 288,
+      "gateway": [
+        "v",
+        9,
+        8
+      ],
+      "extra_opened": 30
+    },
+    {
+      "seed": 4015,
+      "attempts": 1,
+      "cycles": 34,
+      "open_edges": 289,
+      "gateway": [
+        "v",
+        7,
+        8
+      ],
+      "extra_opened": 30
+    },
+    {
+      "seed": 4016,
+      "attempts": 1,
+      "cycles": 33,
+      "open_edges": 288,
+      "gateway": [
+        "v",
+        7,
+        8
+      ],
+      "extra_opened": 30
+    },
+    {
+      "seed": 4017,
+      "attempts": 1,
+      "cycles": 34,
+      "open_edges": 289,
+      "gateway": [
+        "h",
+        8,
+        9
+      ],
+      "extra_opened": 30
+    },
+    {
+      "seed": 4018,
+      "attempts": 1,
+      "cycles": 32,
+      "open_edges": 287,
+      "gateway": [
+        "h",
+        7,
+        7
+      ],
+      "extra_opened": 30
+    },
+    {
+      "seed": 4019,
+      "attempts": 1,
+      "cycles": 34,
+      "open_edges": 289,
+      "gateway": [
+        "v",
+        7,
+        8
+      ],
+      "extra_opened": 30
+    }
+  ]
+}

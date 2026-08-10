@@ -38,9 +38,15 @@ _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _REPO_ROOT not in sys.path:
     sys.path.insert(0, _REPO_ROOT)
 
-from competition.maze_gen import EvalMazeGenerator  # noqa: E402
+# 2026-08-11 修正: 検査 (e) の再生成先が旧生成器 competition/maze_gen.py（v1）の
+# ままだった。評価迷路は 2026-08-10 に規定準拠生成器 v2 へ差し替わっており、
+# 旧生成器で再生成しても一致するはずがないため (e) は 0/20 の**偽の不合格**を
+# 出し続けていた（本スクリプトが v2 移行後に再実行されていなかったため露見せず）。
+# 現行の生成器を参照するよう是正する。
+from competition.maze_gen_v2 import generate_maze  # noqa: E402
 
-MAZE_DIR = os.path.join(_REPO_ROOT, "competition", "mazes", "eval")
+MAZE_DIR = os.environ.get(
+    "VERIFY_MAZE_DIR", os.path.join(_REPO_ROOT, "competition", "mazes", "eval"))
 GOAL_CELLS = [(7, 7), (7, 8), (8, 7), (8, 8)]
 CENTER_WALLS = [("v", 8, 7), ("v", 8, 8), ("h", 7, 8), ("h", 8, 8)]
 
@@ -180,8 +186,8 @@ def verify_one(seed, v_walls, h_walls):
     result["isolated_posts"] = isolated_posts
     result["center_post_connections"] = center_post_connections
 
-    # (e) 再現性
-    v_regen, h_regen = EvalMazeGenerator.generate(seed)
+    # (e) 再現性（seed のみから同一の迷路が再現できること。研究計画書 §9-2）
+    v_regen, h_regen, _ = generate_maze(seed)
     result["reproducible_ok"] = bool(
         np.array_equal(v_walls, v_regen) and np.array_equal(h_walls, h_regen)
     )

@@ -32,6 +32,30 @@ Rule-conforming evaluation maze generator (loops, wall-follower-proof).
 発生を禁じるのと等価であり、通路構造を保ったまま最大限の複数経路が得られる。
 既定の目標除去数 EXTRA_OPEN_TARGET はこの制約下で到達可能な水準に設定している。
 
+■ 経路長の設計（2026-08-11 改修。docs/MAZE_DIFFICULTY_REPORT.md §5 案 3）
+改修前は「内部壁をランダムに 30 枚除去」していたため、除去した壁の一部が
+スタート–ゴール最短経路をまたぐ「弦」に当たり、最短距離が一気に短縮されていた。
+実測では大会実迷路 42 面の真の最短距離 D_true が中央値 63 区画（迂回率 4.80）
+なのに対し、改修前の生成迷路 20 面は中央値 20 区画（迂回率 1.43）で、
+**両者の分布はまったく重ならなかった**（同レポート §1）。
+
+本改修は経路長を大会迷路の水準へ引き上げる。手順は 2 点だけ変える。
+
+  (1) 受理窓: 全域木＋ゴールリング処理の直後に D0（この時点の真の最短距離）を測り、
+      D0_WINDOW = [45, 110] 区画に入らない試行を破棄する（既存のリジェクト
+      サンプリング機構をそのまま使う）。ここで下限を課すのは、手順 4 の強制開放
+      （ゴールリングの島化）が最短経路の終端に必ずショートカットを作り、
+      平均 −30 区画の短縮を生むため。強制開放は壁づたい対策の根幹なので削らず、
+      短くなった試行を捨てることで対処する。
+  (2) 経路保護型の内壁除去: 除去候補を 1 枚開けるたびに BFS で最短距離を測り直し、
+      **1 区画でも縮むなら取り消す**。つまり最短距離を縮めない壁だけを開ける。
+
+(2) が成立する根拠は反証実験にある（同レポート §4.2）。「閉路を増やすと最短経路が
+短くなる」は**偽**で、正しくは「**ランダムな位置に**閉路を作ると短くなる」。
+経路を保護しながら閉路を作れば、除去枚数を 10→25 枚（β を 15→30）に増やしても
+D_true の分布は 1 区画も動かない。すなわち**経路長（受理窓）と閉路数（除去枚数）は
+直交する 2 つの難度パラメータ**として独立に制御できる。
+
 使い方:
     .venv/bin/python -m competition.maze_gen_v2 --seeds 1000-1019
 """
@@ -65,18 +89,39 @@ GOAL_INNER = (("v", 8, 7), ("v", 8, 8), ("h", 7, 8), ("h", 8, 8))
 RING_POSTS = ((7, 7), (8, 7), (9, 7), (7, 8), (9, 8), (7, 9), (8, 9), (9, 9))
 
 # 全域木に追加で開ける内部壁の目標数（＝閉路数の目安）。
-# 設計根拠（seed 1000-1003 で実測したセルの分岐次数分布）:
+#
+# 【2026-08-11 改修】30 → 15。除去は「最短距離を縮めない壁だけ」に限定した
+# （経路保護型除去）。docs/MAZE_DIFFICULTY_REPORT.md §5 案 3。
+# 経路保護版で 3 つの独立 seed ブロック（各 20 面）を試作した実測:
+#   除去目標  独立閉路 β 中央値  D_true 中央値  行止り  最短経路本数
+#       10          15               72          —        —
+#       15          20               72          22       3        ← 採用
+#       20          25               72          —        —
+#       25          30               72          —        —
+# **D_true が除去枚数に依存しない**（β を 15→30 に倍増しても 1 区画も動かない）
+# のが経路保護型除去の要点で、これにより経路長と閉路数を独立に決められる。
+# 15 を採用する理由は β の実現値 19〜20 が大会実迷路 42 面の β 中央値 20 と一致し、
+# 行き止まり数 22（大会 24）・最短経路本数 3（大会 5）も同時に整合するため。
+#
+# 改修前（ランダム除去）の設計根拠（seed 1000-1003 で実測した分岐次数分布）。
+# 経路保護型では除去枚数と次数分布の対応が変わるため、この表は**履歴**として残す:
 #   目標  閉路  平均次数  行止り/通路・角/T字/十字
 #      0     4     2.02    29 / 194 / 31 /  1   ← 完全迷路。複数経路がなく IEEE 4.5 に反する
 #     15    18     2.14    22 / 178 / 51 /  3
-#     30    34     2.25    17 / 161 / 71 /  5   ← 採用
+#     30    34     2.25    17 / 161 / 71 /  5   ← 旧採用値（経路が短くなる欠陥あり）
 #     60    64     2.49     8 / 125 /111 / 10   ← 分岐が通路を上回り「広場」的で実競技と乖離
-# 30 を採用する理由: 独立閉路 34 で複数経路が十分にある一方、通路・角のセルが
-# 63%（161/256）と多数を占めて通路構造を保ち、探索を非自明にする行き止まりも
-# 17 箇所残る。実競技の迷路は「通路主体・分岐と行き止まりが適度にある」構造であり、
-# この水準が最も近い。上限は「終点中央を除く全格子点に壁が最低 1 枚」の規定
+# 除去枚数の上限は「終点中央を除く全格子点に壁が最低 1 枚」の規定
 # （＝ 2x2 の広場を禁じる）が自動的に与える。
-EXTRA_OPEN_TARGET = 30
+EXTRA_OPEN_TARGET = 15
+
+# 真の最短距離 D0 の受理窓 [下限, 上限]（区画数）。全域木＋ゴールリング処理の
+# 直後に測り、窓の外なら試行を破棄する。
+# 設計根拠: 大会実迷路 42 面の D_true は中央値 63・範囲 40〜249（同レポート §2）。
+# 下限 45 は大会の最小値 40 をわずかに上回る水準、上限 110 は生成コストと
+# エピソード長の上限から置いた実務的な頭打ち（大会の 249 のような極端な長距離面は
+# 学習・評価のコストが跳ね上がるため意図的に除外している）。
+D0_WINDOW = (45, 110)
+
 MAX_ATTEMPTS = 400       # 1 seed あたりの再試行上限（リジェクトサンプリング）
 
 
@@ -168,6 +213,27 @@ def independent_cycles(v, h):
     return open_edges - W * H + 1, open_edges
 
 
+def shortest_distance_to_goal(v, h):
+    """スタート (0,0) からゴール 2x2 までの真の最短距離（区画数）。
+
+    壁が完全に既知である前提の 4 近傍 BFS。ゴールへ到達できない場合は -1 を返す。
+    区画数を返すので、物理距離に直すには区画幅 0.18 m を掛ける。
+    """
+    dist = {(0, 0): 0}
+    dq = deque([(0, 0)])
+    while dq:
+        c = dq.popleft()
+        if c in GOAL_CELLS:
+            return dist[c]
+        cx, cy = c
+        for dx, dy in ((0, 1), (0, -1), (1, 0), (-1, 0)):
+            n = (cx + dx, cy + dy)
+            if 0 <= n[0] < W and 0 <= n[1] < H and n not in dist and cells_open(v, h, c, n):
+                dist[n] = dist[c] + 1
+                dq.append(n)
+    return -1
+
+
 # ==========================================================================
 # 生成本体
 # ==========================================================================
@@ -213,12 +279,17 @@ def _forced_open_edges():
 FORCED_OPEN = _forced_open_edges()
 
 
-def generate_maze(seed, extra_open_target=EXTRA_OPEN_TARGET, max_attempts=MAX_ATTEMPTS):
+def generate_maze(seed, extra_open_target=EXTRA_OPEN_TARGET, max_attempts=MAX_ATTEMPTS,
+                  d0_window=D0_WINDOW):
     """規定準拠の 16x16 迷路を生成する。
 
-    返り値: (v_walls, h_walls, info)。info には試行回数・閉路数等を含む。
+    返り値: (v_walls, h_walls, info)。info には試行回数・閉路数・最短距離等を含む。
     受け入れ条件を満たすまで同一 seed 内で内部乱数を進めて再試行する
-    （リジェクトサンプリング）。
+    （リジェクトサンプリング）。したがって seed と本関数の実装だけから
+    決定的に再現できる（研究計画書 §9-2）。
+
+    d0_window: 手順 5 の直後に測った最短距離 D0 の受理窓 [下限, 上限]（区画数）。
+               None を渡すと窓による棄却を行わない（改修前の挙動の再現用）。
     """
     rng = random.Random(seed)
     for attempt in range(1, max_attempts + 1):
@@ -248,7 +319,17 @@ def generate_maze(seed, extra_open_target=EXTRA_OPEN_TARGET, max_attempts=MAX_AT
         protected_open = set(FORCED_OPEN) | {gateway} | set(GOAL_INNER) | {("h", 0, 1)}
         protected_wall = (set(RING_EDGES) - {gateway}) | {("v", 1, 0)}
 
-        # 6. 閉路を作る: 内部壁をランダムに除去（格子点の孤立を招くものは除く）
+        # 5.5 受理窓: この時点（全域木＋ゴールリング処理の直後）の最短距離 D0 を測る。
+        #     窓の外なら以降の処理をせずに次の試行へ。手順 4 の強制開放が最短経路の
+        #     終端にショートカットを作って距離を縮めるため、ここで短い骨格を捨てる。
+        d0 = shortest_distance_to_goal(v, h)
+        if d0 < 0:
+            continue
+        if d0_window is not None and not (d0_window[0] <= d0 <= d0_window[1]):
+            continue
+
+        # 6. 閉路を作る: 内部壁をランダム順に走査して除去（格子点の孤立を招くもの、
+        #    および**最短距離を 1 区画でも縮めるものは取り消す**＝経路保護型除去）
         internal = [("v", x, y) for x in range(1, W) for y in range(H)] + \
                    [("h", x, y) for x in range(W) for y in range(1, H)]
         rng.shuffle(internal)
@@ -264,7 +345,12 @@ def generate_maze(seed, extra_open_target=EXTRA_OPEN_TARGET, max_attempts=MAX_AT
             posts = ((x, y), (x, y + 1)) if k == "v" else ((x, y), (x + 1, y))
             if any(p != CENTER_POST and not any(_get(v, h, pe) == 1 for pe in post_walls(*p))
                    for p in posts):
-                _set(v, h, e, 1)   # 取り消し
+                _set(v, h, e, 1)   # 取り消し（広場禁止規定）
+                continue
+            # 経路保護: 開けた結果 D が縮むならこの壁は最短経路をまたぐ「弦」なので戻す。
+            # 縮まない壁だけを開けることで、閉路数と経路長を独立に制御できる。
+            if shortest_distance_to_goal(v, h) < d0:
+                _set(v, h, e, 1)   # 取り消し（最短距離が縮む）
             else:
                 opened += 1
 
@@ -292,9 +378,16 @@ def generate_maze(seed, extra_open_target=EXTRA_OPEN_TARGET, max_attempts=MAX_AT
         if wall_follow_reaches_goal(v, h, "left") or wall_follow_reaches_goal(v, h, "right"):
             continue
         cycles, open_edges = independent_cycles(v, h)
+        # D_final は手順 7（孤立格子点の修復）で壁を**足した**後の最短距離。
+        # 手順 6 は最短距離を縮めない壁しか開けず、手順 7 は壁を足すだけなので
+        # 設計上 D_final >= D0 が常に成り立つ（等号が普通）。破れたら実装バグ。
+        d_final = shortest_distance_to_goal(v, h)
+        if d_final < d0:
+            raise AssertionError(
+                f"seed={seed}: 経路保護の不変条件が破れています D_final={d_final} < D0={d0}")
         info = dict(seed=seed, attempts=attempt, cycles=int(cycles),
                     open_edges=int(open_edges), gateway=list(gateway),
-                    extra_opened=int(opened))
+                    extra_opened=int(opened), d0=int(d0), d_shortest=int(d_final))
         return v, h, info
 
     raise RuntimeError(f"seed={seed}: {max_attempts} 回試行しても受け入れ条件を満たせませんでした")
@@ -305,7 +398,15 @@ def main():
     ap.add_argument("--seeds", default="1000-1019")
     ap.add_argument("--out-dir", default="competition/mazes/eval")
     ap.add_argument("--extra-open", type=int, default=EXTRA_OPEN_TARGET)
+    ap.add_argument("--d0-window", default="{}-{}".format(*D0_WINDOW),
+                    help="最短距離 D0 の受理窓（例 45-110）。'none' で窓なし")
     args = ap.parse_args()
+
+    if args.d0_window.lower() == "none":
+        window = None
+    else:
+        lo, _, hi = args.d0_window.partition("-")
+        window = (int(lo), int(hi))
 
     a, _, b = args.seeds.partition("-")
     seeds = range(int(a), int(b) + 1) if b else [int(a)]
@@ -317,13 +418,14 @@ def main():
 
     infos = []
     for s in seeds:
-        v, h, info = generate_maze(s, extra_open_target=args.extra_open)
+        v, h, info = generate_maze(s, extra_open_target=args.extra_open, d0_window=window)
         npz = os.path.join(args.out_dir, f"maze_{s}.npz")
         np.savez(npz, v_walls=v, h_walls=h, seed=s, width=W, height=H)
         build_maze_robot_xml(v, h, npz[:-4] + ".xml", model_name=f"maze_{s}", params=params)
         infos.append(info)
         print(f"[maze_gen_v2] seed={s} 試行{info['attempts']}回 閉路{info['cycles']} "
-              f"開通{info['open_edges']} 入口={info['gateway']}")
+              f"開通{info['open_edges']} 入口={info['gateway']} "
+              f"最短{info['d_shortest']}区画(D0={info['d0']}) 除去{info['extra_opened']}枚")
 
     with open(os.path.join(args.out_dir, "manifest.json"), "w", encoding="utf-8") as f:
         json.dump(dict(generator="competition/maze_gen_v2.py",
@@ -331,11 +433,18 @@ def main():
                                "IEEE R2SAC 4.5 (wall-follower cannot reach goal, multiple paths)",
                                "NTF 注意9 (no walls/posts inside goal)",
                                "NTF 2-4 (every post has >=1 wall except goal center; outer walls complete)"],
-                        extra_open_target=args.extra_open, mazes=infos), f, indent=2, ensure_ascii=False)
+                        extra_open_target=args.extra_open,
+                        d0_window=list(window) if window else None,
+                        path_protected_open=True, mazes=infos), f, indent=2, ensure_ascii=False)
     cyc = [i["cycles"] for i in infos]
     att = [i["attempts"] for i in infos]
+    dsh = [i["d_shortest"] for i in infos]
+    opn = [i["extra_opened"] for i in infos]
     print(f"\n生成 {len(infos)} 面: 閉路数 中央値 {np.median(cyc):.0f}（範囲 {min(cyc)}〜{max(cyc)}）"
-          f"／試行回数 中央値 {np.median(att):.0f}（最大 {max(att)}）")
+          f"／試行回数 中央値 {np.median(att):.0f}（最大 {max(att)}、合計 {sum(att)}）")
+    print(f"  最短距離 中央値 {np.median(dsh):.0f} 区画（範囲 {min(dsh)}〜{max(dsh)}、"
+          f"迂回率 中央値 {np.median(dsh)/14:.2f}）／実除去 中央値 {np.median(opn):.0f} 枚"
+          f"（範囲 {min(opn)}〜{max(opn)}、目標 {args.extra_open}）")
 
 
 if __name__ == "__main__":

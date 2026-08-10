@@ -348,6 +348,8 @@
     <geom name="v_wall_top_0_15" type="box" size="0.006 0.08399999999999999 0.001" pos="0.0 2.7899999999999996 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="v_wall_1_0" type="box" size="0.006 0.08399999999999999 0.025" pos="0.18 0.09 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
     <geom name="v_wall_top_1_0" type="box" size="0.006 0.08399999999999999 0.001" pos="0.18 0.09 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
+    <geom name="v_wall_1_1" type="box" size="0.006 0.08399999999999999 0.025" pos="0.18 0.27 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
+    <geom name="v_wall_top_1_1" type="box" size="0.006 0.08399999999999999 0.001" pos="0.18 0.27 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="v_wall_1_2" type="box" size="0.006 0.08399999999999999 0.025" pos="0.18 0.44999999999999996 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
     <geom name="v_wall_top_1_2" type="box" size="0.006 0.08399999999999999 0.001" pos="0.18 0.44999999999999996 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="v_wall_1_4" type="box" size="0.006 0.08399999999999999 0.025" pos="0.18 0.8099999999999999 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
@@ -356,14 +358,14 @@
     <geom name="v_wall_top_1_5" type="box" size="0.006 0.08399999999999999 0.001" pos="0.18 0.9899999999999999 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="v_wall_1_6" type="box" size="0.006 0.08399999999999999 0.025" pos="0.18 1.1700000000000002 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
     <geom name="v_wall_top_1_6" type="box" size="0.006 0.08399999999999999 0.001" pos="0.18 1.1700000000000002 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
+    <geom name="v_wall_1_9" type="box" size="0.006 0.08399999999999999 0.025" pos="0.18 1.71 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
+    <geom name="v_wall_top_1_9" type="box" size="0.006 0.08399999999999999 0.001" pos="0.18 1.71 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="v_wall_1_11" type="box" size="0.006 0.08399999999999999 0.025" pos="0.18 2.07 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
     <geom name="v_wall_top_1_11" type="box" size="0.006 0.08399999999999999 0.001" pos="0.18 2.07 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="v_wall_1_13" type="box" size="0.006 0.08399999999999999 0.025" pos="0.18 2.4299999999999997 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
     <geom name="v_wall_top_1_13" type="box" size="0.006 0.08399999999999999 0.001" pos="0.18 2.4299999999999997 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="v_wall_2_3" type="box" size="0.006 0.08399999999999999 0.025" pos="0.36 0.63 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
     <geom name="v_wall_top_2_3" type="box" size="0.006 0.08399999999999999 0.001" pos="0.36 0.63 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
-    <geom name="v_wall_2_7" type="box" size="0.006 0.08399999999999999 0.025" pos="0.36 1.35 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
-    <geom name="v_wall_top_2_7" type="box" size="0.006 0.08399999999999999 0.001" pos="0.36 1.35 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="v_wall_2_10" type="box" size="0.006 0.08399999999999999 0.025" pos="0.36 1.89 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
     <geom name="v_wall_top_2_10" type="box" size="0.006 0.08399999999999999 0.001" pos="0.36 1.89 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="v_wall_2_13" type="box" size="0.006 0.08399999999999999 0.025" pos="0.36 2.4299999999999997 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
@@ -402,6 +404,12 @@
     <geom name="v_wall_top_5_7" type="box" size="0.006 0.08399999999999999 0.001" pos="0.8999999999999999 1.35 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="v_wall_5_8" type="box" size="0.006 0.08399999999999999 0.025" pos="0.8999999999999999 1.53 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
     <geom name="v_wall_top_5_8" type="box" size="0.006 0.08399999999999999 0.001" pos="0.8999999999999999 1.53 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
+    <geom name="v_wall_5_9" type="box" size="0.006 0.08399999999999999 0.025" pos="0.8999999999999999 1.71 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
+    <geom name="v_wall_top_5_9" type="box" size="0.006 0.08399999999999999 0.001" pos="0.8999999999999999 1.71 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
+    <geom name="v_wall_5_10" type="box" size="0.006 0.08399999999999999 0.025" pos="0.8999999999999999 1.89 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
+    <geom name="v_wall_top_5_10" type="box" size="0.006 0.08399999999999999 0.001" pos="0.8999999999999999 1.89 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
+    <geom name="v_wall_5_11" type="box" size="0.006 0.08399999999999999 0.025" pos="0.8999999999999999 2.07 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
+    <geom name="v_wall_top_5_11" type="box" size="0.006 0.08399999999999999 0.001" pos="0.8999999999999999 2.07 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="v_wall_5_12" type="box" size="0.006 0.08399999999999999 0.025" pos="0.8999999999999999 2.25 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
     <geom name="v_wall_top_5_12" type="box" size="0.006 0.08399999999999999 0.001" pos="0.8999999999999999 2.25 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="v_wall_6_1" type="box" size="0.006 0.08399999999999999 0.025" pos="1.08 0.27 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
@@ -452,8 +460,12 @@
     <geom name="v_wall_top_9_7" type="box" size="0.006 0.08399999999999999 0.001" pos="1.6199999999999999 1.35 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="v_wall_9_8" type="box" size="0.006 0.08399999999999999 0.025" pos="1.6199999999999999 1.53 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
     <geom name="v_wall_top_9_8" type="box" size="0.006 0.08399999999999999 0.001" pos="1.6199999999999999 1.53 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
+    <geom name="v_wall_9_10" type="box" size="0.006 0.08399999999999999 0.025" pos="1.6199999999999999 1.89 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
+    <geom name="v_wall_top_9_10" type="box" size="0.006 0.08399999999999999 0.001" pos="1.6199999999999999 1.89 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="v_wall_9_11" type="box" size="0.006 0.08399999999999999 0.025" pos="1.6199999999999999 2.07 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
     <geom name="v_wall_top_9_11" type="box" size="0.006 0.08399999999999999 0.001" pos="1.6199999999999999 2.07 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
+    <geom name="v_wall_9_12" type="box" size="0.006 0.08399999999999999 0.025" pos="1.6199999999999999 2.25 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
+    <geom name="v_wall_top_9_12" type="box" size="0.006 0.08399999999999999 0.001" pos="1.6199999999999999 2.25 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="v_wall_9_13" type="box" size="0.006 0.08399999999999999 0.025" pos="1.6199999999999999 2.4299999999999997 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
     <geom name="v_wall_top_9_13" type="box" size="0.006 0.08399999999999999 0.001" pos="1.6199999999999999 2.4299999999999997 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="v_wall_9_14" type="box" size="0.006 0.08399999999999999 0.025" pos="1.6199999999999999 2.61 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
@@ -652,6 +664,8 @@
     <geom name="h_wall_top_4_0" type="box" size="0.08399999999999999 0.006 0.001" pos="0.8099999999999999 0.0 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_4_1" type="box" size="0.08399999999999999 0.006 0.025" pos="0.8099999999999999 0.18 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_top_4_1" type="box" size="0.08399999999999999 0.006 0.001" pos="0.8099999999999999 0.18 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
+    <geom name="h_wall_4_3" type="box" size="0.08399999999999999 0.006 0.025" pos="0.8099999999999999 0.54 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
+    <geom name="h_wall_top_4_3" type="box" size="0.08399999999999999 0.006 0.001" pos="0.8099999999999999 0.54 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_4_6" type="box" size="0.08399999999999999 0.006 0.025" pos="0.8099999999999999 1.08 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_top_4_6" type="box" size="0.08399999999999999 0.006 0.001" pos="0.8099999999999999 1.08 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_4_7" type="box" size="0.08399999999999999 0.006 0.025" pos="0.8099999999999999 1.26 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
@@ -670,6 +684,8 @@
     <geom name="h_wall_top_5_0" type="box" size="0.08399999999999999 0.006 0.001" pos="0.9899999999999999 0.0 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_5_2" type="box" size="0.08399999999999999 0.006 0.025" pos="0.9899999999999999 0.36 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_top_5_2" type="box" size="0.08399999999999999 0.006 0.001" pos="0.9899999999999999 0.36 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
+    <geom name="h_wall_5_4" type="box" size="0.08399999999999999 0.006 0.025" pos="0.9899999999999999 0.72 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
+    <geom name="h_wall_top_5_4" type="box" size="0.08399999999999999 0.006 0.001" pos="0.9899999999999999 0.72 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_5_5" type="box" size="0.08399999999999999 0.006 0.025" pos="0.9899999999999999 0.8999999999999999 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_top_5_5" type="box" size="0.08399999999999999 0.006 0.001" pos="0.9899999999999999 0.8999999999999999 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_5_6" type="box" size="0.08399999999999999 0.006 0.025" pos="0.9899999999999999 1.08 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
@@ -684,6 +700,8 @@
     <geom name="h_wall_top_5_16" type="box" size="0.08399999999999999 0.006 0.001" pos="0.9899999999999999 2.88 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_6_0" type="box" size="0.08399999999999999 0.006 0.025" pos="1.1700000000000002 0.0 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_top_6_0" type="box" size="0.08399999999999999 0.006 0.001" pos="1.1700000000000002 0.0 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
+    <geom name="h_wall_6_3" type="box" size="0.08399999999999999 0.006 0.025" pos="1.1700000000000002 0.54 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
+    <geom name="h_wall_top_6_3" type="box" size="0.08399999999999999 0.006 0.001" pos="1.1700000000000002 0.54 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_6_4" type="box" size="0.08399999999999999 0.006 0.025" pos="1.1700000000000002 0.72 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_top_6_4" type="box" size="0.08399999999999999 0.006 0.001" pos="1.1700000000000002 0.72 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_6_6" type="box" size="0.08399999999999999 0.006 0.025" pos="1.1700000000000002 1.08 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
@@ -706,6 +724,8 @@
     <geom name="h_wall_top_7_9" type="box" size="0.08399999999999999 0.006 0.001" pos="1.35 1.6199999999999999 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_7_10" type="box" size="0.08399999999999999 0.006 0.025" pos="1.35 1.7999999999999998 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_top_7_10" type="box" size="0.08399999999999999 0.006 0.001" pos="1.35 1.7999999999999998 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
+    <geom name="h_wall_7_12" type="box" size="0.08399999999999999 0.006 0.025" pos="1.35 2.16 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
+    <geom name="h_wall_top_7_12" type="box" size="0.08399999999999999 0.006 0.001" pos="1.35 2.16 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_7_13" type="box" size="0.08399999999999999 0.006 0.025" pos="1.35 2.34 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_top_7_13" type="box" size="0.08399999999999999 0.006 0.001" pos="1.35 2.34 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_7_14" type="box" size="0.08399999999999999 0.006 0.025" pos="1.35 2.52 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
@@ -716,6 +736,8 @@
     <geom name="h_wall_top_8_0" type="box" size="0.08399999999999999 0.006 0.001" pos="1.53 0.0 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_8_2" type="box" size="0.08399999999999999 0.006 0.025" pos="1.53 0.36 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_top_8_2" type="box" size="0.08399999999999999 0.006 0.001" pos="1.53 0.36 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
+    <geom name="h_wall_8_3" type="box" size="0.08399999999999999 0.006 0.025" pos="1.53 0.54 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
+    <geom name="h_wall_top_8_3" type="box" size="0.08399999999999999 0.006 0.001" pos="1.53 0.54 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_8_4" type="box" size="0.08399999999999999 0.006 0.025" pos="1.53 0.72 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_top_8_4" type="box" size="0.08399999999999999 0.006 0.001" pos="1.53 0.72 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_8_6" type="box" size="0.08399999999999999 0.006 0.025" pos="1.53 1.08 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
@@ -746,14 +768,18 @@
     <geom name="h_wall_top_9_16" type="box" size="0.08399999999999999 0.006 0.001" pos="1.71 2.88 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_10_0" type="box" size="0.08399999999999999 0.006 0.025" pos="1.89 0.0 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_top_10_0" type="box" size="0.08399999999999999 0.006 0.001" pos="1.89 0.0 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
+    <geom name="h_wall_10_2" type="box" size="0.08399999999999999 0.006 0.025" pos="1.89 0.36 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
+    <geom name="h_wall_top_10_2" type="box" size="0.08399999999999999 0.006 0.001" pos="1.89 0.36 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_10_4" type="box" size="0.08399999999999999 0.006 0.025" pos="1.89 0.72 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_top_10_4" type="box" size="0.08399999999999999 0.006 0.001" pos="1.89 0.72 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_10_6" type="box" size="0.08399999999999999 0.006 0.025" pos="1.89 1.08 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_top_10_6" type="box" size="0.08399999999999999 0.006 0.001" pos="1.89 1.08 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
-    <geom name="h_wall_10_11" type="box" size="0.08399999999999999 0.006 0.025" pos="1.89 1.98 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
-    <geom name="h_wall_top_10_11" type="box" size="0.08399999999999999 0.006 0.001" pos="1.89 1.98 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
+    <geom name="h_wall_10_9" type="box" size="0.08399999999999999 0.006 0.025" pos="1.89 1.6199999999999999 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
+    <geom name="h_wall_top_10_9" type="box" size="0.08399999999999999 0.006 0.001" pos="1.89 1.6199999999999999 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_10_12" type="box" size="0.08399999999999999 0.006 0.025" pos="1.89 2.16 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_top_10_12" type="box" size="0.08399999999999999 0.006 0.001" pos="1.89 2.16 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
+    <geom name="h_wall_10_13" type="box" size="0.08399999999999999 0.006 0.025" pos="1.89 2.34 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
+    <geom name="h_wall_top_10_13" type="box" size="0.08399999999999999 0.006 0.001" pos="1.89 2.34 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_10_15" type="box" size="0.08399999999999999 0.006 0.025" pos="1.89 2.6999999999999997 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_top_10_15" type="box" size="0.08399999999999999 0.006 0.001" pos="1.89 2.6999999999999997 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_10_16" type="box" size="0.08399999999999999 0.006 0.025" pos="1.89 2.88 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
@@ -764,12 +790,16 @@
     <geom name="h_wall_top_11_2" type="box" size="0.08399999999999999 0.006 0.001" pos="2.07 0.36 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_11_3" type="box" size="0.08399999999999999 0.006 0.025" pos="2.07 0.54 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_top_11_3" type="box" size="0.08399999999999999 0.006 0.001" pos="2.07 0.54 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
+    <geom name="h_wall_11_7" type="box" size="0.08399999999999999 0.006 0.025" pos="2.07 1.26 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
+    <geom name="h_wall_top_11_7" type="box" size="0.08399999999999999 0.006 0.001" pos="2.07 1.26 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_11_9" type="box" size="0.08399999999999999 0.006 0.025" pos="2.07 1.6199999999999999 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_top_11_9" type="box" size="0.08399999999999999 0.006 0.001" pos="2.07 1.6199999999999999 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_11_10" type="box" size="0.08399999999999999 0.006 0.025" pos="2.07 1.7999999999999998 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_top_11_10" type="box" size="0.08399999999999999 0.006 0.001" pos="2.07 1.7999999999999998 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_11_12" type="box" size="0.08399999999999999 0.006 0.025" pos="2.07 2.16 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_top_11_12" type="box" size="0.08399999999999999 0.006 0.001" pos="2.07 2.16 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
+    <geom name="h_wall_11_15" type="box" size="0.08399999999999999 0.006 0.025" pos="2.07 2.6999999999999997 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
+    <geom name="h_wall_top_11_15" type="box" size="0.08399999999999999 0.006 0.001" pos="2.07 2.6999999999999997 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_11_16" type="box" size="0.08399999999999999 0.006 0.025" pos="2.07 2.88 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_top_11_16" type="box" size="0.08399999999999999 0.006 0.001" pos="2.07 2.88 0.05" material="mat_wall_top" friction="0.4 0.005 1e-4"/>
     <geom name="h_wall_12_0" type="box" size="0.08399999999999999 0.006 0.025" pos="2.25 0.0 0.025" material="mat_wall" friction="0.4 0.005 1e-4"/>

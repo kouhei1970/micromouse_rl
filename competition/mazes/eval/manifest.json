@@ -6,247 +6,292 @@
     "NTF 注意9 (no walls/posts inside goal)",
     "NTF 2-4 (every post has >=1 wall except goal center; outer walls complete)"
   ],
-  "extra_open_target": 30,
+  "extra_open_target": 15,
+  "d0_window": [
+    45,
+    110
+  ],
+  "path_protected_open": true,
   "mazes": [
     {
       "seed": 1000,
-      "attempts": 1,
-      "cycles": 34,
-      "open_edges": 289,
+      "attempts": 3,
+      "cycles": 19,
+      "open_edges": 274,
       "gateway": [
-        "v",
-        9,
+        "h",
+        8,
         7
       ],
-      "extra_opened": 30
+      "extra_opened": 15,
+      "d0": 97,
+      "d_shortest": 97
     },
     {
       "seed": 1001,
       "attempts": 1,
-      "cycles": 33,
-      "open_edges": 288,
+      "cycles": 18,
+      "open_edges": 273,
       "gateway": [
         "h",
         8,
         9
       ],
-      "extra_opened": 30
+      "extra_opened": 15,
+      "d0": 106,
+      "d_shortest": 106
     },
     {
       "seed": 1002,
       "attempts": 1,
-      "cycles": 33,
-      "open_edges": 288,
+      "cycles": 18,
+      "open_edges": 273,
       "gateway": [
         "v",
         9,
         8
       ],
-      "extra_opened": 30
+      "extra_opened": 15,
+      "d0": 74,
+      "d_shortest": 74
     },
     {
       "seed": 1003,
-      "attempts": 1,
-      "cycles": 34,
-      "open_edges": 289,
+      "attempts": 2,
+      "cycles": 19,
+      "open_edges": 274,
       "gateway": [
-        "v",
-        9,
-        7
+        "h",
+        7,
+        9
       ],
-      "extra_opened": 30
+      "extra_opened": 15,
+      "d0": 83,
+      "d_shortest": 83
     },
     {
       "seed": 1004,
       "attempts": 1,
-      "cycles": 35,
-      "open_edges": 290,
+      "cycles": 20,
+      "open_edges": 275,
       "gateway": [
         "v",
         9,
         7
       ],
-      "extra_opened": 30
+      "extra_opened": 15,
+      "d0": 75,
+      "d_shortest": 75
     },
     {
       "seed": 1005,
-      "attempts": 1,
-      "cycles": 34,
-      "open_edges": 289,
+      "attempts": 3,
+      "cycles": 21,
+      "open_edges": 276,
       "gateway": [
-        "v",
-        7,
-        7
+        "h",
+        8,
+        9
       ],
-      "extra_opened": 30
+      "extra_opened": 15,
+      "d0": 52,
+      "d_shortest": 52
     },
     {
       "seed": 1006,
-      "attempts": 1,
-      "cycles": 34,
-      "open_edges": 289,
+      "attempts": 2,
+      "cycles": 19,
+      "open_edges": 274,
       "gateway": [
         "h",
-        8,
+        7,
         7
       ],
-      "extra_opened": 30
+      "extra_opened": 15,
+      "d0": 60,
+      "d_shortest": 60
     },
     {
       "seed": 1007,
-      "attempts": 1,
-      "cycles": 34,
-      "open_edges": 289,
+      "attempts": 3,
+      "cycles": 19,
+      "open_edges": 274,
       "gateway": [
-        "h",
-        8,
-        9
+        "v",
+        9,
+        8
       ],
-      "extra_opened": 30
+      "extra_opened": 15,
+      "d0": 58,
+      "d_shortest": 58
     },
     {
       "seed": 1008,
-      "attempts": 1,
-      "cycles": 35,
-      "open_edges": 290,
+      "attempts": 2,
+      "cycles": 20,
+      "open_edges": 275,
       "gateway": [
-        "h",
-        8,
-        9
+        "v",
+        7,
+        7
       ],
-      "extra_opened": 30
+      "extra_opened": 15,
+      "d0": 66,
+      "d_shortest": 66
     },
     {
       "seed": 1009,
-      "attempts": 1,
-      "cycles": 33,
-      "open_edges": 288,
+      "attempts": 2,
+      "cycles": 20,
+      "open_edges": 275,
       "gateway": [
-        "v",
+        "h",
         7,
         7
       ],
-      "extra_opened": 30
+      "extra_opened": 15,
+      "d0": 56,
+      "d_shortest": 56
     },
     {
       "seed": 1010,
-      "attempts": 1,
-      "cycles": 35,
-      "open_edges": 290,
+      "attempts": 3,
+      "cycles": 20,
+      "open_edges": 275,
       "gateway": [
-        "h",
-        8,
-        7
+        "v",
+        9,
+        8
       ],
-      "extra_opened": 30
+      "extra_opened": 15,
+      "d0": 60,
+      "d_shortest": 60
     },
     {
       "seed": 1011,
-      "attempts": 1,
-      "cycles": 34,
-      "open_edges": 289,
+      "attempts": 7,
+      "cycles": 20,
+      "open_edges": 275,
       "gateway": [
         "v",
         9,
-        8
+        7
       ],
-      "extra_opened": 30
+      "extra_opened": 15,
+      "d0": 71,
+      "d_shortest": 71
     },
     {
       "seed": 1012,
-      "attempts": 1,
-      "cycles": 35,
-      "open_edges": 290,
+      "attempts": 4,
+      "cycles": 19,
+      "open_edges": 274,
       "gateway": [
         "h",
         7,
-        7
+        9
       ],
-      "extra_opened": 30
+      "extra_opened": 15,
+      "d0": 99,
+      "d_shortest": 99
     },
     {
       "seed": 1013,
-      "attempts": 1,
-      "cycles": 35,
-      "open_edges": 290,
+      "attempts": 2,
+      "cycles": 18,
+      "open_edges": 273,
       "gateway": [
         "v",
         7,
-        8
+        7
       ],
-      "extra_opened": 30
+      "extra_opened": 15,
+      "d0": 82,
+      "d_shortest": 82
     },
     {
       "seed": 1014,
-      "attempts": 1,
-      "cycles": 35,
-      "open_edges": 290,
+      "attempts": 2,
+      "cycles": 19,
+      "open_edges": 274,
+      "gateway": [
+        "h",
+        8,
+        7
+      ],
+      "extra_opened": 15,
+      "d0": 83,
+      "d_shortest": 83
+    },
+    {
+      "seed": 1015,
+      "attempts": 3,
+      "cycles": 20,
+      "open_edges": 275,
+      "gateway": [
+        "h",
+        8,
+        7
+      ],
+      "extra_opened": 15,
+      "d0": 77,
+      "d_shortest": 77
+    },
+    {
+      "seed": 1016,
+      "attempts": 2,
+      "cycles": 19,
+      "open_edges": 274,
       "gateway": [
         "h",
         7,
         9
       ],
-      "extra_opened": 30
-    },
-    {
-      "seed": 1015,
-      "attempts": 1,
-      "cycles": 35,
-      "open_edges": 290,
-      "gateway": [
-        "h",
-        8,
-        9
-      ],
-      "extra_opened": 30
-    },
-    {
-      "seed": 1016,
-      "attempts": 1,
-      "cycles": 33,
-      "open_edges": 288,
-      "gateway": [
-        "v",
-        9,
-        8
-      ],
-      "extra_opened": 30
+      "extra_opened": 15,
+      "d0": 53,
+      "d_shortest": 53
     },
     {
       "seed": 1017,
       "attempts": 1,
-      "cycles": 34,
-      "open_edges": 289,
+      "cycles": 19,
+      "open_edges": 274,
       "gateway": [
         "h",
         7,
         9
       ],
-      "extra_opened": 30
+      "extra_opened": 15,
+      "d0": 53,
+      "d_shortest": 53
     },
     {
       "seed": 1018,
       "attempts": 1,
-      "cycles": 34,
-      "open_edges": 289,
+      "cycles": 19,
+      "open_edges": 274,
       "gateway": [
         "v",
         9,
         7
       ],
-      "extra_opened": 30
+      "extra_opened": 15,
+      "d0": 83,
+      "d_shortest": 83
     },
     {
       "seed": 1019,
       "attempts": 1,
-      "cycles": 34,
-      "open_edges": 289,
+      "cycles": 19,
+      "open_edges": 274,
       "gateway": [
         "v",
         7,
         8
       ],
-      "extra_opened": 30
+      "extra_opened": 15,
+      "d0": 81,
+      "d_shortest": 81
     }
   ]
 }
