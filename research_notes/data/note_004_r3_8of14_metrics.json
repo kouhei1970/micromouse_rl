@@ -1,0 +1,1422 @@
+{
+  "timestamp": "20260810_103921",
+  "phase": "model_verification",
+  "summary": {
+    "n_pass": 8,
+    "n_total": 14
+  },
+  "phase_specific": {
+    "tests": {
+      "Test0_air_noload": {
+        "checks": [
+          {
+            "name": "omega_ss_left_0.3V",
+            "expected": 19.93310034947579,
+            "actual": 19.93310015987385,
+            "tol": "2%",
+            "ok": true
+          },
+          {
+            "name": "crosstalk_left_0.3V",
+            "expected": "<0.1 rad/s",
+            "actual": 0.0010464954583494503,
+            "tol": "0.1 rad/s",
+            "ok": true
+          },
+          {
+            "name": "tau0_left_0.3V",
+            "expected": 0.020626747378931602,
+            "actual": 0.021000000000000015,
+            "tol": "10%",
+            "ok": true
+          },
+          {
+            "name": "omega_ss_left_1.5V",
+            "expected": 138.55516724912633,
+            "actual": 138.555166235103,
+            "tol": "2%",
+            "ok": true
+          },
+          {
+            "name": "crosstalk_left_1.5V",
+            "expected": "<0.1 rad/s",
+            "actual": 0.00727419974980982,
+            "tol": "0.1 rad/s",
+            "ok": true
+          },
+          {
+            "name": "tau0_left_1.5V",
+            "expected": 0.020626747378931602,
+            "actual": 0.021000000000000015,
+            "tol": "10%",
+            "ok": true
+          },
+          {
+            "name": "omega_ss_left_3.0V",
+            "expected": 286.83275087368946,
+            "actual": 286.8327488291396,
+            "tol": "2%",
+            "ok": true
+          },
+          {
+            "name": "crosstalk_left_3.0V",
+            "expected": "<0.1 rad/s",
+            "actual": 0.01505883011413527,
+            "tol": "0.1 rad/s",
+            "ok": true
+          },
+          {
+            "name": "tau0_left_3.0V",
+            "expected": 0.020626747378931602,
+            "actual": 0.021000000000000015,
+            "tol": "10%",
+            "ok": true
+          },
+          {
+            "name": "omega_ss_right_0.3V",
+            "expected": 19.93310034947579,
+            "actual": 19.93310015987385,
+            "tol": "2%",
+            "ok": true
+          },
+          {
+            "name": "crosstalk_right_0.3V",
+            "expected": "<0.1 rad/s",
+            "actual": 0.0010464954583494495,
+            "tol": "0.1 rad/s",
+            "ok": true
+          },
+          {
+            "name": "tau0_right_0.3V",
+            "expected": 0.020626747378931602,
+            "actual": 0.021000000000000015,
+            "tol": "10%",
+            "ok": true
+          },
+          {
+            "name": "omega_ss_right_1.5V",
+            "expected": 138.55516724912633,
+            "actual": 138.555166235103,
+            "tol": "2%",
+            "ok": true
+          },
+          {
+            "name": "crosstalk_right_1.5V",
+            "expected": "<0.1 rad/s",
+            "actual": 0.007274199749809817,
+            "tol": "0.1 rad/s",
+            "ok": true
+          },
+          {
+            "name": "tau0_right_1.5V",
+            "expected": 0.020626747378931602,
+            "actual": 0.021000000000000015,
+            "tol": "10%",
+            "ok": true
+          },
+          {
+            "name": "omega_ss_right_3.0V",
+            "expected": 286.83275087368946,
+            "actual": 286.8327488291396,
+            "tol": "2%",
+            "ok": true
+          },
+          {
+            "name": "crosstalk_right_3.0V",
+            "expected": "<0.1 rad/s",
+            "actual": 0.015058830114135275,
+            "tol": "0.1 rad/s",
+            "ok": true
+          },
+          {
+            "name": "tau0_right_3.0V",
+            "expected": 0.020626747378931602,
+            "actual": 0.021000000000000015,
+            "tol": "10%",
+            "ok": true
+          },
+          {
+            "name": "left_right_symmetry_0.3V",
+            "expected": 0.0,
+            "actual": 0.0,
+            "tol": "0.5%",
+            "ok": true
+          },
+          {
+            "name": "left_right_symmetry_1.5V",
+            "expected": 0.0,
+            "actual": 0.0,
+            "tol": "0.5%",
+            "ok": true
+          },
+          {
+            "name": "left_right_symmetry_3.0V",
+            "expected": 0.0,
+            "actual": 0.0,
+            "tol": "0.5%",
+            "ok": true
+          },
+          {
+            "name": "catalog_no_load_rpm_anchor",
+            "expected": "~14100rpm (-3%\u4ee5\u5185)",
+            "actual": 13695.254945038085,
+            "tol": "-3%\u301c0%",
+            "ok": true,
+            "note": "ratio=-2.87%"
+          },
+          {
+            "name": "qacc_monitor_strict",
+            "expected": "OK",
+            "actual": "max|qacc|=1.394e+04 >= strict(1e+04)",
+            "tol": "strict",
+            "ok": false
+          }
+        ],
+        "passed": false,
+        "calibration": {
+          "meas": {
+            "left_0.3": {
+              "omega_ss_meas": 19.93310015987385,
+              "tau0_meas": 0.021000000000000015
+            },
+            "left_1.5": {
+              "omega_ss_meas": 138.555166235103,
+              "tau0_meas": 0.021000000000000015
+            },
+            "left_3.0": {
+              "omega_ss_meas": 286.8327488291396,
+              "tau0_meas": 0.021000000000000015
+            },
+            "right_0.3": {
+              "omega_ss_meas": 19.93310015987385,
+              "tau0_meas": 0.021000000000000015
+            },
+            "right_1.5": {
+              "omega_ss_meas": 138.555166235103,
+              "tau0_meas": 0.021000000000000015
+            },
+            "right_3.0": {
+              "omega_ss_meas": 286.8327488291396,
+              "tau0_meas": 0.021000000000000015
+            }
+          },
+          "catalog_ratio": -0.028705323046944342
+        }
+      },
+      "Test1_voltage_step": {
+        "checks": [
+          {
+            "name": "settled_before_excitation",
+            "expected": true,
+            "actual": true,
+            "tol": "-",
+            "ok": true,
+            "note": "t=0.138s"
+          },
+          {
+            "name": "tau_0.3V",
+            "expected": 0.12382592361457816,
+            "actual": 0.12500000000000008,
+            "tol": "20%",
+            "ok": true
+          },
+          {
+            "name": "v_ss_0.3V",
+            "expected": 0.24113037578912788,
+            "actual": 0.23908725799485597,
+            "tol": "10%",
+            "ok": true
+          },
+          {
+            "name": "r2_0.3V",
+            "expected": ">=0.98",
+            "actual": 0.996519131119608,
+            "tol": "-",
+            "ok": true
+          },
+          {
+            "name": "overshoot_0.3V",
+            "expected": "<=2%",
+            "actual": 0.01610885036871771,
+            "tol": "-",
+            "ok": true
+          },
+          {
+            "name": "yaw_drift_deg_0.3V",
+            "expected": "<=1deg",
+            "actual": 1.1961980210032104e-13,
+            "tol": "-",
+            "ok": true
+          },
+          {
+            "name": "nonslip_check_0.3V",
+            "expected": "<2%",
+            "actual": 0.0038411522656814686,
+            "tol": "-",
+            "ok": true
+          },
+          {
+            "name": "tau_0.5V",
+            "expected": 0.12382592361457816,
+            "actual": 0.12000000000000008,
+            "tol": "20%",
+            "ok": true
+          },
+          {
+            "name": "v_ss_0.5V",
+            "expected": 0.5035204121552753,
+            "actual": 0.4983292620171808,
+            "tol": "10%",
+            "ok": true
+          },
+          {
+            "name": "r2_0.5V",
+            "expected": ">=0.98",
+            "actual": 0.9987533116368333,
+            "tol": "-",
+            "ok": true
+          },
+          {
+            "name": "overshoot_0.5V",
+            "expected": "<=2%",
+            "actual": 0.014310978542598182,
+            "tol": "-",
+            "ok": true
+          },
+          {
+            "name": "yaw_drift_deg_0.5V",
+            "expected": "<=1deg",
+            "actual": 3.7861562353606465e-13,
+            "tol": "-",
+            "ok": true
+          },
+          {
+            "name": "nonslip_check_0.5V",
+            "expected": "<2%",
+            "actual": 0.0009114926113633462,
+            "tol": "-",
+            "ok": true
+          },
+          {
+            "name": "v_ss_gradient",
+            "expected": 1.3344982456115826,
+            "actual": 1.296210020111624,
+            "tol": "10%",
+            "ok": true
+          },
+          {
+            "name": "qacc_monitor_strict",
+            "expected": "OK",
+            "actual": "max|qacc|=1.633e+03 rad/s^2",
+            "tol": "strict",
+            "ok": true
+          }
+        ],
+        "passed": true,
+        "calibration": {
+          "v_ss_meas": {
+            "0.3": 0.23908725799485597,
+            "0.5": 0.4983292620171808
+          },
+          "tau_meas": {
+            "0.3": 0.12500000000000008,
+            "0.5": 0.12000000000000008
+          },
+          "grad_meas": 1.296210020111624,
+          "N_c_static": 0.09801769294715784,
+          "N_c_dynamic": {
+            "0.3": 0.3590685812236515,
+            "0.5": 0.41696862577710725
+          }
+        }
+      },
+      "Test2_coast_down": {
+        "checks": [
+          {
+            "name": "tau_coast_vs_test1",
+            "expected": 0.12000000000000008,
+            "actual": 0.12658881078160725,
+            "tol": "15%",
+            "ok": true
+          },
+          {
+            "name": "t_stop",
+            "expected": 0.1691415152547761,
+            "actual": 0.20100000000000015,
+            "tol": "25%",
+            "ok": true
+          },
+          {
+            "name": "Fc_meas_order_of_magnitude",
+            "expected": 0.1751493030121125,
+            "actual": 0.15968769510795253,
+            "tol": "1/3\u301c3\u500d",
+            "ok": true
+          },
+          {
+            "name": "monotonic_decay",
+            "expected": "\u5358\u8abf\u6e1b\u8870",
+            "actual": "\u4e0a\u6607\u30b5\u30f3\u30d7\u30eb\u6570=0/1999",
+            "tol": "-",
+            "ok": true
+          },
+          {
+            "name": "no_remotion_after_stop",
+            "expected": true,
+            "actual": true,
+            "tol": "-",
+            "ok": true
+          },
+          {
+            "name": "qacc_monitor_strict",
+            "expected": "OK",
+            "actual": "max|qacc|=2.161e+03 rad/s^2",
+            "tol": "strict",
+            "ok": true
+          }
+        ],
+        "passed": true,
+        "calibration": {
+          "Fc_meas": 0.15968769510795253,
+          "Fc_theory": 0.1751493030121125,
+          "tau_meas": 0.12658881078160725,
+          "t_stop_meas": 0.20100000000000015,
+          "t_stop_theory": 0.1691415152547761,
+          "v0": 0.4978357488138796,
+          "note": "Test1 0.5V \u5b9a\u5e38\u72b6\u614b\u304b\u3089\u7d99\u7d9a"
+        }
+      },
+      "Test3_pivot_turn": {
+        "checks": [
+          {
+            "name": "tread_L_inf",
+            "expected": 0.072,
+            "actual": 0.07321815972201344,
+            "tol": "5%",
+            "ok": true
+          },
+          {
+            "name": "tau3",
+            "expected": 0.15178533828578317,
+            "actual": 0.09900000000000009,
+            "tol": "20%",
+            "ok": false
+          },
+          {
+            "name": "Omega_ss",
+            "expected": 7.165438287948919,
+            "actual": 4.985203230753355,
+            "tol": "15%",
+            "ok": false
+          },
+          {
+            "name": "com_displacement_pure_pivot",
+            "expected": "<=2mm",
+            "actual": 0.0016043173407955156,
+            "tol": "-",
+            "ok": true
+          },
+          {
+            "name": "qacc_monitor_strict",
+            "expected": "OK",
+            "actual": "max|qacc|=1.569e+03 rad/s^2",
+            "tol": "strict",
+            "ok": true
+          }
+        ],
+        "passed": false,
+        "calibration": {
+          "I_zz_meas": 0.0001745948295486097,
+          "I_eff_meas": 0.0002020526073263875,
+          "wheel_term": 2.7457777777777775e-05,
+          "L_inf": 0.07321815972201344,
+          "Omega_ss_meas": 4.985203230753355,
+          "tau3_meas": 0.09900000000000009,
+          "note": "Test3(a) \u8f03\u6b63\u5024\u4f7f\u7528"
+        }
+      },
+      "Test4_full_throttle": {
+        "checks": [
+          {
+            "name": "settled_before_excitation",
+            "expected": true,
+            "actual": true,
+            "tol": "-",
+            "ok": true
+          },
+          {
+            "name": "a1_slip_phase",
+            "expected": 8.811823894402437,
+            "actual": 7.577780720382184,
+            "tol": "10%",
+            "ok": false
+          },
+          {
+            "name": "v1_transition",
+            "expected": 2.886039643884162,
+            "actual": 3.0409493612109912,
+            "tol": "20%",
+            "ok": true
+          },
+          {
+            "name": "v_ss",
+            "expected": 3.8030468336888843,
+            "actual": 3.7947666455432127,
+            "tol": "10%",
+            "ok": true
+          },
+          {
+            "name": "x_at_1s",
+            "expected": 2.9170411834660293,
+            "actual": 2.7593796353461424,
+            "tol": "15%",
+            "ok": true
+          },
+          {
+            "name": "slip_phase1_present",
+            "expected": true,
+            "actual": true,
+            "tol": "-",
+            "ok": true
+          },
+          {
+            "name": "slip_phase2_negligible",
+            "expected": "<0.0761",
+            "actual": 0.017126331136897977,
+            "tol": "-",
+            "ok": true
+          },
+          {
+            "name": "qacc_monitor_loose",
+            "expected": "OK",
+            "actual": "max|qacc|=1.664e+05 rad/s^2",
+            "tol": "loose",
+            "ok": true
+          }
+        ],
+        "passed": false,
+        "calibration": {
+          "N_w": 0.9418947482424312,
+          "N_c": 0.09801769294715784,
+          "mu_wheel": 1.0,
+          "mu_caster": 0.08,
+          "a1_theory": 8.811823894402437,
+          "v1_theory": 2.886039643884162,
+          "t1_theory": 0.32751898794952883,
+          "v_ss_theory": 3.8030468336888843,
+          "x_theory_1s": 2.9170411834660293
+        }
+      },
+      "Test5_steady_turn": {
+        "checks": [
+          {
+            "name": "plateau_a_lat_max",
+            "expected": 9.556301783168108,
+            "actual": 1.1963592240715786,
+            "tol": "15%",
+            "ok": false
+          },
+          {
+            "name": "linear_region_r2",
+            "expected": ">=0.95",
+            "actual": 0.9629659324920836,
+            "tol": "-",
+            "ok": true
+          },
+          {
+            "name": "initial_points_linear_fit",
+            "expected": "\u00b110%",
+            "actual": "n=3",
+            "tol": "-",
+            "ok": false
+          },
+          {
+            "name": "plateau_within_benchmark_range_G",
+            "expected": "[0.5,1.5]G",
+            "actual": 0.12195302997671545,
+            "tol": "-",
+            "ok": false
+          },
+          {
+            "name": "qacc_monitor_strict",
+            "expected": "OK",
+            "actual": "max|qacc|=8.417e+04 >= strict(1e+04)",
+            "tol": "strict",
+            "ok": false
+          }
+        ],
+        "passed": false,
+        "calibration": {
+          "a_lat_max_theory": 9.556301783168108,
+          "plateau_meas": 1.1963592240715786,
+          "plateau_G": 0.12195302997671545,
+          "kappas": [
+            0.0,
+            1.4285714285714286,
+            2.857142857142857,
+            4.285714285714286,
+            5.714285714285714,
+            7.142857142857143,
+            8.571428571428571,
+            10.0,
+            11.428571428571429,
+            12.857142857142858,
+            14.285714285714286,
+            15.714285714285715,
+            17.142857142857142,
+            18.571428571428573,
+            20.0
+          ],
+          "a_lat_meas": [
+            -7.085722470505177e-15,
+            -0.2897145978788989,
+            -0.9543641478558493,
+            -1.9470182285391653,
+            -3.0243232642178235,
+            -4.272746171063362,
+            -4.696816739283808,
+            -0.19125540345944403,
+            -0.08711359306036748,
+            -0.10645121546851932,
+            -0.17544326577983105,
+            -0.1921238935625711,
+            -0.24459960306598205,
+            -0.28134301730082134,
+            -0.2857159964656584
+          ]
+        }
+      },
+      "Test6_sensors": {
+        "checks": [
+          {
+            "name": "range_LF_slope",
+            "expected": 1.0,
+            "actual": 0.999999998377927,
+            "tol": "\u00b10.01",
+            "ok": true
+          },
+          {
+            "name": "range_LF_intercept",
+            "expected": 0.0,
+            "actual": 2.0111750364610526e-10,
+            "tol": "<0.5mm",
+            "ok": true
+          },
+          {
+            "name": "range_LF_r2",
+            "expected": ">=0.999",
+            "actual": 0.9999999999999988,
+            "tol": "-",
+            "ok": true
+          },
+          {
+            "name": "range_LF_cutoff_clip_when_hit_beyond",
+            "expected": 0.3,
+            "actual": [
+              0.3,
+              0.3,
+              0.3
+            ],
+            "tol": "exact",
+            "ok": true
+          },
+          {
+            "name": "range_LF_no_geometry_raw",
+            "expected": -0.3,
+            "actual": -0.3,
+            "tol": "exact",
+            "ok": true
+          },
+          {
+            "name": "range_LS_slope",
+            "expected": 1.0,
+            "actual": 0.9999999987240581,
+            "tol": "\u00b10.01",
+            "ok": true
+          },
+          {
+            "name": "range_LS_intercept",
+            "expected": 0.0,
+            "actual": -5.282163104831519e-10,
+            "tol": "<0.5mm",
+            "ok": true
+          },
+          {
+            "name": "range_LS_r2",
+            "expected": ">=0.999",
+            "actual": 0.9999999999999992,
+            "tol": "-",
+            "ok": true
+          },
+          {
+            "name": "range_LS_cutoff_clip_when_hit_beyond",
+            "expected": 0.3,
+            "actual": [
+              0.3,
+              0.3,
+              0.3
+            ],
+            "tol": "exact",
+            "ok": true
+          },
+          {
+            "name": "range_RF_slope",
+            "expected": 1.0,
+            "actual": 0.999999998377927,
+            "tol": "\u00b10.01",
+            "ok": true
+          },
+          {
+            "name": "range_RF_intercept",
+            "expected": 0.0,
+            "actual": 2.0111750364610526e-10,
+            "tol": "<0.5mm",
+            "ok": true
+          },
+          {
+            "name": "range_RF_r2",
+            "expected": ">=0.999",
+            "actual": 0.9999999999999988,
+            "tol": "-",
+            "ok": true
+          },
+          {
+            "name": "range_RF_cutoff_clip_when_hit_beyond",
+            "expected": 0.3,
+            "actual": [
+              0.3,
+              0.3,
+              0.3
+            ],
+            "tol": "exact",
+            "ok": true
+          },
+          {
+            "name": "range_RS_slope",
+            "expected": 1.0,
+            "actual": 0.9999999987240581,
+            "tol": "\u00b10.01",
+            "ok": true
+          },
+          {
+            "name": "range_RS_intercept",
+            "expected": 0.0,
+            "actual": -5.282163104831519e-10,
+            "tol": "<0.5mm",
+            "ok": true
+          },
+          {
+            "name": "range_RS_r2",
+            "expected": ">=0.999",
+            "actual": 0.9999999999999992,
+            "tol": "-",
+            "ok": true
+          },
+          {
+            "name": "range_RS_cutoff_clip_when_hit_beyond",
+            "expected": 0.3,
+            "actual": [
+              0.3,
+              0.3,
+              0.3
+            ],
+            "tol": "exact",
+            "ok": true
+          },
+          {
+            "name": "range_FL_slope",
+            "expected": 1.0,
+            "actual": 0.9999999983779272,
+            "tol": "\u00b10.01",
+            "ok": true
+          },
+          {
+            "name": "range_FL_intercept",
+            "expected": 0.0,
+            "actual": 2.0111754292075786e-10,
+            "tol": "<0.5mm",
+            "ok": true
+          },
+          {
+            "name": "range_FL_r2",
+            "expected": ">=0.999",
+            "actual": 0.9999999999999988,
+            "tol": "-",
+            "ok": true
+          },
+          {
+            "name": "range_FL_cutoff_clip_when_hit_beyond",
+            "expected": 0.3,
+            "actual": [
+              0.3,
+              0.3,
+              0.3
+            ],
+            "tol": "exact",
+            "ok": true
+          },
+          {
+            "name": "range_FR_slope",
+            "expected": 1.0,
+            "actual": 0.9999999983779272,
+            "tol": "\u00b10.01",
+            "ok": true
+          },
+          {
+            "name": "range_FR_intercept",
+            "expected": 0.0,
+            "actual": 2.0111754292075786e-10,
+            "tol": "<0.5mm",
+            "ok": true
+          },
+          {
+            "name": "range_FR_r2",
+            "expected": ">=0.999",
+            "actual": 0.9999999999999988,
+            "tol": "-",
+            "ok": true
+          },
+          {
+            "name": "range_FR_cutoff_clip_when_hit_beyond",
+            "expected": 0.3,
+            "actual": [
+              0.3,
+              0.3,
+              0.3
+            ],
+            "tol": "exact",
+            "ok": true
+          },
+          {
+            "name": "accel_static_x",
+            "expected": 0.0,
+            "actual": 6.07155556399253e-06,
+            "tol": "0.05",
+            "ok": true
+          },
+          {
+            "name": "accel_static_y",
+            "expected": 0.0,
+            "actual": 1.2727356394494026e-18,
+            "tol": "0.05",
+            "ok": true
+          },
+          {
+            "name": "accel_static_z",
+            "expected": 9.81,
+            "actual": 9.810000001150756,
+            "tol": "0.05",
+            "ok": true
+          },
+          {
+            "name": "gyro_vs_xmat_finite_diff",
+            "expected": "<=0.01 rad/s",
+            "actual": 0.37286481270679417,
+            "tol": "0.01",
+            "ok": false
+          },
+          {
+            "name": "accel_x_dynamic_vs_test1",
+            "expected": "<=10% (median)",
+            "actual": 0.16242439039366327,
+            "tol": "10%",
+            "ok": false
+          },
+          {
+            "name": "qacc_monitor_static_strict",
+            "expected": "OK",
+            "actual": "max|qacc|=7.016e+02 rad/s^2",
+            "tol": "strict",
+            "ok": true
+          }
+        ],
+        "passed": false,
+        "calibration": {
+          "regressions": {
+            "LF": {
+              "slope": 0.999999998377927,
+              "intercept": 2.0111750364610526e-10,
+              "r2": 0.9999999999999988
+            },
+            "LS": {
+              "slope": 0.9999999987240581,
+              "intercept": -5.282163104831519e-10,
+              "r2": 0.9999999999999992
+            },
+            "RF": {
+              "slope": 0.999999998377927,
+              "intercept": 2.0111750364610526e-10,
+              "r2": 0.9999999999999988
+            },
+            "RS": {
+              "slope": 0.9999999987240581,
+              "intercept": -5.282163104831519e-10,
+              "r2": 0.9999999999999992
+            },
+            "FL": {
+              "slope": 0.9999999983779272,
+              "intercept": 2.0111754292075786e-10,
+              "r2": 0.9999999999999988
+            },
+            "FR": {
+              "slope": 0.9999999983779272,
+              "intercept": 2.0111754292075786e-10,
+              "r2": 0.9999999999999988
+            }
+          },
+          "accel_static": [
+            6.07155556399253e-06,
+            1.2727356394494026e-18,
+            9.810000001150756
+          ]
+        }
+      },
+      "Test7_energy": {
+        "checks": [
+          {
+            "name": "7a_max_v",
+            "expected": "<1mm/s",
+            "actual": 4.489767059069647e-06,
+            "tol": "-",
+            "ok": true
+          },
+          {
+            "name": "7a_dpos",
+            "expected": "<0.5mm",
+            "actual": 1.2171948604589033e-07,
+            "tol": "-",
+            "ok": true
+          },
+          {
+            "name": "7a_dyaw_deg",
+            "expected": "<0.1deg",
+            "actual": 4.740161863254525e-17,
+            "tol": "-",
+            "ok": true
+          },
+          {
+            "name": "7a_qacc_strict",
+            "expected": "OK",
+            "actual": "max|qacc|=7.016e+02 rad/s^2",
+            "tol": "strict",
+            "ok": true
+          },
+          {
+            "name": "7b_v_at_3s",
+            "expected": 3.8123025142531675,
+            "actual": 3.7908529286077974,
+            "tol": "5%",
+            "ok": true
+          },
+          {
+            "name": "7b_dvdt_at_3s",
+            "expected": "<0.1 m/s^2",
+            "actual": -0.006097452857554553,
+            "tol": "-",
+            "ok": true
+          },
+          {
+            "name": "7b_qacc_loose",
+            "expected": "OK",
+            "actual": "max|qacc|=1.664e+05 rad/s^2",
+            "tol": "loose",
+            "ok": true
+          },
+          {
+            "name": "7c_2term_balance",
+            "expected": 0.0,
+            "actual": 0.0024953839917287116,
+            "tol": "<=5%",
+            "ok": true
+          },
+          {
+            "name": "7c_3term_balance",
+            "expected": 0.0,
+            "actual": 0.014438534689511935,
+            "tol": "<=10%",
+            "ok": true
+          }
+        ],
+        "passed": true,
+        "calibration": {
+          "N_w": 0.9418947482424312,
+          "N_c": 0.7695795150885588,
+          "mu_wheel": 1.0,
+          "mu_caster": 0.08,
+          "v_ss_theory": 3.8123025142531675,
+          "resid_2term": 0.0024953839917287116,
+          "resid_3term": 0.014438534689511935,
+          "W_2": 3.081696872048881,
+          "W_3": 4.38168907116609
+        }
+      },
+      "Test8_braking_pitch": {
+        "checks": [
+          {
+            "name": "static_tipover_margin",
+            "expected": ">=1.5",
+            "actual": 6.2681397568022215,
+            "tol": "-",
+            "ok": true
+          },
+          {
+            "name": "dynamic_max_pitch_deg",
+            "expected": "<=3deg",
+            "actual": 5.609071295524907,
+            "tol": "-",
+            "ok": false
+          },
+          {
+            "name": "dynamic_min_front_caster_force",
+            "expected": ">0.00029N",
+            "actual": 0.0,
+            "tol": "-",
+            "ok": false
+          },
+          {
+            "name": "dynamic_pitch_recovery_deg",
+            "expected": "<=0.5deg",
+            "actual": 0.0008614965507401628,
+            "tol": "-",
+            "ok": true
+          },
+          {
+            "name": "load_transfer_dNf_minus_dNr",
+            "expected": 0.13903034716315094,
+            "actual": 0.14642035918413407,
+            "tol": "\u00b130%",
+            "ok": true
+          },
+          {
+            "name": "qacc_monitor_loose",
+            "expected": "OK",
+            "actual": "max|qacc|=3.896e+05 rad/s^2",
+            "tol": "loose",
+            "ok": true
+          }
+        ],
+        "passed": false,
+        "calibration": {
+          "margin": {
+            "x_cg": -0.0017109686252289138,
+            "z_cg": 0.008159284932297658,
+            "x_f": 0.045,
+            "x_r": -0.045,
+            "a_crit": 56.16112269834123,
+            "a_avail": 8.959775129039658,
+            "a_avail_motor": 32.33163655071553,
+            "a_avail_traction": 8.959775129039658,
+            "margin": 6.2681397568022215,
+            "N_wheel": 0.9418947482424312,
+            "N_caster": 0.09801769294715784,
+            "N_front": 0.029379049633611744,
+            "N_back": 0.06863864331354605,
+            "mu_wheel": 1.0,
+            "mu_caster": 0.08
+          },
+          "a_meas": -7.233761007446883,
+          "dNf": 0.1375228105591344,
+          "dNr": -0.008897548624999675,
+          "dN_theory": 0.13903034716315094
+        }
+      },
+      "S1_mass_inertia": {
+        "checks": [
+          {
+            "name": "total_mass_kg",
+            "expected": "[0.090,0.120]",
+            "actual": 0.10600000000000002,
+            "tol": "-",
+            "ok": true
+          },
+          {
+            "name": "wheel_density_g_cm3",
+            "expected": "[0.8,2.0]",
+            "actual": 1.2475402162797988,
+            "tol": "-",
+            "ok": true
+          },
+          {
+            "name": "wheel_motor_mass_ratio",
+            "expected": "<=0.45",
+            "actual": 0.4339622641509433,
+            "tol": "-",
+            "ok": true
+          },
+          {
+            "name": "izz_wheel_motor_fraction",
+            "expected": "<0.40",
+            "actual": 0.31573696026761994,
+            "tol": "-",
+            "ok": true
+          },
+          {
+            "name": "driven_wheel_load_ratio_eta",
+            "expected": ">=0.55",
+            "actual": 0.9057899604200864,
+            "tol": "-",
+            "ok": true
+          }
+        ],
+        "passed": true,
+        "calibration": {
+          "izz": {
+            "total_izz": 9.211718303730024e-05,
+            "wheel_motor_izz": 2.908479936061314e-05,
+            "fraction": 0.31573696026761994,
+            "com": [
+              -0.0017109686252289138,
+              0.0,
+              0.05815928493229766
+            ]
+          },
+          "eta": 0.9057899604200864,
+          "wheel_motor_mass_ratio": 0.4339622641509433,
+          "total_mass": 0.10600000000000002
+        }
+      },
+      "S2_contact": {
+        "checks": [
+          {
+            "name": "caster_floor_friction0",
+            "expected": 0.08,
+            "actual": 0.08,
+            "tol": "1e-6",
+            "ok": true
+          },
+          {
+            "name": "wheel_floor_friction0",
+            "expected": 1.0,
+            "actual": 1.0,
+            "tol": "1e-6",
+            "ok": true
+          },
+          {
+            "name": "body_wall_friction0",
+            "expected": 0.4,
+            "actual": 0.4,
+            "tol": "1e-6",
+            "ok": true
+          },
+          {
+            "name": "solref_timeconst",
+            "expected": 0.002,
+            "actual": 0.002,
+            "tol": "-",
+            "ok": true
+          },
+          {
+            "name": "timeconst_over_timestep_ratio",
+            "expected": 4.0,
+            "actual": 4.0,
+            "tol": "-",
+            "ok": true
+          }
+        ],
+        "passed": true,
+        "calibration": {}
+      },
+      "S3_sensors": {
+        "checks": [
+          {
+            "name": "rangefinder_count_and_names",
+            "expected": 6,
+            "actual": 6,
+            "tol": "-",
+            "ok": true
+          },
+          {
+            "name": "cutoff_LF",
+            "expected": 0.3,
+            "actual": 0.3,
+            "tol": "1e-9",
+            "ok": true
+          },
+          {
+            "name": "cutoff_LS",
+            "expected": 0.3,
+            "actual": 0.3,
+            "tol": "1e-9",
+            "ok": true
+          },
+          {
+            "name": "cutoff_RF",
+            "expected": 0.3,
+            "actual": 0.3,
+            "tol": "1e-9",
+            "ok": true
+          },
+          {
+            "name": "cutoff_RS",
+            "expected": 0.3,
+            "actual": 0.3,
+            "tol": "1e-9",
+            "ok": true
+          },
+          {
+            "name": "cutoff_FL",
+            "expected": 0.3,
+            "actual": 0.3,
+            "tol": "1e-9",
+            "ok": true
+          },
+          {
+            "name": "cutoff_FR",
+            "expected": 0.3,
+            "actual": 0.3,
+            "tol": "1e-9",
+            "ok": true
+          },
+          {
+            "name": "accel_exists",
+            "expected": true,
+            "actual": true,
+            "tol": "-",
+            "ok": true
+          },
+          {
+            "name": "gyro_exists",
+            "expected": true,
+            "actual": true,
+            "tol": "-",
+            "ok": true
+          },
+          {
+            "name": "pos_LF",
+            "expected": [
+              0.031,
+              0.036,
+              0.01
+            ],
+            "actual": [
+              0.031,
+              0.036,
+              0.01
+            ],
+            "tol": "1e-6",
+            "ok": true
+          },
+          {
+            "name": "zaxis_LF",
+            "expected": [
+              0.9996621712695211,
+              0.0,
+              0.025991216453007546
+            ],
+            "actual": [
+              0.999662171269521,
+              0.0,
+              0.02599121645300756
+            ],
+            "tol": "1e-6",
+            "ok": true
+          },
+          {
+            "name": "pos_LS",
+            "expected": [
+              0.043,
+              0.016,
+              0.01
+            ],
+            "actual": [
+              0.043,
+              0.016,
+              0.01
+            ],
+            "tol": "1e-6",
+            "ok": true
+          },
+          {
+            "name": "zaxis_LS",
+            "expected": [
+              0.2424585069709443,
+              0.9698340278837771,
+              0.025215684724978205
+            ],
+            "actual": [
+              0.2424585069709443,
+              0.9698340278837771,
+              0.025215684724978052
+            ],
+            "tol": "1e-6",
+            "ok": true
+          },
+          {
+            "name": "pos_RF",
+            "expected": [
+              0.031,
+              -0.036,
+              0.01
+            ],
+            "actual": [
+              0.031,
+              -0.036,
+              0.01
+            ],
+            "tol": "1e-6",
+            "ok": true
+          },
+          {
+            "name": "zaxis_RF",
+            "expected": [
+              0.9996621712695211,
+              0.0,
+              0.025991216453007546
+            ],
+            "actual": [
+              0.999662171269521,
+              0.0,
+              0.02599121645300756
+            ],
+            "tol": "1e-6",
+            "ok": true
+          },
+          {
+            "name": "pos_RS",
+            "expected": [
+              0.043,
+              -0.016,
+              0.01
+            ],
+            "actual": [
+              0.043,
+              -0.016,
+              0.01
+            ],
+            "tol": "1e-6",
+            "ok": true
+          },
+          {
+            "name": "zaxis_RS",
+            "expected": [
+              0.2424585069709443,
+              -0.9698340278837771,
+              0.025215684724978205
+            ],
+            "actual": [
+              0.2424585069709443,
+              -0.9698340278837771,
+              0.025215684724978052
+            ],
+            "tol": "1e-6",
+            "ok": true
+          },
+          {
+            "name": "pos_FL",
+            "expected": [
+              0.048,
+              0.009,
+              0.01
+            ],
+            "actual": [
+              0.048,
+              0.009,
+              0.01
+            ],
+            "tol": "1e-6",
+            "ok": true
+          },
+          {
+            "name": "zaxis_FL",
+            "expected": [
+              0.9996621712695211,
+              0.0,
+              0.025991216453007546
+            ],
+            "actual": [
+              0.999662171269521,
+              0.0,
+              0.02599121645300756
+            ],
+            "tol": "1e-6",
+            "ok": true
+          },
+          {
+            "name": "pos_FR",
+            "expected": [
+              0.048,
+              -0.009,
+              0.01
+            ],
+            "actual": [
+              0.048,
+              -0.009,
+              0.01
+            ],
+            "tol": "1e-6",
+            "ok": true
+          },
+          {
+            "name": "zaxis_FR",
+            "expected": [
+              0.9996621712695211,
+              0.0,
+              0.025991216453007546
+            ],
+            "actual": [
+              0.999662171269521,
+              0.0,
+              0.02599121645300756
+            ],
+            "tol": "1e-6",
+            "ok": true
+          }
+        ],
+        "passed": true,
+        "calibration": {}
+      },
+      "S4_tipover_margin": {
+        "checks": [
+          {
+            "name": "tipover_margin",
+            "expected": ">=1.5",
+            "actual": 6.2681397568022215,
+            "tol": "-",
+            "ok": true
+          }
+        ],
+        "passed": true,
+        "calibration": {
+          "x_cg": -0.0017109686252289138,
+          "z_cg": 0.008159284932297658,
+          "x_f": 0.045,
+          "x_r": -0.045,
+          "a_crit": 56.16112269834123,
+          "a_avail": 8.959775129039658,
+          "a_avail_motor": 32.33163655071553,
+          "a_avail_traction": 8.959775129039658,
+          "margin": 6.2681397568022215,
+          "N_wheel": 0.9418947482424312,
+          "N_caster": 0.09801769294715784,
+          "N_front": 0.029379049633611744,
+          "N_back": 0.06863864331354605,
+          "mu_wheel": 1.0,
+          "mu_caster": 0.08
+        }
+      },
+      "ContactHealth_wall_penetration": {
+        "checks": [
+          {
+            "name": "max_penetration_v3",
+            "expected": "<6mm",
+            "actual": 0.002264813002559516,
+            "tol": "-",
+            "ok": true
+          },
+          {
+            "name": "tunneling_v5",
+            "expected": false,
+            "actual": false,
+            "tol": "-",
+            "ok": true
+          }
+        ],
+        "passed": true,
+        "calibration": {
+          "max_pen_3": 0.002264813002559516,
+          "max_pen_5": 0.0036744821924367434
+        }
+      }
+    }
+  }
+}
