@@ -385,6 +385,11 @@ def generate_maze(seed, extra_open_target=EXTRA_OPEN_TARGET, max_attempts=MAX_AT
         if d_final < d0:
             raise AssertionError(
                 f"seed={seed}: 経路保護の不変条件が破れています D_final={d_final} < D0={d0}")
+        # 窓の判定は手順 7（壁を足す修復）の**前**に行っているので、修復が距離を
+        # 伸ばした結果、最終的な迷路が窓の外に出ることがありうる。最終形でも
+        # 窓に入っていることを受け入れ条件として確認する（黙って外れるのを防ぐ）。
+        if d0_window is not None and not (d0_window[0] <= d_final <= d0_window[1]):
+            continue
         info = dict(seed=seed, attempts=attempt, cycles=int(cycles),
                     open_edges=int(open_edges), gateway=list(gateway),
                     extra_opened=int(opened), d0=int(d0), d_shortest=int(d_final))
