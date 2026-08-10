@@ -78,17 +78,13 @@ def main():
     print("=" * 70)
     print(f"{cfg['label']} 新16x16評価迷路 フル録画（全5走行）")
     print("=" * 70)
+    # 注記は方式名に連結せず**別行**に出す（連結すると右端で見切れるため）
     kw = {}
-    try:
-        result = record_run_video(_policy_for(args.method), cfg["label"], Path(cfg["out"]),
-                                   args.maze_id, max_runs=MAX_RUNS, time_budget=TIME_BUDGET_S,
-                                   v_max_for_graph=cfg["vmax"], note=cfg["note"])
-    except TypeError:
-        # note 引数に未対応の版では方式名ラベルに注記を併記する
-        label = cfg["label"] + ("  ※" + cfg["note"] if cfg["note"] else "")
-        result = record_run_video(_policy_for(args.method), label, Path(cfg["out"]),
-                                   args.maze_id, max_runs=MAX_RUNS, time_budget=TIME_BUDGET_S,
-                                   v_max_for_graph=cfg["vmax"])
+    if cfg["note"]:
+        kw["extra_caption"] = ["※ " + cfg["note"]]
+    result = record_run_video(_policy_for(args.method), cfg["label"], Path(cfg["out"]),
+                               args.maze_id, max_runs=MAX_RUNS, time_budget=TIME_BUDGET_S,
+                               v_max_for_graph=cfg["vmax"], **kw)
 
     print("\n--- 公式 evaluate_maze() の走行記録（本動画のタイム表示の正） ---")
     for r in result["official_runs"]:

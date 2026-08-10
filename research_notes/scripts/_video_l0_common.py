@@ -57,8 +57,10 @@ HOLD_FRAMES_AT_END = 90       # 全走行終了後の静止保持フレーム数
 GRAPH_WINDOW_S = 10.0         # 速度グラフの表示窓 [s]
 
 # 右パネル内の縦方向セクション高さ配分（合計 OUT_HEIGHT=1080）
-SEC1_H = 420   # 既知壁地図（330x330グリッド + 凡例）
-SEC2_H = 260   # 走行状態・確定タイム
+SEC1_H = 400   # 既知壁地図（330x330グリッド + 凡例）
+# 注記行（extra_caption）や 5 走行ぶんの確定タイムが下のパネルへ被らないよう
+# 余裕を持たせる（L0-b で注記 1 行が増えて最速行が隠れた不具合の是正）
+SEC2_H = 290   # 走行状態・確定タイム
 SEC3_H = 180   # 数値計器（v, omega, 電圧, 距離センサ）
 SEC4_H = OUT_HEIGHT - SEC1_H - SEC2_H - SEC3_H  # 速度時系列グラフ（220）
 
@@ -295,8 +297,11 @@ def render_gauges_panel(width, height, v, omega, vl, vr, ranges_mm, sensor_names
     draw = ImageDraw.Draw(img)
 
     # --- 左側: センサ配置図（機体を上から見た模式図。前方=上） ---
-    diag_w = int(width * 0.36)
-    cx, cy = diag_w // 2, height // 2
+    diag_w = int(width * 0.42)
+    # 機体図は左端の値ラベルが切れないよう右へ寄せつつ、右側ラベルが
+    # 状態量パネル（v/ω/V_L/V_R）へ食い込まない幅に収める
+    # （L0-b で右ラベルがパネルと重なった不具合の是正）
+    cx, cy = diag_w // 2 + 10, height // 2
     body_w, body_h = 70, 100
     draw.rounded_rectangle([cx - body_w // 2, cy - body_h // 2, cx + body_w // 2, cy + body_h // 2],
                             radius=14, outline=(120, 120, 125, 255), width=2)
@@ -316,10 +321,16 @@ def render_gauges_panel(width, height, v, omega, vl, vr, ranges_mm, sensor_names
         draw.ellipse([px - 5, py - 5, px + 5, py + 5], fill=(255, 214, 10, 255))
         bbox = draw.textbbox((0, 0), txt, font=font_small)
         tw = bbox[2] - bbox[0]
-        draw.text((px - tw / 2, py + 10), txt, font=font_small, fill=TEXT_WHITE)
+        # 値ラベルは機体図の**外側**へ寄せる（中央揃えだと左右のラベルが接触して
+        # 読めなくなる。L0-a 版で「235mmRF 231mm」と重なった不具合の是正）
+        if px < cx:
+            tx = px - tw - 12          # 左側センサ: ラベルを左外側へ
+        else:
+            tx = px + 12               # 右側センサ: ラベルを右外側へ
+        draw.text((tx, py - 8), txt, font=font_small, fill=TEXT_WHITE)
 
     # --- 右側: v / omega / 左右電圧 のバー表示 ---
-    bx0 = diag_w + 16
+    bx0 = diag_w + 28
     bar_w = width - bx0 - 20
     rows = [
         ("v", f"{v:+.2f} m/s", max(-1.0, min(1.0, v / 0.9)), True),
