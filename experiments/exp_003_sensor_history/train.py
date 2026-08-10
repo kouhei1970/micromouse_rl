@@ -62,7 +62,7 @@ FULL_TOTAL_STEPS = 1_000_000     # exp_002 と同一予算（exp_002 は約 16 �
 VALIDATION_EVERY_STEPS = 50_000
 
 
-def make_env(rank: int, gamma: float, log_dir: Path):
+def make_env(rank: int, gamma: float, log_dir: Path, potential_offset: bool = False):
     """CorridorEnv(mode="generate", obs_dist_diff=True) を Monitor で包んだ env_fn。"""
     def _init():
         env = CorridorEnv(
@@ -70,6 +70,7 @@ def make_env(rank: int, gamma: float, log_dir: Path):
             base_seed=TRAIN_BASE_SEED + rank * WORKER_SEED_STRIDE,
             gamma=gamma,
             obs_dist_diff=True,
+            potential_offset=potential_offset,
         )
         env = Monitor(env, filename=str(log_dir / f"env_{rank}"))
         return env
@@ -269,6 +270,8 @@ def main(argv=None):
     parser.add_argument("--model-out", type=str,
                         default="models/exp_003_sensor_history.zip")
     parser.add_argument("--validation-every", type=int, default=VALIDATION_EVERY_STEPS)
+    parser.add_argument("--potential-offset", action="store_true",
+                        help="exp_004: ポテンシャルを Φ=−D から Φ'=D₀−D へ（滞留の局所解を潰す）")
     args = parser.parse_args(argv)
 
     total_steps = SMOKE_TOTAL_STEPS if args.smoke else args.total_steps
@@ -277,9 +280,10 @@ def main(argv=None):
     log_dir = Path(args.log_dir)
     log_dir.mkdir(parents=True, exist_ok=True)
 
-    env_fns = [make_env(i, args.gamma, log_dir) for i in range(n_envs)]
+    env_fns = [make_env(i, args.gamma, log_dir, args.potential_offset) for i in range(n_envs)]
     vec_env = DummyVecEnv(env_fns) if n_envs == 1 else SubprocVecEnv(env_fns)
     print(f"[train] 観測空間 = {vec_env.observation_space}（距離4 + 差分4 + 7）")
+    print(f"[train] ポテンシャル = {'Φ=D₀−D（オフセットあり）' if args.potential_offset else 'Φ=−D（現行）'}")
 
     model = PPO(
         "MlpPolicy", vec_env,
@@ -322,7 +326,8 @@ def main(argv=None):
     run_summary = dict(
         experiment="exp_003_sensor_history", smoke=bool(args.smoke),
         total_steps=total_steps, n_envs=n_envs, seed=args.seed, gamma=args.gamma,
-        obs_dist_diff=True, train_base_seed=TRAIN_BASE_SEED,
+        obs_dist_diff=True, potential_offset=bool(args.potential_offset),
+        train_base_seed=TRAIN_BASE_SEED,
         worker_seed_stride=WORKER_SEED_STRIDE,
         elapsed_s=elapsed, steps_per_sec=steps_per_sec,
         validation_history=val_cb.history, **stats,

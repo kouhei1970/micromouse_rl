@@ -40,10 +40,13 @@ def main(argv=None):
     parser.add_argument("--stochastic", action="store_true",
                          help="指定時のみ確率的方策で評価（既定は決定的）")
     parser.add_argument("--no-save", action="store_true", help="outputs/ へ保存しない")
+    parser.add_argument("--output-name", type=str, default=None,
+                        help="outputs/ 配下の実験名（既定は exp_003_sensor_history）")
     args = parser.parse_args(argv)
 
     course_dir = DEFAULT_COURSE_DIR if args.split == "eval" else VALIDATION_COURSE_DIR
-    output_name = OUTPUT_NAME if args.split == "eval" else f"{OUTPUT_NAME}_validation"
+    base_name = args.output_name or OUTPUT_NAME
+    output_name = base_name if args.split == "eval" else f"{base_name}_validation"
 
     model = PPO.load(args.model)
     deterministic = not args.stochastic

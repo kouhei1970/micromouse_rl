@@ -13,6 +13,21 @@ obs_dist_diff=True（exp_003 で追加）にすると、距離センサの 1 階
 挿入して (2n + 7) 次元にする。既定は False で、exp_002 までの観測（n + 7 次元）を
 そのまま再現する。
 
+potential_offset=True（exp_004 で追加）にすると、ポテンシャルを Φ = −D から
+**Φ' = D₀ − D**（D₀ = そのコースの経路全長、エピソード内で定数）へ変える。
+狙いは滞留の局所解を潰すこと: 現行の Φ = −D は常に負なので、その場に留まるだけで
+整形報酬 F = (γ−1)Φ = (1−γ)·D > 0 が毎ステップ入り、時間罰 0.001 を上回っていた
+（exp_003 で方策が「動かずに時間切れまで粘る」解へ収束した原因）。Φ' ≥ 0 にすると
+滞留時は F = (γ−1)(D₀−D) ≤ 0 となり明確に損になる。
+Φ に定数を加える変換なので Ng らの定理の保証（最適方策は不変）は保たれる。
+
+補足（この変換の正体）: Φ に定数 c を足すと F は毎ステップ一律に (γ−1)c だけ変わる。
+つまり**時間罰を (1−γ)c だけ上げることと数学的に等価**である。c を定数ではなく
+D₀ に取ることの利点は、**罰の大きさがコース長へ自動追従する**点にある。定数の時間罰
+t_p では滞留の 1 ステップ報酬 (1−γ)D − t_p が長いコースほど得になり、評価・検証帯
+40 本を全て潰すには t_p ≥ 0.020 が必要だが、それでは短いコース（D₀ = 0.72 m）に
+過剰な罰になる。Φ' なら短いコースで実効 0.0046、長いコースで 0.0208 と必要な分だけ効く。
+
 --------------------------------------------------------------------------
 2 つの動作モード（2026-08-10 指揮側追加指示: 固定200本プールへの過学習防止）
 --------------------------------------------------------------------------
@@ -95,7 +110,7 @@ class CorridorEnv(gym.Env):
 
     def __init__(self, course_dir=None, course_seeds=None, max_cache=32, seed=None,
                  gamma: float = 0.995, mode: str = "fixed", base_seed: int = 2000,
-                 obs_dist_diff: bool = False):
+                 obs_dist_diff: bool = False, potential_offset: bool = False):
         super().__init__()
         if mode not in ("fixed", "generate"):
             raise ValueError(f"mode は 'fixed' か 'generate' のみ対応: {mode!r}")
@@ -107,6 +122,7 @@ class CorridorEnv(gym.Env):
         self.params = RobotParams()
         self.max_cache = int(max_cache)
         self.obs_dist_diff = bool(obs_dist_diff)
+        self.potential_offset = bool(potential_offset)
         # 距離センサ本数は仕様（RobotParams.sensors）から取る。生成される XML の
         # rangefinder 数と一致することは検証スイート S3 が保証している
         self._n_dist = len(self.params.sensors)
@@ -139,6 +155,7 @@ class CorridorEnv(gym.Env):
         self._prev_potential = None
         self._prev_action = np.zeros(2, dtype=np.float32)
         self._prev_dist_raw = None   # 距離センサの前ステップ生値 [m]（1 階差分用）
+        self._pot_offset = 0.0       # ポテンシャルのオフセット（potential_offset=True で D₀）
         self._step_count = 0
         self._max_steps = 0
 
@@ -352,9 +369,13 @@ class CorridorEnv(gym.Env):
         self._prev_action = np.zeros(2, dtype=np.float32)
         self._prev_dist_raw = None   # エピソード間で差分を持ち越さない
 
+        # D₀ は「経路の全長」を使う（2026-08-10 教授裁定）。初期擾乱による実測残り距離
+        # ではなくコースの属性として決め、エピソード内で不変にする。
+        self._pot_offset = self._cum_lengths[-1] if self.potential_offset else 0.0
+
         x, y, _yaw = self.sim.privileged_pose()
         remaining0 = remaining_path_length(self._path_centers, self._cum_lengths, x, y)
-        self._prev_potential = -remaining0
+        self._prev_potential = self._pot_offset - remaining0
 
         obs = self._make_observation()
         info = self._make_info(remaining0, collision=False, goal=False, sim_time=self.sim.sim_time)
@@ -370,7 +391,7 @@ class CorridorEnv(gym.Env):
 
         x, y, _yaw = self.sim.privileged_pose()
         remaining_m = remaining_path_length(self._path_centers, self._cum_lengths, x, y)
-        potential = -remaining_m
+        potential = self._pot_offset - remaining_m
 
         goal_cell = self.course["path"][-1]
         cell_size = self.params.cell_size

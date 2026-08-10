@@ -436,6 +436,64 @@ def test_reserved_seed_skip():
 
 
 # ==========================================================================
+# テスト8: ポテンシャルのオフセット（exp_004）
+# ==========================================================================
+def test_potential_offset():
+    print("\n[Test 8] ポテンシャルのオフセット Φ' = D₀ − D（exp_004）")
+
+    def stop_rewards(potential_offset, n_steps=20):
+        """その場停止（電圧 0）を n_steps 続けたときの報酬列を返す。"""
+        env = CorridorEnv(course_dir=EVAL_COURSE_DIR, course_seeds=[3000], gamma=GAMMA,
+                          potential_offset=potential_offset)
+        env.reset(seed=123)
+        d0 = env._cum_lengths[-1]
+        rewards = []
+        for _ in range(n_steps):
+            _obs, r, term, trunc, _info = env.step(np.array([0.0, 0.0], dtype=np.float32))
+            rewards.append(r)
+            if term or trunc:
+                break
+        env.close()
+        return np.array(rewards), d0
+
+    r_base, d0 = stop_rewards(False)
+    r_off, d0b = stop_rewards(True)
+
+    # (a) 現行式（既定）では滞留の報酬が正 = exp_003 で滞留解に落ちた原因
+    base_positive = bool(np.all(r_base > 0.0))
+    record("既定(Φ=−D)では滞留の報酬が正（局所解の源）", "> 0",
+           f"{r_base.min():.6f}〜{r_base.max():.6f}", base_positive)
+
+    # (b) オフセット版では滞留の報酬が負
+    off_negative = bool(np.all(r_off < 0.0))
+    record("Φ'=D₀−D では滞留の報酬が負", "< 0",
+           f"{r_off.min():.6f}〜{r_off.max():.6f}", off_negative)
+
+    # (c) 2 つの式の報酬差は毎ステップ一律 (γ−1)·D₀（＝時間罰を上げるのと等価）
+    expected_diff = (GAMMA - 1.0) * d0
+    actual_diff = r_off - r_base
+    diff_ok = bool(np.allclose(actual_diff, expected_diff, atol=1e-9)) and abs(d0 - d0b) < 1e-12
+    record("報酬差が毎ステップ一律 (γ−1)·D₀ になる", f"{expected_diff:.8f}",
+           f"{actual_diff.min():.8f}〜{actual_diff.max():.8f}", diff_ok,
+           f"(D₀={d0:.4f} m, 実効時間罰 0.001+{(1-GAMMA)*d0:.4f})")
+
+    # (d) 物理は変わらない（同一 seed・同一行動なら軌跡が一致する）
+    def stop_positions(potential_offset):
+        env = CorridorEnv(course_dir=EVAL_COURSE_DIR, course_seeds=[3000], gamma=GAMMA,
+                          potential_offset=potential_offset)
+        env.reset(seed=123)
+        poses = []
+        for _ in range(20):
+            env.step(np.array([0.4, 0.4], dtype=np.float32))
+            poses.append(env.sim.privileged_pose())
+        env.close()
+        return np.array(poses)
+
+    same_traj = bool(np.array_equal(stop_positions(False), stop_positions(True)))
+    record("報酬式の切り替えで軌跡（物理）は変わらない", True, same_traj, same_traj)
+
+
+# ==========================================================================
 # メイン
 # ==========================================================================
 def main():
@@ -478,6 +536,11 @@ def main():
         test_reserved_seed_skip()
     except Exception as e:  # noqa: BLE001
         record_exception("test_reserved_seed_skip", e)
+
+    try:
+        test_potential_offset()
+    except Exception as e:  # noqa: BLE001
+        record_exception("test_potential_offset", e)
 
     print("\n" + "=" * 78)
     print("テスト結果一覧")
