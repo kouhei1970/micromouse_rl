@@ -88,11 +88,25 @@ def main():
             # 経路長あたりの所要時間（面ごとに best_time / D_true を出して中央値）
             per_cell = [bt[m] / D[(arm, m)] for m in bt
                         if bt[m] is not None and D.get((arm, m))]
-            # 走行回数（持ち時間内に何回走れたか）を面ごとの JSON から拾う
-            nruns = []
+            # 面ごとの JSON から連続量を拾う（二値化した割合だけを見ない。教授指示）
+            nruns, n_after, imp, gaps = [], [], [], []
             for mf in sorted(glob.glob(os.path.join(os.path.dirname(p), "maze_*.json"))
                              + glob.glob(os.path.join(os.path.dirname(p), "contest_*.json"))):
-                nruns.append(len(json.load(open(mf, encoding="utf-8"))["runs"]))
+                jm = json.load(open(mf, encoding="utf-8"))
+                runs = jm["runs"]
+                nruns.append(len(runs))
+                gr = [r for r in runs if r["outcome"] == "goal"]
+                # 「やり直しの機会」= 初回ゴール到達より後に開始した走行の本数
+                n_after.append(len([r for r in runs if gr and r["t_start"] > gr[0]["t_end"]]))
+                # (c) の連続量版: 探索走行に対する短縮率（面ごとに対応をとる）
+                v = jm["kpi"].get("improvement_ratio")
+                if v is not None:
+                    imp.append(v)
+                # 走行と走行の間の時間 = スタートへの帰還にかかった時間。
+                # **持ち時間はこれにも食われる**ので、走行回数の上限を決めているのは
+                # 走行時間そのものではなく「走行時間 + 帰還時間」である
+                for a, b in zip(runs, runs[1:]):
+                    gaps.append(b["t_start"] - a["t_end"])
             rows.append(dict(
                 arm=arm, policy=pol, n=j["n_mazes"],
                 a=k["a_goal_reached"]["rate"], b=k["b_fast_run_done"]["rate"],
@@ -105,6 +119,20 @@ def main():
                 per_cell=float(np.median(per_cell)) if per_cell else None,
                 nruns_med=float(np.median(nruns)) if nruns else None,
                 nruns_max=max(nruns) if nruns else None,
+                # 連続量（二値化した (b)(c) の裏づけ）
+                imp_med=float(np.median(imp)) if imp else None,
+                imp_p25=float(np.percentile(imp, 25)) if imp else None,
+                imp_p75=float(np.percentile(imp, 75)) if imp else None,
+                imp_max=float(np.max(imp)) if imp else None,
+                imp_n=len(imp),
+                after_med=float(np.median(n_after)) if n_after else None,
+                after_min=min(n_after) if n_after else None,
+                after_max=max(n_after) if n_after else None,
+                # (e) は探索後の走行が 1 回だと自動的に 1.00 になるので測定にならない。
+                # その面数を明示する（研究計画書 §2 の修正に対応）
+                n_after_eq1=sum(1 for a in n_after if a == 1),
+                gap_med=float(np.median(gaps)) if gaps else None,
+                gap_max=float(np.max(gaps)) if gaps else None,
                 d_true_med=(float(np.median([D[(arm, m)] for m in bt if D.get((arm, m))]))
                             if bt else None),
                 dir=os.path.dirname(p),
@@ -135,6 +163,25 @@ def main():
               f"{fmt(r['explore'], 1, ' s'):>9} "
               f"{fmt(r['per_cell'], 3):>8} "
               f"{fmt(r['nruns_med'], 0) + '/' + str(r['nruns_max']):>9}")
+
+    # ---- 二値化した指標の裏にある連続量（教授指示 2026-08-11）----
+    print("\n【連続量】(b)(c) を二値で読まないための内訳")
+    print("  短縮率 = (探索走行 − 最速走行) / 探索走行。面ごとに対応をとった値の分布")
+    print(f"{'腕':<34}{'方式':<32}{'短縮率 中央値':>13}{'四分位':>16}{'最大':>8}"
+          f"{'n':>4}{'≥10%':>7}{'探索後の走行回数':>17}{'うち1回のみ':>11}{'帰還 中央値':>12}")
+    for r in rows:
+        det = detail.get(f"{r['arm']}/{r['policy']}", {})
+        n10 = "—"
+        print(f"{ARMS[r['arm']]:<34}{POLICIES[r['policy']]:<32}"
+              f"{fmt(r['imp_med'] and r['imp_med'] * 100, 1, '%'):>13}"
+              f"{fmt(r['imp_p25'] and r['imp_p25'] * 100, 1) + '〜' + fmt(r['imp_p75'] and r['imp_p75'] * 100, 1, '%'):>16}"
+              f"{fmt(r['imp_max'] and r['imp_max'] * 100, 1, '%'):>8}{r['imp_n']:>4}"
+              f"{fmt(r['c'] and r['c'] * 100, 0, '%'):>7}"
+              f"{fmt(r['after_med'], 0) + '(' + str(r['after_min']) + '〜' + str(r['after_max']) + ')':>17}"
+              f"{str(r['n_after_eq1']) + '/' + str(r['n']):>11}"
+              f"{fmt(r['gap_med'], 1, ' s'):>12}")
+    print("  ※ 探索後の走行が 1 回だけの面では (e) は自動的に 1.00 になり測定にならない")
+    print("  ※ 帰還 = 走行と走行の間の時間（スタートへ戻る時間）。持ち時間はこれにも食われる")
 
     print("\n【新旧比較】経路長が伸びたときのタイムの変化（同一方策・同一コード）")
     print(f"{'方式':<32}{'是正前 (d)':>12}{'是正後eval (d)':>16}{'倍率':>8}"
