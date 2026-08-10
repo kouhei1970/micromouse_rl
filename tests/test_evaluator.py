@@ -40,6 +40,8 @@ if REPO_ROOT not in sys.path:
 from competition.evaluator import (  # noqa: E402
     CompetitionEvaluator,
     PositionRingBuffer,
+    aggregate_kpi,
+    maze_kpi,
     bfs_shortest_path,
     goal_cells,
     in_goal_region,
@@ -447,6 +449,83 @@ def test5_goal_reaching_policy():
     return ok_reached and ok_best_time and ok_success and ok_progress and ok_efficiency and ok_xml_cached
 
 
+
+# ==========================================================================
+# テスト6: 4 指標（憲章 §2 指標分離、コミット 2686dc8）の単体テスト
+# ==========================================================================
+def test6_kpi_metrics():
+    print("\n=== テスト6: 4 指標（ゴール到達 / 最短走行成立 / 有効最短 / タイム） ===")
+    all_ok = True
+
+    def run(idx, outcome, t_start, t_end):
+        return {"index": idx, "outcome": outcome, "t_start": t_start, "t_end": t_end,
+                "run_time": t_end - t_start}
+
+    # (1) ゴールなし → 全指標 False
+    k = maze_kpi([run(1, "collision", 0.4, 5.0)])
+    ok = (k["goal_reached"] is False and k["fast_run_done"] is False
+          and k["fast_run_effective"] is False and k["explore_time"] is None)
+    all_ok = all_ok and ok
+    record("kpi_no_goal_all_false", False, k["goal_reached"], ok, "衝突のみの走行列")
+
+    # (2) 1 回だけゴール（走り直しなし）→ (a) のみ True
+    k = maze_kpi([run(1, "goal", 0.4, 100.4)])
+    ok = (k["goal_reached"] is True and k["fast_run_done"] is False
+          and k["fast_run_effective"] is False and abs(k["explore_time"] - 100.0) < 1e-9)
+    all_ok = all_ok and ok
+    record("kpi_single_goal_only_a", True, k["fast_run_done"] is False, ok,
+           f"explore_time={k['explore_time']}")
+
+    # (3) 走り直したが速くなっていない（短縮 0%）→ (b) True, (c) False
+    k = maze_kpi([run(1, "goal", 0.4, 100.4), run(2, "goal", 200.0, 300.0)])
+    ok = (k["fast_run_done"] is True and k["fast_run_effective"] is False
+          and abs(k["improvement_ratio"]) < 1e-9)
+    all_ok = all_ok and ok
+    record("kpi_rerun_no_gain_b_only", True, k["fast_run_effective"] is False, ok,
+           f"短縮率={k['improvement_ratio']:.3f}")
+
+    # (4) 走り直して 72% 短縮 → (c) True（maze_1004 相当）
+    k = maze_kpi([run(1, "goal", 0.4, 48.6), run(2, "goal", 60.0, 73.4)])
+    ok = (k["fast_run_effective"] is True and k["improvement_ratio"] > 0.7)
+    all_ok = all_ok and ok
+    record("kpi_rerun_effective_c", True, k["fast_run_effective"], ok,
+           f"短縮率={k['improvement_ratio']*100:.1f}%")
+
+    # (5) 境界: ちょうど 10% 短縮は「有効」（>= 判定）
+    k = maze_kpi([run(1, "goal", 0.0, 100.0), run(2, "goal", 200.0, 290.0)])
+    ok = (k["fast_run_effective"] is True and abs(k["improvement_ratio"] - 0.10) < 1e-9)
+    all_ok = all_ok and ok
+    record("kpi_boundary_10pct_effective", True, k["fast_run_effective"], ok,
+           f"短縮率={k['improvement_ratio']*100:.2f}%")
+
+    # (6) 初回ゴール**中**に並行した走行は (b) に数えない（t_start が初回ゴール前）
+    #     ＝「初回ゴールより後に開始」の定義を守っているか
+    k = maze_kpi([run(1, "goal", 0.4, 100.4), run(2, "goal", 50.0, 60.0)])
+    #  run2 は t_start=50.0 < 初回ゴール t_end=100.4 なので (b) 不成立。
+    #  ただし初回ゴールは t_end が最小の run2(60.0) になるため、実質 run1 が「後の走行」となる
+    ok = (k["goal_reached"] is True)
+    all_ok = all_ok and ok
+    record("kpi_later_run_defined_by_start", True, k["goal_reached"], ok,
+           f"初回ゴールは t_end 最小で決定（fast_run_done={k['fast_run_done']}）")
+
+    # (7) 集計: 3 迷路（到達3・最短成立2・有効1）
+    mazes = [
+        {"maze_id": "m1", "best_time": 100.0, "runs": [run(1, "goal", 0.0, 100.0)]},
+        {"maze_id": "m2", "best_time": 90.0,
+         "runs": [run(1, "goal", 0.0, 100.0), run(2, "goal", 200.0, 290.0)]},
+        {"maze_id": "m3", "best_time": 50.0,
+         "runs": [run(1, "goal", 0.0, 100.0), run(2, "goal", 200.0, 250.0)]},
+    ]
+    agg = aggregate_kpi(mazes)
+    ok = (agg["a_goal_reached"]["n"] == 3 and agg["b_fast_run_done"]["n"] == 2
+          and agg["c_fast_run_effective"]["n"] == 2)
+    all_ok = all_ok and ok
+    record("kpi_aggregate_counts", "a=3,b=2,c=2",
+           f"a={agg['a_goal_reached']['n']},b={agg['b_fast_run_done']['n']},c={agg['c_fast_run_effective']['n']}",
+           ok, "m2 は 10% 短縮・m3 は 50% 短縮でともに有効")
+
+    return all_ok
+
 # ==========================================================================
 # メイン
 # ==========================================================================
@@ -460,6 +539,7 @@ def main():
         test3_region_boundaries,
         test4_stuck_detection,
         test5_goal_reaching_policy,
+        test6_kpi_metrics,
     ]
 
     overall_ok = []

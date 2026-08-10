@@ -40,7 +40,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## レガシー（凍結・変更禁止）
 
-`phase1_open/ phase2_slalom/ phase3_maze/ phase4_speed/`、旧 `assets/micromouse_*.xml`、`models/*.zip`、旧 README.md の記述は**過去実験の再現性保全のため凍結**。既知の重大欠陥（質量が非現実的・キャスター実効摩擦 μ=1・壁すり抜け等、MODEL_VERIFICATION_PLAN §2）を含むため、**新規作業で流用・参照しないこと**。M0 完了後に `legacy/` へ移設予定。
+旧 Phase1〜4 系一式は `legacy/`（`legacy/phase1_open/ legacy/phase2_slalom/ legacy/phase3_maze/ legacy/phase4_speed/`、旧 `assets/micromouse_*.xml`、`models/*.zip`、旧 README.md の記述）へ移設済み（2026-08-10）。**過去実験の再現性保全のため凍結**。既知の重大欠陥（質量が非現実的・キャスタ実効摩擦 μ=1・壁すり抜け等、MODEL_VERIFICATION_PLAN §2、要約は `legacy/README.md`）を含むため、**新規作業で流用・参照しないこと**。
 
 ## セッション再開手順
 

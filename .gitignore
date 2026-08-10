@@ -8,5 +8,7 @@ MUJOCO_LOG.TXT
 logs/
 outputs/
 models/*.zip
-!models/phase1_open.zip
-!models/phase1_test_model.zip
+
+# legacy/models/ の学習済みチェックポイントは凍結成果物として追跡する
+# Checkpoints under legacy/models/ are frozen artifacts and must remain tracked
+!legacy/models/*.zip

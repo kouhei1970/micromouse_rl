@@ -8,10 +8,16 @@ Convention: evaluation mazes use seeds 1000-1019; training mazes use seeds >= 20
 
 生成手順 (教授承認済み「案A」。この順序を厳守する):
 Generation procedure (professor-approved "Plan A". This order must be followed exactly):
-1. random.seed(seed) の後、phase3_maze.maze_generator.RandomMazeGenerator(16, 16) の
-   generate_maze() (DFS による完全迷路: 全256セル連結・ループなし) を実行する。
+1. random.seed(seed) の後、_dfs_perfect_maze(16, 16) (DFS による完全迷路: 全256セル
+   連結・ループなし) を実行する。この関数は凍結レガシー
+   legacy/phase3_maze/maze_generator.py の RandomMazeGenerator._dfs() を移植したもので、
+   random.shuffle の呼び出し順序・方向リストの順序・再帰の順序を一字一句保っている
+   (2026-08-10 import 依存解消、seed 1000-1019 再生成で既存 npz と完全一致することを
+   検証済み)。
    Step 1: seed the RNG, then run the plain DFS perfect-maze generator
-   (RandomMazeGenerator.generate_maze()) — connects all 256 cells with no loops.
+   (_dfs_perfect_maze, ported verbatim from the frozen legacy
+   RandomMazeGenerator._dfs() — same shuffle call order, same direction-list
+   order, same recursion order) — connects all 256 cells with no loops.
 2. 中央 2x2 (ゴール区画) の内壁 4 枚を開放する。
    Step 2: open the 4 inner walls of the central 2x2 goal area.
 3. 孤立柱 (どの壁も接続していない柱) を修復する。中央柱 (8,8) は柱そのものが
@@ -33,19 +39,61 @@ Generation procedure (professor-approved "Plan A". This order must be followed e
    Step 5: re-open the central 2x2 inner walls again, as a safety net in case
    step 3 happened to touch one of them.
 """
-import os
 import random
-import sys
 
 import numpy as np
 
-# リポジトリルートを sys.path に追加する (phase3_maze を import するため)。
-# Add the repository root to sys.path so that phase3_maze can be imported.
-_REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if _REPO_ROOT not in sys.path:
-    sys.path.insert(0, _REPO_ROOT)
 
-from phase3_maze.maze_generator import RandomMazeGenerator  # noqa: E402
+def _dfs_perfect_maze(width: int, height: int) -> tuple[np.ndarray, np.ndarray]:
+    """DFS (再帰バックトラッカー) による完全迷路生成 (全セル連結・ループなし)。
+    DFS (recursive backtracker) perfect-maze generation (all cells connected, no loops).
+
+    凍結レガシー legacy/phase3_maze/maze_generator.py の
+    RandomMazeGenerator._dfs()/generate_maze() を一字一句移植したもの。
+    random.shuffle の呼び方・方向リストの順序・再帰の順序を変えると
+    seed 再現性 (既存の competition/mazes/eval/maze_*.npz との一致) が壊れるため、
+    アルゴリズムの構造を変更しないこと。
+    Ported verbatim from the frozen legacy RandomMazeGenerator._dfs()/generate_maze().
+    Do not change the algorithm's structure (shuffle call, direction-list order,
+    recursion order) — doing so breaks seed reproducibility against the frozen
+    competition/mazes/eval/maze_*.npz files.
+
+    戻り値 (Returns): v_walls (width+1, height), h_walls (width, height+1)。
+    1 = 壁あり (wall present)、0 = 壁なし (開通、passable)。
+    """
+    v_walls = np.ones((width + 1, height), dtype=int)
+    h_walls = np.ones((width, height + 1), dtype=int)
+    visited = np.zeros((width, height), dtype=bool)
+
+    def _dfs(x: int, y: int) -> None:
+        visited[x, y] = True
+
+        # Directions: North, East, South, West
+        # (dx, dy, wall_type, wall_x, wall_y)
+        directions = [
+            (0, 1, 'h', x, y + 1),   # North
+            (1, 0, 'v', x + 1, y),   # East
+            (0, -1, 'h', x, y),      # South
+            (-1, 0, 'v', x, y),      # West
+        ]
+
+        random.shuffle(directions)
+
+        for dx, dy, w_type, wx, wy in directions:
+            nx, ny = x + dx, y + dy
+
+            if 0 <= nx < width and 0 <= ny < height and not visited[nx, ny]:
+                # Remove wall between (x,y) and (nx,ny)
+                if w_type == 'h':
+                    h_walls[wx, wy] = 0
+                else:
+                    v_walls[wx, wy] = 0
+
+                _dfs(nx, ny)
+
+    _dfs(0, 0)
+    return v_walls, h_walls
+
 
 # 中央 2x2 (ゴール区画) の内壁4枚。(壁種別, x, y) のタプルで表す。
 # The four inner walls of the central 2x2 goal area, as (wall_kind, x, y) tuples.
@@ -73,10 +121,7 @@ class EvalMazeGenerator:
         # 手順1: 素の DFS 迷路生成
         # Step 1: raw DFS perfect-maze generation
         random.seed(seed)
-        gen = RandomMazeGenerator(16, 16)
-        gen.generate_maze()
-        v_walls = gen.v_walls
-        h_walls = gen.h_walls
+        v_walls, h_walls = _dfs_perfect_maze(16, 16)
 
         # 手順2: 中央 2x2 開放
         # Step 2: open the central 2x2 goal area

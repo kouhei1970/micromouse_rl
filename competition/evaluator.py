@@ -241,6 +241,70 @@ class PositionRingBuffer:
 # ==========================================================================
 # CompetitionEvaluator 本体
 # ==========================================================================
+def maze_kpi(runs) -> dict:
+    """1 迷路分の走行列から憲章 §2（2026-08-10 指標分離、コミット 2686dc8）の
+    4 指標を算出する。「ゴールできたか」と「最短走行を成立させたか」は
+    競技上まったく別の達成であり 1 つの数字に混ぜない、という規約に対応する。
+
+    返り値のキー:
+      goal_reached      (a) ゴール区画へ到達した走行が 1 回以上あるか
+      fast_run_done     (b) 初回ゴール**より後に開始**した走行で再びゴールしたか
+      fast_run_effective(c) (b) かつ 最短走行タイムが探索走行より 10% 以上短いか
+      explore_time      探索走行タイム（初回ゴール走行の run_time）[s]
+      fast_time         最短走行タイム（(b) の走行のうち最速）[s]
+      improvement_ratio 短縮率 = 1 - fast_time/explore_time（(b) 不成立なら None）
+    """
+    goal_runs = [r for r in runs if r["outcome"] == "goal"]
+    if not goal_runs:
+        return {"goal_reached": False, "fast_run_done": False, "fast_run_effective": False,
+                "explore_time": None, "fast_time": None, "improvement_ratio": None}
+
+    first_goal = min(goal_runs, key=lambda r: r["t_end"])
+    explore_time = float(first_goal["run_time"])
+    # (b): 初回ゴール到達「より後に開始」した走行に限る（t_start で判定）
+    later_goals = [r for r in goal_runs if r["t_start"] > first_goal["t_end"]]
+    if not later_goals:
+        return {"goal_reached": True, "fast_run_done": False, "fast_run_effective": False,
+                "explore_time": explore_time, "fast_time": None, "improvement_ratio": None}
+
+    fast_time = float(min(r["run_time"] for r in later_goals))
+    ratio = 1.0 - (fast_time / explore_time) if explore_time > 0 else None
+    # 憲章の「10% 以上短い」に忠実に閉区間で判定する。ちょうど 10% の入力
+    # （例 100.0s → 90.0s）は 2 進浮動小数点では 0.09999999999999998 となり
+    # 素朴な >= 0.10 では落ちるため、微小許容を置く（単体テストで検出）。
+    return {"goal_reached": True, "fast_run_done": True,
+            "fast_run_effective": bool(ratio is not None and ratio >= 0.10 - 1e-9),
+            "explore_time": explore_time, "fast_time": fast_time,
+            "improvement_ratio": ratio}
+
+
+def aggregate_kpi(maze_results) -> dict:
+    """迷路ごとの結果 dict 列から 4 指標のサマリを作る（憲章 §2）。
+    過去の結果 JSON（kpi 欄なし）にも使えるよう、kpi が無ければ runs から算出する。"""
+    kpis = [r.get("kpi") or maze_kpi(r["runs"]) for r in maze_results]
+    n = len(kpis)
+    a = sum(1 for k in kpis if k["goal_reached"])
+    b = sum(1 for k in kpis if k["fast_run_done"])
+    c = sum(1 for k in kpis if k["fast_run_effective"])
+    explore = [k["explore_time"] for k in kpis if k["explore_time"] is not None]
+    fast = [k["fast_time"] for k in kpis if k["fast_time"] is not None]
+    best = [r["best_time"] for r in maze_results if r.get("best_time") is not None]
+    return {
+        "n_mazes": n,
+        "a_goal_reached": {"n": a, "rate": (a / n) if n else None},
+        "b_fast_run_done": {"n": b, "rate": (b / n) if n else None},
+        "c_fast_run_effective": {"n": c, "rate": (c / n) if n else None},
+        "d_best_time": {
+            "median": float(np.median(best)) if best else None,
+            "mean": float(np.mean(best)) if best else None,
+            "min": float(np.min(best)) if best else None,
+            "max": float(np.max(best)) if best else None,
+        },
+        "explore_time": {"median": float(np.median(explore)) if explore else None},
+        "fast_time": {"median": float(np.median(fast)) if fast else None},
+    }
+
+
 class CompetitionEvaluator:
     """マイクロマウス競技評価器。1 迷路 / 20 迷路一括の評価を行う。
 
@@ -485,6 +549,7 @@ class CompetitionEvaluator:
             "incidents": incidents,
             "best_time": best_time,
             "success": success,
+            "kpi": maze_kpi(runs),
         }
 
     # ------------------------------------------------------------------
@@ -528,6 +593,9 @@ class CompetitionEvaluator:
             "best_times": best_times,
             "median_best_time": float(np.median(success_times)) if success_times else None,
             "mean_best_time": float(np.mean(success_times)) if success_times else None,
+            # 憲章 §2（2026-08-10 指標分離）の 4 指標。success_rate は (a) と同義だが
+            # 後方互換のため残す（単一指標では実力を過大評価するため kpi 側を主とする）
+            "kpi": aggregate_kpi(maze_results),
             "total_wall_clock": total_wall_clock,
             "out_dir": str(run_out_dir),
         }

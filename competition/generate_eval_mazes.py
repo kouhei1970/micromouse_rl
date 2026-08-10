@@ -54,8 +54,9 @@ def main() -> int:
         "generated_at": datetime.datetime.now().isoformat(),
         "generator": "competition/maze_gen.py: EvalMazeGenerator (Plan A / 案A)",
         "procedure_summary": [
-            "1. random.seed(seed) -> phase3_maze.maze_generator.RandomMazeGenerator(16,16)"
-            ".generate_maze() (DFSによる完全迷路生成)",
+            "1. random.seed(seed) -> competition.maze_gen._dfs_perfect_maze(16,16)"
+            " (DFSによる完全迷路生成。legacy/phase3_maze/maze_generator.py の"
+            " RandomMazeGenerator._dfs() を一字一句移植、2026-08-10 import依存解消)",
             "2. 中央2x2(ゴール区画)の内壁4枚を開放: v[8,7]=0, v[8,8]=0, h[7,8]=0, h[8,8]=0",
             "3. 孤立柱(壁0枚接続の柱)を修復。中央2x2の内壁4枚は候補から除外"
             "(案A: common/maze_generator.py の潜在バグの修正)",
