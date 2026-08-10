@@ -1,0 +1,44 @@
+{
+  "maze_id": "maze_16MM2017C_East",
+  "seed": -1,
+  "policy": {
+    "name": "adachi_classical",
+    "requires_privileged": true
+  },
+  "protocol": {
+    "time_budget": 420.0,
+    "max_runs": 5,
+    "control_hz": 100,
+    "collision_force_threshold": 1.0,
+    "stuck_window_s": 20.0,
+    "stuck_disp_m": 0.05,
+    "protocol_version": "frontedge-23d004d"
+  },
+  "runs": [
+    {
+      "index": 1,
+      "t_start": 0.22000000000000017,
+      "t_end": 140.25000000013947,
+      "run_time": 140.03000000013947,
+      "outcome": "goal",
+      "max_progress_cells": 70,
+      "path_length_m": 19.460026758526833,
+      "collision_pos": null,
+      "visited_cells": 96,
+      "path_efficiency": 1.5444465681370503
+    }
+  ],
+  "incidents": [],
+  "best_time": 140.03000000013947,
+  "success": true,
+  "kpi": {
+    "goal_reached": true,
+    "fast_run_done": false,
+    "fast_run_effective": false,
+    "explore_time": 140.03000000013947,
+    "fast_time": null,
+    "improvement_ratio": null,
+    "first_fast_time": null,
+    "first_fast_efficiency": null
+  }
+}

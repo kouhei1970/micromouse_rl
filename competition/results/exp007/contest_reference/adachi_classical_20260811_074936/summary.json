@@ -1,0 +1,89 @@
+{
+  "policy": {
+    "name": "adachi_classical",
+    "requires_privileged": true
+  },
+  "n_mazes": 18,
+  "n_success": 18,
+  "success_rate": 1.0,
+  "best_times": {
+    "maze_16MM2012CX": 77.82999999815956,
+    "maze_16MM2013CX": 129.02000000039982,
+    "maze_16MM2014CX": 155.27999999977885,
+    "maze_16MM2015CX": 144.89000000002454,
+    "maze_16MM2015C_Chubu": 106.09000000032559,
+    "maze_16MM2016CX": 188.62999999899023,
+    "maze_16MM2016C_Chubu": 153.44999999982213,
+    "maze_16MM2016C_Kyushu": 66.51999999842701,
+    "maze_16MM2017CX": 163.8499999995762,
+    "maze_16MM2017CX_pre": 62.089999998531766,
+    "maze_16MM2017C_East": 140.03000000013947,
+    "maze_16MM2017C_student": 200.99999999869772,
+    "maze_16MM2018CX": 83.33999999802927,
+    "maze_16MM2018C_student": 152.66999999984057,
+    "maze_16MM2019CX": 120.72000000039544,
+    "maze_16MM2019C_student": 241.57999999773813,
+    "maze_16MM2020C_student": 79.33999999812389,
+    "maze_16MM2021H_Kansai": 108.55000000033733
+  },
+  "median_best_time": 134.52500000026964,
+  "mean_best_time": 131.9377777770743,
+  "kpi": {
+    "n_mazes": 18,
+    "a_goal_reached": {
+      "n": 18,
+      "rate": 1.0
+    },
+    "b_fast_run_done": {
+      "n": 5,
+      "rate": 0.2777777777777778
+    },
+    "c_fast_run_effective": {
+      "n": 5,
+      "rate": 0.2777777777777778
+    },
+    "d_best_time": {
+      "median": 134.52500000026964,
+      "mean": 131.9377777770743,
+      "min": 62.089999998531766,
+      "max": 241.57999999773813
+    },
+    "explore_time": {
+      "median": 141.34500000010837
+    },
+    "fast_time": {
+      "median": 77.82999999815956
+    },
+    "e_first_fast_efficiency": {
+      "median": 1.0,
+      "mean": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "n_defined": 5,
+      "n_undefined": 13,
+      "per_maze": {
+        "maze_16MM2012CX": 1.0,
+        "maze_16MM2013CX": null,
+        "maze_16MM2014CX": null,
+        "maze_16MM2015CX": null,
+        "maze_16MM2015C_Chubu": null,
+        "maze_16MM2016CX": null,
+        "maze_16MM2016C_Chubu": null,
+        "maze_16MM2016C_Kyushu": 1.0,
+        "maze_16MM2017CX": null,
+        "maze_16MM2017CX_pre": 1.0,
+        "maze_16MM2017C_East": null,
+        "maze_16MM2017C_student": null,
+        "maze_16MM2018CX": 1.0,
+        "maze_16MM2018C_student": null,
+        "maze_16MM2019CX": null,
+        "maze_16MM2019C_student": null,
+        "maze_16MM2020C_student": 1.0,
+        "maze_16MM2021H_Kansai": null
+      },
+      "caveat": "未定義面（初回の最短走行が成立しなかった面）を除いた値。n_undefined と (c) 有効最短走行率を必ず併記して読むこと。(e)=1.00 は探索が優秀な場合と、走り直しても速くならない迷路だった場合の両方で生じる"
+    }
+  },
+  "total_wall_clock": 1016.8902530670166,
+  "out_dir": "competition/results/exp007/contest_reference/adachi_classical_20260811_074936"
+}

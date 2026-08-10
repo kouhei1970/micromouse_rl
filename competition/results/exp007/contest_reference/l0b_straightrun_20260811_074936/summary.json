@@ -1,0 +1,89 @@
+{
+  "policy": {
+    "name": "l0b_straightrun",
+    "requires_privileged": true
+  },
+  "n_mazes": 18,
+  "n_success": 18,
+  "success_rate": 1.0,
+  "best_times": {
+    "maze_16MM2012CX": 55.52999999868689,
+    "maze_16MM2013CX": 64.18999999848211,
+    "maze_16MM2014CX": 77.9099999981577,
+    "maze_16MM2015CX": 85.31999999798245,
+    "maze_16MM2015C_Chubu": 61.579999998543826,
+    "maze_16MM2016CX": 71.03999999832016,
+    "maze_16MM2016C_Chubu": 74.41999999824023,
+    "maze_16MM2016C_Kyushu": 45.42999999892572,
+    "maze_16MM2017CX": 113.1199999973251,
+    "maze_16MM2017CX_pre": 48.949999998842486,
+    "maze_16MM2017C_East": 56.40999999866608,
+    "maze_16MM2017C_student": 120.35999999715386,
+    "maze_16MM2018CX": 53.76999999872851,
+    "maze_16MM2018C_student": 34.63999999918087,
+    "maze_16MM2019CX": 69.71999999835134,
+    "maze_16MM2019C_student": 48.42999999885481,
+    "maze_16MM2020C_student": 57.05999999865071,
+    "maze_16MM2021H_Kansai": 46.07999999891035
+  },
+  "median_best_time": 59.31999999859727,
+  "mean_best_time": 65.77555555400016,
+  "kpi": {
+    "n_mazes": 18,
+    "a_goal_reached": {
+      "n": 18,
+      "rate": 1.0
+    },
+    "b_fast_run_done": {
+      "n": 18,
+      "rate": 1.0
+    },
+    "c_fast_run_effective": {
+      "n": 18,
+      "rate": 1.0
+    },
+    "d_best_time": {
+      "median": 59.31999999859727,
+      "mean": 65.77555555400016,
+      "min": 34.63999999918087,
+      "max": 120.35999999715386
+    },
+    "explore_time": {
+      "median": 109.14000000033991
+    },
+    "fast_time": {
+      "median": 59.31999999859727
+    },
+    "e_first_fast_efficiency": {
+      "median": 1.0716531551837387,
+      "mean": 1.1374586734263246,
+      "min": 1.0,
+      "max": 1.6803874092009685,
+      "n_defined": 18,
+      "n_undefined": 0,
+      "per_maze": {
+        "maze_16MM2012CX": 1.3428777237529264,
+        "maze_16MM2013CX": 1.133821467518305,
+        "maze_16MM2014CX": 1.0,
+        "maze_16MM2015CX": 1.0,
+        "maze_16MM2015C_Chubu": 1.0,
+        "maze_16MM2016CX": 1.0,
+        "maze_16MM2016C_Chubu": 1.0,
+        "maze_16MM2016C_Kyushu": 1.6803874092009685,
+        "maze_16MM2017CX": 1.0,
+        "maze_16MM2017CX_pre": 1.2277834525025537,
+        "maze_16MM2017C_East": 1.1946463393015427,
+        "maze_16MM2017C_student": 1.0,
+        "maze_16MM2018CX": 1.0094848428491725,
+        "maze_16MM2018C_student": 1.16310623556582,
+        "maze_16MM2019CX": 1.1620768789443492,
+        "maze_16MM2019C_student": 1.0,
+        "maze_16MM2020C_student": 1.162285313704872,
+        "maze_16MM2021H_Kansai": 1.3977864583333333
+      },
+      "caveat": "未定義面（初回の最短走行が成立しなかった面）を除いた値。n_undefined と (c) 有効最短走行率を必ず併記して読むこと。(e)=1.00 は探索が優秀な場合と、走り直しても速くならない迷路だった場合の両方で生じる"
+    }
+  },
+  "total_wall_clock": 1014.735512971878,
+  "out_dir": "competition/results/exp007/contest_reference/l0b_straightrun_20260811_074936"
+}

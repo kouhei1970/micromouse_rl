@@ -1,0 +1,80 @@
+{
+  "maze_id": "maze_16MM2021H_Kansai",
+  "seed": -1,
+  "policy": {
+    "name": "l0b_straightrun",
+    "requires_privileged": true
+  },
+  "protocol": {
+    "time_budget": 420.0,
+    "max_runs": 5,
+    "control_hz": 100,
+    "collision_force_threshold": 1.0,
+    "stuck_window_s": 20.0,
+    "stuck_disp_m": 0.05,
+    "protocol_version": "frontedge-23d004d"
+  },
+  "runs": [
+    {
+      "index": 1,
+      "t_start": 0.17000000000000012,
+      "t_end": 86.65000000023171,
+      "run_time": 86.48000000023171,
+      "outcome": "goal",
+      "max_progress_cells": 58,
+      "path_length_m": 16.122448712166452,
+      "collision_pos": null,
+      "visited_cells": 78,
+      "path_efficiency": 1.5442958536557905
+    },
+    {
+      "index": 2,
+      "t_start": 142.3500000000898,
+      "t_end": 206.7599999985667,
+      "run_time": 64.4099999984769,
+      "outcome": "goal",
+      "max_progress_cells": 58,
+      "path_length_m": 13.227815384799625,
+      "collision_pos": null,
+      "visited_cells": 69,
+      "path_efficiency": 1.267032124980807
+    },
+    {
+      "index": 3,
+      "t_start": 260.5099999972957,
+      "t_end": 310.01999999612497,
+      "run_time": 49.509999998829244,
+      "outcome": "goal",
+      "max_progress_cells": 58,
+      "path_length_m": 10.641584475397494,
+      "collision_pos": null,
+      "visited_cells": 59,
+      "path_efficiency": 1.019308857796695
+    },
+    {
+      "index": 4,
+      "t_start": 370.6399999946915,
+      "t_end": 416.71999999360185,
+      "run_time": 46.07999999891035,
+      "outcome": "goal",
+      "max_progress_cells": 58,
+      "path_length_m": 10.299992268843942,
+      "collision_pos": null,
+      "visited_cells": 58,
+      "path_efficiency": 0.9865892977819869
+    }
+  ],
+  "incidents": [],
+  "best_time": 46.07999999891035,
+  "success": true,
+  "kpi": {
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 86.48000000023171,
+    "fast_time": 46.07999999891035,
+    "improvement_ratio": 0.46716003701680286,
+    "first_fast_time": 64.4099999984769,
+    "first_fast_efficiency": 1.3977864583333333
+  }
+}
