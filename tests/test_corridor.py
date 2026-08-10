@@ -494,6 +494,62 @@ def test_potential_offset():
 
 
 # ==========================================================================
+# テスト9: 衝突罰（exp_005）
+# ==========================================================================
+def test_collision_penalty():
+    print("\n[Test 9] 衝突罰 collision_penalty（exp_005）")
+
+    def crash_run(collision_penalty):
+        """後退させて壁に当たるまで走り、最終ステップの報酬と終了様式を返す。"""
+        env = CorridorEnv(course_dir=EVAL_COURSE_DIR, course_seeds=[3000], gamma=GAMMA,
+                          potential_offset=True, collision_penalty=collision_penalty)
+        env.reset(seed=42)
+        last_reward, info = None, None
+        for _ in range(200):
+            _obs, r, term, trunc, info = env.step(np.array([-1.0, -1.0], dtype=np.float32))
+            last_reward = r
+            if term or trunc:
+                break
+        env.close()
+        return last_reward, info
+
+    r_none, info_none = crash_run(0.0)
+    r_pen, info_pen = crash_run(-1.0)
+
+    crashed = bool(info_none.get("collision")) and bool(info_pen.get("collision"))
+    record("後退させると衝突で終了する（前提の確認）", True, crashed, crashed)
+
+    diff = r_pen - r_none
+    diff_ok = abs(diff - (-1.0)) < 1e-9
+    record("衝突時の報酬に collision_penalty がそのまま乗る", -1.0, f"{diff:.9f}", diff_ok,
+           f"(罰なし={r_none:.6f}, 罰あり={r_pen:.6f})")
+
+    # 既定は 0.0（従来と同じ）＝ 退行がないこと
+    env = CorridorEnv(course_dir=EVAL_COURSE_DIR, course_seeds=[3000], gamma=GAMMA)
+    default_ok = env.collision_penalty == 0.0
+    env.close()
+    record("collision_penalty の既定は 0.0（従来の報酬を再現）", 0.0,
+           env.collision_penalty, default_ok)
+
+    # 衝突しなかったステップには罰が乗らない（前進中の報酬が一致する）
+    def forward_rewards(collision_penalty, n=10):
+        env = CorridorEnv(course_dir=EVAL_COURSE_DIR, course_seeds=[3000], gamma=GAMMA,
+                          potential_offset=True, collision_penalty=collision_penalty)
+        env.reset(seed=42)
+        rs = []
+        for _ in range(n):
+            _obs, r, term, trunc, _info = env.step(np.array([0.4, 0.4], dtype=np.float32))
+            rs.append(r)
+            if term or trunc:
+                break
+        env.close()
+        return np.array(rs)
+
+    same = bool(np.array_equal(forward_rewards(0.0), forward_rewards(-1.0)))
+    record("衝突しないステップの報酬は罰の有無で変わらない", True, same, same)
+
+
+# ==========================================================================
 # メイン
 # ==========================================================================
 def main():
@@ -541,6 +597,11 @@ def main():
         test_potential_offset()
     except Exception as e:  # noqa: BLE001
         record_exception("test_potential_offset", e)
+
+    try:
+        test_collision_penalty()
+    except Exception as e:  # noqa: BLE001
+        record_exception("test_collision_penalty", e)
 
     print("\n" + "=" * 78)
     print("テスト結果一覧")

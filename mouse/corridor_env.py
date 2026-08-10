@@ -21,6 +21,20 @@ potential_offset=True（exp_004 で追加）にすると、ポテンシャルを
 滞留時は F = (γ−1)(D₀−D) ≤ 0 となり明確に損になる。
 Φ に定数を加える変換なので Ng らの定理の保証（最適方策は不変）は保たれる。
 
+**exp_004 の失敗とその是正（exp_005）**: potential_offset だけを入れると滞留は消えるが、
+今度は**衝突がゴールより得**になり破綻する（exp_004 の実測: 検証帯完走率 0.05 のまま、
+速度 1.6 m/s の「速く走って壁に当たる」方策）。Ng らの定理はエピソード的タスクで
+**終端状態の Φ = 0** を要求するが、Φ' = D₀−D はゴール時 Φ = D₀ > 0・衝突時
+Φ = 走った距離 > 0 なので、整形分 γ^T·Φ(s_T) が**早く終わるほど大きくなり、早期終了に
+ボーナスを与える**。衝突は最も早く終わる手段なので最適解になってしまう。
+（なお「時間罰を上げる」案も数値まで完全に一致して同じ破綻をする。時間罰を上げること
+自体が「早く終わること」に価値を与えるため。）
+これを collision_penalty（衝突時に元報酬へ加える負の値）で相殺するのが exp_005 の設計。
+**理論的にクリーンではない**（終端 Φ≠0 が生む早期終了ボーナスを別項で打ち消している）
+ことは承知の上で、数値上の順序が正しくなることを根拠に採る（2026-08-10 教授裁定）。
+なお「終端で Φ=0 と強制する」実装は**してはいけない**: 最後の遷移で
+F = γ·0 − Φ(s_{T−1}) = D_{T−1} > 0 となり、衝突した瞬間に残り距離ぶんの正の報酬が入る。
+
 補足（この変換の正体）: Φ に定数 c を足すと F は毎ステップ一律に (γ−1)c だけ変わる。
 つまり**時間罰を (1−γ)c だけ上げることと数学的に等価**である。c を定数ではなく
 D₀ に取ることの利点は、**罰の大きさがコース長へ自動追従する**点にある。定数の時間罰
@@ -110,7 +124,8 @@ class CorridorEnv(gym.Env):
 
     def __init__(self, course_dir=None, course_seeds=None, max_cache=32, seed=None,
                  gamma: float = 0.995, mode: str = "fixed", base_seed: int = 2000,
-                 obs_dist_diff: bool = False, potential_offset: bool = False):
+                 obs_dist_diff: bool = False, potential_offset: bool = False,
+                 collision_penalty: float = 0.0):
         super().__init__()
         if mode not in ("fixed", "generate"):
             raise ValueError(f"mode は 'fixed' か 'generate' のみ対応: {mode!r}")
@@ -123,6 +138,9 @@ class CorridorEnv(gym.Env):
         self.max_cache = int(max_cache)
         self.obs_dist_diff = bool(obs_dist_diff)
         self.potential_offset = bool(potential_offset)
+        # 衝突（壁接触・転倒）時に元報酬へ加える値。負の値を渡すと罰になる。
+        # 整形項ではなく**元報酬側**に置く（整形項に入れると終端 Φ の扱いの問題が再発する）。
+        self.collision_penalty = float(collision_penalty)
         # 距離センサ本数は仕様（RobotParams.sensors）から取る。生成される XML の
         # rangefinder 数と一致することは検証スイート S3 が保証している
         self._n_dist = len(self.params.sensors)
@@ -406,8 +424,12 @@ class CorridorEnv(gym.Env):
         physical_fail = bool(result["collision"] or result["tipped"])
 
         reward = self.gamma * potential - self._prev_potential - _TIME_PENALTY
+        # ゴールと衝突が同一ステップで同時に真になった場合は goal を優先する
+        # （competition/evaluator.py・corridor_eval.py と同じ優先順位規約）。
         if goal_reached:
             reward += _GOAL_BONUS
+        elif physical_fail:
+            reward += self.collision_penalty
         self._prev_potential = potential
 
         terminated = bool(goal_reached or physical_fail)
