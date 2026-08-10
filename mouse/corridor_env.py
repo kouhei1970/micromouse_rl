@@ -125,7 +125,8 @@ class CorridorEnv(gym.Env):
     def __init__(self, course_dir=None, course_seeds=None, max_cache=32, seed=None,
                  gamma: float = 0.995, mode: str = "fixed", base_seed: int = 2000,
                  obs_dist_diff: bool = False, potential_offset: bool = False,
-                 collision_penalty: float = 0.0):
+                 collision_penalty: float = 0.0,
+                 action_smooth_penalty: float = 0.0):
         super().__init__()
         if mode not in ("fixed", "generate"):
             raise ValueError(f"mode は 'fixed' か 'generate' のみ対応: {mode!r}")
@@ -141,6 +142,12 @@ class CorridorEnv(gym.Env):
         # 衝突（壁接触・転倒）時に元報酬へ加える値。負の値を渡すと罰になる。
         # 整形項ではなく**元報酬側**に置く（整形項に入れると終端 Φ の扱いの問題が再発する）。
         self.collision_penalty = float(collision_penalty)
+        # 行動の滑らかさへの罰の係数 k。毎ステップ −k·‖a_t − a_(t−1)‖² を元報酬へ加える
+        # （exp_006）。古典最適制御（LQR）の評価関数が入力コスト uᵀRu を含むのと同じ
+        # 発想であり、方策の出力は依然としてモータ電圧そのものなので入出力契約に触れない
+        # （2026-08-10 教授裁定）。exp_005 の方策は符号反転 75.6 回/s と学習前の乱数方策
+        # （53.3 回/s）より悪く、100 Hz に対し 1.3 ステップに 1 回電圧の符号が反転していた。
+        self.action_smooth_penalty = float(action_smooth_penalty)
         # 距離センサ本数は仕様（RobotParams.sensors）から取る。生成される XML の
         # rangefinder 数と一致することは検証スイート S3 が保証している
         self._n_dist = len(self.params.sensors)
@@ -430,6 +437,10 @@ class CorridorEnv(gym.Env):
             reward += _GOAL_BONUS
         elif physical_fail:
             reward += self.collision_penalty
+        if self.action_smooth_penalty != 0.0:
+            # reset 直後は前回行動を 0 とみなす（静止から動き出すぶんは罰の対象）
+            d_action = action - self._prev_action
+            reward -= self.action_smooth_penalty * float(np.dot(d_action, d_action))
         self._prev_potential = potential
 
         terminated = bool(goal_reached or physical_fail)

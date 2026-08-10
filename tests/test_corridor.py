@@ -550,6 +550,72 @@ def test_collision_penalty():
 
 
 # ==========================================================================
+# テスト10: 行動の滑らかさへの罰（exp_006）
+# ==========================================================================
+def test_action_smooth_penalty():
+    print("\n[Test 10] 行動の滑らかさへの罰 −k‖a_t − a_(t−1)‖²（exp_006）")
+
+    K = 0.01
+    # わざと符号を反転させる行動列（振動する方策を模した入力）
+    actions = [np.array([0.5, 0.5], dtype=np.float32),
+               np.array([-0.5, 0.5], dtype=np.float32),
+               np.array([0.5, -0.5], dtype=np.float32),
+               np.array([-0.5, -0.5], dtype=np.float32)]
+
+    def run(k):
+        env = CorridorEnv(course_dir=EVAL_COURSE_DIR, course_seeds=[3000], gamma=GAMMA,
+                          potential_offset=True, collision_penalty=-1.0,
+                          action_smooth_penalty=k)
+        env.reset(seed=7)
+        rs = []
+        for a in actions:
+            _obs, r, term, trunc, _info = env.step(a)
+            rs.append(r)
+            if term or trunc:
+                break
+        env.close()
+        return np.array(rs)
+
+    r0 = run(0.0)
+    rk = run(K)
+
+    # 期待される差: 各ステップで −k‖Δa‖²（reset 直後の前回行動は 0）
+    prev = np.zeros(2)
+    expected = []
+    for a in actions[:len(r0)]:
+        d = np.asarray(a, dtype=np.float64) - prev
+        expected.append(-K * float(np.dot(d, d)))
+        prev = np.asarray(a, dtype=np.float64)
+    expected = np.array(expected)
+
+    actual = rk - r0
+    ok = bool(np.allclose(actual, expected, atol=1e-7))
+    record("罰が毎ステップ −k‖a_t − a_(t−1)‖² だけ引かれる",
+           tuple(np.round(expected, 6)), tuple(np.round(actual, 6)), ok,
+           f"(k={K})")
+
+    # 既定は 0.0（従来の報酬を再現）
+    env = CorridorEnv(course_dir=EVAL_COURSE_DIR, course_seeds=[3000], gamma=GAMMA)
+    default_ok = env.action_smooth_penalty == 0.0
+    env.close()
+    record("action_smooth_penalty の既定は 0.0", 0.0, env.action_smooth_penalty, default_ok)
+
+    # 行動を変えなければ罰はゼロ（同じ行動を続けたときの報酬が k に依らない）
+    def run_const(k):
+        env = CorridorEnv(course_dir=EVAL_COURSE_DIR, course_seeds=[3000], gamma=GAMMA,
+                          potential_offset=True, action_smooth_penalty=k)
+        env.reset(seed=7)
+        a = np.array([0.4, 0.4], dtype=np.float32)
+        env.step(a)          # 1 歩目は 0→0.4 の変化があるので罰がかかる
+        rs = [env.step(a)[1] for _ in range(5)]   # 2 歩目以降は変化なし
+        env.close()
+        return np.array(rs)
+
+    same = bool(np.allclose(run_const(0.0), run_const(K), atol=1e-9))
+    record("行動が一定なら罰はかからない", True, same, same)
+
+
+# ==========================================================================
 # メイン
 # ==========================================================================
 def main():
@@ -602,6 +668,11 @@ def main():
         test_collision_penalty()
     except Exception as e:  # noqa: BLE001
         record_exception("test_collision_penalty", e)
+
+    try:
+        test_action_smooth_penalty()
+    except Exception as e:  # noqa: BLE001
+        record_exception("test_action_smooth_penalty", e)
 
     print("\n" + "=" * 78)
     print("テスト結果一覧")
