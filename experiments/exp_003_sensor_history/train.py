@@ -279,6 +279,8 @@ def main(argv=None):
                         help="exp_005: 衝突時に元報酬へ加える値（負で罰。例 -1.0）")
     parser.add_argument("--action-smooth-penalty", type=float, default=0.0,
                         help="exp_006: 行動差分への罰の係数 k（−k‖a_t − a_(t−1)‖²）")
+    parser.add_argument("--init-model", type=str, default=None,
+                        help="初期重みにする学習済みモデル（微調整。exp_006 の案 1）")
     args = parser.parse_args(argv)
 
     total_steps = SMOKE_TOTAL_STEPS if args.smoke else args.total_steps
@@ -296,13 +298,20 @@ def main(argv=None):
     print(f"[train] 衝突罰 = {args.collision_penalty}")
     print(f"[train] 行動差分への罰 k = {args.action_smooth_penalty}")
 
-    model = PPO(
-        "MlpPolicy", vec_env,
-        learning_rate=3e-4, n_steps=2048, batch_size=256, n_epochs=10,
-        gamma=args.gamma, gae_lambda=0.95, ent_coef=0.0,
-        policy_kwargs=dict(net_arch=[128, 128]),
-        seed=args.seed, verbose=1,
-    )
+    if args.init_model:
+        # 微調整（exp_006 の案 1）: 走行能力を獲得済みのモデルから始めることで、
+        # 「罰のせいで走り方を学べない」問題を構造的に回避する。ハイパーパラメータは
+        # 保存されたものが復元されるので、ゼロからの学習と同一条件になる。
+        model = PPO.load(args.init_model, env=vec_env, seed=args.seed, verbose=1)
+        print(f"[train] 初期重みを {args.init_model} から読み込み（微調整）")
+    else:
+        model = PPO(
+            "MlpPolicy", vec_env,
+            learning_rate=3e-4, n_steps=2048, batch_size=256, n_epochs=10,
+            gamma=args.gamma, gae_lambda=0.95, ent_coef=0.0,
+            policy_kwargs=dict(net_arch=[128, 128]),
+            seed=args.seed, verbose=1,
+        )
     new_logger = configure(str(log_dir), ["stdout", "csv", "tensorboard"])
     model.set_logger(new_logger)
 
@@ -338,6 +347,7 @@ def main(argv=None):
         experiment="exp_003_sensor_history", smoke=bool(args.smoke),
         total_steps=total_steps, n_envs=n_envs, seed=args.seed, gamma=args.gamma,
         obs_dist_diff=True, potential_offset=bool(args.potential_offset),
+        init_model=args.init_model,
         collision_penalty=float(args.collision_penalty),
         action_smooth_penalty=float(args.action_smooth_penalty),
         train_base_seed=TRAIN_BASE_SEED,
