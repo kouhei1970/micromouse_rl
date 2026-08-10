@@ -491,7 +491,7 @@ def build_reference_path(cells, directions, heading_in: str, corner_radii,
 # ==========================================================================
 # §2.2 速度計画: 曲率依存の速度上限包絡線 → 前後進加速度制約の2パス
 # ==========================================================================
-def build_speed_profile(s_arr, curv_arr, v_ceil_straight: float, a_lat: float,
+def build_speed_profile(s_arr, curv_arr, v_ceil_straight, a_lat: float,
                          a_max: float, v_creep: float, stop_at_end: bool) -> np.ndarray:
     """曲率依存の速度上限包絡線（v_turn=sqrt(a_lat/|curvature|)、設計文書§2.2）
     を作り、前後2パス（CNC等で標準的な時間最適速度包絡線の手法）で
@@ -500,19 +500,32 @@ def build_speed_profile(s_arr, curv_arr, v_ceil_straight: float, a_lat: float,
     いるかは考慮しない（張り替え直後の実速度との整合は、この関数ではなく
     制御側のレートリミット済み速度設定値で取る。_do_drive_control参照）。
 
+    v_ceil_straight: スカラ、または経路点ごとの上限を並べた長さ n の配列。
+        配列を受け付けるのは、**経路の区間ごとに既知/未知で速度上限を
+        切り替える**ため（2026-08-10 の設計是正、教授裁定）。既に壁を観測
+        済みの区画は摩擦円の限界まで出してよいが、これから進入する未観測の
+        区画は「壁が現れても曲がれる/止まれる速度」に抑える必要がある。
+        従来はチェーン末尾で一律に停止（stop_at_end）させていたため、
+        既知区間を走るときまで不必要に減速していた。
+
     速度指令の下限（クリープ、設計文書§10-2）を v_ceil に明示的に折り込む
     （stop_at_end の場合のみ終端1点を0にしてクリープ下限を上書きする＝
     「目標到達のときのみ停止する」を速度計画そのもので保証する）。
     """
     n = len(s_arr)
+    base = np.asarray(v_ceil_straight, dtype=float)
+    if base.ndim == 0:
+        base = np.full(n, float(base))
+    elif base.shape != (n,):
+        raise ValueError(f"v_ceil_straight の長さ {base.shape} が経路点数 {n} と一致しません")
     v_ceil = np.empty(n)
     with np.errstate(divide="ignore"):
         for i in range(n):
             k = abs(curv_arr[i])
             if k > 1e-6:
-                v_ceil[i] = min(v_ceil_straight, math.sqrt(a_lat / k))
+                v_ceil[i] = min(base[i], math.sqrt(a_lat / k))
             else:
-                v_ceil[i] = v_ceil_straight
+                v_ceil[i] = base[i]
     v_ceil = np.maximum(v_ceil, v_creep)
     if stop_at_end and n > 0:
         v_ceil[-1] = 0.0
@@ -589,7 +602,11 @@ class WheelPI:
 V_MAX_MEASURED = 3.86    # 最高速度 実測 [m/s]
 A_MAX_MEASURED = 5.6     # 前後加速度 実測（トラクション律速）[m/s^2]
 A_LAT_MEASURED = 5.87    # 横加速度 実測（Test5プラトー実測）[m/s^2]
-V_EXPLORE = 0.8          # 探索走行の速度上限（設計文書§2.3。制動距離5.7cm≪壁まで18cmで正当化）
+# 【2026-08-10 設計是正】旧 V_EXPLORE = 0.8 m/s（決め打ち）は廃止した。
+# 方策自身が bind_sim で v_turn = sqrt(a_lat*R) = 0.61 m/s を計算しているのに
+# 探索速度が 0.8 m/s であり、「曲がると分かった瞬間に曲がれる速度」を超えて
+# いた（当時は探索走行が超信地旋回だったため露見していなかった）。
+# 現在は _derive_uncertain_speed() でモデル量から実行時導出する。
 
 
 class SlalomPolicy(MousePolicy):
@@ -610,12 +627,26 @@ class SlalomPolicy(MousePolicy):
     def __init__(self,
                  safety_factor: float = 0.7,
                  v_max_measured: float = V_MAX_MEASURED, a_max_measured: float = A_MAX_MEASURED,
-                 a_lat_measured: float = A_LAT_MEASURED, v_explore: float = V_EXPLORE,
+                 a_lat_measured: float = A_LAT_MEASURED, v_explore: float = None,
                  arc_radius_candidates_mm=(45, 60, 75, 90), wall_margin_m: float = 0.015,
                  corner_fit_margin_m: float = 0.01, explore_horizon_cells: int = 2,
                  replan_trigger_dist: float = 0.15,
                  path_ds: float = 0.005, cursor_search_window: int = 80,
-                 k_psi: float = 3.0, k_y: float = 2.5, v_eps: float = 0.15, v_creep: float = 0.15,
+                 # 【2026-08-10 是正】k_psi 3.0 -> 12.0, k_y 2.5 -> 10.0。
+                 # 旧値では方位偏差の復元力が弱すぎ、円弧上の指令ヨー角速度
+                 # (平均 7 rad/s) に対して補正項が 0.1 rad/s 程度しか働かず、
+                 # 横偏差が最大 48mm（円弧の壁余裕は約 32mm）まで拡大していた。
+                 # 旧実装は「チェーン末尾ごとに必ず停止する」構造がこの弱さを
+                 # 隠していた（停止のたびに偏差がリセットされる）。停止をやめて
+                 # 流して走るようにした結果として露呈した。
+                 # 検証帯 seed 4000-4004 での実測（失敗率 / |e_y|平均・最大）:
+                 #   k_psi= 3: 60.0% / 14.1mm・48.0mm
+                 #   k_psi= 6: 20.0% / 10.3mm・45.8mm
+                 #   k_psi= 9:  0.0% /  7.6mm・27.3mm
+                 #   k_psi=12:  0.0% /  6.1mm・22.4mm  <- 採用
+                 # k_y は 6〜24 のいずれでも失敗率 0% で感度が低い（支配的なのは
+                 # k_psi）。偏差が最小になる 10.0 を採る。
+                 k_psi: float = 12.0, k_y: float = 10.0, v_eps: float = 0.15, v_creep: float = 0.15,
                  kp_wheel: float = 0.05, ki_wheel: float = 0.3, int_clamp_frac: float = 0.5,
                  kp_turn: float = 8.0, kd_turn: float = 0.6, turn_omega_limit: float = 12.0,
                  turn_done_deg: float = 2.0, turn_done_gyro: float = 0.2,
@@ -629,7 +660,12 @@ class SlalomPolicy(MousePolicy):
         self.v_cap = v_max_measured * safety_factor
         self.a_max = a_max_measured * safety_factor
         self.a_lat = a_lat_measured * safety_factor
-        self.v_explore = v_explore  # 探索走行は固定上限（未知壁のため安全率でなく絶対値、設計文書§2.3）
+        # 未知区画へ進入するときの速度上限。既定 None で bind_sim() が
+        # モデル量から導出する（_derive_uncertain_speed）。明示的に数値を
+        # 渡せるのはアブレーション実験のためだけで、通常は None のまま使う。
+        self.v_explore_override = v_explore
+        self.v_uncertain = None       # bind_sim() で確定
+        self.min_arc_radius = min(arc_radius_candidates_mm) / 1000.0
 
         # --- 軌道生成パラメータ（§2.1） ---
         self.arc_radius_candidates_mm = tuple(arc_radius_candidates_mm)
@@ -706,6 +742,13 @@ class SlalomPolicy(MousePolicy):
         self.target_mode = "to_goal"
         self._heading_dir = "N"
         self._explored_once = False
+        # --- 走り方の内訳カウンタ（1迷路ぶん。教授指示 2026-08-10: 先頭セルの
+        #     方位転換のうち、円弧を張れずその場旋回へフォールバックした割合を
+        #     毎回報告すること。常時発動していれば実質L0-bでありL0-cを
+        #     名乗れない） ---
+        self._n_lead_turns = 0                 # 先頭セルでの90度転換の総数
+        self._n_lead_turn_pivot_fallback = 0   # うち円弧を張れずその場旋回に落ちた数
+        self._n_pivot_entries = 0              # その場旋回に入った総回数（180度折返し含む）
         self._path = None
         self._cursor = 0
         self._path_ticks = 0
@@ -751,13 +794,18 @@ class SlalomPolicy(MousePolicy):
         #     （ハードコード禁止の原則。competition/evaluator.py の
         #     body_footprint と同じ手法をそのまま再利用する） ---
         import mujoco
-        from competition.evaluator import body_footprint
+        from competition.evaluator import body_footprint, front_offset
         mouse_bid = mujoco.mj_name2id(sim.model, mujoco.mjtObj.mjOBJ_BODY, "mouse")
         footprint = body_footprint(sim.model, sim.data, mouse_bid)
         self.R, self.arc_radius_table = select_arc_radius(
             footprint, self.cell_size, candidates_mm=self.arc_radius_candidates_mm,
             margin_m=self.wall_margin_m)
         self.v_turn = math.sqrt(self.a_lat * self.R)
+
+        # --- 未知区画へ進入するときの速度上限（2026-08-10 設計是正、§2.3 改） ---
+        self._front_offset = front_offset(sim.model, sim.data, mouse_bid)
+        self.v_uncertain = (self.v_explore_override if self.v_explore_override is not None
+                            else self._derive_uncertain_speed())
 
         # --- 車輪速度PI（アンチワインドアップ付き）。積分クランプは
         #     Ki・積分値が電圧上限の一定割合(int_clamp_frac)を超えないように。 ---
@@ -768,6 +816,55 @@ class SlalomPolicy(MousePolicy):
         self._wheel_pi_r = WheelPI(self.Ke_eff, self.inv_gain, self.wheel_damping,
                                     self.wheel_frictionloss, self.kp_wheel, self.ki_wheel,
                                     self.voltage_limit, int_clamp)
+
+    def _derive_uncertain_speed(self) -> float:
+        """**未知の区画へ進入するときの速度上限**をモデル量から導出する。
+
+        区画へ進入して壁を観測した瞬間に、次の2つを両方満たせる速度:
+
+          (i)  曲がる必要が判明しても曲がれる:  v <= sqrt(a_lat * R_worst)
+          (ii) 行き止まりでも止まれる:          v <= sqrt(2 * a_max * d_stop)
+
+        (ii) はL0-bの直進速度上限 v <= sqrt(2*a*d) と同じ考え方（教授指示）。
+
+        R_worst は「発見が最も遅れた場合でも張れる円弧半径」。区画の中心で
+        90度曲がる円弧の入口は中心の R 手前にあるので、車体が区画中心まで
+        あと (cell_size/2 - 遅れぶんの前進) しか無いとき、張れる半径は
+        その残距離までである:
+
+          R_worst = cell_size/2 - v * t_delay - corner_fit_margin
+
+        遅れ時間 t_delay は制御周期 control_dt の2周期ぶんとする。内訳は
+        (1) 区画境界の通過を検知するまでの標本化遅れ（境界通過は制御周期の
+        どのタイミングでも起こりうるので最悪1周期）、(2) 経路を張り替えた
+        指令が実際に効き始めるまでの遅れ（1周期）。**制御周期というモデル
+        側の量から決めており、決め打ちの数値ではない**。
+
+        R_worst が v に依存するので不動点反復で解く（単調減少写像なので
+        数回で収束する。上の初期値から下方へ単調に収束する）。
+        """
+        d_stop = self.cell_size - self._front_offset - self.wall_margin_m
+        v_stop_limit = math.sqrt(2.0 * self.a_max * max(d_stop, 1e-4))
+        t_delay = 2.0 * self.control_dt
+        v = math.sqrt(self.a_lat * (self.cell_size / 2.0))
+        for _ in range(20):
+            r_worst = self.cell_size / 2.0 - v * t_delay - self.corner_fit_margin_m
+            v_new = min(math.sqrt(self.a_lat * max(r_worst, 1e-4)), v_stop_limit, self.v_cap)
+            if abs(v_new - v) < 1e-6:
+                v = v_new
+                break
+            v = v_new
+        return max(v, self.v_creep)
+
+    def _dist_to_cell_center_along_heading(self, x: float, y: float, cell) -> float:
+        """車体位置 (x,y) から区画 cell の中心までの、進行方位に沿った符号付き
+        残距離[m]（まだ手前なら正、行き過ぎていれば負）。先頭セルのコーナーを
+        円弧にできるかの幾何判定に使う。"""
+        cx = (cell[0] + 0.5) * self.cell_size
+        cy = (cell[1] + 0.5) * self.cell_size
+        ux = math.cos(_HEADING_RAD[self._heading_dir])
+        uy = math.sin(_HEADING_RAD[self._heading_dir])
+        return (cx - x) * ux + (cy - y) * uy
 
     def bind_maze(self, v_walls, h_walls) -> None:
         self._true_v = v_walls
@@ -894,7 +991,8 @@ class SlalomPolicy(MousePolicy):
     # チェーン構築: 現在セルから足立法で進む方向を horizon 区画ぶん先読みする
     # ------------------------------------------------------------------
     def _build_chain(self, start_cell, heading_in: str, max_cells: int,
-                      require_known_exit: bool = False) -> dict:
+                      require_known_exit: bool = False,
+                      allow_lead_turn: bool = False) -> dict:
         """start_cell から heading_in の続きとして最大 max_cells 区画ぶんの
         セル列・方位列を作る。
 
@@ -935,7 +1033,16 @@ class SlalomPolicy(MousePolicy):
                 if self._wall_value(cur[0], cur[1], nx, ny) == -1:
                     break  # 未検知セルの出口: これ以上は伸ばさずここで打ち切る
             kind, _s = _turn_kind(prev_dir, chosen)
-            if kind == "reverse" or (step_i == 0 and kind in ("left", "right")):
+            # 180度折返しは円弧にできないので常にその場旋回へ回す。
+            # 先頭セル(step_i==0)での90度転換は、allow_lead_turn=True なら
+            # ここで打ち切らず、呼び出し側(_replan)が「1区画手前のセルを
+            # 前置する」手法で円弧として張る（2026-08-10 設計是正: 探索走行
+            # でもスラロームを維持するため。従来は無条件にその場旋回へ
+            # 落としており、探索走行が実質L0-b相当になっていた）。
+            # 幾何が許さない場合（旋回の発見が遅れた場合）は_replanが
+            # その場旋回へフォールバックする。
+            if kind == "reverse" or (step_i == 0 and kind in ("left", "right")
+                                      and not allow_lead_turn):
                 return dict(cells=cells, directions=directions, reached_target=False, need_turn_to=chosen)
             directions.append(chosen)
             cur = (cur[0] + _DELTA[chosen][0], cur[1] + _DELTA[chosen][1])
@@ -950,6 +1057,7 @@ class SlalomPolicy(MousePolicy):
     # 軌道の張り直し（§2.1〜§2.3）
     # ------------------------------------------------------------------
     def _enter_turn_inplace(self, direction: str) -> None:
+        self._n_pivot_entries += 1
         self._turn_target_yaw = _HEADING_RAD[direction]
         self._pending_dir_after_turn = direction
         self._state = "TURN_INPLACE"
@@ -959,14 +1067,44 @@ class SlalomPolicy(MousePolicy):
             self._wheel_pi_l.reset()
             self._wheel_pi_r.reset()
 
+    def _begin_pre_turn(self, x: float, y: float, cell, direction: str) -> None:
+        """円弧では曲がれない方位転換（180度折返し、または旋回の発見が遅れて
+        円弧の入口を通り過ぎた場合）のフォールバック。
+
+        実際の車体現在位置(x,y)からそのセル中心までの短い直線減速停止経路を
+        挟んでから、その場旋回へ移る（動いたままいきなり回頭を始めると位置が
+        ずれる不具合がスモークテストで見つかったため）。既にセル中心にいる
+        場合は直ちにその場旋回へ入る。
+        """
+        target_xy = ((cell[0] + 0.5) * self.cell_size, (cell[1] + 0.5) * self.cell_size)
+        if math.hypot(target_xy[0] - x, target_xy[1] - y) > 1e-3:
+            path = build_line_path((x, y), target_xy, _HEADING_RAD[self._heading_dir],
+                                    stop_at_end=True, ds=self.path_ds)
+            # ここは常に停止経路（この先で方位転換が必要と判明した区間）
+            # なので、常に保守的な速度上限 v_uncertain を使う。
+            path.speed = build_speed_profile(path.s, path.curvature, self.v_uncertain,
+                                              self.a_lat, self.a_max, self.v_creep, True)
+            self._path = path
+            self._cursor = 0
+            self._path_ticks = 0
+            self._path_end_reason = "pre_turn"
+            self._pending_dir_after_turn = direction
+            self._state = "DRIVE"
+        else:
+            self._enter_turn_inplace(direction)
+
     def _replan(self, x: float, y: float, yaw: float) -> None:
         """現在位置から軌道を張り直す。呼び出しタイミング: (1) 起動直後、
         (2) 区画境界通過ごと（探索走行=初回ゴール到達前のみ、§2.3）、
         (3) 目標セル到達時（ゴール/スタートの反転直後）、(4) その場旋回完了直後。
 
-        探索走行では次の1〜2区画ぶんだけ軌道生成し v_explore に抑える。
-        最短走行（初回ゴール到達後）は既知地図で目標セルまでの全経路を
-        一括生成する（§2.3）。
+        探索走行では次の1〜2区画ぶんだけ軌道生成する。最短走行（初回ゴール
+        到達後）は既知地図で目標セルまでの全経路を一括生成する（§2.3）。
+
+        速度上限は「区画が既知か未知か」で切り替える（2026-08-10 設計是正）。
+        観測済みの区画を通る区間は摩擦円の限界 v_cap まで、チェーン末尾の
+        「出口の壁が未観測」な区画へ進入する時点では v_uncertain まで落とす。
+        先頭セルでの90度転換も、幾何が許すかぎり円弧（スラローム）で曲がる。
 
         require_known_exit=True は両モード共通で常に適用する。理由:
         実装時のスモークテストで、最短走行(一括生成)が「一度も訪れていない
@@ -983,14 +1121,49 @@ class SlalomPolicy(MousePolicy):
             max_cells = (self.explore_horizon_cells if not self._explored_once
                          else self.width * self.height)
             chain = self._build_chain(cur_cell, self._heading_dir, max_cells,
-                                       require_known_exit=True)
+                                       require_known_exit=True, allow_lead_turn=True)
             cells = chain["cells"]
 
             if len(cells) >= 2:
                 directions = chain["directions"]
+
+                # --- 先頭セルでの90度転換を円弧にする（2026-08-10 設計是正） ---
+                # cells[0]自体で曲がる場合、build_reference_path は
+                # heading_in == directions[0] を要求するので直接は張れない。
+                # そこで**1区画手前のセルを前置**してそのコーナーを「内部
+                # コーナー」に変え、既存の円弧生成機構をそのまま使う。前置した
+                # 直線区間が車体の実位置を含むのでカーソル探索も破綻しない
+                # （幾何は事前検証済み: 円弧の入口がちょうど区画の入口境界に
+                # 一致し、経路長も理論値と一致する）。
+                path_cells, path_dirs = list(cells), list(directions)
+                lead_R = None
+                if directions[0] != self._heading_dir:
+                    self._n_lead_turns += 1
+                    prev_cell = (cur_cell[0] - _DELTA[self._heading_dir][0],
+                                 cur_cell[1] - _DELTA[self._heading_dir][1])
+                    in_bounds = (0 <= prev_cell[0] < self.width
+                                 and 0 <= prev_cell[1] < self.height)
+                    # 区画中心までの残距離が、そのまま今から張れる円弧半径の
+                    # 上限になる（中心で90度曲がる円弧の入口は中心のR手前）。
+                    d_center = self._dist_to_cell_center_along_heading(x, y, cur_cell)
+                    lead_R = min(self.R, d_center - self.corner_fit_margin_m)
+                    if (not in_bounds) or lead_R < self.min_arc_radius:
+                        # 旋回の発見が遅れた（既に円弧の入口を通り過ぎた）か
+                        # 盤外。円弧では曲がれないのでその場旋回へ落とす
+                        # （教授裁定 2026-08-10: 安全弁として残すが、発生率を
+                        # 毎回報告すること。常時発動していれば実質L0-b）。
+                        self._n_lead_turn_pivot_fallback += 1
+                        self._begin_pre_turn(x, y, cur_cell, directions[0])
+                        return
+                    path_cells = [prev_cell] + path_cells
+                    path_dirs = [self._heading_dir] + path_dirs
+
                 waypoints_xy = [((c[0] + 0.5) * self.cell_size, (c[1] + 0.5) * self.cell_size)
-                                 for c in cells]
+                                 for c in path_cells]
                 radii = fit_corner_radii(waypoints_xy, self.R, margin_m=self.corner_fit_margin_m)
+                if lead_R is not None and radii:
+                    # 先頭コーナーは「今から張れる半径」までしか使えない
+                    radii[0] = min(radii[0], lead_R)
 
                 if chain["reached_target"] and self.target_mode == "to_goal":
                     stop_at_end, end_reason = True, "goal"
@@ -1008,43 +1181,69 @@ class SlalomPolicy(MousePolicy):
                 else:
                     stop_at_end, end_reason = False, "continue"
 
-                path = build_reference_path(cells, directions, self._heading_dir, radii,
+                path = build_reference_path(path_cells, path_dirs, path_dirs[0], radii,
                                              self.cell_size, stop_at_end, ds=self.path_ds)
-                # v_cap（高い方）を使ってよいのは、(a) 目標セルまで既知地図で
-                # 一括到達できたチェーン（chain["reached_target"]、真の
-                # 一括生成）であり、かつ (b) その目標がゴールである場合のみ。
-                # require_known_exitで未検知セルの手前で打ち切られた
-                # 「continue」チェーンは、そこから先のコーナーの有無を確認
-                # できていない点で探索走行と同じ状況なのでv_explore（保守的な
-                # 速度上限）を使う（怠ると、未知区間へ短いチェーンしか
-                # 伸ばせない状況でも最短走行モードだからとv_capまで加速し、
-                # 直後に短い停止経路しか張れないコーナーが見つかっても
-                # 間に合わず壁に衝突する不具合をスモークテストで確認した）。
-                # 「to_start」（帰路）は評価器のKPI（憲章§2の4指標）で計時
-                # されないため高速化の得点上の意味がなく、かつスタート区画
-                # (0,0)は西・南が外壁の狭いポケットであり、減速なしに
-                # 加速し続けたまま進入すると横方向のわずかなずれでも外壁に
-                # 接触してスタックする不具合をスモークテストで確認した。
-                # 帰路は常にv_exploreに抑える。
-                to_goal_full_route = (self._explored_once and chain["reached_target"]
-                                       and self.target_mode == "to_goal")
-                v_ceil = self.v_cap if to_goal_full_route else self.v_explore
-                # "continue"（reached_targetでもneed_turn_toでもない、単に
-                # require_known_exitで未検知セル手前で打ち切られたチェーン）
-                # は、末尾の先が曲がっているかどうかまだ分からない。速度計画
-                # だけは終端で減速させておく（実際の完了判定path.stop_at_endは
-                # Falseのままなので、そこで停止・反転はしない。次のセルへ
-                # 入ってセンスできた時点で再計画され、曲がらないと分かれば
-                # そのままレートリミットで再加速する）。これを怠ると、次に
-                # 曲がる必要が判明した瞬間には既に巡航速度のままそのセルの
-                # 奥まで進んでしまっており、制動距離が全く足りずに壁へ
-                # 衝突する不具合をスモークテストで確認した（設計文書§2.3
-                # 「未知壁は壁ありと保守的に仮定して速度を抑える」の趣旨を
-                # 軌道の先読み長だけでなく速度計画にも一貫して適用する）。
-                decel_for_uncertainty = (end_reason == "continue")
-                path.speed = build_speed_profile(path.s, path.curvature, v_ceil, self.a_lat,
-                                                  self.a_max, self.v_creep,
-                                                  stop_at_end or decel_for_uncertainty)
+
+                # --- 区間ごとの速度上限（教授裁定 2026-08-10「既知は速く、
+                #     未知は慎重に」。実機のマウサーも既に見た区画は速く、
+                #     未知の区画は慎重に走る） ---
+                # require_known_exit により、チェーンに含まれる区画は末尾を
+                # 除きすべて出口の壁が観測済みである。したがって末尾以外は
+                # 摩擦円の限界(v_cap)まで出してよい。末尾の区画だけは「出口の
+                # 壁が未観測」なので、そこへ**進入する時点**で v_uncertain
+                # （壁が現れても曲がれる/止まれる速度。_derive_uncertain_speed
+                # がモデル量から導出）まで落としておく。後方パスがこの上限に
+                # 間に合うよう手前を自動的に制限する。
+                #
+                # 旧実装はこの区間を stop_at_end 相当で**ほぼ停止**まで減速
+                # させ、かつ全体の上限も探索中は一律 v_explore に固定して
+                # いたため、既に観測済みの区画を走るときまで不必要に遅かった
+                # （E1の追加探索は既知経路を通って未知の壁へ向かうので、この
+                # 切り替えの有無で探索時間が大きく変わる）。
+                if end_reason == "continue":
+                    # 末尾セルの出口の壁が未観測＝この先が未知。ここは
+                    # v_uncertain に固定する。実測（検証帯 seed 4000-4004）で、
+                    # 「既知セルを含むので v_cap まで加速してよい」とすると
+                    # 失敗率が 12% → 64% に悪化した。最短走行では経路の
+                    # 張り替え（_replan）が起こりうる区間でもあり、高速で
+                    # 未知の境界へ突っ込むリスクに見合わない。
+                    # （E1 の追加探索を統合したら、目標セルまで既知地図で
+                    #  一括到達するチェーンになるので end_reason は
+                    #  "continue" ではなくなり、自動的に v_cap 側になる）
+                    v_ceil_base = self.v_uncertain
+                elif self.target_mode == "to_start":
+                    # 帰路は評価器のKPI（研究計画書§2）で計時されず高速化の
+                    # 得点上の意味がない一方、スタート区画(0,0)は西・南が外壁の
+                    # 狭いポケットで接触・スタックの実績がある。得点にならない
+                    # 区間でリスクだけ取らないよう保守側に倒す（設計判断）。
+                    v_ceil_base = min(self.v_cap, self.v_uncertain)
+                else:
+                    v_ceil_base = self.v_cap
+                # 終端で満たすべき速度と、そこまでの距離。
+                #   stop_at_end（ゴール/スタート/その場旋回の手前）: 終端で 0
+                #   continue（末尾セルの出口が未観測）: 末尾セルへ**進入する
+                #     時点**で v_uncertain
+                v_end = 0.0 if stop_at_end else min(v_ceil_base, self.v_uncertain)
+                s_term = path.length if stop_at_end else (path.length - self.cell_size / 2.0)
+                # 【重要】v_ceil_base まで加速してよいのは、そこから v_end へ
+                # 落としきるだけの距離が実際にあるときだけ。これを怠ると、
+                # 「区画1つぶんの既知区間で全開加速 → 即全開制動」を区画ごとに
+                # 繰り返す鋸歯状の速度指令になり、経路追従が破綻する
+                # （実測: 横偏差が45mmまで拡大し探索走行で壁に衝突。
+                #  速度計画としては各区間で時間最適だが、車体が追従できない）。
+                # 距離が足りないときは全区間を保守的な上限に固定して等速で走る。
+                # 逆に E1 の追加探索のように**既知の通路を長く走る**場合は
+                # 距離が足りるので v_cap まで加速する（教授裁定「既知は速く、
+                # 未知は慎重に」の実効的な実装）。
+                d_brake = max((v_ceil_base ** 2 - v_end ** 2) / (2.0 * self.a_max), 0.0)
+                v_ceil_arr = np.full(len(path.s), v_ceil_base, dtype=float)
+                if s_term < d_brake:
+                    v_ceil_arr[:] = max(v_end, min(v_ceil_base, self.v_uncertain))
+                elif not stop_at_end:
+                    v_ceil_arr[path.s >= s_term] = v_end
+                path.speed = build_speed_profile(path.s, path.curvature, v_ceil_arr,
+                                                  self.a_lat, self.a_max, self.v_creep,
+                                                  stop_at_end)
                 self._path = path
                 self._cursor = 0
                 self._path_ticks = 0
@@ -1053,28 +1252,7 @@ class SlalomPolicy(MousePolicy):
                 return
 
             if chain["need_turn_to"] is not None:
-                # 現在セル自体で方位転換が必要（滑らかな進入余地なし）。
-                # 実際の車体現在位置(x,y)からそのセル中心までの短い直線減速
-                # 停止経路を挟んでから、その場旋回へ移る（動いたままいきなり
-                # 回頭を始めると位置がずれる不具合がスモークテストで見つかった
-                # ため。cells[0]=start_cellなのでその中心を目標点にする）。
-                target_xy = ((cells[0][0] + 0.5) * self.cell_size, (cells[0][1] + 0.5) * self.cell_size)
-                if math.hypot(target_xy[0] - x, target_xy[1] - y) > 1e-3:
-                    path = build_line_path((x, y), target_xy, _HEADING_RAD[self._heading_dir],
-                                            stop_at_end=True, ds=self.path_ds)
-                    # ここは常に停止経路（この先で方位転換が必要と判明した
-                    # 区間）なので、常にv_explore（保守的な速度上限）を使う。
-                    v_ceil = self.v_explore
-                    path.speed = build_speed_profile(path.s, path.curvature, v_ceil, self.a_lat,
-                                                      self.a_max, self.v_creep, True)
-                    self._path = path
-                    self._cursor = 0
-                    self._path_ticks = 0
-                    self._path_end_reason = "pre_turn"
-                    self._pending_dir_after_turn = chain["need_turn_to"]
-                    self._state = "DRIVE"
-                else:
-                    self._enter_turn_inplace(chain["need_turn_to"])
+                self._begin_pre_turn(x, y, cells[0], chain["need_turn_to"])
                 return
 
             if chain["reached_target"]:
@@ -1140,7 +1318,16 @@ class SlalomPolicy(MousePolicy):
             if dist_to_end < self.goal_done_dist:
                 return abs(v_fwd) < self.goal_done_speed
             return (abs(v_fwd) < self.goal_done_speed) and (self._v_setpoint < self.goal_done_speed)
-        return dist_to_end < self.goal_done_dist
+        # 停止しない経路（"continue"）: 位置しきい値だけで判定すると、1ティック
+        # の前進量が大きいときに 2cm の窓を跨いで永久に完了せず、カーソルが
+        # 終端に張り付いて盲目的に直進する。終端点を**通り過ぎた**ことも
+        # 完了とみなす（終端の参照方位への符号付き射影で判定）。
+        if dist_to_end < self.goal_done_dist:
+            return True
+        h_end = float(path.heading[-1])
+        passed = (x - float(path.x[-1])) * math.cos(h_end) \
+            + (y - float(path.y[-1])) * math.sin(h_end)
+        return passed >= 0.0
 
     def _advance_cursor(self, x: float, y: float) -> int:
         path = self._path
@@ -1267,7 +1454,26 @@ class SlalomPolicy(MousePolicy):
                 self._heading_dir = self._snap_heading(float(self._path.heading[idx]))
             if self._path_end_reason == "continue":
                 remaining = self._path.length - float(self._path.s[idx])
-                if (not self._explored_once) and remaining < self.replan_trigger_dist:
+                # 【2026-08-10 是正】再計画は**曲率ゼロの直線区間にいるときだけ**
+                # 行う。この条件は replan_trigger_dist の設計コメント（本クラスの
+                # __init__）に「曲率ゼロの直線区間まで進んでから再計画する」と
+                # 書かれていたが、**実装に入っていなかった**（曲率チェックは
+                # すぐ上の方位更新にしか掛かっていない）。従来は探索走行の
+                # チェーンに円弧が含まれなかったため露見しなかったが、探索でも
+                # 円弧を張るようになると、円弧の途中で経路を張り替えてしまい、
+                # かつ _heading_dir が円弧中は更新されない（古い方位のまま）ので
+                # 誤った方位を基準に再計画して破綻する。
+                # 【2026-08-10 是正2】最短走行(_explored_once)でも継ぎ足しを
+                # 行う。旧実装は探索走行のみで継ぎ足し、最短走行の"continue"
+                # チェーンは終端で**停止**する速度計画(decel_for_uncertainty)
+                # に頼っていた。停止をやめて流して走るようにした結果、
+                # 経路の終端に到達しても完了判定(_check_drive_completion)の
+                # 位置しきい値2cmを跨いでしまうとカーソルが終端に張り付き、
+                # 最後の参照点の方位・速度を出し続けて未知領域へ**盲目的に
+                # 直進**して壁に衝突する不具合が実測で出た（検証帯 seed 4001
+                # の最短走行が毎回 2.24s で衝突）。終端に達する前に継ぎ足す。
+                on_straight = abs(float(self._path.curvature[idx])) < 1e-6
+                if on_straight and remaining < self.replan_trigger_dist:
                     self._replan(x, y, yaw)
             if self._state == "DRIVE" and self._path is not None and self._check_drive_completion(x, y, v_fwd):
                 self._on_path_complete(x, y, yaw)
