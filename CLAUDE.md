@@ -13,7 +13,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 必読の正本（この順で読む）:
 
-1. `docs/RESEARCH_PLAN.md` — プログラム憲章（ミッション、評価規約、マイルストーン、実験規律、体制）
+1. `docs/RESEARCH_PLAN.md` — プログラム研究計画書（ミッション、評価規約、マイルストーン、実験規律、体制）
 2. `docs/MODEL_VERIFICATION_PLAN.md` — 物理モデルの確定仕様と検証プロトコル（ロボットパラメータの正本、改訂 r3 現在）
 3. `research_notes/` — 研究ノート（最新の番号のノートに直近の意思決定と経緯がある）
 
