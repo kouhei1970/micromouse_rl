@@ -1,0 +1,209 @@
+{
+  "split": "eval",
+  "seeds": [
+    3000,
+    3001,
+    3002,
+    3003,
+    3004,
+    3005,
+    3006,
+    3007,
+    3008,
+    3009,
+    3010,
+    3011,
+    3012,
+    3013,
+    3014,
+    3015,
+    3016,
+    3017,
+    3018,
+    3019
+  ],
+  "count": 20,
+  "generator": "mouse/corridor_gen.py: generate_course",
+  "courses": [
+    {
+      "seed": 3000,
+      "n_cells": 14,
+      "n_turns": 3,
+      "width": 11,
+      "height": 8,
+      "npz": "assets/corridor/eval/corridor_3000.npz",
+      "xml": "assets/corridor/eval/corridor_3000.xml"
+    },
+    {
+      "seed": 3001,
+      "n_cells": 11,
+      "n_turns": 5,
+      "width": 8,
+      "height": 7,
+      "npz": "assets/corridor/eval/corridor_3001.npz",
+      "xml": "assets/corridor/eval/corridor_3001.xml"
+    },
+    {
+      "seed": 3002,
+      "n_cells": 14,
+      "n_turns": 2,
+      "width": 14,
+      "height": 5,
+      "npz": "assets/corridor/eval/corridor_3002.npz",
+      "xml": "assets/corridor/eval/corridor_3002.xml"
+    },
+    {
+      "seed": 3003,
+      "n_cells": 19,
+      "n_turns": 3,
+      "width": 8,
+      "height": 16,
+      "npz": "assets/corridor/eval/corridor_3003.npz",
+      "xml": "assets/corridor/eval/corridor_3003.xml"
+    },
+    {
+      "seed": 3004,
+      "n_cells": 18,
+      "n_turns": 9,
+      "width": 10,
+      "height": 8,
+      "npz": "assets/corridor/eval/corridor_3004.npz",
+      "xml": "assets/corridor/eval/corridor_3004.xml"
+    },
+    {
+      "seed": 3005,
+      "n_cells": 9,
+      "n_turns": 1,
+      "width": 7,
+      "height": 7,
+      "npz": "assets/corridor/eval/corridor_3005.npz",
+      "xml": "assets/corridor/eval/corridor_3005.xml"
+    },
+    {
+      "seed": 3006,
+      "n_cells": 12,
+      "n_turns": 3,
+      "width": 5,
+      "height": 9,
+      "npz": "assets/corridor/eval/corridor_3006.npz",
+      "xml": "assets/corridor/eval/corridor_3006.xml"
+    },
+    {
+      "seed": 3007,
+      "n_cells": 12,
+      "n_turns": 3,
+      "width": 9,
+      "height": 6,
+      "npz": "assets/corridor/eval/corridor_3007.npz",
+      "xml": "assets/corridor/eval/corridor_3007.xml"
+    },
+    {
+      "seed": 3008,
+      "n_cells": 17,
+      "n_turns": 2,
+      "width": 17,
+      "height": 5,
+      "npz": "assets/corridor/eval/corridor_3008.npz",
+      "xml": "assets/corridor/eval/corridor_3008.xml"
+    },
+    {
+      "seed": 3009,
+      "n_cells": 18,
+      "n_turns": 5,
+      "width": 10,
+      "height": 9,
+      "npz": "assets/corridor/eval/corridor_3009.npz",
+      "xml": "assets/corridor/eval/corridor_3009.xml"
+    },
+    {
+      "seed": 3010,
+      "n_cells": 15,
+      "n_turns": 6,
+      "width": 8,
+      "height": 10,
+      "npz": "assets/corridor/eval/corridor_3010.npz",
+      "xml": "assets/corridor/eval/corridor_3010.xml"
+    },
+    {
+      "seed": 3011,
+      "n_cells": 13,
+      "n_turns": 3,
+      "width": 13,
+      "height": 5,
+      "npz": "assets/corridor/eval/corridor_3011.npz",
+      "xml": "assets/corridor/eval/corridor_3011.xml"
+    },
+    {
+      "seed": 3012,
+      "n_cells": 21,
+      "n_turns": 1,
+      "width": 16,
+      "height": 10,
+      "npz": "assets/corridor/eval/corridor_3012.npz",
+      "xml": "assets/corridor/eval/corridor_3012.xml"
+    },
+    {
+      "seed": 3013,
+      "n_cells": 20,
+      "n_turns": 8,
+      "width": 9,
+      "height": 12,
+      "npz": "assets/corridor/eval/corridor_3013.npz",
+      "xml": "assets/corridor/eval/corridor_3013.xml"
+    },
+    {
+      "seed": 3014,
+      "n_cells": 5,
+      "n_turns": 2,
+      "width": 6,
+      "height": 4,
+      "npz": "assets/corridor/eval/corridor_3014.npz",
+      "xml": "assets/corridor/eval/corridor_3014.xml"
+    },
+    {
+      "seed": 3015,
+      "n_cells": 19,
+      "n_turns": 3,
+      "width": 15,
+      "height": 7,
+      "npz": "assets/corridor/eval/corridor_3015.npz",
+      "xml": "assets/corridor/eval/corridor_3015.xml"
+    },
+    {
+      "seed": 3016,
+      "n_cells": 20,
+      "n_turns": 3,
+      "width": 10,
+      "height": 12,
+      "npz": "assets/corridor/eval/corridor_3016.npz",
+      "xml": "assets/corridor/eval/corridor_3016.xml"
+    },
+    {
+      "seed": 3017,
+      "n_cells": 22,
+      "n_turns": 6,
+      "width": 6,
+      "height": 17,
+      "npz": "assets/corridor/eval/corridor_3017.npz",
+      "xml": "assets/corridor/eval/corridor_3017.xml"
+    },
+    {
+      "seed": 3018,
+      "n_cells": 22,
+      "n_turns": 2,
+      "width": 22,
+      "height": 5,
+      "npz": "assets/corridor/eval/corridor_3018.npz",
+      "xml": "assets/corridor/eval/corridor_3018.xml"
+    },
+    {
+      "seed": 3019,
+      "n_cells": 22,
+      "n_turns": 4,
+      "width": 18,
+      "height": 9,
+      "npz": "assets/corridor/eval/corridor_3019.npz",
+      "xml": "assets/corridor/eval/corridor_3019.xml"
+    }
+  ]
+}

@@ -179,6 +179,14 @@ class QaccTracker:
 # ======================================================================
 # モデルハンドル解決（body/joint/geom/actuator id。モデルごとに毎回解決する）
 # ======================================================================
+def sensor_offsets(model):
+    """sensordata 内の [距離センサ本数, accel 開始, gyro 開始] を**モデルから導出**する。
+    r6（センサ 6→4 本）以降、本数は構成で変わるため固定オフセットを持たない。
+    並びは登録順（距離 ×n → accelerometer(3) → gyro(3)）。"""
+    n_range = int(np.sum(model.sensor_type == mujoco.mjtSensor.mjSENS_RANGEFINDER))
+    return n_range, n_range, n_range + 3
+
+
 def get_handles(model):
     def bid(name):
         return mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, name)
@@ -703,7 +711,8 @@ def test_01_voltage_step(params, open_xml, D):
     CALIB['test1_05V_final_state'] = last_state
     CALIB['test1_v_ss_theory'] = {V0: (2 * (D.gainprm0 / D.r) * V0 - 2 * (D.tau_c / D.r) - mu_caster * N_c_dynamic[V0])
                                    / D.c_eff for V0 in voltages}
-    CALIB['test1_accelx_log'] = dict(t=last_log['t'].copy(), accel_x=last_log['sensordata'][:, 6].copy(),
+    _ax = sensor_offsets(sim.model)[1]  # accel x 列（モデル導出。r6 でセンサ本数可変）
+    CALIB['test1_accelx_log'] = dict(t=last_log['t'].copy(), accel_x=last_log['sensordata'][:, _ax].copy(),
                                       v_ss_theory=CALIB['test1_v_ss_theory'][0.5], tau_v=D.tau_v)
 
     ok, msg = _finish("Test1_voltage_step", checks, calib=dict(v_ss_meas=v_ss_meas, tau_meas=tau_meas,
@@ -846,7 +855,8 @@ def test_03_pivot_turn(params, open_xml, D):
     F_L = tau_L / D.r
     F_R = tau_R / D.r
     tau_net_wheels = (F_L - F_R) * (D.L / 2.0)
-    delta_omega = float(log_pulse['sensordata'][-1, 11])
+    _gz = sensor_offsets(sim.model)[2] + 2  # ジャイロ z 列（モデル導出）
+    delta_omega = float(log_pulse['sensordata'][-1, _gz])
     sign_rot = 1.0 if delta_omega >= 0 else -1.0
     tau_net = tau_net_wheels - sign_rot * mu_caster_pulse * N_c_pulse * D.caster_arm
     integral_tau = float(np.trapezoid(tau_net, log_pulse['t']))
@@ -862,7 +872,7 @@ def test_03_pivot_turn(params, open_xml, D):
     t0b = sim.data.time
     logb = run_logged(sim.model, sim.data, duration=2.0, ctrl_fn=lambda t: (V0, -V0), tracker=tracker,
                        log_every=2, t0=t0b, voltage_limit=params.voltage_limit)
-    omega_z = logb['sensordata'][:, 11]
+    omega_z = logb['sensordata'][:, _gz]
 
     # 旋回中（動的）のキャスター荷重を、同じ差動電圧を維持したまま追加で時間平均測定する
     # （静止時の静的値とは大きく異なりうる。4点接地の不静定性由来のチャタリングの発見に
@@ -1328,7 +1338,7 @@ def test_05_steady_turn(params, open_xml, D):
             v_world = sim.data.qvel[h.root_dof_adr:h.root_dof_adr + 3]
             xmat = sim.data.xmat[h.mouse_body_id].reshape(3, 3)
             v_meas = float(np.dot(v_world, xmat[:, 0]))
-            omega_meas = float(sim.data.sensordata[11])
+            omega_meas = float(sim.data.sensordata[sensor_offsets(sim.model)[2] + 2])
             step = ramp_rate * dt_phys
             if kappa_state['ramp'] < kappa_state['target']:
                 kappa_state['ramp'] = min(kappa_state['target'], kappa_state['ramp'] + step)
@@ -1401,9 +1411,9 @@ def test_05_steady_turn(params, open_xml, D):
         n_tail = max(1, int(round(0.4 * len(logk['t']))))
         # 中央値を使用（4点接地の不静定性由来の散発的チャタリングスパイクに対して
         # 平均よりロバスト。報告書「計画書との矛盾・懸念」参照）
-        a_lat = float(np.median(logk['sensordata'][-n_tail:, 7]))
+        a_lat = float(np.median(logk['sensordata'][-n_tail:, sensor_offsets(sim.model)[1] + 1]))  # accel y（モデル導出）
         a_lat_meas.append(a_lat)
-        omega_tail = float(np.median(logk['sensordata'][-n_tail:, 11]))
+        omega_tail = float(np.median(logk['sensordata'][-n_tail:, sensor_offsets(sim.model)[2] + 2]))
         omega_meas_level.append(omega_tail)
         beta_tail = np.arctan2(logk['v_lat'][-n_tail:], logk['v_fwd'][-n_tail:])
         if n_tail >= 3:
@@ -1592,7 +1602,8 @@ def test_06_sensors(params, open_xml, xml_dir, D):
     t0 = sim.data.time
     log = run_logged(sim.model, sim.data, duration=5.0, ctrl_fn=lambda t: (0.0, 0.0), tracker=tracker_static,
                       log_every=2, t0=t0, voltage_limit=params.voltage_limit)
-    accel_static = np.mean(log['sensordata'][-1000:, 6:9], axis=0)
+    _a0 = sensor_offsets(sim.model)[1]
+    accel_static = np.mean(log['sensordata'][-1000:, _a0:_a0 + 3], axis=0)
     g = D.g
     ok_ax = abs(accel_static[0] - 0.0) <= 0.05
     ok_ay = abs(accel_static[1] - 0.0) <= 0.05
@@ -1619,7 +1630,8 @@ def test_06_sensors(params, open_xml, xml_dir, D):
         sim3.data.ctrl[1] = -1.0
         mujoco.mj_step(sim3.model, sim3.data)
         xmats.append(sim3.data.xmat[h3.mouse_body_id].reshape(3, 3).copy())
-        gyros.append(sim3.data.sensordata[9:12].copy())
+        _g3 = sensor_offsets(sim3.model)[2]
+        gyros.append(sim3.data.sensordata[_g3:_g3 + 3].copy())
         ts.append(float(sim3.data.time))
     # 中心差分（xmat[i-1], xmat[i+1] から時刻 ts[i] 上の角速度を推定）を用いる。
     # 前進差分 (xmat[i],xmat[i+1])/dt は時刻 ts[i]+dt/2 の値を表すため gyro[i]
@@ -1709,7 +1721,8 @@ def test_06_sensors(params, open_xml, xml_dir, D):
             sim4.data.ctrl[1] = 0.5
             mujoco.mj_step(sim4.model, sim4.data)
             xmats4.append(sim4.data.xmat[h4.mouse_body_id].reshape(3, 3).copy())
-            gyros4.append(sim4.data.sensordata[9:12].copy())
+            _g4 = sensor_offsets(sim4.model)[2]
+            gyros4.append(sim4.data.sensordata[_g4:_g4 + 3].copy())
             ts4.append(float(sim4.data.time))
         omega_fd4 = _omega_body_from_xmats(xmats4, ts4)
         gyro_center4 = _gyro_matched_to_fd(gyros4)  # 離散恒等式に整合する 2 サンプル平均（上記参照）
@@ -2250,7 +2263,7 @@ def test_09_yaw_stability(params, open_xml, D):
         log = run_logged(sim.model, sim.data, duration=2.0, ctrl_fn=lambda t: (V0, V0), tracker=tracker,
                           log_every=2, t0=t0log, voltage_limit=params.voltage_limit)
 
-        omega = log['sensordata'][:, 11]
+        omega = log['sensordata'][:, sensor_offsets(sim.model)[2] + 2]
         t = log['t']
         omega0 = float(omega[0])
 
@@ -2440,8 +2453,12 @@ def test_12_s3_sensors(params, open_xml):
 
     names = [s['name'] for s in params.sensors]
     rf_ids = [mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SENSOR, n) for n in names]
-    ok_count = all(i >= 0 for i in rf_ids) and len(rf_ids) == 6
-    checks.append(dict(name="rangefinder_count_and_names", expected=6, actual=len(rf_ids), tol="-", ok=ok_count))
+    # r6: 本数は params.sensors（＝仕様）から導出し、モデルの rangefinder 数と一致することを検査する
+    # （固定値 6 を書かない。センサ構成が変わっても仕様とモデルの一致だけを問う）
+    n_rf_model = int(np.sum(model.sensor_type == mujoco.mjtSensor.mjSENS_RANGEFINDER))
+    ok_count = all(i >= 0 for i in rf_ids) and n_rf_model == len(names)
+    checks.append(dict(name="rangefinder_count_and_names", expected=len(names), actual=n_rf_model,
+                        tol="params.sensors と一致", ok=ok_count))
 
     for n, i in zip(names, rf_ids):
         cutoff = float(model.sensor_cutoff[i]) if i >= 0 else float('nan')

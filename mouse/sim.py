@@ -43,6 +43,11 @@ class MouseSim:
             self.model, mujoco.mjtObj.mjOBJ_JOINT, 'right_wheel_joint')
 
         self._left_wheel_qvel_adr = self.model.jnt_dofadr[self._left_wheel_joint_id]
+        # 距離センサ（rangefinder）の本数をモデルから数える。sensordata の並びは
+        # 登録順（距離 ×n → accelerometer(3) → gyro(3)）であり、r6 でセンサ本数が
+        # 6→4 に変わったため、切り出し位置を固定値で持たない（observation() 参照）。
+        self._n_rangefinders = int(np.sum(
+            self.model.sensor_type == mujoco.mjtSensor.mjSENS_RANGEFINDER))
         self._right_wheel_qvel_adr = self.model.jnt_dofadr[self._right_wheel_joint_id]
 
         # ロボット geom 集合（body "mouse" のサブツリー）を起動時に前計算
@@ -139,19 +144,23 @@ class MouseSim:
     # 観測
     # ------------------------------------------------------------------
     def observation(self) -> np.ndarray:
-        """14 次元観測を返す:
-        [LF, LS, RF, RS, FL, FR (m), accel x,y,z, gyro x,y,z, omega_wheel_L, omega_wheel_R]
+        """観測を返す（次元は距離センサ本数 n に依存し 6 + n 次元）:
+        [距離 ×n (m), accel x,y,z, gyro x,y,z, omega_wheel_L, omega_wheel_R]
+
+        r6（センサ 6→4 本）以降、距離センサの本数は構成で変わりうるため、
+        sensordata の切り出し位置は**モデルから導出**する（ハードコード禁止）。
         """
         sd = self.data.sensordata
         cutoff = self.params.sensor_cutoff
+        n = self._n_rangefinders
 
-        ranges = np.array(sd[0:6], dtype=np.float64)
+        ranges = np.array(sd[0:n], dtype=np.float64)
         # 生値 < 0（ヒットなし）は cutoff に置き換え、cutoff でクリップ
         ranges = np.where(ranges < 0, cutoff, ranges)
         ranges = np.clip(ranges, 0.0, cutoff)
 
-        accel = np.array(sd[6:9], dtype=np.float64)
-        gyro = np.array(sd[9:12], dtype=np.float64)
+        accel = np.array(sd[n:n + 3], dtype=np.float64)
+        gyro = np.array(sd[n + 3:n + 6], dtype=np.float64)
 
         omega_l = float(self.data.qvel[self._left_wheel_qvel_adr])
         omega_r = float(self.data.qvel[self._right_wheel_qvel_adr])
