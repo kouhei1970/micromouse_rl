@@ -441,9 +441,19 @@ class AdachiPolicy(MousePolicy):
             # ② 経路方向に明確に行き過ぎた: 一定の低速で後退して戻る
             v_set = -creep_speed
         else:
-            # ③ 経路方向にはほぼ行き着いている: 横偏差が残っていれば低速前進、
-            #    なければ静止（位置判定・速度判定に委ねる）
-            v_set = creep_speed if abs(lateral_err) > self.forward_done_dist else 0.0
+            # ③ 経路方向にはほぼ行き着いている: 目標点までの残り距離
+            #    dist_remain（到達判定と同じ量）がまだしきい値を超えていれば
+            #    低速前進、超えていなければ静止（位置判定・速度判定に委ねる）。
+            #
+            # v1.0 の不具合（stuck 頻発の根本原因）: ここを abs(lateral_err) と
+            # forward_done_dist の比較にしていたため、横偏差が僅かに
+            # しきい値未満（例: 0.98cm）でも縦偏差との合成距離 dist_remain は
+            # しきい値超過（例: 1.03cm）になりうるケースで、creep 不成立
+            # （v_set=0固定）かつ到達判定も不成立（dist_remain>=しきい値）の
+            # 板挟みに陥り永久停止していた（実測で maze_1004/1008/1017/1019
+            # 等の stuck を再現・特定）。到達判定と同じ dist_remain を使うことで
+            # 両判定のしきい値が完全に一致し、この境界の死角が原理的に無くなる。
+            v_set = creep_speed if dist_remain > self.forward_done_dist else 0.0
 
         self._fwd_v_setpoint = v_set
         v_profile = v_set

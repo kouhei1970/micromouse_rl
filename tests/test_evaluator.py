@@ -369,6 +369,42 @@ def test4_stuck_detection():
     record("stuck_threshold_boundary_5cm", False, is_stuck5, ok_e,
            f"disp={disp5} (ちょうど閾値5cmは非スタック: disp<0.05のみ発火)")
 
+    # (f) 【閉じ込め判定の対照・退行テスト】ループ再訪では発火しない:
+    #     20秒かけて 0.5m 離れて戻ってくる往復軌道（端点間変位は 4.8cm < 5cm だが
+    #     窓内の最大距離は ≈0.5m）。旧実装（端点間変位判定）はこれを誤検出していた
+    #     （v1.0 公式評価の stuck 21 件の正体。憲章 850f283 で意味論明確化）。
+    ring6 = PositionRingBuffer(window_s=20.0)
+    times_f = sample_times(2001)
+    for t in times_f:
+        frac = min(t / 20.0, 1.0)
+        # 三角波: 前半で +0.5m まで往き、後半で 0.048m 地点まで戻る
+        if frac <= 0.5:
+            xpos = 1.0 * frac  # 0 → 0.5
+        else:
+            xpos = 0.5 - (0.5 - 0.048) * (frac - 0.5) / 0.5  # 0.5 → 0.048
+        ring6.push(t, xpos, 0.0)
+    t_check_f = times_f[-1]
+    is_stuck6, disp6 = ring6.check_stuck(t_check_f, 0.048, 0.0, segment_start_t=0.0)
+    ok_f = (is_stuck6 is False) and (disp6 is not None) and (disp6 >= 0.05)
+    all_ok = all_ok and ok_f
+    record("stuck_not_fire_on_loop_revisit", False, is_stuck6, ok_f,
+           f"端点間変位4.8cmでも窓内最大距離={disp6 if disp6 is None else round(disp6,3)}m → 走行中と判定")
+
+    # (g) 【閉じ込め判定の対照】真の停滞（2cm 圏内の微振動が 20 秒継続）では発火する:
+    #     完全静止でなくても「圏内に留まり続けた」なら停滞。
+    ring7 = PositionRingBuffer(window_s=20.0)
+    times_g = sample_times(2001)
+    for i, t in enumerate(times_g):
+        # 半径 2cm の円周上を小さく振動（リミットサイクル的な微小挙動を模す）
+        ang = 2.0 * math.pi * (i % 100) / 100.0
+        ring7.push(t, 0.5 + 0.02 * math.cos(ang), 0.5 + 0.02 * math.sin(ang))
+    t_check_g = times_g[-1]
+    is_stuck7, disp7 = ring7.check_stuck(t_check_g, 0.5 + 0.02, 0.5, segment_start_t=0.0)
+    ok_g = (is_stuck7 is True) and (disp7 is not None) and (disp7 < 0.05)
+    all_ok = all_ok and ok_g
+    record("stuck_fires_on_confined_jitter", True, is_stuck7, ok_g,
+           f"2cm圏の微振動20秒 → 窓内最大距離={disp7 if disp7 is None else round(disp7,3)}m < 5cm で発火")
+
     return all_ok
 
 

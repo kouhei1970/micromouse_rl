@@ -59,7 +59,10 @@ from mouse.mjcf import build_maze_robot_xml
 from mouse.params import RobotParams
 from mouse.sim import MouseSim
 
-PROTOCOL_VERSION = "e3c5409"
+# プロトコル版: 憲章の該当改訂コミットを指す。
+#   e3c5409 = プロトコル v2（自走帰還方式）制定
+#   850f283 = スタック判定の意味論明確化（閉じ込め判定。旧: 端点間変位 → 21 件の誤検出を是正）
+PROTOCOL_VERSION = "850f283"
 DEFAULT_CELL_SIZE = 0.18
 DEFAULT_STUCK_WINDOW_S = 20.0
 DEFAULT_STUCK_DISP_M = 0.05
@@ -178,8 +181,14 @@ def bfs_shortest_path(v_walls, h_walls, width: int, height: int, start, targets)
 # スタック検出: 100Hz 位置履歴リングバッファ
 # ==========================================================================
 class PositionRingBuffer:
-    """位置履歴リングバッファ。100Hz で (t,x,y) を保持し、
-    「直近 window_s 秒間の変位 < disp_threshold」でスタックを判定する。
+    """位置履歴リングバッファ。100Hz で (t,x,y) を保持し、スタックを**閉じ込め判定**で行う:
+    「直近 window_s 秒間の全サンプルが、現在位置を中心とする半径 disp_threshold 圏内に
+    留まり続けた」場合にスタック（憲章 §2、2026-08-10 意味論明確化 = コミット 850f283）。
+
+    旧実装は「現在位置と window_s 秒前の位置の端点間距離」で判定しており、
+    探索で同じ地点を約 20 秒後に再訪しただけの走行を誤検出していた
+    （v1.0 公式評価で 21 件の誤検出。反証: 発火時に 0.22 m/s で走行中・
+    窓内実走行距離 2.54 m。research_notes/ の note_004 素材参照）。
 
     現在の区間（走行開始 or FREE 区間開始）から window_s 秒未満しか
     経過していない間は判定しない（check_stuck の segment_start_t 引数で
@@ -203,21 +212,30 @@ class PositionRingBuffer:
 
     def check_stuck(self, t: float, x: float, y: float, segment_start_t: float,
                      disp_threshold: float = DEFAULT_STUCK_DISP_M):
-        """(is_stuck: bool, displacement: float|None) を返す。
-        t - segment_start_t < window_s の間は (False, None)。"""
+        """(is_stuck: bool, max_displacement: float|None) を返す。
+        t - segment_start_t < window_s の間は (False, None)。
+
+        閉じ込め判定: 窓 [t - window_s, t] 内の全サンプルについて現在位置との
+        距離を取り、その最大値が disp_threshold 未満のときスタック
+        （= 20 秒間、現在位置の 5cm 圏から一度も出ていない）。
+        1 サンプルでも圏外があれば走行中とみなし早期打ち切りで返す。"""
         if (t - segment_start_t) < self.window_s:
             return False, None
-        target_t = t - self.window_s
-        ref = None
+        window_start_t = t - self.window_s
+        max_disp = 0.0
+        seen_any = False
         for (bt, bx, by) in self._buf:
-            if bt <= target_t + 1e-9:
-                ref = (bt, bx, by)
-            else:
-                break
-        if ref is None:
+            if bt < window_start_t - 1e-9:
+                continue
+            seen_any = True
+            disp = math.hypot(x - bx, y - by)
+            if disp > max_disp:
+                max_disp = disp
+                if max_disp >= disp_threshold:
+                    return False, max_disp  # 圏外サンプルあり = 走行中（早期打ち切り）
+        if not seen_any:
             return False, None
-        disp = math.hypot(x - ref[1], y - ref[2])
-        return (disp < disp_threshold), disp
+        return (max_disp < disp_threshold), max_disp
 
 
 # ==========================================================================

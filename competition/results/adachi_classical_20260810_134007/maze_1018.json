@@ -1,0 +1,46 @@
+{
+  "maze_id": "maze_1018",
+  "seed": 1018,
+  "policy": {
+    "name": "adachi_classical",
+    "requires_privileged": true
+  },
+  "protocol": {
+    "time_budget": 300.0,
+    "max_runs": 5,
+    "control_hz": 100,
+    "collision_force_threshold": 1.0,
+    "stuck_window_s": 20.0,
+    "stuck_disp_m": 0.05,
+    "protocol_version": "850f283"
+  },
+  "runs": [
+    {
+      "index": 1,
+      "t_start": 0.3900000000000003,
+      "t_end": 124.6800000004133,
+      "run_time": 124.2900000004133,
+      "outcome": "goal",
+      "max_progress_cells": 99,
+      "path_length_m": 17.517222807450832,
+      "collision_pos": null,
+      "visited_cells": 99,
+      "path_efficiency": 0.9830091362205854
+    },
+    {
+      "index": 2,
+      "t_start": 252.32999999748913,
+      "t_end": 300.00999999636167,
+      "run_time": 47.679999998872546,
+      "outcome": "timeout",
+      "max_progress_cells": 38,
+      "path_length_m": 6.699516304039505,
+      "collision_pos": null,
+      "visited_cells": 38,
+      "path_efficiency": null
+    }
+  ],
+  "incidents": [],
+  "best_time": 124.2900000004133,
+  "success": true
+}

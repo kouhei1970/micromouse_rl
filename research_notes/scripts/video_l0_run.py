@@ -3,7 +3,8 @@
 # (AdachiPolicy, flood-fill) navigating maze_1004.xml, top-down offscreen.
 #
 # 使い方 / Usage:
-#   .venv/bin/python research_notes/scripts/video_l0_run.py
+#   .venv/bin/python research_notes/scripts/video_l0_run.py           # 長尺版（既定・従来動作）
+#   .venv/bin/python research_notes/scripts/video_l0_run.py --short   # 短縮版（走行2のみ）
 #
 # 前提: competition/mazes/eval/maze_1004.{npz,xml} が既に存在すること
 # （本スクリプトは新規生成しない。存在確認のみ行う）。
@@ -13,6 +14,17 @@
 # → 2走行目のゴール到達）を、真上固定カメラ・実時間対応（sim_time と
 # 動画再生時間を1:1対応）で録画する。ロジックの食い違いを防ぐため、
 # 座標判定・スタック検出は evaluator.py の関数をそのまま import して使う。
+#
+# --short オプション（run_and_record_short）:
+# シミュレーションは決定論的（同一初期条件・同一ポリシーなら毎回同じ軌道になる）
+# であることを利用し、2パスで短縮版を作る。
+#   Pass1: レンダリングなしで最後まで状態機械を回し、ゴールに到達した走行の
+#          「出発時刻」「ゴール到達時刻」を検出する（軽量・高速）。
+#   Pass2: 同条件で再実行し、「出発 0.5 秒前 ～ ゴール到達 + 1 秒静止」の
+#          区間のみレンダリング・書き出す。オーバーレイ表示時刻は出発時刻を
+#          0.0s とした相対時刻に振り直す（= 走行2開始からの経過秒）。
+# 長尺版 run_and_record() 自体はこのオプションのために一切変更していない。
+import argparse
 import os
 import sys
 import time
@@ -40,6 +52,9 @@ from competition.baseline_classical import AdachiPolicy  # noqa: E402
 
 MAZE_NPZ_PATH = Path("competition/mazes/eval/maze_1004.npz")
 OUT_VIDEO_PATH = Path("outputs/videos/l0_maze_run.mp4")
+SHORT_OUT_VIDEO_PATH = Path("outputs/videos/l0_maze_run_short.mp4")
+# --short のキャプチャ窓の決定に使う公式評価結果（走行2の t_start/t_end を読む）
+OFFICIAL_RESULT_JSON = Path("competition/results/adachi_classical_20260810_123014/maze_1004.json")
 
 FRAME_SIZE = 1280            # 出力フレーム一辺 [px]（迷路が正方形なので正方形出力）
 FPS = 30
@@ -47,6 +62,7 @@ FRAME_DT = 1.0 / FPS
 CAMERA_DISTANCE = 4.6        # 実測検証済み: 16x16迷路全体が適度な余白付きで収まる値。変更しないこと
 SAFETY_TIME_LIMIT_S = 120.0  # 安全弁: 想定(43.5s付近)を大きく超えたら異常とみなし打ち切る
 HOLD_FRAMES_AT_GOAL = 30     # ゴール到達フレームを複製保持するフレーム数（1秒 @30fps）
+SHORT_PRE_ROLL_S = 0.5       # --short: ゴール走行の出発何秒前からキャプチャするか
 
 
 def _load_font(size: int):
@@ -243,7 +259,133 @@ def run_and_record() -> dict:
     }
 
 
+def run_and_record_short() -> dict:
+    """--short: 走行2（ゴール走行、公式記録 13.44 s）の区間だけを録画する。
+
+    キャプチャ窓は公式評価結果 JSON（competition/results/.../maze_1004.json）の
+    走行2の t_start/t_end から決める（シミュレーションは決定論的で、公式結果と
+    フレーム単位で一致することを長尺版の検収で確認済み）。タイム表示は
+    走行2の出発時刻を 0.0 s に振り直す（ゴールで ≈13.44 s になる）。
+    """
+    import json
+    official = json.loads(OFFICIAL_RESULT_JSON.read_text())
+    goal_runs = [r for r in official["runs"] if r["outcome"] == "goal"]
+    run2 = goal_runs[0]  # 最初のゴール走行（= 走行2、公式 13.44 s）
+    t_base = float(run2["t_start"])            # タイム表示の 0 点（出発時刻）
+    t_open = t_base - SHORT_PRE_ROLL_S          # キャプチャ開始
+    t_goal_official = float(run2["t_end"])      # 参考値（実測ゴールで break する）
+
+    xml_path = MAZE_NPZ_PATH.with_suffix(".xml")
+    data_npz = np.load(MAZE_NPZ_PATH)
+    v_walls, h_walls = data_npz["v_walls"], data_npz["h_walls"]
+    width, height = int(data_npz["width"]), int(data_npz["height"])
+
+    params = RobotParams()
+    sim = MouseSim(str(xml_path), params=params)
+    sim.model.vis.global_.offwidth = FRAME_SIZE
+    sim.model.vis.global_.offheight = FRAME_SIZE
+    renderer = mujoco.Renderer(sim.model, height=FRAME_SIZE, width=FRAME_SIZE)
+    cam = make_camera(width, height, DEFAULT_CELL_SIZE)
+    font = _load_font(40)
+
+    sim.full_reset(cell=(0, 0), heading_deg=90.0)
+    policy = AdachiPolicy()
+    policy.bind_sim(sim)
+    policy.bind_maze(v_walls, h_walls)
+    policy.on_maze_start({"maze_id": MAZE_NPZ_PATH.stem, "seed": int(data_npz["seed"]),
+                          "xml_path": str(xml_path), "width": width, "height": height})
+
+    cell_size = params.cell_size
+    ring = PositionRingBuffer(window_s=DEFAULT_STUCK_WINDOW_S)
+    SHORT_OUT_VIDEO_PATH.parent.mkdir(parents=True, exist_ok=True)
+    writer = imageio.get_writer(str(SHORT_OUT_VIDEO_PATH), fps=FPS, macro_block_size=1)
+
+    x, y, _yaw = sim.privileged_pose()
+    prev_in_start = in_start_region(x, y, cell_size)
+    segment_start_t = sim.sim_time
+    ring.push(sim.sim_time, x, y)
+
+    state = "FREE"
+    run_count = 0
+    next_frame_time = t_open
+    n_frames = 0
+    goal_display_time = None
+
+    while True:
+        obs = sim.observation()
+        vl, vr = policy.act(obs)
+        result = sim.step_control(float(vl), float(vr))
+        t = result["sim_time"]
+        x, y, _yaw = sim.privileged_pose()
+        ring.push(t, x, y)
+
+        in_start = in_start_region(x, y, cell_size)
+        in_goal = in_goal_region(x, y, width, height, cell_size)
+        is_stuck, _d = ring.check_stuck(t, x, y, segment_start_t, DEFAULT_STUCK_DISP_M)
+
+        outcome = None
+        if state == "RUN_ACTIVE":
+            if in_goal:
+                outcome = "goal"
+            elif result["collision"] or result["tipped"] or is_stuck:
+                outcome = "fail"
+
+        # キャプチャ窓内のみ書き出し。表示時刻は出発 0.0 s 起点（出発前は 0.0 に固定）
+        while t >= next_frame_time and outcome != "goal":
+            frame = render_frame_with_overlay(renderer, cam, sim.data, max(0.0, t - t_base), font)
+            writer.append_data(frame)
+            n_frames += 1
+            next_frame_time += FRAME_DT
+
+        if state == "RUN_ACTIVE" and outcome is not None:
+            policy.on_run_end("goal" if outcome == "goal" else "stuck")
+            if outcome == "goal":
+                goal_display_time = t - t_base
+                final = render_frame_with_overlay(renderer, cam, sim.data, goal_display_time, font)
+                for _ in range(HOLD_FRAMES_AT_GOAL):
+                    writer.append_data(final)
+                    n_frames += 1
+                break
+            sim.reset_to_start(cell=(0, 0), heading_deg=90.0)
+            policy.on_retrieval()
+            x, y, _yaw = sim.privileged_pose()
+            state = "FREE"
+            prev_in_start = True
+            segment_start_t = t
+        else:
+            if state == "FREE" and prev_in_start and not in_start:
+                run_count += 1
+                policy.on_run_start(run_count)
+                state = "RUN_ACTIVE"
+                segment_start_t = t
+            prev_in_start = in_start
+
+        if t > SAFETY_TIME_LIMIT_S:
+            print(f"[WARNING] 安全弁 {SAFETY_TIME_LIMIT_S}s 超過で打ち切り")
+            break
+
+    writer.close()
+    renderer.close()
+    return {"goal_display_time": goal_display_time, "n_frames": n_frames,
+            "t_base": t_base, "t_goal_official": t_goal_official}
+
+
 def main():
+    parser = argparse.ArgumentParser(description="L0 maze_1004 デモ動画生成")
+    parser.add_argument("--short", action="store_true",
+                        help="走行2（13.44s のゴール走行）区間のみの短縮版を生成")
+    args = parser.parse_args()
+
+    if args.short:
+        print("=" * 60)
+        print("L0 (AdachiPolicy) maze_1004 短縮版（走行2のみ）生成")
+        print("=" * 60)
+        r = run_and_record_short()
+        print(f"\nゴール時の表示タイム = {r['goal_display_time']:.2f} s（公式 run_time 13.44 s）")
+        print(f"フレーム数 {r['n_frames']}（{r['n_frames']/FPS:.1f} s @ {FPS}fps）")
+        print(f"出力: {SHORT_OUT_VIDEO_PATH}")
+        return
+
     print("=" * 60)
     print("L0 (AdachiPolicy) maze_1004 デモ動画生成")
     print("=" * 60)
