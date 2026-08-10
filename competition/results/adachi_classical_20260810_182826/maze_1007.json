@@ -1,0 +1,90 @@
+{
+  "maze_id": "maze_1007",
+  "seed": 1007,
+  "policy": {
+    "name": "adachi_classical",
+    "requires_privileged": true
+  },
+  "protocol": {
+    "time_budget": 420.0,
+    "max_runs": 5,
+    "control_hz": 100,
+    "collision_force_threshold": 1.0,
+    "stuck_window_s": 20.0,
+    "stuck_disp_m": 0.05,
+    "protocol_version": "frontedge-23d004d"
+  },
+  "runs": [
+    {
+      "index": 1,
+      "t_start": 0.22000000000000017,
+      "t_end": 25.509999999985897,
+      "run_time": 25.2899999999859,
+      "outcome": "goal",
+      "max_progress_cells": 20,
+      "path_length_m": 3.7462928033943346,
+      "collision_pos": null,
+      "visited_cells": 22,
+      "path_efficiency": 1.0406368898317597
+    },
+    {
+      "index": 2,
+      "t_start": 58.090000000095344,
+      "t_end": 81.97000000020937,
+      "run_time": 23.880000000114023,
+      "outcome": "goal",
+      "max_progress_cells": 20,
+      "path_length_m": 3.390182576064641,
+      "collision_pos": null,
+      "visited_cells": 20,
+      "path_efficiency": 0.9417173822401782
+    },
+    {
+      "index": 3,
+      "t_start": 109.30000000033986,
+      "t_end": 133.17000000030689,
+      "run_time": 23.86999999996702,
+      "outcome": "goal",
+      "max_progress_cells": 20,
+      "path_length_m": 3.3937551889844357,
+      "collision_pos": null,
+      "visited_cells": 20,
+      "path_efficiency": 0.942709774717899
+    },
+    {
+      "index": 4,
+      "t_start": 160.5599999996592,
+      "t_end": 184.41999999909498,
+      "run_time": 23.859999999435786,
+      "outcome": "goal",
+      "max_progress_cells": 20,
+      "path_length_m": 3.38147457496802,
+      "collision_pos": null,
+      "visited_cells": 20,
+      "path_efficiency": 0.9392984930466723
+    },
+    {
+      "index": 5,
+      "t_start": 211.78999999844777,
+      "t_end": 235.65999999788332,
+      "run_time": 23.86999999943555,
+      "outcome": "goal",
+      "max_progress_cells": 20,
+      "path_length_m": 3.3914846064980475,
+      "collision_pos": null,
+      "visited_cells": 20,
+      "path_efficiency": 0.9420790573605689
+    }
+  ],
+  "incidents": [],
+  "best_time": 23.859999999435786,
+  "success": true,
+  "kpi": {
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": false,
+    "explore_time": 25.2899999999859,
+    "fast_time": 23.859999999435786,
+    "improvement_ratio": 0.05654408859434201
+  }
+}

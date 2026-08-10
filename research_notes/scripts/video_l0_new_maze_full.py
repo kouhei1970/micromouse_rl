@@ -160,7 +160,13 @@ class WallMapPanel:
         self.size_px = size_px
         self.legend_font = _load_font(15)
         self.traj_by_run = {}   # run_index(int) -> [(px,py), ...]
-        self.traj_return = []
+        # 帰還（FREE）区間は「第1走行後」「第2走行後」…と複数回発生する。単一の
+        # 平坦なリストに全部を積むと、ある帰還区間の終点から次の帰還区間の
+        # 始点へ PIL が直線で「テレポート」して結んでしまう（実際に発生し
+        # 対角線状のバグとして視認確認・修正した）。そのため区間ごとに
+        # 別々のサブリストに分けて保持し、描画も区間ごとに独立して行う。
+        self.traj_return_segments = []  # [[(px,py), ...], ...]
+        self._return_active = False
 
     def world_to_px(self, x, y):
         return (x / self.extent) * self.size_px, self.size_px - (y / self.extent) * self.size_px
@@ -169,8 +175,12 @@ class WallMapPanel:
         pt = self.world_to_px(x, y)
         if phase == "active":
             self.traj_by_run.setdefault(run_index, []).append(pt)
+            self._return_active = False
         elif phase == "return":
-            self.traj_return.append(pt)
+            if not self._return_active:
+                self.traj_return_segments.append([])
+                self._return_active = True
+            self.traj_return_segments[-1].append(pt)
 
     def render(self, v_walls_known, h_walls_known, robot_xy, best_run_index=None) -> Image.Image:
         legend_h = 76  # 凡例2行分（1行あたり2項目、幅が狭いパネルでも見切れないように）
@@ -206,8 +216,9 @@ class WallMapPanel:
                 elif val == -1:
                     draw.line([p0, p1], fill=COLOR_WALL_UNKNOWN, width=1)
 
-        if len(self.traj_return) >= 2:
-            draw.line(self.traj_return, fill=COLOR_RETURN, width=4, joint="curve")
+        for seg in self.traj_return_segments:
+            if len(seg) >= 2:
+                draw.line(seg, fill=COLOR_RETURN, width=4, joint="curve")
         # 最速走行（分かっていれば）を最後に描いて最前面にする
         for run_index in sorted(self.traj_by_run.keys()):
             if run_index == best_run_index:
