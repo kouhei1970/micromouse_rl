@@ -1,0 +1,1105 @@
+{
+  "n_total_files": 80,
+  "n_16x16_total": 45,
+  "n_16x16_unknown_wall_excluded": 3,
+  "n_converted": 42,
+  "converted": [
+    {
+      "source": "16MM2012CX.maze",
+      "npz": "contest_16MM2012CX.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          7,
+          7
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          8,
+          7
+        ],
+        [
+          8,
+          8
+        ]
+      ]
+    },
+    {
+      "source": "16MM2013CX.maze",
+      "npz": "contest_16MM2013CX.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          7,
+          7
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          8,
+          7
+        ],
+        [
+          8,
+          8
+        ]
+      ]
+    },
+    {
+      "source": "16MM2014CX.maze",
+      "npz": "contest_16MM2014CX.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          7,
+          7
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          8,
+          7
+        ],
+        [
+          8,
+          8
+        ]
+      ]
+    },
+    {
+      "source": "16MM2015CX.maze",
+      "npz": "contest_16MM2015CX.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          7,
+          7
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          8,
+          7
+        ],
+        [
+          8,
+          8
+        ]
+      ]
+    },
+    {
+      "source": "16MM2015C_Chubu.maze",
+      "npz": "contest_16MM2015C_Chubu.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          7,
+          7
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          8,
+          7
+        ],
+        [
+          8,
+          8
+        ]
+      ]
+    },
+    {
+      "source": "16MM2016CX.maze",
+      "npz": "contest_16MM2016CX.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          7,
+          7
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          8,
+          7
+        ],
+        [
+          8,
+          8
+        ]
+      ]
+    },
+    {
+      "source": "16MM2016C_Chubu.maze",
+      "npz": "contest_16MM2016C_Chubu.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          7,
+          7
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          8,
+          7
+        ],
+        [
+          8,
+          8
+        ]
+      ]
+    },
+    {
+      "source": "16MM2016C_Kyushu.maze",
+      "npz": "contest_16MM2016C_Kyushu.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          7,
+          7
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          8,
+          7
+        ],
+        [
+          8,
+          8
+        ]
+      ]
+    },
+    {
+      "source": "16MM2016H_Kansai.maze",
+      "npz": "contest_16MM2016H_Kansai.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          11,
+          11
+        ],
+        [
+          11,
+          12
+        ],
+        [
+          12,
+          11
+        ],
+        [
+          12,
+          12
+        ]
+      ]
+    },
+    {
+      "source": "16MM2017CX.maze",
+      "npz": "contest_16MM2017CX.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          7,
+          7
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          8,
+          7
+        ],
+        [
+          8,
+          8
+        ]
+      ]
+    },
+    {
+      "source": "16MM2017CX_pre.maze",
+      "npz": "contest_16MM2017CX_pre.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          7,
+          7
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          8,
+          7
+        ],
+        [
+          8,
+          8
+        ]
+      ]
+    },
+    {
+      "source": "16MM2017C_Chubu.maze",
+      "npz": "contest_16MM2017C_Chubu.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          7,
+          7
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          8,
+          7
+        ],
+        [
+          8,
+          8
+        ]
+      ]
+    },
+    {
+      "source": "16MM2017C_East.maze",
+      "npz": "contest_16MM2017C_East.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          7,
+          7
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          8,
+          7
+        ],
+        [
+          8,
+          8
+        ]
+      ]
+    },
+    {
+      "source": "16MM2017C_student.maze",
+      "npz": "contest_16MM2017C_student.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          7,
+          7
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          8,
+          7
+        ],
+        [
+          8,
+          8
+        ]
+      ]
+    },
+    {
+      "source": "16MM2017HX_pre.maze",
+      "npz": "contest_16MM2017HX_pre.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          4,
+          4
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          4
+        ],
+        [
+          5,
+          5
+        ]
+      ]
+    },
+    {
+      "source": "16MM2017H_Chubu.maze",
+      "npz": "contest_16MM2017H_Chubu.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          5,
+          6
+        ],
+        [
+          5,
+          7
+        ],
+        [
+          6,
+          6
+        ],
+        [
+          6,
+          7
+        ]
+      ]
+    },
+    {
+      "source": "16MM2017H_Kansai.maze",
+      "npz": "contest_16MM2017H_Kansai.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          5,
+          6
+        ],
+        [
+          5,
+          7
+        ],
+        [
+          6,
+          6
+        ],
+        [
+          6,
+          7
+        ]
+      ]
+    },
+    {
+      "source": "16MM2017H_Tashiro.maze",
+      "npz": "contest_16MM2017H_Tashiro.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          7,
+          7
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          8,
+          7
+        ],
+        [
+          8,
+          8
+        ]
+      ]
+    },
+    {
+      "source": "16MM2017H_student.maze",
+      "npz": "contest_16MM2017H_student.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          5,
+          6
+        ],
+        [
+          5,
+          7
+        ],
+        [
+          6,
+          6
+        ],
+        [
+          6,
+          7
+        ]
+      ]
+    },
+    {
+      "source": "16MM2018CX.maze",
+      "npz": "contest_16MM2018CX.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          7,
+          7
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          8,
+          7
+        ],
+        [
+          8,
+          8
+        ]
+      ]
+    },
+    {
+      "source": "16MM2018C_student.maze",
+      "npz": "contest_16MM2018C_student.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          7,
+          7
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          8,
+          7
+        ],
+        [
+          8,
+          8
+        ]
+      ]
+    },
+    {
+      "source": "16MM2018H_Chubu.maze",
+      "npz": "contest_16MM2018H_Chubu.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          9,
+          9
+        ],
+        [
+          9,
+          10
+        ],
+        [
+          10,
+          9
+        ],
+        [
+          10,
+          10
+        ]
+      ]
+    },
+    {
+      "source": "16MM2018H_Kansai.maze",
+      "npz": "contest_16MM2018H_Kansai.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          9,
+          9
+        ],
+        [
+          9,
+          10
+        ],
+        [
+          10,
+          9
+        ],
+        [
+          10,
+          10
+        ]
+      ]
+    },
+    {
+      "source": "16MM2018H_Tashiro.maze",
+      "npz": "contest_16MM2018H_Tashiro.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          7,
+          7
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          8,
+          7
+        ],
+        [
+          8,
+          8
+        ]
+      ]
+    },
+    {
+      "source": "16MM2018H_semi.maze",
+      "npz": "contest_16MM2018H_semi.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          12,
+          12
+        ],
+        [
+          12,
+          13
+        ],
+        [
+          13,
+          12
+        ],
+        [
+          13,
+          13
+        ]
+      ]
+    },
+    {
+      "source": "16MM2018H_student.maze",
+      "npz": "contest_16MM2018H_student.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          9,
+          9
+        ],
+        [
+          9,
+          10
+        ],
+        [
+          10,
+          9
+        ],
+        [
+          10,
+          10
+        ]
+      ]
+    },
+    {
+      "source": "16MM2019CX.maze",
+      "npz": "contest_16MM2019CX.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          7,
+          7
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          8,
+          7
+        ],
+        [
+          8,
+          8
+        ]
+      ]
+    },
+    {
+      "source": "16MM2019C_student.maze",
+      "npz": "contest_16MM2019C_student.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          7,
+          7
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          8,
+          7
+        ],
+        [
+          8,
+          8
+        ]
+      ]
+    },
+    {
+      "source": "16MM2019H_Chubu.maze",
+      "npz": "contest_16MM2019H_Chubu.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          6,
+          9
+        ],
+        [
+          6,
+          10
+        ],
+        [
+          7,
+          9
+        ],
+        [
+          7,
+          10
+        ]
+      ]
+    },
+    {
+      "source": "16MM2019H_East.maze",
+      "npz": "contest_16MM2019H_East.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          6,
+          9
+        ],
+        [
+          6,
+          10
+        ],
+        [
+          7,
+          9
+        ],
+        [
+          7,
+          10
+        ]
+      ]
+    },
+    {
+      "source": "16MM2019H_Hokuriku.maze",
+      "npz": "contest_16MM2019H_Hokuriku.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          6,
+          9
+        ],
+        [
+          6,
+          10
+        ],
+        [
+          7,
+          9
+        ],
+        [
+          7,
+          10
+        ]
+      ]
+    },
+    {
+      "source": "16MM2019H_Kanazawa.maze",
+      "npz": "contest_16MM2019H_Kanazawa.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          6,
+          9
+        ],
+        [
+          6,
+          10
+        ],
+        [
+          7,
+          9
+        ],
+        [
+          7,
+          10
+        ]
+      ]
+    },
+    {
+      "source": "16MM2019H_Kansai.maze",
+      "npz": "contest_16MM2019H_Kansai.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          6,
+          9
+        ],
+        [
+          6,
+          10
+        ],
+        [
+          7,
+          9
+        ],
+        [
+          7,
+          10
+        ]
+      ]
+    },
+    {
+      "source": "16MM2019H_Kyushu.maze",
+      "npz": "contest_16MM2019H_Kyushu.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          6,
+          9
+        ],
+        [
+          6,
+          10
+        ],
+        [
+          7,
+          9
+        ],
+        [
+          7,
+          10
+        ]
+      ]
+    },
+    {
+      "source": "16MM2019H_Tashiro.maze",
+      "npz": "contest_16MM2019H_Tashiro.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          6,
+          9
+        ],
+        [
+          6,
+          10
+        ],
+        [
+          7,
+          9
+        ],
+        [
+          7,
+          10
+        ]
+      ]
+    },
+    {
+      "source": "16MM2019H_semi.maze",
+      "npz": "contest_16MM2019H_semi.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          8,
+          7
+        ],
+        [
+          8,
+          8
+        ],
+        [
+          9,
+          7
+        ],
+        [
+          9,
+          8
+        ]
+      ]
+    },
+    {
+      "source": "16MM2019H_student.maze",
+      "npz": "contest_16MM2019H_student.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          6,
+          9
+        ],
+        [
+          6,
+          10
+        ],
+        [
+          7,
+          9
+        ],
+        [
+          7,
+          10
+        ]
+      ]
+    },
+    {
+      "source": "16MM2020CX.maze",
+      "npz": "contest_16MM2020CX.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          7,
+          7
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          8,
+          7
+        ],
+        [
+          8,
+          8
+        ]
+      ]
+    },
+    {
+      "source": "16MM2020C_student.maze",
+      "npz": "contest_16MM2020C_student.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          7,
+          7
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          8,
+          7
+        ],
+        [
+          8,
+          8
+        ]
+      ]
+    },
+    {
+      "source": "16MM2020H_student.maze",
+      "npz": "contest_16MM2020H_student.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          3,
+          3
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "source": "16MM2021H_Kansai.maze",
+      "npz": "contest_16MM2021H_Kansai.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          7,
+          7
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          8,
+          7
+        ],
+        [
+          8,
+          8
+        ]
+      ]
+    },
+    {
+      "source": "16MM2021H_semi.maze",
+      "npz": "contest_16MM2021H_semi.npz",
+      "start": [
+        0,
+        0
+      ],
+      "goals": [
+        [
+          6,
+          9
+        ],
+        [
+          6,
+          10
+        ],
+        [
+          7,
+          9
+        ],
+        [
+          7,
+          10
+        ]
+      ]
+    }
+  ],
+  "excluded_unknown_wall": [
+    "16MM2017H_Cheese.maze",
+    "16MM2019H_Cheese.maze",
+    "16MM2019H_Cheese_cand.maze"
+  ]
+}

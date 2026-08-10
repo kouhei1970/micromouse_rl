@@ -1,0 +1,2522 @@
+[
+  {
+    "source": "16MM2012CX.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        7,
+        7
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        8,
+        7
+      ],
+      [
+        8,
+        8
+      ]
+    ],
+    "n_comp_total": 1,
+    "d_true": 69,
+    "manhattan": 14,
+    "detour": 4.928571428571429,
+    "detour_fixed14": 4.928571428571429,
+    "beta": 22,
+    "open_edges": 277,
+    "n_paths": 4,
+    "deg1": 9,
+    "deg2": 196,
+    "deg3": 51,
+    "deg4": 0,
+    "deg0": 0,
+    "dead_ends": 9,
+    "goal_gateways": 2,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 0,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": false,
+    "right_reach": false,
+    "all_reachable_from_start": true,
+    "n_reach_from_start": 256,
+    "rule_gateway1": false,
+    "rule_wallfollow_fails": true,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": true,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 5
+  },
+  {
+    "source": "16MM2013CX.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        7,
+        7
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        8,
+        7
+      ],
+      [
+        8,
+        8
+      ]
+    ],
+    "n_comp_total": 1,
+    "d_true": 105,
+    "manhattan": 14,
+    "detour": 7.5,
+    "detour_fixed14": 7.5,
+    "beta": 9,
+    "open_edges": 264,
+    "n_paths": 1,
+    "deg1": 25,
+    "deg2": 196,
+    "deg3": 29,
+    "deg4": 6,
+    "deg0": 0,
+    "dead_ends": 25,
+    "goal_gateways": 1,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 0,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": false,
+    "right_reach": false,
+    "all_reachable_from_start": true,
+    "n_reach_from_start": 256,
+    "rule_gateway1": true,
+    "rule_wallfollow_fails": true,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": true,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 6
+  },
+  {
+    "source": "16MM2014CX.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        7,
+        7
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        8,
+        7
+      ],
+      [
+        8,
+        8
+      ]
+    ],
+    "n_comp_total": 1,
+    "d_true": 104,
+    "manhattan": 14,
+    "detour": 7.428571428571429,
+    "detour_fixed14": 7.428571428571429,
+    "beta": 9,
+    "open_edges": 264,
+    "n_paths": 2,
+    "deg1": 37,
+    "deg2": 174,
+    "deg3": 37,
+    "deg4": 8,
+    "deg0": 0,
+    "dead_ends": 37,
+    "goal_gateways": 2,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 0,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": false,
+    "right_reach": false,
+    "all_reachable_from_start": true,
+    "n_reach_from_start": 256,
+    "rule_gateway1": false,
+    "rule_wallfollow_fails": true,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": true,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 5
+  },
+  {
+    "source": "16MM2015CX.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        7,
+        7
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        8,
+        7
+      ],
+      [
+        8,
+        8
+      ]
+    ],
+    "n_comp_total": 1,
+    "d_true": 85,
+    "manhattan": 14,
+    "detour": 6.071428571428571,
+    "detour_fixed14": 6.071428571428571,
+    "beta": 10,
+    "open_edges": 265,
+    "n_paths": 2,
+    "deg1": 34,
+    "deg2": 179,
+    "deg3": 34,
+    "deg4": 9,
+    "deg0": 0,
+    "dead_ends": 34,
+    "goal_gateways": 2,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 0,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": false,
+    "right_reach": false,
+    "all_reachable_from_start": true,
+    "n_reach_from_start": 256,
+    "rule_gateway1": false,
+    "rule_wallfollow_fails": true,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": true,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 5
+  },
+  {
+    "source": "16MM2015C_Chubu.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        7,
+        7
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        8,
+        7
+      ],
+      [
+        8,
+        8
+      ]
+    ],
+    "n_comp_total": 1,
+    "d_true": 54,
+    "manhattan": 14,
+    "detour": 3.857142857142857,
+    "detour_fixed14": 3.857142857142857,
+    "beta": 25,
+    "open_edges": 280,
+    "n_paths": 14,
+    "deg1": 4,
+    "deg2": 200,
+    "deg3": 52,
+    "deg4": 0,
+    "deg0": 0,
+    "dead_ends": 4,
+    "goal_gateways": 1,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 0,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": false,
+    "right_reach": false,
+    "all_reachable_from_start": true,
+    "n_reach_from_start": 256,
+    "rule_gateway1": true,
+    "rule_wallfollow_fails": true,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": true,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 6
+  },
+  {
+    "source": "16MM2016CX.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        7,
+        7
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        8,
+        7
+      ],
+      [
+        8,
+        8
+      ]
+    ],
+    "n_comp_total": 1,
+    "d_true": 74,
+    "manhattan": 14,
+    "detour": 5.285714285714286,
+    "detour_fixed14": 5.285714285714286,
+    "beta": 10,
+    "open_edges": 265,
+    "n_paths": 4,
+    "deg1": 19,
+    "deg2": 205,
+    "deg3": 27,
+    "deg4": 5,
+    "deg0": 0,
+    "dead_ends": 19,
+    "goal_gateways": 1,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 0,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": false,
+    "right_reach": false,
+    "all_reachable_from_start": true,
+    "n_reach_from_start": 256,
+    "rule_gateway1": true,
+    "rule_wallfollow_fails": true,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": true,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 6
+  },
+  {
+    "source": "16MM2016C_Chubu.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        7,
+        7
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        8,
+        7
+      ],
+      [
+        8,
+        8
+      ]
+    ],
+    "n_comp_total": 3,
+    "d_true": 85,
+    "manhattan": 14,
+    "detour": 6.071428571428571,
+    "detour_fixed14": 6.071428571428571,
+    "beta": 22,
+    "open_edges": 275,
+    "n_paths": 12,
+    "deg1": 16,
+    "deg2": 186,
+    "deg3": 46,
+    "deg4": 6,
+    "deg0": 2,
+    "dead_ends": 16,
+    "goal_gateways": 1,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 0,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": false,
+    "right_reach": false,
+    "all_reachable_from_start": false,
+    "n_reach_from_start": 254,
+    "rule_gateway1": true,
+    "rule_wallfollow_fails": true,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": true,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 6
+  },
+  {
+    "source": "16MM2016C_Kyushu.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        7,
+        7
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        8,
+        7
+      ],
+      [
+        8,
+        8
+      ]
+    ],
+    "n_comp_total": 1,
+    "d_true": 63,
+    "manhattan": 14,
+    "detour": 4.5,
+    "detour_fixed14": 4.5,
+    "beta": 10,
+    "open_edges": 265,
+    "n_paths": 1,
+    "deg1": 39,
+    "deg2": 164,
+    "deg3": 49,
+    "deg4": 4,
+    "deg0": 0,
+    "dead_ends": 39,
+    "goal_gateways": 1,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 0,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": false,
+    "right_reach": false,
+    "all_reachable_from_start": true,
+    "n_reach_from_start": 256,
+    "rule_gateway1": true,
+    "rule_wallfollow_fails": true,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": true,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 6
+  },
+  {
+    "source": "16MM2016H_Kansai.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        11,
+        11
+      ],
+      [
+        11,
+        12
+      ],
+      [
+        12,
+        11
+      ],
+      [
+        12,
+        12
+      ]
+    ],
+    "n_comp_total": 10,
+    "d_true": 40,
+    "manhattan": 22,
+    "detour": 1.8181818181818181,
+    "detour_fixed14": 2.857142857142857,
+    "beta": 29,
+    "open_edges": 275,
+    "n_paths": 1,
+    "deg1": 20,
+    "deg2": 178,
+    "deg3": 58,
+    "deg4": 0,
+    "deg0": 0,
+    "dead_ends": 20,
+    "goal_gateways": 1,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 8,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": false,
+    "right_reach": false,
+    "all_reachable_from_start": false,
+    "n_reach_from_start": 215,
+    "rule_gateway1": true,
+    "rule_wallfollow_fails": true,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": false,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 5
+  },
+  {
+    "source": "16MM2017CX.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        7,
+        7
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        8,
+        7
+      ],
+      [
+        8,
+        8
+      ]
+    ],
+    "n_comp_total": 1,
+    "d_true": 99,
+    "manhattan": 14,
+    "detour": 7.071428571428571,
+    "detour_fixed14": 7.071428571428571,
+    "beta": 5,
+    "open_edges": 260,
+    "n_paths": 1,
+    "deg1": 27,
+    "deg2": 198,
+    "deg3": 27,
+    "deg4": 4,
+    "deg0": 0,
+    "dead_ends": 27,
+    "goal_gateways": 1,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 0,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": false,
+    "right_reach": false,
+    "all_reachable_from_start": true,
+    "n_reach_from_start": 256,
+    "rule_gateway1": true,
+    "rule_wallfollow_fails": true,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": true,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 6
+  },
+  {
+    "source": "16MM2017CX_pre.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        7,
+        7
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        8,
+        7
+      ],
+      [
+        8,
+        8
+      ]
+    ],
+    "n_comp_total": 1,
+    "d_true": 47,
+    "manhattan": 14,
+    "detour": 3.357142857142857,
+    "detour_fixed14": 3.357142857142857,
+    "beta": 33,
+    "open_edges": 288,
+    "n_paths": 6,
+    "deg1": 22,
+    "deg2": 152,
+    "deg3": 78,
+    "deg4": 4,
+    "deg0": 0,
+    "dead_ends": 22,
+    "goal_gateways": 1,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 0,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": false,
+    "right_reach": false,
+    "all_reachable_from_start": true,
+    "n_reach_from_start": 256,
+    "rule_gateway1": true,
+    "rule_wallfollow_fails": true,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": true,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 6
+  },
+  {
+    "source": "16MM2017C_Chubu.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        7,
+        7
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        8,
+        7
+      ],
+      [
+        8,
+        8
+      ]
+    ],
+    "n_comp_total": 1,
+    "d_true": 115,
+    "manhattan": 14,
+    "detour": 8.214285714285714,
+    "detour_fixed14": 8.214285714285714,
+    "beta": 34,
+    "open_edges": 289,
+    "n_paths": 140,
+    "deg1": 10,
+    "deg2": 173,
+    "deg3": 70,
+    "deg4": 3,
+    "deg0": 0,
+    "dead_ends": 10,
+    "goal_gateways": 1,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 0,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": true,
+    "right_reach": true,
+    "all_reachable_from_start": true,
+    "n_reach_from_start": 256,
+    "rule_gateway1": true,
+    "rule_wallfollow_fails": false,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": true,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 5
+  },
+  {
+    "source": "16MM2017C_East.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        7,
+        7
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        8,
+        7
+      ],
+      [
+        8,
+        8
+      ]
+    ],
+    "n_comp_total": 1,
+    "d_true": 70,
+    "manhattan": 14,
+    "detour": 5.0,
+    "detour_fixed14": 5.0,
+    "beta": 19,
+    "open_edges": 274,
+    "n_paths": 12,
+    "deg1": 29,
+    "deg2": 163,
+    "deg3": 63,
+    "deg4": 1,
+    "deg0": 0,
+    "dead_ends": 29,
+    "goal_gateways": 1,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 0,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": true,
+    "right_reach": true,
+    "all_reachable_from_start": true,
+    "n_reach_from_start": 256,
+    "rule_gateway1": true,
+    "rule_wallfollow_fails": false,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": true,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 5
+  },
+  {
+    "source": "16MM2017C_student.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        7,
+        7
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        8,
+        7
+      ],
+      [
+        8,
+        8
+      ]
+    ],
+    "n_comp_total": 1,
+    "d_true": 103,
+    "manhattan": 14,
+    "detour": 7.357142857142857,
+    "detour_fixed14": 7.357142857142857,
+    "beta": 11,
+    "open_edges": 266,
+    "n_paths": 4,
+    "deg1": 36,
+    "deg2": 170,
+    "deg3": 44,
+    "deg4": 6,
+    "deg0": 0,
+    "dead_ends": 36,
+    "goal_gateways": 1,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 0,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": false,
+    "right_reach": false,
+    "all_reachable_from_start": true,
+    "n_reach_from_start": 256,
+    "rule_gateway1": true,
+    "rule_wallfollow_fails": true,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": true,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 6
+  },
+  {
+    "source": "16MM2017HX_pre.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        4,
+        4
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        5,
+        4
+      ],
+      [
+        5,
+        5
+      ]
+    ],
+    "n_comp_total": 9,
+    "d_true": 54,
+    "manhattan": 8,
+    "detour": 6.75,
+    "detour_fixed14": 3.857142857142857,
+    "beta": 21,
+    "open_edges": 268,
+    "n_paths": 6,
+    "deg1": 27,
+    "deg2": 175,
+    "deg3": 53,
+    "deg4": 0,
+    "deg0": 1,
+    "dead_ends": 27,
+    "goal_gateways": 1,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 0,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": false,
+    "right_reach": false,
+    "all_reachable_from_start": false,
+    "n_reach_from_start": 229,
+    "rule_gateway1": true,
+    "rule_wallfollow_fails": true,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": true,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 6
+  },
+  {
+    "source": "16MM2017H_Chubu.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        5,
+        6
+      ],
+      [
+        5,
+        7
+      ],
+      [
+        6,
+        6
+      ],
+      [
+        6,
+        7
+      ]
+    ],
+    "n_comp_total": 1,
+    "d_true": 191,
+    "manhattan": 11,
+    "detour": 17.363636363636363,
+    "detour_fixed14": 13.642857142857142,
+    "beta": 7,
+    "open_edges": 262,
+    "n_paths": 12,
+    "deg1": 22,
+    "deg2": 201,
+    "deg3": 32,
+    "deg4": 1,
+    "deg0": 0,
+    "dead_ends": 22,
+    "goal_gateways": 1,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 0,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": true,
+    "right_reach": true,
+    "all_reachable_from_start": true,
+    "n_reach_from_start": 256,
+    "rule_gateway1": true,
+    "rule_wallfollow_fails": false,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": true,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 5
+  },
+  {
+    "source": "16MM2017H_Kansai.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        5,
+        6
+      ],
+      [
+        5,
+        7
+      ],
+      [
+        6,
+        6
+      ],
+      [
+        6,
+        7
+      ]
+    ],
+    "n_comp_total": 11,
+    "d_true": 43,
+    "manhattan": 11,
+    "detour": 3.909090909090909,
+    "detour_fixed14": 3.0714285714285716,
+    "beta": 14,
+    "open_edges": 259,
+    "n_paths": 2,
+    "deg1": 53,
+    "deg2": 114,
+    "deg3": 79,
+    "deg4": 0,
+    "deg0": 10,
+    "dead_ends": 53,
+    "goal_gateways": 1,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 0,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": false,
+    "right_reach": false,
+    "all_reachable_from_start": false,
+    "n_reach_from_start": 246,
+    "rule_gateway1": true,
+    "rule_wallfollow_fails": true,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": true,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 6
+  },
+  {
+    "source": "16MM2017H_Tashiro.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        7,
+        7
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        8,
+        7
+      ],
+      [
+        8,
+        8
+      ]
+    ],
+    "n_comp_total": 20,
+    "d_true": 231,
+    "manhattan": 14,
+    "detour": 16.5,
+    "detour_fixed14": 16.5,
+    "beta": 1,
+    "open_edges": 237,
+    "n_paths": 1,
+    "deg1": 3,
+    "deg2": 234,
+    "deg3": 1,
+    "deg4": 0,
+    "deg0": 18,
+    "dead_ends": 3,
+    "goal_gateways": 1,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 0,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": true,
+    "right_reach": true,
+    "all_reachable_from_start": false,
+    "n_reach_from_start": 235,
+    "rule_gateway1": true,
+    "rule_wallfollow_fails": false,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": true,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 5
+  },
+  {
+    "source": "16MM2017H_student.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        5,
+        6
+      ],
+      [
+        5,
+        7
+      ],
+      [
+        6,
+        6
+      ],
+      [
+        6,
+        7
+      ]
+    ],
+    "n_comp_total": 1,
+    "d_true": 59,
+    "manhattan": 11,
+    "detour": 5.363636363636363,
+    "detour_fixed14": 4.214285714285714,
+    "beta": 13,
+    "open_edges": 268,
+    "n_paths": 3,
+    "deg1": 31,
+    "deg2": 171,
+    "deg3": 53,
+    "deg4": 1,
+    "deg0": 0,
+    "dead_ends": 31,
+    "goal_gateways": 1,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 0,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": false,
+    "right_reach": false,
+    "all_reachable_from_start": true,
+    "n_reach_from_start": 256,
+    "rule_gateway1": true,
+    "rule_wallfollow_fails": true,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": true,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 6
+  },
+  {
+    "source": "16MM2018CX.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        7,
+        7
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        8,
+        7
+      ],
+      [
+        8,
+        8
+      ]
+    ],
+    "n_comp_total": 1,
+    "d_true": 84,
+    "manhattan": 14,
+    "detour": 6.0,
+    "detour_fixed14": 6.0,
+    "beta": 14,
+    "open_edges": 269,
+    "n_paths": 3,
+    "deg1": 15,
+    "deg2": 205,
+    "deg3": 31,
+    "deg4": 5,
+    "deg0": 0,
+    "dead_ends": 15,
+    "goal_gateways": 1,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 0,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": false,
+    "right_reach": false,
+    "all_reachable_from_start": true,
+    "n_reach_from_start": 256,
+    "rule_gateway1": true,
+    "rule_wallfollow_fails": true,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": true,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 6
+  },
+  {
+    "source": "16MM2018C_student.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        7,
+        7
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        8,
+        7
+      ],
+      [
+        8,
+        8
+      ]
+    ],
+    "n_comp_total": 4,
+    "d_true": 48,
+    "manhattan": 14,
+    "detour": 3.4285714285714284,
+    "detour_fixed14": 3.4285714285714284,
+    "beta": 26,
+    "open_edges": 278,
+    "n_paths": 19,
+    "deg1": 22,
+    "deg2": 163,
+    "deg3": 64,
+    "deg4": 4,
+    "deg0": 3,
+    "dead_ends": 22,
+    "goal_gateways": 1,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 0,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": false,
+    "right_reach": false,
+    "all_reachable_from_start": false,
+    "n_reach_from_start": 253,
+    "rule_gateway1": true,
+    "rule_wallfollow_fails": true,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": true,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 6
+  },
+  {
+    "source": "16MM2018H_Chubu.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        9,
+        9
+      ],
+      [
+        9,
+        10
+      ],
+      [
+        10,
+        9
+      ],
+      [
+        10,
+        10
+      ]
+    ],
+    "n_comp_total": 1,
+    "d_true": 52,
+    "manhattan": 18,
+    "detour": 2.888888888888889,
+    "detour_fixed14": 3.7142857142857144,
+    "beta": 16,
+    "open_edges": 271,
+    "n_paths": 1,
+    "deg1": 27,
+    "deg2": 172,
+    "deg3": 57,
+    "deg4": 0,
+    "deg0": 0,
+    "dead_ends": 27,
+    "goal_gateways": 1,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 0,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": false,
+    "right_reach": false,
+    "all_reachable_from_start": true,
+    "n_reach_from_start": 256,
+    "rule_gateway1": true,
+    "rule_wallfollow_fails": true,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": true,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 6
+  },
+  {
+    "source": "16MM2018H_Kansai.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        9,
+        9
+      ],
+      [
+        9,
+        10
+      ],
+      [
+        10,
+        9
+      ],
+      [
+        10,
+        10
+      ]
+    ],
+    "n_comp_total": 1,
+    "d_true": 48,
+    "manhattan": 18,
+    "detour": 2.6666666666666665,
+    "detour_fixed14": 3.4285714285714284,
+    "beta": 40,
+    "open_edges": 295,
+    "n_paths": 28,
+    "deg1": 9,
+    "deg2": 160,
+    "deg3": 87,
+    "deg4": 0,
+    "deg0": 0,
+    "dead_ends": 9,
+    "goal_gateways": 2,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 0,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": false,
+    "right_reach": false,
+    "all_reachable_from_start": true,
+    "n_reach_from_start": 256,
+    "rule_gateway1": false,
+    "rule_wallfollow_fails": true,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": true,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 5
+  },
+  {
+    "source": "16MM2018H_Tashiro.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        7,
+        7
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        8,
+        7
+      ],
+      [
+        8,
+        8
+      ]
+    ],
+    "n_comp_total": 1,
+    "d_true": 249,
+    "manhattan": 14,
+    "detour": 17.785714285714285,
+    "detour_fixed14": 17.785714285714285,
+    "beta": 1,
+    "open_edges": 256,
+    "n_paths": 1,
+    "deg1": 2,
+    "deg2": 252,
+    "deg3": 2,
+    "deg4": 0,
+    "deg0": 0,
+    "dead_ends": 2,
+    "goal_gateways": 1,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 0,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": true,
+    "right_reach": true,
+    "all_reachable_from_start": true,
+    "n_reach_from_start": 256,
+    "rule_gateway1": true,
+    "rule_wallfollow_fails": false,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": true,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 5
+  },
+  {
+    "source": "16MM2018H_semi.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        12,
+        12
+      ],
+      [
+        12,
+        13
+      ],
+      [
+        13,
+        12
+      ],
+      [
+        13,
+        13
+      ]
+    ],
+    "n_comp_total": 1,
+    "d_true": 74,
+    "manhattan": 24,
+    "detour": 3.0833333333333335,
+    "detour_fixed14": 5.285714285714286,
+    "beta": 18,
+    "open_edges": 273,
+    "n_paths": 8,
+    "deg1": 33,
+    "deg2": 167,
+    "deg3": 45,
+    "deg4": 11,
+    "deg0": 0,
+    "dead_ends": 33,
+    "goal_gateways": 1,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 0,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": false,
+    "right_reach": false,
+    "all_reachable_from_start": true,
+    "n_reach_from_start": 256,
+    "rule_gateway1": true,
+    "rule_wallfollow_fails": true,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": true,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 6
+  },
+  {
+    "source": "16MM2018H_student.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        9,
+        9
+      ],
+      [
+        9,
+        10
+      ],
+      [
+        10,
+        9
+      ],
+      [
+        10,
+        10
+      ]
+    ],
+    "n_comp_total": 6,
+    "d_true": 50,
+    "manhattan": 18,
+    "detour": 2.7777777777777777,
+    "detour_fixed14": 3.5714285714285716,
+    "beta": 4,
+    "open_edges": 254,
+    "n_paths": 1,
+    "deg1": 32,
+    "deg2": 184,
+    "deg3": 32,
+    "deg4": 3,
+    "deg0": 5,
+    "dead_ends": 32,
+    "goal_gateways": 2,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 0,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": false,
+    "right_reach": false,
+    "all_reachable_from_start": false,
+    "n_reach_from_start": 251,
+    "rule_gateway1": false,
+    "rule_wallfollow_fails": true,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": true,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 5
+  },
+  {
+    "source": "16MM2019CX.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        7,
+        7
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        8,
+        7
+      ],
+      [
+        8,
+        8
+      ]
+    ],
+    "n_comp_total": 1,
+    "d_true": 75,
+    "manhattan": 14,
+    "detour": 5.357142857142857,
+    "detour_fixed14": 5.357142857142857,
+    "beta": 19,
+    "open_edges": 274,
+    "n_paths": 18,
+    "deg1": 23,
+    "deg2": 182,
+    "deg3": 43,
+    "deg4": 8,
+    "deg0": 0,
+    "dead_ends": 23,
+    "goal_gateways": 2,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 0,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": false,
+    "right_reach": false,
+    "all_reachable_from_start": true,
+    "n_reach_from_start": 256,
+    "rule_gateway1": false,
+    "rule_wallfollow_fails": true,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": true,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 5
+  },
+  {
+    "source": "16MM2019C_student.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        7,
+        7
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        8,
+        7
+      ],
+      [
+        8,
+        8
+      ]
+    ],
+    "n_comp_total": 1,
+    "d_true": 60,
+    "manhattan": 14,
+    "detour": 4.285714285714286,
+    "detour_fixed14": 4.285714285714286,
+    "beta": 25,
+    "open_edges": 280,
+    "n_paths": 28,
+    "deg1": 12,
+    "deg2": 190,
+    "deg3": 48,
+    "deg4": 6,
+    "deg0": 0,
+    "dead_ends": 12,
+    "goal_gateways": 1,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 0,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": false,
+    "right_reach": false,
+    "all_reachable_from_start": true,
+    "n_reach_from_start": 256,
+    "rule_gateway1": true,
+    "rule_wallfollow_fails": true,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": true,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 6
+  },
+  {
+    "source": "16MM2019H_Chubu.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        6,
+        9
+      ],
+      [
+        6,
+        10
+      ],
+      [
+        7,
+        9
+      ],
+      [
+        7,
+        10
+      ]
+    ],
+    "n_comp_total": 1,
+    "d_true": 57,
+    "manhattan": 15,
+    "detour": 3.8,
+    "detour_fixed14": 4.071428571428571,
+    "beta": 26,
+    "open_edges": 281,
+    "n_paths": 2,
+    "deg1": 30,
+    "deg2": 162,
+    "deg3": 48,
+    "deg4": 16,
+    "deg0": 0,
+    "dead_ends": 30,
+    "goal_gateways": 1,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 0,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": false,
+    "right_reach": false,
+    "all_reachable_from_start": true,
+    "n_reach_from_start": 256,
+    "rule_gateway1": true,
+    "rule_wallfollow_fails": true,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": true,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 6
+  },
+  {
+    "source": "16MM2019H_East.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        6,
+        9
+      ],
+      [
+        6,
+        10
+      ],
+      [
+        7,
+        9
+      ],
+      [
+        7,
+        10
+      ]
+    ],
+    "n_comp_total": 1,
+    "d_true": 51,
+    "manhattan": 15,
+    "detour": 3.4,
+    "detour_fixed14": 3.642857142857143,
+    "beta": 15,
+    "open_edges": 270,
+    "n_paths": 1,
+    "deg1": 35,
+    "deg2": 158,
+    "deg3": 63,
+    "deg4": 0,
+    "deg0": 0,
+    "dead_ends": 35,
+    "goal_gateways": 1,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 0,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": false,
+    "right_reach": false,
+    "all_reachable_from_start": true,
+    "n_reach_from_start": 256,
+    "rule_gateway1": true,
+    "rule_wallfollow_fails": true,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": true,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 6
+  },
+  {
+    "source": "16MM2019H_Hokuriku.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        6,
+        9
+      ],
+      [
+        6,
+        10
+      ],
+      [
+        7,
+        9
+      ],
+      [
+        7,
+        10
+      ]
+    ],
+    "n_comp_total": 1,
+    "d_true": 63,
+    "manhattan": 15,
+    "detour": 4.2,
+    "detour_fixed14": 4.5,
+    "beta": 10,
+    "open_edges": 265,
+    "n_paths": 1,
+    "deg1": 31,
+    "deg2": 178,
+    "deg3": 45,
+    "deg4": 2,
+    "deg0": 0,
+    "dead_ends": 31,
+    "goal_gateways": 1,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 0,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": false,
+    "right_reach": false,
+    "all_reachable_from_start": true,
+    "n_reach_from_start": 256,
+    "rule_gateway1": true,
+    "rule_wallfollow_fails": true,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": true,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 6
+  },
+  {
+    "source": "16MM2019H_Kanazawa.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        6,
+        9
+      ],
+      [
+        6,
+        10
+      ],
+      [
+        7,
+        9
+      ],
+      [
+        7,
+        10
+      ]
+    ],
+    "n_comp_total": 4,
+    "d_true": 59,
+    "manhattan": 15,
+    "detour": 3.933333333333333,
+    "detour_fixed14": 4.214285714285714,
+    "beta": 22,
+    "open_edges": 274,
+    "n_paths": 6,
+    "deg1": 25,
+    "deg2": 167,
+    "deg3": 55,
+    "deg4": 6,
+    "deg0": 3,
+    "dead_ends": 25,
+    "goal_gateways": 1,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 0,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": false,
+    "right_reach": false,
+    "all_reachable_from_start": false,
+    "n_reach_from_start": 253,
+    "rule_gateway1": true,
+    "rule_wallfollow_fails": true,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": true,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 6
+  },
+  {
+    "source": "16MM2019H_Kansai.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        6,
+        9
+      ],
+      [
+        6,
+        10
+      ],
+      [
+        7,
+        9
+      ],
+      [
+        7,
+        10
+      ]
+    ],
+    "n_comp_total": 1,
+    "d_true": 50,
+    "manhattan": 15,
+    "detour": 3.3333333333333335,
+    "detour_fixed14": 3.5714285714285716,
+    "beta": 35,
+    "open_edges": 290,
+    "n_paths": 16,
+    "deg1": 39,
+    "deg2": 118,
+    "deg3": 91,
+    "deg4": 8,
+    "deg0": 0,
+    "dead_ends": 39,
+    "goal_gateways": 1,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 8,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": false,
+    "right_reach": false,
+    "all_reachable_from_start": true,
+    "n_reach_from_start": 256,
+    "rule_gateway1": true,
+    "rule_wallfollow_fails": true,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": false,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 5
+  },
+  {
+    "source": "16MM2019H_Kyushu.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        6,
+        9
+      ],
+      [
+        6,
+        10
+      ],
+      [
+        7,
+        9
+      ],
+      [
+        7,
+        10
+      ]
+    ],
+    "n_comp_total": 1,
+    "d_true": 41,
+    "manhattan": 15,
+    "detour": 2.7333333333333334,
+    "detour_fixed14": 2.9285714285714284,
+    "beta": 35,
+    "open_edges": 290,
+    "n_paths": 6,
+    "deg1": 25,
+    "deg2": 144,
+    "deg3": 81,
+    "deg4": 6,
+    "deg0": 0,
+    "dead_ends": 25,
+    "goal_gateways": 1,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 0,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": false,
+    "right_reach": false,
+    "all_reachable_from_start": true,
+    "n_reach_from_start": 256,
+    "rule_gateway1": true,
+    "rule_wallfollow_fails": true,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": true,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 6
+  },
+  {
+    "source": "16MM2019H_Tashiro.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        6,
+        9
+      ],
+      [
+        6,
+        10
+      ],
+      [
+        7,
+        9
+      ],
+      [
+        7,
+        10
+      ]
+    ],
+    "n_comp_total": 1,
+    "d_true": 75,
+    "manhattan": 15,
+    "detour": 5.0,
+    "detour_fixed14": 5.357142857142857,
+    "beta": 27,
+    "open_edges": 282,
+    "n_paths": 60,
+    "deg1": 63,
+    "deg2": 86,
+    "deg3": 99,
+    "deg4": 8,
+    "deg0": 0,
+    "dead_ends": 63,
+    "goal_gateways": 1,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 0,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": false,
+    "right_reach": false,
+    "all_reachable_from_start": true,
+    "n_reach_from_start": 256,
+    "rule_gateway1": true,
+    "rule_wallfollow_fails": true,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": true,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 6
+  },
+  {
+    "source": "16MM2019H_semi.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        8,
+        7
+      ],
+      [
+        8,
+        8
+      ],
+      [
+        9,
+        7
+      ],
+      [
+        9,
+        8
+      ]
+    ],
+    "n_comp_total": 1,
+    "d_true": 78,
+    "manhattan": 15,
+    "detour": 5.2,
+    "detour_fixed14": 5.571428571428571,
+    "beta": 23,
+    "open_edges": 278,
+    "n_paths": 8,
+    "deg1": 8,
+    "deg2": 196,
+    "deg3": 52,
+    "deg4": 0,
+    "deg0": 0,
+    "dead_ends": 8,
+    "goal_gateways": 1,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 0,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": false,
+    "right_reach": false,
+    "all_reachable_from_start": true,
+    "n_reach_from_start": 256,
+    "rule_gateway1": true,
+    "rule_wallfollow_fails": true,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": true,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 6
+  },
+  {
+    "source": "16MM2019H_student.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        6,
+        9
+      ],
+      [
+        6,
+        10
+      ],
+      [
+        7,
+        9
+      ],
+      [
+        7,
+        10
+      ]
+    ],
+    "n_comp_total": 2,
+    "d_true": 43,
+    "manhattan": 15,
+    "detour": 2.8666666666666667,
+    "detour_fixed14": 3.0714285714285716,
+    "beta": 18,
+    "open_edges": 272,
+    "n_paths": 4,
+    "deg1": 8,
+    "deg2": 213,
+    "deg3": 26,
+    "deg4": 8,
+    "deg0": 1,
+    "dead_ends": 8,
+    "goal_gateways": 1,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 0,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": false,
+    "right_reach": false,
+    "all_reachable_from_start": false,
+    "n_reach_from_start": 255,
+    "rule_gateway1": true,
+    "rule_wallfollow_fails": true,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": true,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 6
+  },
+  {
+    "source": "16MM2020CX.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        7,
+        7
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        8,
+        7
+      ],
+      [
+        8,
+        8
+      ]
+    ],
+    "n_comp_total": 2,
+    "d_true": 41,
+    "manhattan": 14,
+    "detour": 2.9285714285714284,
+    "detour_fixed14": 2.9285714285714284,
+    "beta": 37,
+    "open_edges": 291,
+    "n_paths": 2,
+    "deg1": 3,
+    "deg2": 177,
+    "deg3": 75,
+    "deg4": 0,
+    "deg0": 1,
+    "dead_ends": 3,
+    "goal_gateways": 1,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 0,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": false,
+    "right_reach": false,
+    "all_reachable_from_start": false,
+    "n_reach_from_start": 255,
+    "rule_gateway1": true,
+    "rule_wallfollow_fails": true,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": true,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 6
+  },
+  {
+    "source": "16MM2020C_student.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        7,
+        7
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        8,
+        7
+      ],
+      [
+        8,
+        8
+      ]
+    ],
+    "n_comp_total": 16,
+    "d_true": 70,
+    "manhattan": 14,
+    "detour": 5.0,
+    "detour_fixed14": 5.0,
+    "beta": 35,
+    "open_edges": 275,
+    "n_paths": 48,
+    "deg1": 1,
+    "deg2": 176,
+    "deg3": 59,
+    "deg4": 5,
+    "deg0": 15,
+    "dead_ends": 1,
+    "goal_gateways": 1,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 0,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": false,
+    "right_reach": false,
+    "all_reachable_from_start": false,
+    "n_reach_from_start": 241,
+    "rule_gateway1": true,
+    "rule_wallfollow_fails": true,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": true,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 6
+  },
+  {
+    "source": "16MM2020H_student.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        3,
+        3
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        4,
+        3
+      ],
+      [
+        4,
+        4
+      ]
+    ],
+    "n_comp_total": 1,
+    "d_true": 56,
+    "manhattan": 6,
+    "detour": 9.333333333333334,
+    "detour_fixed14": 4.0,
+    "beta": 36,
+    "open_edges": 291,
+    "n_paths": 48,
+    "deg1": 14,
+    "deg2": 167,
+    "deg3": 66,
+    "deg4": 9,
+    "deg0": 0,
+    "dead_ends": 14,
+    "goal_gateways": 1,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 0,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": false,
+    "right_reach": false,
+    "all_reachable_from_start": true,
+    "n_reach_from_start": 256,
+    "rule_gateway1": true,
+    "rule_wallfollow_fails": true,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": true,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 6
+  },
+  {
+    "source": "16MM2021H_Kansai.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        7,
+        7
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        8,
+        7
+      ],
+      [
+        8,
+        8
+      ]
+    ],
+    "n_comp_total": 5,
+    "d_true": 58,
+    "manhattan": 14,
+    "detour": 4.142857142857143,
+    "detour_fixed14": 4.142857142857143,
+    "beta": 23,
+    "open_edges": 274,
+    "n_paths": 8,
+    "deg1": 23,
+    "deg2": 176,
+    "deg3": 55,
+    "deg4": 2,
+    "deg0": 0,
+    "dead_ends": 23,
+    "goal_gateways": 1,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 4,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": false,
+    "right_reach": false,
+    "all_reachable_from_start": false,
+    "n_reach_from_start": 240,
+    "rule_gateway1": true,
+    "rule_wallfollow_fails": true,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": false,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 5
+  },
+  {
+    "source": "16MM2021H_semi.maze",
+    "start": [
+      0,
+      0
+    ],
+    "goal_cells": [
+      [
+        6,
+        9
+      ],
+      [
+        6,
+        10
+      ],
+      [
+        7,
+        9
+      ],
+      [
+        7,
+        10
+      ]
+    ],
+    "n_comp_total": 1,
+    "d_true": 70,
+    "manhattan": 15,
+    "detour": 4.666666666666667,
+    "detour_fixed14": 5.0,
+    "beta": 33,
+    "open_edges": 288,
+    "n_paths": 265,
+    "deg1": 27,
+    "deg2": 143,
+    "deg3": 81,
+    "deg4": 5,
+    "deg0": 0,
+    "dead_ends": 27,
+    "goal_gateways": 1,
+    "goal_interior_walls": 0,
+    "center_post_walls": 0,
+    "isolated_posts": 0,
+    "outer_ok": true,
+    "start_walls": 3,
+    "start_open_dirs": [
+      0
+    ],
+    "init_head_used": 0,
+    "left_reach": false,
+    "right_reach": false,
+    "all_reachable_from_start": true,
+    "n_reach_from_start": 256,
+    "rule_gateway1": true,
+    "rule_wallfollow_fails": true,
+    "rule_multi_path": true,
+    "rule_no_isolated_post": true,
+    "rule_outer_complete": true,
+    "rule_start3walls": true,
+    "n_rules_ok": 6
+  }
+]
