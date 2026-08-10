@@ -70,6 +70,7 @@ from collections import deque
 import numpy as np
 
 from competition.evaluator import goal_cells, pos_to_cell
+from competition.explore_e1 import explore_targets, is_shortest_confirmed, passable
 from competition.policy_interface import MousePolicy
 
 # 4 方位。北=+y, 東=+x, 南=-y, 西=-x（evaluator.py の v_walls/h_walls 座標規約と
@@ -244,10 +245,35 @@ class AdachiPolicy(MousePolicy):
     def _target_cells(self):
         if self.target_mode == "to_goal":
             return goal_cells(self.width, self.height)
+        if self.target_mode == "verify":
+            # 追加探索（E1）: 「開いていたら最短経路に使われうる未知壁」に隣接する
+            # 区画を目標にする。そこへ行って壁を観測すれば未知壁が確定する
+            t = explore_targets(self.v_walls_known, self.h_walls_known,
+                                 self.width, self.height, (0, 0),
+                                 goal_cells(self.width, self.height))
+            if t:
+                return sorted(t)
+            # 確定済み → 帰路へ切り替え
+            self.target_mode = "to_start"
         return [(0, 0)]
 
+    def _shortest_confirmed(self) -> bool:
+        """現在の楽観最短経路が真の最短経路として確定しているか（E1）。"""
+        return is_shortest_confirmed(self.v_walls_known, self.h_walls_known,
+                                      self.width, self.height, (0, 0),
+                                      goal_cells(self.width, self.height))
+
     def _connects_known(self, x: int, y: int, nx: int, ny: int) -> bool:
-        """既知壁配列で (x,y)-(nx,ny) が通行可能か。未知(-1)は楽観的に通行可能扱い。"""
+        """既知壁配列で (x,y)-(nx,ny) が通行可能か。
+
+        E1（研究計画書 §7）の**楽観・悲観の非対称性**:
+        往路探索（to_goal）と追加探索（verify）は**楽観的**（未知壁 = 通行可）に進む。
+        **帰路（to_start）だけは悲観的**（未知壁 = 壁）に既知の経路だけで戻る
+        — 未確認の壁を信じて帰路に突っ込むと行き止まりに追い込まれるため。
+        """
+        if self.target_mode == "to_start":
+            return passable(self.v_walls_known, self.h_walls_known, x, y, nx, ny,
+                             pessimistic=True)
         if (nx, ny) == (x + 1, y):
             v = self.v_walls_known[x + 1, y]
         elif (nx, ny) == (x - 1, y):
@@ -310,7 +336,15 @@ class AdachiPolicy(MousePolicy):
         if dist_field.get(cur_cell) == 0:
             # 現在セルが目標集合に到達済み: ゴール⇔スタートで目標を反転
             # （ゴール到達後の自走帰還・帰還後の次走行再出発を同じ機構で扱う）。
-            self.target_mode = "to_start" if self.target_mode == "to_goal" else "to_goal"
+            # E1（研究計画書 §7）: ゴール到達時、最短経路がまだ確定していなければ
+            # **追加探索フェーズ**へ入る。確定していれば帰路（悲観的）へ。
+            # 帰路の終端（スタート到達）では次走行のためゴールへ向け直す。
+            if self.target_mode == "to_goal":
+                self.target_mode = "to_start" if self._shortest_confirmed() else "verify"
+            elif self.target_mode == "verify":
+                self.target_mode = "to_start" if self._shortest_confirmed() else "verify"
+            else:
+                self.target_mode = "to_goal"
             targets = self._target_cells()
             dist_field = self._flood_fill(targets)
 
