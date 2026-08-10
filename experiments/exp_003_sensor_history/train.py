@@ -63,7 +63,8 @@ VALIDATION_EVERY_STEPS = 50_000
 
 
 def make_env(rank: int, gamma: float, log_dir: Path, potential_offset: bool = False,
-              collision_penalty: float = 0.0, action_smooth_penalty: float = 0.0):
+              collision_penalty: float = 0.0, action_smooth_penalty: float = 0.0,
+              action_highpass_penalty: float = 0.0, action_highpass_alpha: float = 0.5):
     """CorridorEnv(mode="generate", obs_dist_diff=True) を Monitor で包んだ env_fn。"""
     def _init():
         env = CorridorEnv(
@@ -74,6 +75,8 @@ def make_env(rank: int, gamma: float, log_dir: Path, potential_offset: bool = Fa
             potential_offset=potential_offset,
             collision_penalty=collision_penalty,
             action_smooth_penalty=action_smooth_penalty,
+            action_highpass_penalty=action_highpass_penalty,
+            action_highpass_alpha=action_highpass_alpha,
         )
         env = Monitor(env, filename=str(log_dir / f"env_{rank}"))
         return env
@@ -279,6 +282,12 @@ def main(argv=None):
                         help="exp_005: 衝突時に元報酬へ加える値（負で罰。例 -1.0）")
     parser.add_argument("--action-smooth-penalty", type=float, default=0.0,
                         help="exp_006: 行動差分への罰の係数 k（−k‖a_t − a_(t−1)‖²）")
+    parser.add_argument("--action-highpass-penalty", type=float, default=0.0,
+                        help="exp_006 案 3: 行動の高周波成分への罰の係数 k"
+                             "（−k‖a_t − ā_t‖²、ā は低域通過成分）")
+    parser.add_argument("--action-highpass-alpha", type=float, default=0.5,
+                        help="exp_006 案 3: 低域通過の係数 α（既定 0.5 ＝ τ 14.4 ms・"
+                             "遮断 11 Hz）。ā_t = α·ā_(t−1) + (1−α)·a_t")
     parser.add_argument("--init-model", type=str, default=None,
                         help="初期重みにする学習済みモデル（微調整。exp_006 の案 1）")
     args = parser.parse_args(argv)
@@ -290,13 +299,16 @@ def main(argv=None):
     log_dir.mkdir(parents=True, exist_ok=True)
 
     env_fns = [make_env(i, args.gamma, log_dir, args.potential_offset,
-                        args.collision_penalty, args.action_smooth_penalty)
+                        args.collision_penalty, args.action_smooth_penalty,
+                        args.action_highpass_penalty, args.action_highpass_alpha)
                for i in range(n_envs)]
     vec_env = DummyVecEnv(env_fns) if n_envs == 1 else SubprocVecEnv(env_fns)
     print(f"[train] 観測空間 = {vec_env.observation_space}（距離4 + 差分4 + 7）")
     print(f"[train] ポテンシャル = {'Φ=D₀−D（オフセットあり）' if args.potential_offset else 'Φ=−D（現行）'}")
     print(f"[train] 衝突罰 = {args.collision_penalty}")
     print(f"[train] 行動差分への罰 k = {args.action_smooth_penalty}")
+    print(f"[train] 行動の高周波成分への罰 k = {args.action_highpass_penalty}"
+          f"（α = {args.action_highpass_alpha}）")
 
     if args.init_model:
         # 微調整（exp_006 の案 1）: 走行能力を獲得済みのモデルから始めることで、
@@ -350,6 +362,8 @@ def main(argv=None):
         init_model=args.init_model,
         collision_penalty=float(args.collision_penalty),
         action_smooth_penalty=float(args.action_smooth_penalty),
+        action_highpass_penalty=float(args.action_highpass_penalty),
+        action_highpass_alpha=float(args.action_highpass_alpha),
         train_base_seed=TRAIN_BASE_SEED,
         worker_seed_stride=WORKER_SEED_STRIDE,
         elapsed_s=elapsed, steps_per_sec=steps_per_sec,

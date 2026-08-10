@@ -615,6 +615,101 @@ def test_action_smooth_penalty():
     record("行動が一定なら罰はかからない", True, same, same)
 
 
+def test_action_highpass_penalty():
+    print("\n[Test 11] 行動の高周波成分への罰 −k‖a_t − ā_t‖²（exp_006 案 3）")
+
+    K, ALPHA = 0.01, 0.5
+    # 毎ステップ符号が反転する行動列（潰したい振動）と、ゆっくり変わる列（残したい舵）
+    osc = [np.array([0.5, 0.5], dtype=np.float32),
+           np.array([-0.5, -0.5], dtype=np.float32),
+           np.array([0.5, 0.5], dtype=np.float32),
+           np.array([-0.5, -0.5], dtype=np.float32)]
+    ramp = [np.array([0.10 * i, 0.10 * i], dtype=np.float32) for i in range(1, 5)]
+
+    def run(k, actions, alpha=ALPHA):
+        env = CorridorEnv(course_dir=EVAL_COURSE_DIR, course_seeds=[3000], gamma=GAMMA,
+                          potential_offset=True, collision_penalty=-1.0,
+                          action_highpass_penalty=k, action_highpass_alpha=alpha)
+        env.reset(seed=7)
+        rs = []
+        for a in actions:
+            _obs, r, term, trunc, _info = env.step(a)
+            rs.append(r)
+            if term or trunc:
+                break
+        env.close()
+        return np.array(rs)
+
+    def expected_penalty(k, actions, n, alpha=ALPHA):
+        """ā_t = α·ā_(t−1) + (1−α)·a_t（ā_(−1)=0）としたときの −k‖a_t − ā_t‖²。"""
+        bar, out = np.zeros(2), []
+        for a in actions[:n]:
+            a = np.asarray(a, dtype=np.float64)
+            bar = alpha * bar + (1.0 - alpha) * a
+            hp = a - bar
+            out.append(-k * float(np.dot(hp, hp)))
+        return np.array(out)
+
+    r0 = run(0.0, osc)
+    rk = run(K, osc)
+    exp = expected_penalty(K, osc, len(r0))
+    actual = rk - r0
+    ok = bool(np.allclose(actual, exp, atol=1e-7))
+    record("罰が毎ステップ −k‖a_t − ā_t‖² だけ引かれる",
+           tuple(np.round(exp, 6)), tuple(np.round(actual, 6)), ok, f"(k={K}, α={ALPHA})")
+
+    # 既定は無効（従来の報酬をそのまま再現する）
+    env = CorridorEnv(course_dir=EVAL_COURSE_DIR, course_seeds=[3000], gamma=GAMMA)
+    d_ok = (env.action_highpass_penalty == 0.0 and env.action_highpass_alpha == 0.5)
+    env.close()
+    record("action_highpass_penalty の既定は 0.0（α の既定は 0.5）",
+           (0.0, 0.5), (env.action_highpass_penalty, env.action_highpass_alpha), d_ok)
+
+    # 案 3 の狙い: 同じ k でも「振動」は強く罰し「ゆっくりした舵」はほとんど罰しない
+    pen_osc = float(np.abs(expected_penalty(K, osc, 4)).sum())
+    pen_ramp = float(np.abs(expected_penalty(K, ramp, 4)).sum())
+    sel_ok = pen_ramp < 0.1 * pen_osc
+    record("振動より緩やかな舵の方が罰が 1 桁以上小さい",
+           "ramp < 0.1×osc", f"osc={pen_osc:.5f} ramp={pen_ramp:.5f}", sel_ok)
+
+    # ‖Δa‖² 版との比較: 同じ振動列に対し高周波版の罰は α=0.5 で 1/4（＝α²）になる
+    prev, pen_da = np.zeros(2), 0.0
+    for a in osc[:4]:
+        a = np.asarray(a, dtype=np.float64)
+        pen_da += K * float(np.dot(a - prev, a - prev))
+        prev = a
+    ratio = pen_osc / pen_da
+    # a_t − ā_t = α(a_t − ā_(t−1)) であり、振動が定常なら ā_(t−1) ≈ a_(t−1) の
+    # 半分ずつに落ち着くため厳密な α² にはならない。1 桁の範囲に収まることを見る
+    ratio_ok = 0.05 < ratio < 0.5
+    record("同じ k なら高周波版の罰は ‖Δa‖² 版より小さい",
+           "0.05 < 比 < 0.5", round(ratio, 4), ratio_ok)
+
+    # 2 つの罰は独立に効く（同時指定すると和になる。既存 exp_006 の再現性を壊さない）
+    env_a = CorridorEnv(course_dir=EVAL_COURSE_DIR, course_seeds=[3000], gamma=GAMMA,
+                        potential_offset=True, action_smooth_penalty=K)
+    env_a.reset(seed=7)
+    r_smooth = np.array([env_a.step(a)[1] for a in osc])
+    env_a.close()
+    env_b = CorridorEnv(course_dir=EVAL_COURSE_DIR, course_seeds=[3000], gamma=GAMMA,
+                        potential_offset=True, action_smooth_penalty=K,
+                        action_highpass_penalty=K)
+    env_b.reset(seed=7)
+    r_both = np.array([env_b.step(a)[1] for a in osc])
+    env_b.close()
+    both_ok = bool(np.allclose(r_both - r_smooth, expected_penalty(K, osc, 4), atol=1e-7))
+    record("2 つの罰は独立に加算される（既存引数の挙動は不変）", True, both_ok, both_ok)
+
+    # α の妥当性検査（0 以上 1 未満）
+    try:
+        CorridorEnv(course_dir=EVAL_COURSE_DIR, course_seeds=[3000], gamma=GAMMA,
+                    action_highpass_alpha=1.0)
+        alpha_ok = False
+    except ValueError:
+        alpha_ok = True
+    record("α ≥ 1 は ValueError で弾かれる", True, alpha_ok, alpha_ok)
+
+
 # ==========================================================================
 # メイン
 # ==========================================================================
@@ -673,6 +768,11 @@ def main():
         test_action_smooth_penalty()
     except Exception as e:  # noqa: BLE001
         record_exception("test_action_smooth_penalty", e)
+
+    try:
+        test_action_highpass_penalty()
+    except Exception as e:  # noqa: BLE001
+        record_exception("test_action_highpass_penalty", e)
 
     print("\n" + "=" * 78)
     print("テスト結果一覧")

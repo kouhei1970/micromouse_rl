@@ -43,6 +43,22 @@ t_p では滞留の 1 ステップ報酬 (1−γ)D − t_p が長いコースほ
 過剰な罰になる。Φ' なら短いコースで実効 0.0046、長いコースで 0.0208 と必要な分だけ効く。
 
 --------------------------------------------------------------------------
+行動の滑らかさへの罰（exp_006、2 種類。既定はどちらも 0 ＝無効）
+--------------------------------------------------------------------------
+- **action_smooth_penalty**（exp_006 本体）: −k‖a_t − a_(t−1)‖²。行動の**あらゆる変化**を
+  罰する。k = 1e-4 / 1e-3 / 1e-2 の 3 点を試し、k ≥ 1.5e-3 では**罰が実効的な時間罰として
+  働き「早く終わること＝衝突」に価値を与えて破綻する**ことが判明した
+  （`experiments/exp_006_action_smoothness/taskB_return_ordering.md`。地雷 3 と同型）。
+- **action_highpass_penalty**（案 3）: −k‖a_t − ā_t‖²、ā は行動の低域通過成分
+  （ā_t = α·ā_(t−1) + (1−α)·a_t、ā_(−1) = 0）。潰したい振動（≈37 Hz）と残したい舵
+  （5〜10 Hz）を周波数で分離する。α = 0.5 が τ = 14.4 ms・遮断 f_c ≈ 11 Hz に対応。
+  同じ k でも罰の総量が ‖Δa‖² の約 1/8 になるため、順序が崩れる閾値は 8 倍緩い。
+  ā は**報酬の計算にのみ使う環境側の内部量**で、方策の出力をフィルタするものではない
+  （入出力契約に触れないという 2026-08-10 教授裁定の範囲内）。
+
+2 つは独立の引数であり、同時に指定もできる（exp_006 の再現性を保つため前者を残した）。
+
+--------------------------------------------------------------------------
 2 つの動作モード（2026-08-10 指揮側追加指示: 固定200本プールへの過学習防止）
 --------------------------------------------------------------------------
 - mode="fixed"（既定）: course_dir 内の npz+xml（mouse.corridor_gen.save_course で
@@ -127,7 +143,9 @@ class CorridorEnv(gym.Env):
                  gamma: float = 0.995, mode: str = "fixed", base_seed: int = 2000,
                  obs_dist_diff: bool = False, potential_offset: bool = False,
                  collision_penalty: float = 0.0,
-                 action_smooth_penalty: float = 0.0):
+                 action_smooth_penalty: float = 0.0,
+                 action_highpass_penalty: float = 0.0,
+                 action_highpass_alpha: float = 0.5):
         super().__init__()
         if mode not in ("fixed", "generate"):
             raise ValueError(f"mode は 'fixed' か 'generate' のみ対応: {mode!r}")
@@ -149,6 +167,25 @@ class CorridorEnv(gym.Env):
         # （2026-08-10 教授裁定）。exp_005 の方策は符号反転 75.6 回/s と学習前の乱数方策
         # （53.3 回/s）より悪く、100 Hz に対し 1.3 ステップに 1 回電圧の符号が反転していた。
         self.action_smooth_penalty = float(action_smooth_penalty)
+        # 案 3（exp_006 の設計 design_highpass.md）: 行動の**高周波成分だけ**を罰する係数 k。
+        # 行動の低域通過成分 ā を環境側で持ち、毎ステップ −k·‖a_t − ā_t‖² を元報酬へ加える。
+        #
+        #     ā_t = α·ā_(t−1) + (1 − α)·a_t     （ā_(−1) = 0）
+        #
+        # ‖Δa‖²（action_smooth_penalty）は「行動のあらゆる変化」を罰するため、潰したい
+        # 振動（≈37 Hz）だけでなく残したい舵（5〜10 Hz）まで罰してしまう。a_t − ā_t は
+        # 高周波成分そのものなので、ゆっくり舵を切るぶんには ā が追従して罰がかからない。
+        # α=0.5 は τ=14.4 ms・遮断 f_c≈11 Hz に対応する（Δt=10 ms）。
+        #
+        # ā は**報酬の計算にのみ使う環境側の内部量**であり、方策の出力をフィルタする
+        # ものではない（方策は依然としてモータ電圧を直接出す）。入出力契約に触れないと
+        # いう教授裁定の範囲内。action_smooth_penalty とは独立に使える（exp_006 の
+        # 再現性を壊さないため既存の引数は残してある）。
+        self.action_highpass_penalty = float(action_highpass_penalty)
+        if not 0.0 <= float(action_highpass_alpha) < 1.0:
+            raise ValueError(
+                f"action_highpass_alpha は 0 以上 1 未満: {action_highpass_alpha!r}")
+        self.action_highpass_alpha = float(action_highpass_alpha)
         # 距離センサ本数は仕様（RobotParams.sensors）から取る。生成される XML の
         # rangefinder 数と一致することは検証スイート S3 が保証している
         self._n_dist = len(self.params.sensors)
@@ -180,6 +217,8 @@ class CorridorEnv(gym.Env):
         self._cum_lengths = None
         self._prev_potential = None
         self._prev_action = np.zeros(2, dtype=np.float32)
+        # 行動の低域通過成分 ā（案 3）。ā_(−1) = 0 から始める
+        self._action_lowpass = np.zeros(2, dtype=np.float64)
         self._prev_dist_raw = None   # 距離センサの前ステップ生値 [m]（1 階差分用）
         self._pot_offset = 0.0       # ポテンシャルのオフセット（potential_offset=True で D₀）
         self._step_count = 0
@@ -397,6 +436,7 @@ class CorridorEnv(gym.Env):
         self._max_steps = math.ceil(
             _TIME_LIMIT_SEC_PER_CELL * course["n_cells"] / self.params.control_dt)
         self._prev_action = np.zeros(2, dtype=np.float32)
+        self._action_lowpass = np.zeros(2, dtype=np.float64)  # ā_(−1) = 0（案 3）
         self._prev_dist_raw = None   # エピソード間で差分を持ち越さない
 
         # D₀ は「経路の全長」を使う（2026-08-10 教授裁定）。初期擾乱による実測残り距離
@@ -446,6 +486,14 @@ class CorridorEnv(gym.Env):
             # reset 直後は前回行動を 0 とみなす（静止から動き出すぶんは罰の対象）
             d_action = action - self._prev_action
             reward -= self.action_smooth_penalty * float(np.dot(d_action, d_action))
+        # 低域通過成分 ā の更新は**罰の有無によらず無条件**に行う（k=0 と k>0 で環境の
+        # 内部状態の進み方を揃え、係数以外の差を作らないため）。ā は観測には入らない。
+        alpha = self.action_highpass_alpha
+        self._action_lowpass = alpha * self._action_lowpass + (1.0 - alpha) * action
+        if self.action_highpass_penalty != 0.0:
+            # 高周波成分 a_t − ā_t（案 3）。ā_t は a_t を取り込んだ後の値を使う
+            hp = action - self._action_lowpass
+            reward -= self.action_highpass_penalty * float(np.dot(hp, hp))
         self._prev_potential = potential
 
         terminated = bool(goal_reached or physical_fail)
