@@ -367,21 +367,37 @@ class ReferencePath:
         self.length = float(s[-1]) if len(s) else 0.0
 
 
-def build_line_path(p0, p1, heading: float, stop_at_end: bool, ds: float = 0.005) -> ReferencePath:
-    """p0からp1への単純な直線経路を密サンプルする（円弧なし）。実際の車体
-    現在位置から目標セル中心までの短い減速停止経路を作るのに使う
-    （_replan()の「先頭セル自体での方位転換」フォールバック。区画中心
-    ではなく実位置を始点にするのは、動いたままその場旋回を始めて位置が
-    ずれる不具合がスモークテストで見つかったため）。"""
-    length = math.hypot(p1[0] - p0[0], p1[1] - p0[1])
+def build_line_path(p0, p1, heading: float, stop_at_end: bool, ds: float = 0.005,
+                     min_length: float = 0.01) -> ReferencePath:
+    """目標点p1を通り、方位heading（自身の走行方位。ラジアン）に沿った
+    「理想直線」を、p0のこの直線への射影点からp1まで密サンプルする
+    （_replan()の「先頭セル自体での方位転換」フォールバック。曲がる前に
+    セル中心まで減速して停止する短い経路を作るのに使う）。
+
+    経路の位置(xs,ys)と参照方位headsを常に幾何学的に整合させる
+    （heads=heading一定、xs,ysはheading方向の直線上）。p0（車体の実位置）
+    がheading軸から横方向にずれていても、経路そのものはheading軸上の
+    理想直線のままにし、その横方向のずれはStanley制御のe_y項
+    （arctanで飽和する穏やかな補正）に委ねる。これはメインのスラローム
+    経路（直線区間はすべて格子方位に沿う）と同じ考え方であり、
+    「現在位置p0から目標点p1への直線」をそのまま経路にすると、p0の
+    横ずれ次第で経路の向き（p1-p0方向）が車体の実際の走行方位と大きく
+    食い違うことがあり（例: 南向きに走行中、わずかに東へずれた位置から
+    目標点までの直線が西寄りになる）、位置配列と参照方位が矛盾した経路に
+    なって制御が暴れる不具合を実装時に確認した。
+
+    p0のheading軸への射影長がmin_length未満（既にp1付近まで来ている等）
+    の場合はmin_lengthを使う（長さ0の経路を避けるための安全弁）。
+    """
+    ux, uy = math.cos(heading), math.sin(heading)
+    rel = (p0[0] - p1[0], p0[1] - p1[1])
+    s0 = rel[0] * ux + rel[1] * uy  # heading軸上、p1から見たp0の符号付き位置（手前なら負）
+    length = max(-s0, min_length)
+    start = (p1[0] - length * ux, p1[1] - length * uy)
     n = max(2, int(round(length / ds)) + 1)
     t = np.linspace(0.0, length, n)
-    if length > 1e-9:
-        ux, uy = (p1[0] - p0[0]) / length, (p1[1] - p0[1]) / length
-    else:
-        ux, uy = math.cos(heading), math.sin(heading)
-    xs = p0[0] + ux * t
-    ys = p0[1] + uy * t
+    xs = start[0] + ux * t
+    ys = start[1] + uy * t
     heads = np.full(n, heading)
     curvs = np.zeros(n)
     return ReferencePath(t, xs, ys, heads, curvs, stop_at_end)
@@ -692,6 +708,7 @@ class SlalomPolicy(MousePolicy):
         self._explored_once = False
         self._path = None
         self._cursor = 0
+        self._path_ticks = 0
         self._path_end_reason = None
         self._pending_dir_after_turn = None
         self._turn_target_yaw = None
@@ -981,17 +998,56 @@ class SlalomPolicy(MousePolicy):
                     stop_at_end, end_reason = True, "pre_turn"
                     self._pending_dir_after_turn = chain["need_turn_to"]
                 elif chain["reached_target"]:  # to_start
-                    stop_at_end, end_reason = False, "start"
+                    # ゴールと同じく実際に停止してから反転する。to_startは
+                    # 評価器のKPI（憲章§2の4指標）で計時されないため速度上の
+                    # デメリットが無い一方、スタート区画(0,0)は西・南が外壁の
+                    # 狭いポケットであり、減速せず一定速度で目標点へ進み
+                    # 続けると、わずかな横ずれでも外壁に接触してスタックする
+                    # 不具合をスモークテストで確認した。
+                    stop_at_end, end_reason = True, "start"
                 else:
                     stop_at_end, end_reason = False, "continue"
 
                 path = build_reference_path(cells, directions, self._heading_dir, radii,
                                              self.cell_size, stop_at_end, ds=self.path_ds)
-                v_ceil = self.v_explore if not self._explored_once else self.v_cap
+                # v_cap（高い方）を使ってよいのは、(a) 目標セルまで既知地図で
+                # 一括到達できたチェーン（chain["reached_target"]、真の
+                # 一括生成）であり、かつ (b) その目標がゴールである場合のみ。
+                # require_known_exitで未検知セルの手前で打ち切られた
+                # 「continue」チェーンは、そこから先のコーナーの有無を確認
+                # できていない点で探索走行と同じ状況なのでv_explore（保守的な
+                # 速度上限）を使う（怠ると、未知区間へ短いチェーンしか
+                # 伸ばせない状況でも最短走行モードだからとv_capまで加速し、
+                # 直後に短い停止経路しか張れないコーナーが見つかっても
+                # 間に合わず壁に衝突する不具合をスモークテストで確認した）。
+                # 「to_start」（帰路）は評価器のKPI（憲章§2の4指標）で計時
+                # されないため高速化の得点上の意味がなく、かつスタート区画
+                # (0,0)は西・南が外壁の狭いポケットであり、減速なしに
+                # 加速し続けたまま進入すると横方向のわずかなずれでも外壁に
+                # 接触してスタックする不具合をスモークテストで確認した。
+                # 帰路は常にv_exploreに抑える。
+                to_goal_full_route = (self._explored_once and chain["reached_target"]
+                                       and self.target_mode == "to_goal")
+                v_ceil = self.v_cap if to_goal_full_route else self.v_explore
+                # "continue"（reached_targetでもneed_turn_toでもない、単に
+                # require_known_exitで未検知セル手前で打ち切られたチェーン）
+                # は、末尾の先が曲がっているかどうかまだ分からない。速度計画
+                # だけは終端で減速させておく（実際の完了判定path.stop_at_endは
+                # Falseのままなので、そこで停止・反転はしない。次のセルへ
+                # 入ってセンスできた時点で再計画され、曲がらないと分かれば
+                # そのままレートリミットで再加速する）。これを怠ると、次に
+                # 曲がる必要が判明した瞬間には既に巡航速度のままそのセルの
+                # 奥まで進んでしまっており、制動距離が全く足りずに壁へ
+                # 衝突する不具合をスモークテストで確認した（設計文書§2.3
+                # 「未知壁は壁ありと保守的に仮定して速度を抑える」の趣旨を
+                # 軌道の先読み長だけでなく速度計画にも一貫して適用する）。
+                decel_for_uncertainty = (end_reason == "continue")
                 path.speed = build_speed_profile(path.s, path.curvature, v_ceil, self.a_lat,
-                                                  self.a_max, self.v_creep, stop_at_end)
+                                                  self.a_max, self.v_creep,
+                                                  stop_at_end or decel_for_uncertainty)
                 self._path = path
                 self._cursor = 0
+                self._path_ticks = 0
                 self._path_end_reason = end_reason
                 self._state = "DRIVE"
                 return
@@ -1006,11 +1062,14 @@ class SlalomPolicy(MousePolicy):
                 if math.hypot(target_xy[0] - x, target_xy[1] - y) > 1e-3:
                     path = build_line_path((x, y), target_xy, _HEADING_RAD[self._heading_dir],
                                             stop_at_end=True, ds=self.path_ds)
-                    v_ceil = self.v_explore if not self._explored_once else self.v_cap
+                    # ここは常に停止経路（この先で方位転換が必要と判明した
+                    # 区間）なので、常にv_explore（保守的な速度上限）を使う。
+                    v_ceil = self.v_explore
                     path.speed = build_speed_profile(path.s, path.curvature, v_ceil, self.a_lat,
                                                       self.a_max, self.v_creep, True)
                     self._path = path
                     self._cursor = 0
+                    self._path_ticks = 0
                     self._path_end_reason = "pre_turn"
                     self._pending_dir_after_turn = chain["need_turn_to"]
                     self._state = "DRIVE"
@@ -1064,13 +1123,24 @@ class SlalomPolicy(MousePolicy):
 
     def _check_drive_completion(self, x: float, y: float, v_fwd: float) -> bool:
         path = self._path
-        dist_to_end = math.hypot(x - path.x[-1], y - path.y[-1])
-        near_end = (dist_to_end < self.goal_done_dist) and (self._cursor >= len(path.s) - 3)
-        if not near_end:
+        at_end_idx = self._cursor >= len(path.s) - 3
+        if not at_end_idx:
             return False
+        dist_to_end = math.hypot(x - path.x[-1], y - path.y[-1])
         if path.stop_at_end:
-            return abs(v_fwd) < self.goal_done_speed
-        return True
+            # 通常は位置・速度の両方の条件で判定する（速度条件を外すと、
+            # まだ高速走行中に終端付近を通過しただけで「完了」と誤判定し、
+            # 減速しないままその場旋回へ突入して衝突する不具合があった）。
+            # ただし位置がgoal_done_distへわずかに届かない場合に限り、
+            # 速度指令(v_setpoint)が既に0まで減速し実際の速度も十分小さければ
+            # 完了とみなすフォールバックを追加する。速度指令0からはこれ以上
+            # 有意に前進できないため、位置しきい値だけで厳密判定すると
+            # 数mmの差で永久に完了しないデッドロックに陥る不具合を
+            # スモークテストで確認した（cur=len-1のまま停止し続けるケース）。
+            if dist_to_end < self.goal_done_dist:
+                return abs(v_fwd) < self.goal_done_speed
+            return (abs(v_fwd) < self.goal_done_speed) and (self._v_setpoint < self.goal_done_speed)
+        return dist_to_end < self.goal_done_dist
 
     def _advance_cursor(self, x: float, y: float) -> int:
         path = self._path
@@ -1122,15 +1192,20 @@ class SlalomPolicy(MousePolicy):
         v_target = float(path.speed[idx])
 
         # 速度指令のレートリミット（_reset_run_stateのdocstring参照）。
-        # カーソル参照点の空間的な速度上限へ、a_maxで加減速しながら追従する
-        # 設定値を毎ティック更新する。張り替え直後（カーソル0に戻る等）でも
-        # 車体の実際の速度から連続的にしか変化しないため、指令の不連続な
-        # 跳びによる過渡応答（ヨー発散）を防ぐ。
-        dv = self.a_max * self.control_dt
+        # 上げ方向（加速）のみ a_max でレートリミットする。張り替え直後に
+        # 指令が不連続に跳び上がると、車輪PIが大きなフィードフォワード
+        # 電圧を要求して操舵に使う電圧の余裕がなくなりヨーが発散する
+        # 不具合をスモークテストで確認したため。下げ方向（減速）は
+        # レートリミットせず即座に追従する: 曲率0点でのv_ceilはbuild_
+        # speed_profileの後方パスで既に「その先の停止/コーナーに間に合う
+        # よう」位置基準でa_max制約済みであり、張り替え直後に「本来もっと
+        # 減速していたはずの区間だった」と判明するケース（例: 直前まで
+        # 気づかなかった至近距離のコーナー）では、むしろ即座に追従しないと
+        # 制動距離が足りず壁に衝突する不具合を確認した。
         if self._v_setpoint < v_target:
-            self._v_setpoint = min(v_target, self._v_setpoint + dv)
+            self._v_setpoint = min(v_target, self._v_setpoint + self.a_max * self.control_dt)
         else:
-            self._v_setpoint = max(v_target, self._v_setpoint - dv)
+            self._v_setpoint = v_target
         v_ref = self._v_setpoint
 
         ux, uy = math.cos(phead), math.sin(phead)
@@ -1174,11 +1249,25 @@ class SlalomPolicy(MousePolicy):
         if self._state == "DRIVE" and self._path is not None:
             self._cursor = self._advance_cursor(x, y)
             idx = self._cursor
-            if abs(float(self._path.curvature[idx])) < 1e-6:
+            self._path_ticks += 1
+            # heading_dirの更新は "pre_turn" 以外の全チェーン（continue・
+            # start・goal）の直線区間で行う。continue・start・goalは
+            # 区画中心を通る格子沿いの直線＋円弧で構成されるため、曲率0点の
+            # 方位を最寄りの4方位へ丸めるのは常に正しい。"pre_turn"（現在
+            # 位置→セル中心への短い直線減速経路）だけは、始点が区画中心
+            # からずれているため線分の幾何学的な向きが格子方位と一致すると
+            # 限らず、ここでheading_dirを上書きすると直後のその場旋回・
+            # 再計画が誤った方位を基準に行われる不具合をスモークテストで
+            # 確認したため除外する。以前は"continue"以外を全て除外して
+            # いたが、それでは"start"（帰路の一括経路）が複数の区画・
+            # コーナーを経る間ずっとheading_dirが更新されず、その先の
+            # "pre_turn"遷移で古い方位を使ってしまう不具合があったため
+            # 範囲を広げた。
+            if self._path_end_reason != "pre_turn" and abs(float(self._path.curvature[idx])) < 1e-6:
                 self._heading_dir = self._snap_heading(float(self._path.heading[idx]))
+            if self._path_end_reason == "continue":
                 remaining = self._path.length - float(self._path.s[idx])
-                if (not self._explored_once) and self._path_end_reason == "continue" \
-                        and remaining < self.replan_trigger_dist:
+                if (not self._explored_once) and remaining < self.replan_trigger_dist:
                     self._replan(x, y, yaw)
             if self._state == "DRIVE" and self._path is not None and self._check_drive_completion(x, y, v_fwd):
                 self._on_path_complete(x, y, yaw)

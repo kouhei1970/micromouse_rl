@@ -19,6 +19,21 @@ WALL_HEIGHT = 0.05      # 壁高 [m]
 POST_SIZE = 0.012       # 柱の一辺 [m]
 
 
+def floor_texrepeat_for(cell_size: float) -> str:
+    """床の市松模様 1 マスが区画の半分（cell_size/2）になる texrepeat を返す。
+
+    ユーザ要望（2026-08-10）: 動画で距離を目測する基準にするため、市松のマス目を
+    区画 180 mm の約数に合わせる。1 マス = 90 mm なら **1 区画がちょうど 2x2 マス**に
+    なり、区画の境界と中心の両方が読める。
+    texuniform="true" のとき texrepeat は単位長さあたりの繰り返し数である。
+    **レンダリング画像で実測した結果**、1/cell_size では 1 マス = cell_size
+    （区画と 1:1）になったため、1 マス = cell_size/2 にするには 2/cell_size を与える。
+    迷路寸法に依らず cell_size から導出する（ハードコード禁止）。
+    """
+    r = 2.0 / float(cell_size)
+    return f"{r} {r}"
+
+
 def _add_assets(mujoco_node, floor_texrepeat="50 50"):
     """材質・テクスチャ・メッシュを asset ノードに追加する。
     common/maze_assets.py の add_assets と同内容（v1 凍結のためコピー）。"""
@@ -30,7 +45,7 @@ def _add_assets(mujoco_node, floor_texrepeat="50 50"):
     })
     ET.SubElement(asset, 'material', {
         'name': 'mat_floor', 'texture': 'tex_floor', 'reflectance': '0.0',
-        'texrepeat': floor_texrepeat
+        'texrepeat': floor_texrepeat, 'texuniform': 'true'
     })
     ET.SubElement(asset, 'material', {'name': 'mat_wall', 'rgba': '1 1 1 1'})
     ET.SubElement(asset, 'material', {'name': 'mat_wall_top', 'rgba': '0.8 0 0 1'})
@@ -69,7 +84,8 @@ def _new_mujoco_root(model_name, params):
     ET.SubElement(default, 'geom', {'solref': params.solref})
     visual = ET.SubElement(mujoco, 'visual')
     ET.SubElement(visual, 'global', {'offwidth': '800', 'offheight': '800'})
-    _add_assets(mujoco)
+    # 床の市松模様は区画寸法から導出（1 マス = cell_size/2 = 90 mm）
+    _add_assets(mujoco, floor_texrepeat=floor_texrepeat_for(params.cell_size))
     return mujoco
 
 
