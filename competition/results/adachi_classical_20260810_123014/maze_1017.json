@@ -1,0 +1,82 @@
+{
+  "maze_id": "maze_1017",
+  "seed": 1017,
+  "policy": {
+    "name": "adachi_classical",
+    "requires_privileged": true
+  },
+  "protocol": {
+    "time_budget": 300.0,
+    "max_runs": 5,
+    "control_hz": 100,
+    "collision_force_threshold": 1.0,
+    "stuck_window_s": 20.0,
+    "stuck_disp_m": 0.05,
+    "protocol_version": "e3c5409"
+  },
+  "runs": [
+    {
+      "index": 1,
+      "t_start": 0.3900000000000003,
+      "t_end": 61.060000000109525,
+      "run_time": 60.670000000109525,
+      "outcome": "goal",
+      "max_progress_cells": 51,
+      "path_length_m": 8.941302025822601,
+      "collision_pos": null,
+      "visited_cells": 51,
+      "path_efficiency": 0.9739980420286058
+    },
+    {
+      "index": 2,
+      "t_start": 125.26000000041607,
+      "t_end": 134.31000000027993,
+      "run_time": 9.049999999863857,
+      "outcome": "stuck",
+      "max_progress_cells": 8,
+      "path_length_m": 1.403062834270665,
+      "collision_pos": null,
+      "visited_cells": 8,
+      "path_efficiency": null
+    },
+    {
+      "index": 3,
+      "t_start": 134.7000000002707,
+      "t_end": 195.36999999883605,
+      "run_time": 60.669999998565345,
+      "outcome": "goal",
+      "max_progress_cells": 51,
+      "path_length_m": 8.941302025822601,
+      "collision_pos": null,
+      "visited_cells": 51,
+      "path_efficiency": 0.9739980420286058
+    },
+    {
+      "index": 4,
+      "t_start": 259.56999999731795,
+      "t_end": 268.61999999710395,
+      "run_time": 9.049999999785996,
+      "outcome": "stuck",
+      "max_progress_cells": 8,
+      "path_length_m": 1.403062834270665,
+      "collision_pos": null,
+      "visited_cells": 8,
+      "path_efficiency": null
+    },
+    {
+      "index": 5,
+      "t_start": 269.0099999970947,
+      "t_end": 300.00999999636167,
+      "run_time": 30.999999999266947,
+      "outcome": "timeout",
+      "max_progress_cells": 28,
+      "path_length_m": 4.919993994336224,
+      "collision_pos": null,
+      "visited_cells": 28,
+      "path_efficiency": null
+    }
+  ],
+  "incidents": [],
+  "best_time": 60.669999998565345,
+  "success": true
+}
