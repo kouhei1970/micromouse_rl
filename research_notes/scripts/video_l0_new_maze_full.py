@@ -44,17 +44,51 @@ OUT_VIDEO_PATH = Path("outputs/videos/l0a_full.mp4")
 METHOD_LABEL = "L0-a 超信地旋回走行・区画ごと停止"
 
 
+# 走行方式ごとの設定（3 方式で同一の迷路・同一レイアウトで撮る）
+METHODS = {
+    "l0a": dict(label="L0-a 超信地旋回走行・区画ごと停止",
+                 out="outputs/videos/l0a_full.mp4", vmax=0.3, note=None),
+    "l0b": dict(label="L0-b 超信地旋回走行・直進連続",
+                 out="outputs/videos/l0b_full.mp4", vmax=0.7,
+                 note="速度は物理上限まで詰めていない暫定版（v_max 0.6 / 物理上限 0.857 m/s）"),
+    "l0c": dict(label="L0-c スラローム走行",
+                 out="outputs/videos/l0c_full.mp4", vmax=1.2, note=None),
+}
+
+
+def _policy_for(method: str):
+    if method == "l0a":
+        return AdachiPolicy()
+    if method == "l0b":
+        from competition.baseline_straightrun import StraightRunPolicy
+        return StraightRunPolicy()
+    from competition.baseline_slalom import SlalomPolicy
+    return SlalomPolicy()
+
+
 def main():
-    parser = argparse.ArgumentParser(description="L0-a 新16x16評価迷路 フル録画（5走行・省略なし・等倍速）")
+    parser = argparse.ArgumentParser(description="L0-a/b/c 新16x16評価迷路 フル録画（5走行・省略なし・等倍速）")
     parser.add_argument("--maze-id", type=str, default=SELECTED_MAZE_ID,
                          help=f"録画対象の迷路ID（既定: {SELECTED_MAZE_ID}）")
+    parser.add_argument("--method", choices=list(METHODS), default="l0a",
+                         help="走行方式（l0a / l0b / l0c）")
     args = parser.parse_args()
 
+    cfg = METHODS[args.method]
     print("=" * 70)
-    print(f"{METHOD_LABEL}（AdachiPolicy） 新16x16評価迷路 フル録画（全5走行）")
+    print(f"{cfg['label']} 新16x16評価迷路 フル録画（全5走行）")
     print("=" * 70)
-    result = record_run_video(AdachiPolicy(), METHOD_LABEL, OUT_VIDEO_PATH, args.maze_id,
-                               max_runs=MAX_RUNS, time_budget=TIME_BUDGET_S, v_max_for_graph=0.3)
+    kw = {}
+    try:
+        result = record_run_video(_policy_for(args.method), cfg["label"], Path(cfg["out"]),
+                                   args.maze_id, max_runs=MAX_RUNS, time_budget=TIME_BUDGET_S,
+                                   v_max_for_graph=cfg["vmax"], note=cfg["note"])
+    except TypeError:
+        # note 引数に未対応の版では方式名ラベルに注記を併記する
+        label = cfg["label"] + ("  ※" + cfg["note"] if cfg["note"] else "")
+        result = record_run_video(_policy_for(args.method), label, Path(cfg["out"]),
+                                   args.maze_id, max_runs=MAX_RUNS, time_budget=TIME_BUDGET_S,
+                                   v_max_for_graph=cfg["vmax"])
 
     print("\n--- 公式 evaluate_maze() の走行記録（本動画のタイム表示の正） ---")
     for r in result["official_runs"]:
