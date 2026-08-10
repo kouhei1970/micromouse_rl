@@ -157,6 +157,15 @@ class CorridorEnv(gym.Env):
             return self._sim_cache[key]
 
         sim = MouseSim(key, params=self.params)
+        # 派生物（コース XML）の鮮度検査: ロボット仕様（センサ本数）を変更したのに
+        # XML を再生成し忘れると、観測の切り出し位置がずれて静かに壊れる
+        # （r6 のセンサ 6→4 本で実際に発生し、評価が完走率 0% になった）。
+        # 黙って誤動作させず即座に失敗させる。
+        if sim._n_rangefinders != self._n_dist:
+            raise RuntimeError(
+                f"コース XML {key} の距離センサ本数 {sim._n_rangefinders} が"
+                f"現在のロボット仕様 {self._n_dist} 本と一致しません。"
+                f"`python -m mouse.corridor_gen --split eval --seeds 3000-3019` で再生成してください。")
         self._sim_cache[key] = sim
         self._cache_order.append(key)
         if len(self._cache_order) > self.max_cache:

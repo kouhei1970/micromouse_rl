@@ -62,7 +62,12 @@ from mouse.sim import MouseSim
 # プロトコル版: 憲章の該当改訂コミットを指す。
 #   e3c5409 = プロトコル v2（自走帰還方式）制定
 #   850f283 = スタック判定の意味論明確化（閉じ込め判定。旧: 端点間変位 → 21 件の誤検出を是正）
-PROTOCOL_VERSION = "850f283"
+#   23d004d = NTF 規定 3-6 に合わせ持ち時間を 300 → **420 秒（7 分）**へ是正
+#             （原文「マイクロマウスは7分間の持ち時間を有し、この間5回までの走行をする
+#              ことができる」。300 秒は設定誤りで規定違反だった）。
+#             あわせて評価迷路を規定準拠版（ゴール入口1箇所・壁づたい走行不可・
+#             複数経路）へ差し替え（competition/maze_gen_v2.py）
+PROTOCOL_VERSION = "23d004d"
 DEFAULT_CELL_SIZE = 0.18
 DEFAULT_STUCK_WINDOW_S = 20.0
 DEFAULT_STUCK_DISP_M = 0.05
@@ -316,7 +321,7 @@ class CompetitionEvaluator:
     """
 
     def __init__(self, maze_dir="competition/mazes/eval", out_dir=None,
-                 time_budget: float = 300.0, max_runs: int = 5,
+                 time_budget: float = 420.0, max_runs: int = 5,
                  regenerate_xml: bool = False,
                  stuck_window_s: float = DEFAULT_STUCK_WINDOW_S,
                  stuck_disp_m: float = DEFAULT_STUCK_DISP_M,
@@ -627,7 +632,7 @@ def main(argv=None):
                          help="評価迷路 npz が入ったディレクトリ（既定: 評価用20面）")
     parser.add_argument("--out-dir", type=str, default=None,
                          help="結果 JSON の出力先（既定: competition/results）")
-    parser.add_argument("--time-budget", type=float, default=300.0, help="迷路あたりの持ち時間 [s]")
+    parser.add_argument("--time-budget", type=float, default=420.0, help="迷路あたりの持ち時間 [s]")
     parser.add_argument("--max-runs", type=int, default=5, help="迷路あたりの最大走行数")
     parser.add_argument("--regenerate-xml", action="store_true",
                          help="既存の maze_<seed>.xml があっても npz から強制再生成する")

@@ -1,0 +1,209 @@
+{
+  "split": "validation",
+  "seeds": [
+    5000,
+    5001,
+    5002,
+    5003,
+    5004,
+    5005,
+    5006,
+    5007,
+    5008,
+    5009,
+    5010,
+    5011,
+    5012,
+    5013,
+    5014,
+    5015,
+    5016,
+    5017,
+    5018,
+    5019
+  ],
+  "count": 20,
+  "generator": "mouse/corridor_gen.py: generate_course",
+  "courses": [
+    {
+      "seed": 5000,
+      "n_cells": 14,
+      "n_turns": 5,
+      "width": 6,
+      "height": 8,
+      "npz": "assets/corridor/validation/corridor_5000.npz",
+      "xml": "assets/corridor/validation/corridor_5000.xml"
+    },
+    {
+      "seed": 5001,
+      "n_cells": 23,
+      "n_turns": 3,
+      "width": 22,
+      "height": 6,
+      "npz": "assets/corridor/validation/corridor_5001.npz",
+      "xml": "assets/corridor/validation/corridor_5001.xml"
+    },
+    {
+      "seed": 5002,
+      "n_cells": 16,
+      "n_turns": 5,
+      "width": 12,
+      "height": 9,
+      "npz": "assets/corridor/validation/corridor_5002.npz",
+      "xml": "assets/corridor/validation/corridor_5002.xml"
+    },
+    {
+      "seed": 5003,
+      "n_cells": 16,
+      "n_turns": 4,
+      "width": 12,
+      "height": 9,
+      "npz": "assets/corridor/validation/corridor_5003.npz",
+      "xml": "assets/corridor/validation/corridor_5003.xml"
+    },
+    {
+      "seed": 5004,
+      "n_cells": 14,
+      "n_turns": 3,
+      "width": 8,
+      "height": 8,
+      "npz": "assets/corridor/validation/corridor_5004.npz",
+      "xml": "assets/corridor/validation/corridor_5004.xml"
+    },
+    {
+      "seed": 5005,
+      "n_cells": 10,
+      "n_turns": 2,
+      "width": 11,
+      "height": 4,
+      "npz": "assets/corridor/validation/corridor_5005.npz",
+      "xml": "assets/corridor/validation/corridor_5005.xml"
+    },
+    {
+      "seed": 5006,
+      "n_cells": 11,
+      "n_turns": 3,
+      "width": 6,
+      "height": 8,
+      "npz": "assets/corridor/validation/corridor_5006.npz",
+      "xml": "assets/corridor/validation/corridor_5006.xml"
+    },
+    {
+      "seed": 5007,
+      "n_cells": 21,
+      "n_turns": 2,
+      "width": 6,
+      "height": 20,
+      "npz": "assets/corridor/validation/corridor_5007.npz",
+      "xml": "assets/corridor/validation/corridor_5007.xml"
+    },
+    {
+      "seed": 5008,
+      "n_cells": 15,
+      "n_turns": 0,
+      "width": 17,
+      "height": 3,
+      "npz": "assets/corridor/validation/corridor_5008.npz",
+      "xml": "assets/corridor/validation/corridor_5008.xml"
+    },
+    {
+      "seed": 5009,
+      "n_cells": 18,
+      "n_turns": 7,
+      "width": 12,
+      "height": 8,
+      "npz": "assets/corridor/validation/corridor_5009.npz",
+      "xml": "assets/corridor/validation/corridor_5009.xml"
+    },
+    {
+      "seed": 5010,
+      "n_cells": 21,
+      "n_turns": 3,
+      "width": 5,
+      "height": 18,
+      "npz": "assets/corridor/validation/corridor_5010.npz",
+      "xml": "assets/corridor/validation/corridor_5010.xml"
+    },
+    {
+      "seed": 5011,
+      "n_cells": 14,
+      "n_turns": 1,
+      "width": 11,
+      "height": 8,
+      "npz": "assets/corridor/validation/corridor_5011.npz",
+      "xml": "assets/corridor/validation/corridor_5011.xml"
+    },
+    {
+      "seed": 5012,
+      "n_cells": 11,
+      "n_turns": 4,
+      "width": 7,
+      "height": 9,
+      "npz": "assets/corridor/validation/corridor_5012.npz",
+      "xml": "assets/corridor/validation/corridor_5012.xml"
+    },
+    {
+      "seed": 5013,
+      "n_cells": 21,
+      "n_turns": 5,
+      "width": 14,
+      "height": 12,
+      "npz": "assets/corridor/validation/corridor_5013.npz",
+      "xml": "assets/corridor/validation/corridor_5013.xml"
+    },
+    {
+      "seed": 5014,
+      "n_cells": 12,
+      "n_turns": 3,
+      "width": 9,
+      "height": 6,
+      "npz": "assets/corridor/validation/corridor_5014.npz",
+      "xml": "assets/corridor/validation/corridor_5014.xml"
+    },
+    {
+      "seed": 5015,
+      "n_cells": 10,
+      "n_turns": 4,
+      "width": 7,
+      "height": 6,
+      "npz": "assets/corridor/validation/corridor_5015.npz",
+      "xml": "assets/corridor/validation/corridor_5015.xml"
+    },
+    {
+      "seed": 5016,
+      "n_cells": 15,
+      "n_turns": 3,
+      "width": 6,
+      "height": 14,
+      "npz": "assets/corridor/validation/corridor_5016.npz",
+      "xml": "assets/corridor/validation/corridor_5016.xml"
+    },
+    {
+      "seed": 5017,
+      "n_cells": 16,
+      "n_turns": 1,
+      "width": 5,
+      "height": 16,
+      "npz": "assets/corridor/validation/corridor_5017.npz",
+      "xml": "assets/corridor/validation/corridor_5017.xml"
+    },
+    {
+      "seed": 5018,
+      "n_cells": 11,
+      "n_turns": 2,
+      "width": 11,
+      "height": 5,
+      "npz": "assets/corridor/validation/corridor_5018.npz",
+      "xml": "assets/corridor/validation/corridor_5018.xml"
+    },
+    {
+      "seed": 5019,
+      "n_cells": 14,
+      "n_turns": 2,
+      "width": 5,
+      "height": 14,
+      "npz": "assets/corridor/validation/corridor_5019.npz",
+      "xml": "assets/corridor/validation/corridor_5019.xml"
+    }
+  ]
+}

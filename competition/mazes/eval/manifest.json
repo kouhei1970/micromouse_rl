@@ -1,44 +1,252 @@
 {
-  "seeds": [
-    1000,
-    1001,
-    1002,
-    1003,
-    1004,
-    1005,
-    1006,
-    1007,
-    1008,
-    1009,
-    1010,
-    1011,
-    1012,
-    1013,
-    1014,
-    1015,
-    1016,
-    1017,
-    1018,
-    1019
+  "generator": "competition/maze_gen_v2.py",
+  "rules": [
+    "IEEE R2SAC 4.3 (gateway=1, start 3 walls)",
+    "IEEE R2SAC 4.5 (wall-follower cannot reach goal, multiple paths)",
+    "NTF 注意9 (no walls/posts inside goal)",
+    "NTF 2-4 (every post has >=1 wall except goal center; outer walls complete)"
   ],
-  "count": 20,
-  "generated_at": "2026-08-10T08:11:55.012274",
-  "generator": "competition/maze_gen.py: EvalMazeGenerator (Plan A / 案A)",
-  "procedure_summary": [
-    "1. random.seed(seed) -> phase3_maze.maze_generator.RandomMazeGenerator(16,16).generate_maze() (DFSによる完全迷路生成)",
-    "2. 中央2x2(ゴール区画)の内壁4枚を開放: v[8,7]=0, v[8,8]=0, h[7,8]=0, h[8,8]=0",
-    "3. 孤立柱(壁0枚接続の柱)を修復。中央2x2の内壁4枚は候補から除外(案A: common/maze_generator.py の潜在バグの修正)",
-    "4. スタート区画(0,0)規定: h[0,1]=0(北開放), v[1,0]=1(東壁), h[0,0]=1, v[0,0]=1(外周閉鎖)",
-    "5. 中央2x2を再度開放(手順3の保険)"
-  ],
-  "wall_array_shapes": {
-    "v_walls": [
-      17,
-      16
-    ],
-    "h_walls": [
-      16,
-      17
-    ]
-  }
+  "extra_open_target": 30,
+  "mazes": [
+    {
+      "seed": 1000,
+      "attempts": 1,
+      "cycles": 34,
+      "open_edges": 289,
+      "gateway": [
+        "v",
+        9,
+        7
+      ],
+      "extra_opened": 30
+    },
+    {
+      "seed": 1001,
+      "attempts": 1,
+      "cycles": 33,
+      "open_edges": 288,
+      "gateway": [
+        "h",
+        8,
+        9
+      ],
+      "extra_opened": 30
+    },
+    {
+      "seed": 1002,
+      "attempts": 1,
+      "cycles": 33,
+      "open_edges": 288,
+      "gateway": [
+        "v",
+        9,
+        8
+      ],
+      "extra_opened": 30
+    },
+    {
+      "seed": 1003,
+      "attempts": 1,
+      "cycles": 34,
+      "open_edges": 289,
+      "gateway": [
+        "v",
+        9,
+        7
+      ],
+      "extra_opened": 30
+    },
+    {
+      "seed": 1004,
+      "attempts": 1,
+      "cycles": 35,
+      "open_edges": 290,
+      "gateway": [
+        "v",
+        9,
+        7
+      ],
+      "extra_opened": 30
+    },
+    {
+      "seed": 1005,
+      "attempts": 1,
+      "cycles": 34,
+      "open_edges": 289,
+      "gateway": [
+        "v",
+        7,
+        7
+      ],
+      "extra_opened": 30
+    },
+    {
+      "seed": 1006,
+      "attempts": 1,
+      "cycles": 34,
+      "open_edges": 289,
+      "gateway": [
+        "h",
+        8,
+        7
+      ],
+      "extra_opened": 30
+    },
+    {
+      "seed": 1007,
+      "attempts": 1,
+      "cycles": 34,
+      "open_edges": 289,
+      "gateway": [
+        "h",
+        8,
+        9
+      ],
+      "extra_opened": 30
+    },
+    {
+      "seed": 1008,
+      "attempts": 1,
+      "cycles": 35,
+      "open_edges": 290,
+      "gateway": [
+        "h",
+        8,
+        9
+      ],
+      "extra_opened": 30
+    },
+    {
+      "seed": 1009,
+      "attempts": 1,
+      "cycles": 33,
+      "open_edges": 288,
+      "gateway": [
+        "v",
+        7,
+        7
+      ],
+      "extra_opened": 30
+    },
+    {
+      "seed": 1010,
+      "attempts": 1,
+      "cycles": 35,
+      "open_edges": 290,
+      "gateway": [
+        "h",
+        8,
+        7
+      ],
+      "extra_opened": 30
+    },
+    {
+      "seed": 1011,
+      "attempts": 1,
+      "cycles": 34,
+      "open_edges": 289,
+      "gateway": [
+        "v",
+        9,
+        8
+      ],
+      "extra_opened": 30
+    },
+    {
+      "seed": 1012,
+      "attempts": 1,
+      "cycles": 35,
+      "open_edges": 290,
+      "gateway": [
+        "h",
+        7,
+        7
+      ],
+      "extra_opened": 30
+    },
+    {
+      "seed": 1013,
+      "attempts": 1,
+      "cycles": 35,
+      "open_edges": 290,
+      "gateway": [
+        "v",
+        7,
+        8
+      ],
+      "extra_opened": 30
+    },
+    {
+      "seed": 1014,
+      "attempts": 1,
+      "cycles": 35,
+      "open_edges": 290,
+      "gateway": [
+        "h",
+        7,
+        9
+      ],
+      "extra_opened": 30
+    },
+    {
+      "seed": 1015,
+      "attempts": 1,
+      "cycles": 35,
+      "open_edges": 290,
+      "gateway": [
+        "h",
+        8,
+        9
+      ],
+      "extra_opened": 30
+    },
+    {
+      "seed": 1016,
+      "attempts": 1,
+      "cycles": 33,
+      "open_edges": 288,
+      "gateway": [
+        "v",
+        9,
+        8
+      ],
+      "extra_opened": 30
+    },
+    {
+      "seed": 1017,
+      "attempts": 1,
+      "cycles": 34,
+      "open_edges": 289,
+      "gateway": [
+        "h",
+        7,
+        9
+      ],
+      "extra_opened": 30
+    },
+    {
+      "seed": 1018,
+      "attempts": 1,
+      "cycles": 34,
+      "open_edges": 289,
+      "gateway": [
+        "v",
+        9,
+        7
+      ],
+      "extra_opened": 30
+    },
+    {
+      "seed": 1019,
+      "attempts": 1,
+      "cycles": 34,
+      "open_edges": 289,
+      "gateway": [
+        "v",
+        7,
+        8
+      ],
+      "extra_opened": 30
+    }
+  ]
 }

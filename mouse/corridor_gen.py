@@ -345,7 +345,10 @@ def _parse_seed_range(spec: str):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="M1 廊下コース生成器（CLI）")
-    parser.add_argument('--split', choices=['train', 'eval'], required=True)
+    # 研究計画書 §9-7（データ三分割）: train=学習用（毎エピソード生成のため通常は
+    # 事前生成不要）、validation=日常の実験判断用（seed 5000-5019）、
+    # eval=M1 gate 判定専用（seed 3000-3019。これを見て設定を調整しない）
+    parser.add_argument('--split', choices=['train', 'eval', 'validation'], required=True)
     parser.add_argument('--seeds', type=str, required=True, help='例: 2000-2199')
     parser.add_argument('--out-root', type=str, default='assets/corridor')
     args = parser.parse_args(argv)

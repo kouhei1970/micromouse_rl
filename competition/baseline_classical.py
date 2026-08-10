@@ -174,6 +174,12 @@ class AdachiPolicy(MousePolicy):
     def bind_sim(self, sim) -> None:
         self._sim = sim
         p = sim.params
+        # 観測ベクトルの並びは [距離 ×n, accel(3), gyro(3), 車輪角速度(2)] であり、
+        # 距離センサ本数 n は構成で変わる（研究計画書 r6 でセンサ 6→4 本に変更）。
+        # 固定インデックスを持つと構成変更で静かに壊れるため、本数から導出する。
+        n_dist = len(p.sensors)
+        self._i_gyro_z = n_dist + 5   # gyro z（accel3 のあと gyro x,y,z の 3 番目）
+        self._i_wheel = n_dist + 6    # 車輪角速度 左（次が右）
         # Ke_eff = motor_Ke * gear_ratio 等、制御ゲインの元になる物理定数は
         # すべて params から導出する（ハードコード禁止）。
         self.cell_size = p.cell_size
@@ -347,7 +353,7 @@ class AdachiPolicy(MousePolicy):
         self._state = "TURN"
 
     def _do_turn(self, obs: np.ndarray, yaw: float):
-        gyro_z = float(obs[11])
+        gyro_z = float(obs[self._i_gyro_z])
         yaw_err = _wrap_pi(self._turn_target_yaw - yaw)
 
         if (abs(yaw_err) < self.turn_done_rad) and (abs(gyro_z) < self.turn_done_gyro):
@@ -458,7 +464,7 @@ class AdachiPolicy(MousePolicy):
         self._fwd_v_setpoint = v_set
         v_profile = v_set
 
-        gyro_z = float(obs[11])
+        gyro_z = float(obs[self._i_gyro_z])
         omega_cmd = (self.kp_heading * heading_err
                      - self.kp_lateral * lateral_err
                      - self.kd_heading * gyro_z)
@@ -482,8 +488,8 @@ class AdachiPolicy(MousePolicy):
         omega_l_des = v_cmd / r - omega_cmd * tread / (2.0 * r)
         omega_r_des = v_cmd / r + omega_cmd * tread / (2.0 * r)
 
-        omega_l_act = float(obs[12])
-        omega_r_act = float(obs[13])
+        omega_l_act = float(obs[self._i_wheel])
+        omega_r_act = float(obs[self._i_wheel + 1])
 
         vl = self.Ke_eff * omega_l_des + self.kp_wheel * (omega_l_des - omega_l_act)
         vr = self.Ke_eff * omega_r_des + self.kp_wheel * (omega_r_des - omega_r_act)
