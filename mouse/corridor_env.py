@@ -9,6 +9,10 @@ M1（廊下追従・exp_001_corridor）用 Gymnasium 環境。分岐のない自
 報酬はポテンシャルベース整形 r = γΦ(s')−Φ(s)−0.001（Φ=−残り経路長）+ゴール到達+1.0。
 詳細は spec_m1_corridor.md §2 を参照。
 
+obs_dist_diff=True（exp_003 で追加）にすると、距離センサの 1 階差分 n 本を距離の直後へ
+挿入して (2n + 7) 次元にする。既定は False で、exp_002 までの観測（n + 7 次元）を
+そのまま再現する。
+
 --------------------------------------------------------------------------
 2 つの動作モード（2026-08-10 指揮側追加指示: 固定200本プールへの過学習防止）
 --------------------------------------------------------------------------
@@ -59,6 +63,21 @@ _GYRO_SCALE = 10.0
 _ACCEL_SCALE = 10.0
 _WHEEL_SCALE = 300.0   # 無負荷上限 286.8 rad/s
 
+# 距離センサ 1 階差分の正規化 [m]（exp_003 設計案 §3-②）。1 制御ステップ(10 ms)の
+# 最大変化は v_max×Δt = 3.86×0.01 = 38.6 mm なので、正面への接近は 0.05 m 内に収まる。
+# 壁切れでは 0.2 m 級の跳びが出るが、そこは飽和させて「大きく変化した」という
+# 二値的な信号として扱う（飽和型の検出器）。
+_DIST_DIFF_SCALE = 0.05
+
+# 学習に使ってはならないコース seed（研究計画書 §9-7 のデータ三分割）。
+#   3000-3019: M1 gate 判定専用（test）
+#   5000-5019: 日常の実験判断用（validation）
+# mode="generate" の学習用 seed は base_seed + 通算エピソード番号で単調に増えるため、
+# 長い学習ではワーカ 0 の seed がこの帯へ侵入しうる（実際 exp_001 の 300 万ステップ実行
+# では seed 約 3700 まで到達し、gate 用コースが学習に混入した疑いがある）。
+# 侵入を黙って許さず、決定的に読み飛ばす。
+_RESERVED_COURSE_SEEDS = frozenset(range(3000, 3020)) | frozenset(range(5000, 5020))
+
 _TIME_PENALTY = 0.001
 _GOAL_BONUS = 1.0
 _GOAL_RADIUS_M = 0.05
@@ -75,7 +94,8 @@ class CorridorEnv(gym.Env):
     metadata = {"render_modes": []}
 
     def __init__(self, course_dir=None, course_seeds=None, max_cache=32, seed=None,
-                 gamma: float = 0.995, mode: str = "fixed", base_seed: int = 2000):
+                 gamma: float = 0.995, mode: str = "fixed", base_seed: int = 2000,
+                 obs_dist_diff: bool = False):
         super().__init__()
         if mode not in ("fixed", "generate"):
             raise ValueError(f"mode は 'fixed' か 'generate' のみ対応: {mode!r}")
@@ -86,14 +106,15 @@ class CorridorEnv(gym.Env):
         self.gamma = float(gamma)
         self.params = RobotParams()
         self.max_cache = int(max_cache)
+        self.obs_dist_diff = bool(obs_dist_diff)
         # 距離センサ本数は仕様（RobotParams.sensors）から取る。生成される XML の
         # rangefinder 数と一致することは検証スイート S3 が保証している
         self._n_dist = len(self.params.sensors)
 
+        n_obs = self._n_dist * (2 if self.obs_dist_diff else 1) + _OBS_EXTRA_DIM
         self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(2,), dtype=np.float32)
         self.observation_space = spaces.Box(
-            low=-np.inf, high=np.inf,
-            shape=(self._n_dist + _OBS_EXTRA_DIM,), dtype=np.float32)
+            low=-np.inf, high=np.inf, shape=(n_obs,), dtype=np.float32)
 
         # mode="fixed" 用状態
         self._sim_cache = {}
@@ -117,6 +138,7 @@ class CorridorEnv(gym.Env):
         self._cum_lengths = None
         self._prev_potential = None
         self._prev_action = np.zeros(2, dtype=np.float32)
+        self._prev_dist_raw = None   # 距離センサの前ステップ生値 [m]（1 階差分用）
         self._step_count = 0
         self._max_steps = 0
 
@@ -176,6 +198,19 @@ class CorridorEnv(gym.Env):
     # ------------------------------------------------------------------
     # コース手続き生成（mode="generate"）
     # ------------------------------------------------------------------
+    def _next_course_seed(self) -> int:
+        """次エピソードの学習用コース seed を返す（予約帯は決定的に読み飛ばす）。
+
+        seed = base_seed + 通算エピソード番号 という規則は保ったまま、評価・検証に
+        予約された帯（_RESERVED_COURSE_SEEDS）に当たったらエピソード番号を進めて
+        次へ送る。読み飛ばしも seed だけで決まるので再現性は失われない。
+        """
+        while True:
+            course_seed = self.base_seed + self._episode_count
+            self._episode_count += 1
+            if course_seed not in _RESERVED_COURSE_SEEDS:
+                return course_seed
+
     def _generate_course_and_load(self, course_seed: int) -> dict:
         raw = generate_course(course_seed)
         path = raw["path"]
@@ -248,11 +283,25 @@ class CorridorEnv(gym.Env):
         # 距離センサ本数 n はモデルから導出される（計画書 r6 でセンサ 6→4 本に変更
         # されたため、切り出し位置を固定値で持たない）
         n = self._n_dist
-        dist = raw[0:n] / _DIST_SCALE
+        dist_raw = np.asarray(raw[0:n], dtype=np.float64)
+        dist = dist_raw / _DIST_SCALE
         gyro_z = raw[n + 5] / _GYRO_SCALE
         accel_xy = raw[n:n + 2] / _ACCEL_SCALE
         wheels = raw[n + 6:n + 8] / _WHEEL_SCALE
-        obs = np.concatenate([dist, [gyro_z], accel_xy, wheels, self._prev_action])
+
+        parts = [dist]
+        if self.obs_dist_diff:
+            # 差分は生値 [m] で取り、_DIST_DIFF_SCALE で正規化して [-1,1] にクリップする
+            # （exp_003）。reset 直後は前値がないので差分ゼロとする。
+            if self._prev_dist_raw is None:
+                diff = np.zeros(n, dtype=np.float64)
+            else:
+                diff = np.clip((dist_raw - self._prev_dist_raw) / _DIST_DIFF_SCALE, -1.0, 1.0)
+            parts.append(diff)
+        self._prev_dist_raw = dist_raw
+
+        parts += [[gyro_z], accel_xy, wheels, self._prev_action]
+        obs = np.concatenate(parts)
         return obs.astype(np.float32)
 
     def _make_info(self, remaining_m: float, collision: bool, goal: bool, sim_time: float) -> dict:
@@ -281,9 +330,7 @@ class CorridorEnv(gym.Env):
             course = self._courses[idx]
             self.sim = self._get_sim(str(course["xml_path"]))
         else:
-            course_seed = self.base_seed + self._episode_count
-            self._episode_count += 1
-            course = self._generate_course_and_load(course_seed)
+            course = self._generate_course_and_load(self._next_course_seed())
 
         self.course = course
         path = course["path"]
@@ -303,6 +350,7 @@ class CorridorEnv(gym.Env):
         self._max_steps = math.ceil(
             _TIME_LIMIT_SEC_PER_CELL * course["n_cells"] / self.params.control_dt)
         self._prev_action = np.zeros(2, dtype=np.float32)
+        self._prev_dist_raw = None   # エピソード間で差分を持ち越さない
 
         x, y, _yaw = self.sim.privileged_pose()
         remaining0 = remaining_path_length(self._path_centers, self._cum_lengths, x, y)

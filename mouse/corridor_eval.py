@@ -23,6 +23,14 @@ assets/corridor/eval、seed 3000-3019）× 各 5 試行（初期擾乱を試行�
 3. tipped（転倒）は CorridorEnv 側で info["collision"] に畳み込まれている
    （mouse/corridor_env.py 参照）ため、本ハーネスの失敗様式は spec 通り
    collision / timeout の2区分のみで分類する。
+4. 出力先の実験名（OutputManager の phase 名）は引数 output_name で受ける
+   （2026-08-10 教授承認）。exp_002 までは "exp_001_corridor" にハードコード
+   されており、別実験の成果物が同じパスへ上書きされる事故が起きたため
+   （研究計画書 §9-1）。既定値は後方互換のため従来どおり。
+   **測定内容・gate の定義は一切変えていない。**
+5. 観測構成（obs_dist_diff）は評価対象モデルの観測次元と一致させる必要がある
+   ため引数で受ける。gate の定義には影響しない（同じコース・同じ試行 seed・
+   同じ判定式）。
 """
 import math
 from pathlib import Path
@@ -35,6 +43,8 @@ from common.output_manager import OutputManager
 DEFAULT_N_TRIALS = 5
 DEFAULT_GAMMA = 0.995
 DEFAULT_COURSE_DIR = "assets/corridor/eval"
+VALIDATION_COURSE_DIR = "assets/corridor/validation"   # 日常の判断用（seed 5000-5019）
+DEFAULT_OUTPUT_NAME = "exp_001_corridor"
 
 
 def _trial_seed(base_seed: int, course_seed: int, trial_index: int) -> int:
@@ -111,7 +121,8 @@ def _run_one_trial(env: CorridorEnv, policy_fn, trial_seed: int) -> dict:
 
 def evaluate_corridor(policy_fn, course_dir=DEFAULT_COURSE_DIR, n_trials=DEFAULT_N_TRIALS,
                        deterministic=True, seed=0, gamma=DEFAULT_GAMMA,
-                       save_output=True) -> dict:
+                       save_output=True, output_name=DEFAULT_OUTPUT_NAME,
+                       obs_dist_diff: bool = False) -> dict:
     """M1 gate 測定を実行する。
 
     Args:
@@ -124,7 +135,10 @@ def evaluate_corridor(policy_fn, course_dir=DEFAULT_COURSE_DIR, n_trials=DEFAULT
         seed: 試行 seed 導出の基準値。
         gamma: CorridorEnv に渡す gamma（gate 測定では報酬値そのものは
             使わないが、環境構築に必要なため PPO の gamma と同じ既定値を使う）。
-        save_output: True なら OutputManager 経由で outputs/exp_001_corridor/ に保存。
+        save_output: True なら OutputManager 経由で outputs/<output_name>/ に保存。
+        output_name: 出力先の実験名（実験ごとに必ず変えること。研究計画書 §9-1）。
+        obs_dist_diff: 評価対象モデルの観測構成。距離センサの1階差分を含む
+            モデル（exp_003 以降）なら True。
 
     Returns:
         dict: no_contact_completion_rate（gate 本体）ほかの指標を含む summary。
@@ -141,7 +155,7 @@ def evaluate_corridor(policy_fn, course_dir=DEFAULT_COURSE_DIR, n_trials=DEFAULT
 
     for course_seed in course_seeds:
         env = CorridorEnv(course_dir=course_dir, course_seeds=[course_seed],
-                           max_cache=2, gamma=gamma)
+                           max_cache=2, gamma=gamma, obs_dist_diff=obs_dist_diff)
         trial_results = []
         for trial_idx in range(n_trials):
             tseed = _trial_seed(seed, course_seed, trial_idx)
@@ -189,11 +203,12 @@ def evaluate_corridor(policy_fn, course_dir=DEFAULT_COURSE_DIR, n_trials=DEFAULT
         seed=int(seed),
         gamma=float(gamma),
         course_dir=str(course_dir),
+        obs_dist_diff=bool(obs_dist_diff),
         per_course=per_course,
     )
 
     if save_output:
-        out_mgr = OutputManager("exp_001_corridor")
+        out_mgr = OutputManager(output_name)
         out_mgr.save_metrics(summary)
         out_mgr.finalize()
         summary["output_dir"] = str(out_mgr.archive_dir)

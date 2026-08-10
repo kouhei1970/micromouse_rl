@@ -15,8 +15,12 @@ spec_m1_corridor.md §5 で指定された 6 項目:
   2. 経路長ポテンシャル（単調減少・終点0・始点(n_cells-1)*0.18）
   3. 報酬の性質（停止時の解析式一致・前進で正・ゴールで+1.0）
   4. 観測（次元 = 距離センサ本数+7・距離[0,1]・reset直後の前ステップ行動(0,0)）
+     exp_003 で追加: obs_dist_diff=True のとき 2n+7 次元・reset直後の差分0・
+     差分が (d_t − d_(t−1))/0.05 のクリップ値と一致・[-1,1] に収まる
   5. 終了条件（壁接触でterminated+collision、上限ステップでtruncated）
   6. 決定性（同一seed+同一行動列でbit-exact一致）
+  7. exp_003 で追加: 学習用コース seed が予約帯（3000-3019, 5000-5019）を
+     決定的に読み飛ばす（研究計画書 §9-7）
 
 いずれかのテストで例外/assert が起きても他のテストは継続実行し、最後に全テストの
 実測値をまとめて表として print する。
@@ -268,6 +272,57 @@ def test_observation():
     record(f"1ステップ後も観測次元={expected_dim}", expected_dim, obs2.shape, dim_ok2)
     env.close()
 
+    # ---- exp_003: 距離センサの1階差分を加えた観測（obs_dist_diff=True）----
+    env = CorridorEnv(course_dir=EVAL_COURSE_DIR, course_seeds=[3000], gamma=GAMMA,
+                      obs_dist_diff=True)
+    obs, info = env.reset(seed=1)
+    expected_dim_d = 2 * n_dist + 7
+    dim_ok_d = obs.shape == (expected_dim_d,)
+    record(f"差分あり観測次元={expected_dim_d}（距離{n_dist}+差分{n_dist}+7）",
+           expected_dim_d, obs.shape, dim_ok_d)
+
+    diff0 = obs[n_dist:2 * n_dist]
+    reset_zero_ok = bool(np.allclose(diff0, 0.0))
+    record("reset直後の距離差分=0", 0.0, tuple(np.round(diff0, 6)), reset_zero_ok)
+
+    # 差分が「生値の1階差分 / 0.05 をクリップしたもの」と一致するかを、
+    # 環境の内部状態に頼らず sim.observation() から独立に再計算して照合する。
+    dist_raw_before = np.asarray(env.sim.observation()[0:n_dist], dtype=np.float64)
+    obs2, reward, terminated, truncated, info2 = env.step(np.array([0.5, 0.5], dtype=np.float32))
+    dist_raw_after = np.asarray(env.sim.observation()[0:n_dist], dtype=np.float64)
+    expected_diff = np.clip((dist_raw_after - dist_raw_before) / 0.05, -1.0, 1.0)
+    actual_diff = np.asarray(obs2[n_dist:2 * n_dist], dtype=np.float64)
+    diff_ok = bool(np.allclose(actual_diff, expected_diff, atol=1e-6))
+    record("距離差分が (d_t − d_(t−1))/0.05 のクリップ値と一致",
+           tuple(np.round(expected_diff, 5)), tuple(np.round(actual_diff, 5)), diff_ok)
+
+    # 差分成分が [-1,1] に収まる（クリップが効いている）
+    in_range = True
+    for _ in range(50):
+        obs2, reward, terminated, truncated, info2 = env.step(
+            np.array([1.0, 1.0], dtype=np.float32))
+        d = obs2[n_dist:2 * n_dist]
+        if not (np.all(d >= -1.0) and np.all(d <= 1.0)):
+            in_range = False
+            break
+        if terminated or truncated:
+            break
+    record("距離差分が常に[-1,1]", True, in_range, in_range)
+
+    # 距離成分そのものは差分あり/なしで同一（挿入位置が正しいことの確認）
+    env.close()
+    env_a = CorridorEnv(course_dir=EVAL_COURSE_DIR, course_seeds=[3000], gamma=GAMMA)
+    env_b = CorridorEnv(course_dir=EVAL_COURSE_DIR, course_seeds=[3000], gamma=GAMMA,
+                        obs_dist_diff=True)
+    oa, _ = env_a.reset(seed=1)
+    ob, _ = env_b.reset(seed=1)
+    same_head = bool(np.allclose(oa[0:n_dist], ob[0:n_dist]))
+    same_tail = bool(np.allclose(oa[n_dist:], ob[2 * n_dist:]))
+    record("差分の挿入で距離成分・後続成分が変わらない", True, same_head and same_tail,
+           same_head and same_tail)
+    env_a.close()
+    env_b.close()
+
 
 # ==========================================================================
 # テスト5: 終了条件
@@ -342,6 +397,45 @@ def test_determinism():
 
 
 # ==========================================================================
+# テスト7: 予約 seed の読み飛ばし（研究計画書 §9-7 の実装保証）
+# ==========================================================================
+def test_reserved_seed_skip():
+    print("\n[Test 7] 学習用コース seed が予約帯（3000-3019, 5000-5019）を飛ばす")
+
+    # 予約帯の直前から始めて、実際に生成されるコース seed 列を観測する
+    env = CorridorEnv(mode="generate", base_seed=2998, gamma=GAMMA)
+    seen = []
+    for _ in range(4):
+        _obs, info = env.reset(seed=0)
+        seen.append(int(info["course_seed"]))
+    env.close()
+    expected = [2998, 2999, 3020, 3021]
+    ok = seen == expected
+    record("生成 seed 列が gate 帯 3000-3019 を飛ばす", expected, seen, ok)
+
+    # 予約帯に一切入らないこと（帯をまたぐ十分な本数を確認）
+    env = CorridorEnv(mode="generate", base_seed=4998, gamma=GAMMA)
+    seen2 = []
+    for _ in range(4):
+        _obs, info = env.reset(seed=0)
+        seen2.append(int(info["course_seed"]))
+    env.close()
+    expected2 = [4998, 4999, 5020, 5021]
+    ok2 = seen2 == expected2
+    record("生成 seed 列が検証帯 5000-5019 を飛ばす", expected2, seen2, ok2)
+
+    # 読み飛ばし後も seed だけで決まる（再現性が失われていない）
+    env = CorridorEnv(mode="generate", base_seed=2998, gamma=GAMMA)
+    seen3 = []
+    for _ in range(4):
+        _obs, info = env.reset(seed=0)
+        seen3.append(int(info["course_seed"]))
+    env.close()
+    ok3 = seen3 == seen
+    record("同一 base_seed で seed 列が再現する", seen, seen3, ok3)
+
+
+# ==========================================================================
 # メイン
 # ==========================================================================
 def main():
@@ -379,6 +473,11 @@ def main():
         test_determinism()
     except Exception as e:  # noqa: BLE001
         record_exception("test_determinism", e)
+
+    try:
+        test_reserved_seed_skip()
+    except Exception as e:  # noqa: BLE001
+        record_exception("test_reserved_seed_skip", e)
 
     print("\n" + "=" * 78)
     print("テスト結果一覧")
