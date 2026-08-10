@@ -15,6 +15,7 @@
 - [note_003: キャスタ摩擦欠陥の発見 — MuJoCo 摩擦合成規則の罠](note_003_caster_friction.md)
 - [note_004: 物理モデルの検証 — 監査から全 green まで](note_004_model_verification.md)
 - [note_005: M0 総括 — 測る仕組みを先に作る](note_005_m0_summary.md)
+- [note_006: 探索戦略 — 足立法の実際と「最短経路の確定」](note_006_exploration_strategy.md)
 
 ## 補助資料
 

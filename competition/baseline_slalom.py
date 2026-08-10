@@ -1115,6 +1115,15 @@ class SlalomPolicy(MousePolicy):
                 return self._turn_inplace_voltage(obs, yaw_err, gyro_z)
 
         if self._state == "DRIVE" and self._path is not None:
+            # このティック内で_replan()が呼ばれ経路が張り替わっている場合に
+            # 備え、制御直前に必ずカーソル探索をやり直す（_replan()自身は
+            # カーソルを0にリセットするのみで、新しい経路上での実際の
+            # 車体位置の探索まではしないため。これを怠ると、張り替え直後の
+            # ティックで「新しい経路の先頭点（セル中心）」を実際の車体位置と
+            # 誤認して大きなe_y/e_psiを計算し、暴走・壁衝突する不具合が
+            # スモークテストで見つかった）。経路が張り替わっていなければ
+            # 冪等（同じ結果）なので毎ティック呼んでも無害。
+            self._cursor = self._advance_cursor(x, y)
             return self._do_drive_control(obs, x, y, yaw)
 
         return 0.0, 0.0
