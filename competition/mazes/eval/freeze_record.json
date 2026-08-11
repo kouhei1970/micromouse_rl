@@ -1,0 +1,206 @@
+{
+  "band": "eval",
+  "frozen": "2026-08-12",
+  "ruling": "professor 2026-08-11-R3",
+  "generator": "competition/maze_gen_v3.py",
+  "command": ".venv/bin/python -u -m competition.maze_gen_v3 --out-dir <出力先> --seed-from 1000 --seed-to 20999 --extra-open 15",
+  "candidate_pool_seeds": [
+    1000,
+    20999
+  ],
+  "seeds_consumed": 13038,
+  "rule_conforming_candidates": 5435,
+  "acceptance_by_stratum": [
+    {
+      "stratum": 1,
+      "range": [
+        1.058,
+        1.339
+      ],
+      "accepted": 5,
+      "candidates": 1890
+    },
+    {
+      "stratum": 2,
+      "range": [
+        1.339,
+        1.625
+      ],
+      "accepted": 5,
+      "candidates": 325
+    },
+    {
+      "stratum": 3,
+      "range": [
+        1.625,
+        1.88
+      ],
+      "accepted": 5,
+      "candidates": 168
+    },
+    {
+      "stratum": 4,
+      "range": [
+        1.88,
+        3.267
+      ],
+      "accepted": 5,
+      "candidates": 175
+    }
+  ],
+  "acceptance_rate_caveat": "受理率 = 採用 5 面 ÷ 打ち切りまでにその層で見た候補数。層別サンプリングは全層が埋まった時点で打ち切るので、最後の 1 面が出るまでの運で分母が変わる。帯の性質ではない。",
+  "k_class_target": {
+    "1": 4,
+    "2": 8,
+    ">=3": 8
+  },
+  "delta": 4,
+  "theta": 3,
+  "d_window": [
+    45,
+    110
+  ],
+  "n_mazes": 20,
+  "mazes": [
+    {
+      "maze": "maze_1018",
+      "seed": 1018,
+      "sha256_npz": "48e7c3bd004ff8da52f597487b4dc7e0b3c4925f14856848414f3025bab0d96f",
+      "sha256_xml": "ce53fd11c0337137892bac047df3772de40b7c7c19178eefee161df94fab7104",
+      "d_true": 83
+    },
+    {
+      "maze": "maze_1019",
+      "seed": 1019,
+      "sha256_npz": "eae302b5cd7dbca9718398625356253409915aa130c8aea3a047f0fae6e69285",
+      "sha256_xml": "7256bedbca6cff1ae3badebbb7f364fe5251ddb330877cef480c3850bb9a7d31",
+      "d_true": 81
+    },
+    {
+      "maze": "maze_1021",
+      "seed": 1021,
+      "sha256_npz": "8d9853c410fb6bd36130ca92fd7fd973803c9c0c8cfef6d0fd7f721016e0854b",
+      "sha256_xml": "d49453335cb25b0e8f59c2a51eae27e1c931a164f933e1e8b01430ef16e08cc7",
+      "d_true": 49
+    },
+    {
+      "maze": "maze_1023",
+      "seed": 1023,
+      "sha256_npz": "5a6190d909b9d28f12295fad5a86442e64dc0db293dc50ea35040331c1c69c11",
+      "sha256_xml": "9af73fa2121e6c07b0522d36ec3b3fa1e0ea22094c97ca74777b2a26e029ce6a",
+      "d_true": 81
+    },
+    {
+      "maze": "maze_1024",
+      "seed": 1024,
+      "sha256_npz": "757b5f178fc448fd558e1b3e5faf04bdbbab80f1298724becdb50ead64906b60",
+      "sha256_xml": "1aed9499dee575e5cc5aa666eec35378dce2acdcebfc83304693c78d907831a7",
+      "d_true": 49
+    },
+    {
+      "maze": "maze_1041",
+      "seed": 1041,
+      "sha256_npz": "136c7541c433bca178d893811b7332ee5ab6236ae8bb6f2f0aa58425739dbfd2",
+      "sha256_xml": "8a75d2045afe8183cd513bb61c07168001a3cbec37d299ebadf8e4b2157a6e48",
+      "d_true": 71
+    },
+    {
+      "maze": "maze_1046",
+      "seed": 1046,
+      "sha256_npz": "82db5093965064ec6916472b0ba4e8c0b2472b854995362a87fe7cfa6a8f0b3c",
+      "sha256_xml": "bb74175e87a7b9d66e86673af5f50779caeedbbe26735685ceedbf5439d8fb08",
+      "d_true": 45
+    },
+    {
+      "maze": "maze_1073",
+      "seed": 1073,
+      "sha256_npz": "4e1d9a2819da9f753d06e8218aa3d60897d6d49d83bb04ff4dff37b4343c2e11",
+      "sha256_xml": "c05f3c424c19078508f87447fd53bb8a4abfa811d7f0c0ae4e30cb7c0a8335c8",
+      "d_true": 89
+    },
+    {
+      "maze": "maze_1103",
+      "seed": 1103,
+      "sha256_npz": "bbbba1ba5473b89c0f32ebe7e712691fd873a4ace4ecc4f9787e5a0253127851",
+      "sha256_xml": "7224dac05e132a111f5af4384f7d61c37d4ac291e1f7042613daec90ceace422",
+      "d_true": 71
+    },
+    {
+      "maze": "maze_1126",
+      "seed": 1126,
+      "sha256_npz": "ee30a95e806f5edfafaf0061f4274651d775efc44d22f645c19a5cc558720099",
+      "sha256_xml": "40ca6464d0c14c2b484aae8c1fb13704db13fa2ceb464b2da32d74687e5bf3f8",
+      "d_true": 54
+    },
+    {
+      "maze": "maze_1138",
+      "seed": 1138,
+      "sha256_npz": "75b639d0f196474e8a946eaf3e44b9acea6ef137b7caf49470e1f31191ab7c50",
+      "sha256_xml": "ca439acbe70e72d961a52611da229215d5fa3ad504f80c14a99180478310431f",
+      "d_true": 58
+    },
+    {
+      "maze": "maze_1161",
+      "seed": 1161,
+      "sha256_npz": "5a8cb2b6805d2ca78432938b5a15d70a29d28c21cb1b59e0945b60fdd595e7a3",
+      "sha256_xml": "f1bb901bb0b19738cf7a6eaf8a6e0e2d50d09d8965e3d092116c6a6959dd2f1a",
+      "d_true": 49
+    },
+    {
+      "maze": "maze_1240",
+      "seed": 1240,
+      "sha256_npz": "7e332cbcbf7dcca3852a8165b90c90beefba082b29da638d8d735ce15a156de8",
+      "sha256_xml": "9e1c31d1d34d9c2327588b2547b5e68593e4e84ad66def3ee97c731e5ea6edff",
+      "d_true": 68
+    },
+    {
+      "maze": "maze_1804",
+      "seed": 1804,
+      "sha256_npz": "c6f7826cebc88655d058a6d832a1a724b8797ddee6a03f80af4a24262c018703",
+      "sha256_xml": "d635effa1d3fda3ca868046aa0f7d2e470d1eb71d65ad68ca6a19f9534275ff2",
+      "d_true": 64
+    },
+    {
+      "maze": "maze_2304",
+      "seed": 2304,
+      "sha256_npz": "fa283d5e60b9d6fe7ecd6c201023e4c7bbdcd584f04061c94476f15b9db09d17",
+      "sha256_xml": "7bc5d0afad23a88d8638eec70ee167683c4c252e8fe0d9fdc961e86d174dbb07",
+      "d_true": 63
+    },
+    {
+      "maze": "maze_3707",
+      "seed": 3707,
+      "sha256_npz": "20b2fad4f829f4c7ba968dadda6a09c44fb8498030d020f1fd617f86448f3757",
+      "sha256_xml": "870f698b681ad2d9707eaad6edde1633dcab7fd4d23aa71acee7eaf7e4e8a926",
+      "d_true": 64
+    },
+    {
+      "maze": "maze_5188",
+      "seed": 5188,
+      "sha256_npz": "4f19bf652643072f14cc51ab0092c2c060520333fbebda76af1b9bd927af993c",
+      "sha256_xml": "43308d8b335d35c6dbfa8f04d23c93effd50818e0786a986c7b7ca5e9f78958e",
+      "d_true": 95
+    },
+    {
+      "maze": "maze_7837",
+      "seed": 7837,
+      "sha256_npz": "2653916181cdefb0cca2170961062c2956ca6e04b67157caf9035d76f8306eb1",
+      "sha256_xml": "9c3102db27efbba6de5f0ffbf0891bc3b41e8eb8498a4996888b281ae53517fd",
+      "d_true": 97
+    },
+    {
+      "maze": "maze_8209",
+      "seed": 8209,
+      "sha256_npz": "cdf8ec77154170414c5a6e790ebb94e5c74bf3b587b7d330d50ae83c40dae8cd",
+      "sha256_xml": "13157e2334a7e85e5c6efa6fb8f329e7859e5724249a7807e43964364610ec29",
+      "d_true": 50
+    },
+    {
+      "maze": "maze_14037",
+      "seed": 14037,
+      "sha256_npz": "a2c272409a81368d61a3cfe8a6c795e6f7f092d24f37488fad090864da4bb605",
+      "sha256_xml": "170fdc1a2b5ea779cfb7b379503cb425b216db3d489dda2d1d2889452dbb6118",
+      "d_true": 80
+    }
+  ]
+}
