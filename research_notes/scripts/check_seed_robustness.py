@@ -45,7 +45,7 @@ if str(REPO_ROOT) not in sys.path:
 from stable_baselines3 import PPO  # noqa: E402
 
 from mouse.corridor_eval import (  # noqa: E402
-    DEFAULT_COURSE_DIR, VALIDATION_COURSE_DIR, evaluate_corridor)
+    DEFAULT_COURSE_DIR, VALIDATION_COURSE_DIR, evaluate_corridor, file_sha256)
 
 # (表示名, k, seed, モデルのパス)。既存 exp_006 の 4 本＋今回の seed 違い。
 RUNS = [
@@ -83,7 +83,16 @@ CRIT_COMPLETION = 0.90
 CRIT_SEC_PER_CELL = 0.205
 
 
-def measure(model_path: Path, course_dir: str, n_trials: int):
+def measure(model_path: Path, course_dir: str, n_trials: int, output_name: str = None):
+    """1 モデルを評価する。
+
+    **`save_output=True` にすること**（2026-08-11 是正）。以前は `False` にしており、
+    **exp_006 系だけ走行ごとの記録が 1 つも残っていなかった**。
+    exp_005 までは `evaluate.py` 経由で保存されていたのに、集計スクリプトが
+    「評価を都度実行して結果を捨てる」作りだったため、M1 の完了判定の根拠となる数値を
+    **誰も再実行なしに検算できない**状態になっていた。
+    しかもそこは集計母集団の誤り（失敗走行の混入）が実際に一度起きた箇所である。
+    """
     model = PPO.load(str(model_path), device="cpu")
 
     def policy_fn(obs):
@@ -93,7 +102,10 @@ def measure(model_path: Path, course_dir: str, n_trials: int):
     return evaluate_corridor(
         policy_fn, course_dir=course_dir, n_trials=n_trials,
         deterministic=True, seed=0, gamma=0.995,
-        save_output=False, obs_dist_diff=True,
+        save_output=output_name is not None,
+        output_name=output_name or "unused",
+        obs_dist_diff=True, keep_traces=True,
+        model_sha256=file_sha256(model_path),
     )
 
 
@@ -224,12 +236,14 @@ def main():
     val_rows, gate_rows = [], []
     for label, _k, seed, path in present:
         print(f"[eval] {label} seed={seed} 検証帯 ...", flush=True)
-        val_rows.append(row(label, seed, measure(REPO_ROOT / path,
-                                                 VALIDATION_COURSE_DIR, 1)))
+        val_rows.append(row(label, seed, measure(
+            REPO_ROOT / path, VALIDATION_COURSE_DIR, 1,
+            output_name=f"{Path(path).stem}_validation")))
         if args.gate:
             print(f"[eval] {label} seed={seed} gate 帯 ...", flush=True)
-            gate_rows.append(row(label, seed, measure(REPO_ROOT / path,
-                                                      DEFAULT_COURSE_DIR, 5)))
+            gate_rows.append(row(label, seed, measure(
+                REPO_ROOT / path, DEFAULT_COURSE_DIR, 5,
+                output_name=f"{Path(path).stem}_gate")))
 
     print_table("検証帯（seed 5000-5019）", val_rows, "20 コース ×1 試行 = 20 試行／行")
     if gate_rows:

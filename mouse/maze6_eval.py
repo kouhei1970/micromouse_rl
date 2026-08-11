@@ -39,22 +39,32 @@ VALIDATION_MAZE_DIR = "assets/maze6/loop/validation"  # seed 7000-7019
 DEFAULT_N_TRIALS = 5
 
 
+def _git_rev() -> str:
+    """現在の HEAD（dirty なら末尾に -dirty）。corridor_eval と同じ実装を使う。"""
+    from mouse.corridor_eval import _git_rev as _r
+    return _r()
+
+
 def _trial_seed(base: int, maze_seed: int, trial_idx: int) -> int:
     """(base, maze_seed, trial) から決定的に試行 seed を導く（corridor_eval と同じ規約）。"""
     return (base * 1_000_003 + maze_seed * 10_007 + trial_idx) % (2 ** 31 - 1)
 
 
-def _run_one_trial(env, policy_fn, tseed: int) -> dict:
+def _run_one_trial(env, policy_fn, tseed: int, keep_trace: bool = False) -> dict:
     obs, info = env.reset(seed=tseed)
     p = RobotParams()
     prev_sign = np.sign(np.zeros(2))
     flips = np.zeros(2, dtype=int)
     acts, cur, n_steps = [], [], 0
+    omegas, poses, times = [], [], []
     outcome = "timeout"
     # 最小壁余裕（安全余裕そのもの。横偏差では測れない。mouse/clearance.py 参照）
     meter = ClearanceMeter(env.sim)
     s_ = env.sim
     wheel_adr = (s_._left_wheel_qvel_adr, s_._right_wheel_qvel_adr)
+    # 旋回回数（時間の主要因。迷路では分岐ごとに出る）
+    _, _, yaw_prev = s_.privileged_pose()
+    yaw_acc, n_turns = 0.0, 0
     while True:
         a = np.clip(np.asarray(policy_fn(obs), dtype=np.float64), -1.0, 1.0)
         acts.append(a)
@@ -69,6 +79,20 @@ def _run_one_trial(env, policy_fn, tseed: int) -> dict:
         cur.append((v - p.motor_Ke * p.gear_ratio * 0.5 * (w0 + w1)) / p.motor_R)
         meter.update()
         n_steps += 1
+
+        x, y, yaw = s_.privileged_pose()
+        dyaw = math.atan2(math.sin(yaw - yaw_prev), math.cos(yaw - yaw_prev))
+        yaw_prev = yaw
+        if yaw_acc * dyaw < 0.0:
+            yaw_acc = 0.0
+        yaw_acc += dyaw
+        if abs(yaw_acc) >= math.pi / 4:
+            n_turns += 1
+            yaw_acc = 0.0
+        if keep_trace:
+            omegas.append(0.5 * (w0 + w1))
+            poses.append((x, y, yaw))
+            times.append(float(info.get("sim_time", 0.0)))
         if term or trunc:
             outcome = ("goal" if info.get("goal") else
                        "collision" if info.get("collision") else "timeout")
@@ -91,6 +115,8 @@ def _run_one_trial(env, policy_fn, tseed: int) -> dict:
                                                       and info.get("d_start")) else None,
         n_visited=int(info.get("n_visited", 0)),
         odom_error_m=float(info.get("odom_error_m", float("nan"))),
+        min_wall_clearance_m=(float(meter.worst)
+                              if math.isfinite(meter.worst) else None),
         action_diff_rms=float(np.sqrt((d ** 2).sum(axis=1).mean())),
         sign_flip_rate_left=float(flips[0] / sim_time) if sim_time > 0 else 0.0,
         sign_flip_rate_right=float(flips[1] / sim_time) if sim_time > 0 else 0.0,
@@ -98,10 +124,17 @@ def _run_one_trial(env, policy_fn, tseed: int) -> dict:
         # モータ電流の RMS（左右平均）。M1 で一次指標に採用（card.md §3-9）
         i_rms=float(np.sqrt((cur ** 2).mean())),
         i_dc=float(np.abs(cur.mean(axis=0)).mean()),
+        i_ac=float(np.sqrt(np.maximum(
+            (cur ** 2).mean(axis=0) - cur.mean(axis=0) ** 2, 0.0)).mean()),
+        n_turns=int(n_turns),
+        trace=(dict(t=[round(v, 4) for v in times],
+                    action=[[round(float(a[0]), 5), round(float(a[1]), 5)] for a in acts],
+                    wheel_omega=[[round(float(w[0]), 4), round(float(w[1]), 4)]
+                                 for w in omegas],
+                    pose=[[round(v, 5) for v in q] for q in poses])
+               if keep_trace else None),
         # 車輪が追従できない帯域の指令成分。理論最悪値 HF_WORST=0.762 で正規化して読む
         hf_ratio=float(hf_energy_ratio(acts)),
-        # 機体外形と最も近い壁との距離の最小値 [m]。0 に近いほど危ない
-        min_wall_clearance_m=float(meter.worst),
     )
 
 
@@ -111,7 +144,8 @@ def _mean(xs):
 
 
 def evaluate_maze6(policy_fn, maze_dir=EVAL_MAZE_DIR, n_trials=DEFAULT_N_TRIALS,
-                   seed=0, gamma=0.995, maze_mode="loop") -> dict:
+                   seed=0, gamma=0.995, maze_mode="loop",
+                   keep_traces: bool = True, model_sha256: str = "unknown") -> dict:
     """M2-0 の評価を実行する。
 
     Args:
@@ -135,7 +169,8 @@ def evaluate_maze6(policy_fn, maze_dir=EVAL_MAZE_DIR, n_trials=DEFAULT_N_TRIALS,
     for ms in maze_seeds:
         env = Maze6Env(maze_dir=maze_dir, maze_seeds=[ms], max_cache=2,
                        gamma=gamma, mode="fixed", maze_mode=maze_mode)
-        trials = [_run_one_trial(env, policy_fn, _trial_seed(seed, ms, t))
+        trials = [_run_one_trial(env, policy_fn, _trial_seed(seed, ms, t),
+                                 keep_trace=keep_traces)
                   for t in range(n_trials)]
         env.close() if hasattr(env, "close") else None
         all_trials.extend(trials)
@@ -149,7 +184,33 @@ def evaluate_maze6(policy_fn, maze_dir=EVAL_MAZE_DIR, n_trials=DEFAULT_N_TRIALS,
 
     n = len(all_trials)
     ok = [r for r in all_trials if r["no_contact_goal"]]      # **成功走行のみ**
+
+    # 代表走行の trace を決定的な規則で選び、本体は per_maze から落とす
+    traces = {}
+    if keep_traces:
+        flat = [(pm["maze_seed"], i, t) for pm in per_maze
+                for i, t in enumerate(pm["trials"])]
+        good = sorted([r for r in flat if r[2]["no_contact_goal"]],
+                      key=lambda r: 0.5 * (r[2]["sign_flip_rate_left"]
+                                           + r[2]["sign_flip_rate_right"]))
+        if good:
+            for tag, rec in (("median_flip", good[len(good) // 2]),
+                             ("max_flip", good[-1])):
+                if rec[2].get("trace"):
+                    traces[tag] = dict(maze_seed=rec[0], trial_index=rec[1],
+                                       **rec[2]["trace"])
+        bad = [r for r in flat if not r[2]["no_contact_goal"]]
+        if bad and bad[0][2].get("trace"):
+            traces["first_failure"] = dict(maze_seed=bad[0][0], trial_index=bad[0][1],
+                                           **bad[0][2]["trace"])
+    for pm in per_maze:
+        for t in pm["trials"]:
+            t.pop("trace", None)
+
     return dict(
+        # --- 来歴（再実行で検算できるようにするため）---
+        git_rev=_git_rev(), model_sha256=model_sha256, eval_schema_version=2,
+        traces=traces,
         n_mazes=len(maze_seeds), n_trials_per_maze=n_trials, n_total_trials=n,
         goal_rate=sum(1 for r in all_trials if r["no_contact_goal"]) / n,
         collision_rate=sum(1 for r in all_trials if r["outcome"] == "collision") / n,
