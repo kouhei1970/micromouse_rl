@@ -1,812 +1,1172 @@
 [
  {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/adachi_classical_20260811_074936/maze_16MM2012CX.json",
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/adachi_classical_20260811_074936/maze_16MM2012CX.json",
   "bytes": 1419,
-  "mtime": 1786402911.9080615
+  "mtime": 1786432050.8023994
  },
  {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/adachi_classical_20260811_074936/maze_16MM2013CX.json",
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/adachi_classical_20260811_074936/maze_16MM2013CX.json",
   "bytes": 1379,
-  "mtime": 1786402911.9096224
+  "mtime": 1786432050.805586
  },
  {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/adachi_classical_20260811_074936/maze_16MM2014CX.json",
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/adachi_classical_20260811_074936/maze_16MM2014CX.json",
   "bytes": 1376,
-  "mtime": 1786402911.9085205
+  "mtime": 1786432050.8039825
  },
  {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/adachi_classical_20260811_074936/maze_16MM2015CX.json",
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/adachi_classical_20260811_074936/maze_16MM2015CX.json",
   "bytes": 1048,
-  "mtime": 1786402911.9100823
+  "mtime": 1786432050.8062181
  },
  {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/adachi_classical_20260811_074936/maze_16MM2015C_Chubu.json",
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/adachi_classical_20260811_074936/maze_16MM2015C_Chubu.json",
   "bytes": 1050,
-  "mtime": 1786402911.9098508
+  "mtime": 1786432050.8059032
  },
  {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/adachi_classical_20260811_074936/maze_16MM2016CX.json",
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/adachi_classical_20260811_074936/maze_16MM2016CX.json",
   "bytes": 1376,
-  "mtime": 1786402911.908915
+  "mtime": 1786432050.8046021
  },
  {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/adachi_classical_20260811_074936/maze_16MM2016C_Chubu.json",
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/adachi_classical_20260811_074936/maze_16MM2016C_Chubu.json",
   "bytes": 1380,
-  "mtime": 1786402911.9103107
+  "mtime": 1786432050.807074
  },
  {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/adachi_classical_20260811_074936/maze_16MM2016C_Kyushu.json",
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/adachi_classical_20260811_074936/maze_16MM2016C_Kyushu.json",
   "bytes": 1753,
-  "mtime": 1786402911.910707
+  "mtime": 1786432050.8073668
  },
  {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/adachi_classical_20260811_074936/maze_16MM2017CX.json",
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/adachi_classical_20260811_074936/maze_16MM2017CX.json",
   "bytes": 1044,
-  "mtime": 1786402911.910945
+  "mtime": 1786432050.8079536
  },
  {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/adachi_classical_20260811_074936/maze_16MM2017CX_pre.json",
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/adachi_classical_20260811_074936/maze_16MM2017CX_pre.json",
   "bytes": 1427,
-  "mtime": 1786402911.9093769
+  "mtime": 1786432050.805283
  },
  {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/adachi_classical_20260811_074936/maze_16MM2017C_East.json",
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/adachi_classical_20260811_074936/maze_16MM2017C_East.json",
   "bytes": 1051,
-  "mtime": 1786402911.9082882
+  "mtime": 1786432050.8036687
  },
  {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/adachi_classical_20260811_074936/maze_16MM2017C_student.json",
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/adachi_classical_20260811_074936/maze_16MM2017C_student.json",
   "bytes": 1056,
-  "mtime": 1786402911.9091465
+  "mtime": 1786432050.8048606
  },
  {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/l0b_straightrun_20260811_074936/maze_16MM2012CX.json",
-  "bytes": 2097,
-  "mtime": 1786402911.911406
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/adachi_classical_20260811_074936/maze_16MM2018CX.json",
+  "bytes": 1422,
+  "mtime": 1786432050.8042946
  },
  {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/l0b_straightrun_20260811_074936/maze_16MM2013CX.json",
-  "bytes": 1781,
-  "mtime": 1786402911.913076
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/adachi_classical_20260811_074936/maze_16MM2018C_student.json",
+  "bytes": 1380,
+  "mtime": 1786432050.8067582
  },
  {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/l0b_straightrun_20260811_074936/maze_16MM2014CX.json",
-  "bytes": 1750,
-  "mtime": 1786402911.91186
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/adachi_classical_20260811_074936/maze_16MM2019CX.json",
+  "bytes": 1375,
+  "mtime": 1786432050.8065073
  },
  {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/l0b_straightrun_20260811_074936/maze_16MM2015CX.json",
-  "bytes": 1420,
-  "mtime": 1786402911.9135835
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/adachi_classical_20260811_074936/maze_16MM2019C_student.json",
+  "bytes": 1382,
+  "mtime": 1786432050.8033438
  },
  {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/l0b_straightrun_20260811_074936/maze_16MM2015C_Chubu.json",
-  "bytes": 2094,
-  "mtime": 1786402911.913341
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/l0b_straightrun_20260811_074936/maze_16MM2016CX.json",
-  "bytes": 1748,
-  "mtime": 1786402911.912095
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/l0b_straightrun_20260811_074936/maze_16MM2016C_Chubu.json",
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/adachi_classical_20260811_074936/maze_16MM2020C_student.json",
   "bytes": 1753,
-  "mtime": 1786402911.91382
+  "mtime": 1786432050.802731
  },
  {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/l0b_straightrun_20260811_074936/maze_16MM2016C_Kyushu.json",
-  "bytes": 2106,
-  "mtime": 1786402911.914058
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/adachi_classical_20260811_074936/maze_16MM2021H_Kansai.json",
+  "bytes": 1375,
+  "mtime": 1786432050.8076782
  },
  {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/l0b_straightrun_20260811_074936/maze_16MM2017CX.json",
-  "bytes": 1421,
-  "mtime": 1786402911.9145417
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/l0b_straightrun_20260811_074936/maze_16MM2017CX_pre.json",
-  "bytes": 2120,
-  "mtime": 1786402911.9127367
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/l0b_straightrun_20260811_074936/maze_16MM2017C_East.json",
-  "bytes": 1778,
-  "mtime": 1786402911.911631
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/l0b_straightrun_20260811_074936/maze_16MM2017C_student.json",
-  "bytes": 1431,
-  "mtime": 1786402911.9123237
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/l0c_slalom_20260811_074936/maze_16MM2012CX.json",
-  "bytes": 2454,
-  "mtime": 1786402911.9029236
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/l0c_slalom_20260811_074936/maze_16MM2013CX.json",
-  "bytes": 2455,
-  "mtime": 1786402911.90568
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/l0c_slalom_20260811_074936/maze_16MM2014CX.json",
-  "bytes": 2454,
-  "mtime": 1786402911.9042525
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/l0c_slalom_20260811_074936/maze_16MM2015CX.json",
-  "bytes": 2454,
-  "mtime": 1786402911.9061568
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/l0c_slalom_20260811_074936/maze_16MM2015C_Chubu.json",
-  "bytes": 2450,
-  "mtime": 1786402911.9059193
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/l0c_slalom_20260811_074936/maze_16MM2016CX.json",
-  "bytes": 2448,
-  "mtime": 1786402911.9047742
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/l0c_slalom_20260811_074936/maze_16MM2016C_Chubu.json",
-  "bytes": 2452,
-  "mtime": 1786402911.9068534
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/l0c_slalom_20260811_074936/maze_16MM2016C_Kyushu.json",
-  "bytes": 2461,
-  "mtime": 1786402911.907101
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/l0c_slalom_20260811_074936/maze_16MM2017CX.json",
-  "bytes": 2445,
-  "mtime": 1786402911.9075732
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/l0c_slalom_20260811_074936/maze_16MM2017CX_pre.json",
-  "bytes": 2450,
-  "mtime": 1786402911.9054391
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/l0c_slalom_20260811_074936/maze_16MM2017C_East.json",
-  "bytes": 2449,
-  "mtime": 1786402911.9040196
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/l0c_slalom_20260811_074936/maze_16MM2017C_student.json",
-  "bytes": 2468,
-  "mtime": 1786402911.905179
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/l0c_slalom_20260811_074936/maze_16MM2018CX.json",
-  "bytes": 2449,
-  "mtime": 1786402911.9045086
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/l0c_slalom_20260811_074936/maze_16MM2018C_student.json",
-  "bytes": 2443,
-  "mtime": 1786402911.9066179
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/l0c_slalom_20260811_074936/maze_16MM2019CX.json",
-  "bytes": 2456,
-  "mtime": 1786402911.9063892
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/l0c_slalom_20260811_074936/maze_16MM2019C_student.json",
-  "bytes": 2455,
-  "mtime": 1786402911.903761
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/l0c_slalom_20260811_074936/maze_16MM2020C_student.json",
-  "bytes": 2456,
-  "mtime": 1786402911.9032598
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/contest_reference/l0c_slalom_20260811_074936/maze_16MM2021H_Kansai.json",
-  "bytes": 2454,
-  "mtime": 1786402911.9073422
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/adachi_classical_20260811_070512/maze_1000.json",
-  "bytes": 1425,
-  "mtime": 1786402911.9277806
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/adachi_classical_20260811_070512/maze_1001.json",
-  "bytes": 1372,
-  "mtime": 1786402911.928034
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/adachi_classical_20260811_070512/maze_1002.json",
-  "bytes": 1420,
-  "mtime": 1786402911.9261281
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/adachi_classical_20260811_070512/maze_1003.json",
-  "bytes": 1744,
-  "mtime": 1786402911.9270396
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/adachi_classical_20260811_070512/maze_1004.json",
-  "bytes": 1417,
-  "mtime": 1786402911.922527
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/adachi_classical_20260811_070512/maze_1005.json",
-  "bytes": 1744,
-  "mtime": 1786402911.9253006
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/adachi_classical_20260811_070512/maze_1006.json",
-  "bytes": 1413,
-  "mtime": 1786402911.9288335
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/adachi_classical_20260811_070512/maze_1007.json",
-  "bytes": 1768,
-  "mtime": 1786402911.9290955
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/adachi_classical_20260811_070512/maze_1008.json",
-  "bytes": 1758,
-  "mtime": 1786402911.9234285
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/adachi_classical_20260811_070512/maze_1009.json",
-  "bytes": 1755,
-  "mtime": 1786402911.924065
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/adachi_classical_20260811_070512/maze_1010.json",
-  "bytes": 1750,
-  "mtime": 1786402911.928572
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/adachi_classical_20260811_070512/maze_1011.json",
-  "bytes": 1744,
-  "mtime": 1786402911.9293563
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/adachi_classical_20260811_070512/maze_1012.json",
-  "bytes": 1423,
-  "mtime": 1786402911.922771
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/adachi_classical_20260811_070512/maze_1013.json",
-  "bytes": 1748,
-  "mtime": 1786402911.9248075
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/adachi_classical_20260811_070512/maze_1014.json",
-  "bytes": 1424,
-  "mtime": 1786402911.9265065
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/adachi_classical_20260811_070512/maze_1015.json",
-  "bytes": 1744,
-  "mtime": 1786402911.9267886
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/adachi_classical_20260811_070512/maze_1016.json",
-  "bytes": 2077,
-  "mtime": 1786402911.9275343
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/adachi_classical_20260811_070512/maze_1017.json",
-  "bytes": 1748,
-  "mtime": 1786402911.9283037
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/adachi_classical_20260811_070512/maze_1018.json",
-  "bytes": 1368,
-  "mtime": 1786402911.9257116
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/adachi_classical_20260811_070512/maze_1019.json",
-  "bytes": 1423,
-  "mtime": 1786402911.9272883
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0b_straightrun_20260811_070512/maze_1000.json",
-  "bytes": 1747,
-  "mtime": 1786402911.9201005
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0b_straightrun_20260811_070512/maze_1001.json",
-  "bytes": 1426,
-  "mtime": 1786402911.9204733
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0b_straightrun_20260811_070512/maze_1002.json",
-  "bytes": 1769,
-  "mtime": 1786402911.9180443
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0b_straightrun_20260811_070512/maze_1003.json",
-  "bytes": 1749,
-  "mtime": 1786402911.918981
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0b_straightrun_20260811_070512/maze_1004.json",
-  "bytes": 1769,
-  "mtime": 1786402911.9157426
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0b_straightrun_20260811_070512/maze_1005.json",
-  "bytes": 2089,
-  "mtime": 1786402911.917368
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0b_straightrun_20260811_070512/maze_1006.json",
-  "bytes": 1769,
-  "mtime": 1786402911.9214199
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0b_straightrun_20260811_070512/maze_1007.json",
-  "bytes": 2091,
-  "mtime": 1786402911.921764
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0b_straightrun_20260811_070512/maze_1008.json",
-  "bytes": 2081,
-  "mtime": 1786402911.916614
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0b_straightrun_20260811_070512/maze_1009.json",
-  "bytes": 2093,
-  "mtime": 1786402911.9168813
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0b_straightrun_20260811_070512/maze_1010.json",
-  "bytes": 1757,
-  "mtime": 1786402911.9211307
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0b_straightrun_20260811_070512/maze_1011.json",
-  "bytes": 1765,
-  "mtime": 1786402911.9220138
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0b_straightrun_20260811_070512/maze_1012.json",
-  "bytes": 1737,
-  "mtime": 1786402911.9160037
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0b_straightrun_20260811_070512/maze_1013.json",
-  "bytes": 1764,
-  "mtime": 1786402911.9171262
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0b_straightrun_20260811_070512/maze_1014.json",
-  "bytes": 1745,
-  "mtime": 1786402911.918454
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0b_straightrun_20260811_070512/maze_1015.json",
-  "bytes": 2082,
-  "mtime": 1786402911.9187334
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0b_straightrun_20260811_070512/maze_1016.json",
-  "bytes": 2439,
-  "mtime": 1786402911.9197679
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0b_straightrun_20260811_070512/maze_1017.json",
-  "bytes": 2109,
-  "mtime": 1786402911.920738
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0b_straightrun_20260811_070512/maze_1018.json",
-  "bytes": 1746,
-  "mtime": 1786402911.9176114
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0b_straightrun_20260811_070512/maze_1019.json",
-  "bytes": 1765,
-  "mtime": 1786402911.9195004
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0c_slalom_20260811_070512/maze_1000.json",
-  "bytes": 2435,
-  "mtime": 1786402911.9342752
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0c_slalom_20260811_070512/maze_1001.json",
-  "bytes": 2451,
-  "mtime": 1786402911.9345453
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0c_slalom_20260811_070512/maze_1002.json",
-  "bytes": 2446,
-  "mtime": 1786402911.9322815
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0c_slalom_20260811_070512/maze_1003.json",
-  "bytes": 2442,
-  "mtime": 1786402911.9330997
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0c_slalom_20260811_070512/maze_1004.json",
-  "bytes": 2442,
-  "mtime": 1786402911.9299064
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0c_slalom_20260811_070512/maze_1005.json",
-  "bytes": 2419,
-  "mtime": 1786402911.931516
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0c_slalom_20260811_070512/maze_1006.json",
-  "bytes": 2445,
-  "mtime": 1786402911.9356387
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0c_slalom_20260811_070512/maze_1007.json",
-  "bytes": 2430,
-  "mtime": 1786402911.935892
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0c_slalom_20260811_070512/maze_1008.json",
-  "bytes": 2449,
-  "mtime": 1786402911.9307015
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0c_slalom_20260811_070512/maze_1009.json",
-  "bytes": 2441,
-  "mtime": 1786402911.9309602
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0c_slalom_20260811_070512/maze_1010.json",
-  "bytes": 2441,
-  "mtime": 1786402911.935212
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0c_slalom_20260811_070512/maze_1011.json",
-  "bytes": 2432,
-  "mtime": 1786402911.9361486
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0c_slalom_20260811_070512/maze_1012.json",
-  "bytes": 2447,
-  "mtime": 1786402911.930175
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0c_slalom_20260811_070512/maze_1013.json",
-  "bytes": 2446,
-  "mtime": 1786402911.931223
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0c_slalom_20260811_070512/maze_1014.json",
-  "bytes": 2451,
-  "mtime": 1786402911.9325404
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0c_slalom_20260811_070512/maze_1015.json",
-  "bytes": 2445,
-  "mtime": 1786402911.9328072
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0c_slalom_20260811_070512/maze_1016.json",
-  "bytes": 2444,
-  "mtime": 1786402911.9338057
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0c_slalom_20260811_070512/maze_1017.json",
-  "bytes": 2422,
-  "mtime": 1786402911.9348054
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0c_slalom_20260811_070512/maze_1018.json",
-  "bytes": 2448,
-  "mtime": 1786402911.9320185
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0c_slalom_20260811_070512/maze_1019.json",
-  "bytes": 2451,
-  "mtime": 1786402911.933525
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/adachi_classical_20260811_073159/maze_4000.json",
-  "bytes": 2079,
-  "mtime": 1786402911.945905
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/adachi_classical_20260811_073159/maze_4001.json",
-  "bytes": 1418,
-  "mtime": 1786402911.945174
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/adachi_classical_20260811_073159/maze_4002.json",
-  "bytes": 1040,
-  "mtime": 1786402911.9469898
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/adachi_classical_20260811_073159/maze_4003.json",
-  "bytes": 1743,
-  "mtime": 1786402911.9467494
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/adachi_classical_20260811_073159/maze_4004.json",
-  "bytes": 1746,
-  "mtime": 1786402911.948886
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/adachi_classical_20260811_073159/maze_4005.json",
-  "bytes": 1764,
-  "mtime": 1786402911.9480562
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/adachi_classical_20260811_073159/maze_4006.json",
-  "bytes": 2076,
-  "mtime": 1786402911.9449286
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/adachi_classical_20260811_073159/maze_4007.json",
-  "bytes": 1771,
-  "mtime": 1786402911.9436395
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/adachi_classical_20260811_073159/maze_4008.json",
-  "bytes": 1742,
-  "mtime": 1786402911.9486387
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/adachi_classical_20260811_073159/maze_4009.json",
-  "bytes": 1771,
-  "mtime": 1786402911.9483867
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/adachi_classical_20260811_073159/maze_4010.json",
-  "bytes": 1769,
-  "mtime": 1786402911.9446697
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/adachi_classical_20260811_073159/maze_4011.json",
-  "bytes": 1757,
-  "mtime": 1786402911.9442794
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/adachi_classical_20260811_073159/maze_4012.json",
-  "bytes": 1746,
-  "mtime": 1786402911.9491396
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/adachi_classical_20260811_073159/maze_4013.json",
-  "bytes": 1423,
-  "mtime": 1786402911.9477143
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/adachi_classical_20260811_073159/maze_4014.json",
-  "bytes": 1743,
-  "mtime": 1786402911.947231
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/adachi_classical_20260811_073159/maze_4015.json",
-  "bytes": 1754,
-  "mtime": 1786402911.9463873
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/adachi_classical_20260811_073159/maze_4016.json",
-  "bytes": 1744,
-  "mtime": 1786402911.945659
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/adachi_classical_20260811_073159/maze_4017.json",
-  "bytes": 1411,
-  "mtime": 1786402911.9454129
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/adachi_classical_20260811_073159/maze_4018.json",
-  "bytes": 1755,
-  "mtime": 1786402911.94747
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/adachi_classical_20260811_073159/maze_4019.json",
-  "bytes": 1371,
-  "mtime": 1786402911.946143
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0b_straightrun_20260811_073159/maze_4000.json",
-  "bytes": 2443,
-  "mtime": 1786402911.9396486
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0b_straightrun_20260811_073159/maze_4001.json",
-  "bytes": 1766,
-  "mtime": 1786402911.9385803
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0b_straightrun_20260811_073159/maze_4002.json",
-  "bytes": 1768,
-  "mtime": 1786402911.94072
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0b_straightrun_20260811_073159/maze_4003.json",
-  "bytes": 1755,
-  "mtime": 1786402911.9404402
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0b_straightrun_20260811_073159/maze_4004.json",
-  "bytes": 1768,
-  "mtime": 1786402911.9428914
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0b_straightrun_20260811_073159/maze_4005.json",
-  "bytes": 2103,
-  "mtime": 1786402911.942001
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0b_straightrun_20260811_073159/maze_4006.json",
-  "bytes": 2421,
-  "mtime": 1786402911.938162
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0b_straightrun_20260811_073159/maze_4007.json",
-  "bytes": 2113,
-  "mtime": 1786402911.9369414
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0b_straightrun_20260811_073159/maze_4008.json",
-  "bytes": 2076,
-  "mtime": 1786402911.9426558
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0b_straightrun_20260811_073159/maze_4009.json",
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/l0b_straightrun_20260811_074936/maze_16MM2012CX.json",
   "bytes": 2097,
-  "mtime": 1786402911.94225
+  "mtime": 1786432050.808413
  },
  {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0b_straightrun_20260811_073159/maze_4010.json",
-  "bytes": 2116,
-  "mtime": 1786402911.9378955
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/l0b_straightrun_20260811_074936/maze_16MM2013CX.json",
+  "bytes": 1781,
+  "mtime": 1786432050.811414
  },
  {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0b_straightrun_20260811_073159/maze_4011.json",
-  "bytes": 2095,
-  "mtime": 1786402911.9376254
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/l0b_straightrun_20260811_074936/maze_16MM2014CX.json",
+  "bytes": 1750,
+  "mtime": 1786432050.8098927
  },
  {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0b_straightrun_20260811_073159/maze_4012.json",
-  "bytes": 2096,
-  "mtime": 1786402911.9431298
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/l0b_straightrun_20260811_074936/maze_16MM2015CX.json",
+  "bytes": 1420,
+  "mtime": 1786432050.811986
  },
  {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0b_straightrun_20260811_073159/maze_4013.json",
-  "bytes": 1742,
-  "mtime": 1786402911.941747
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/l0b_straightrun_20260811_074936/maze_16MM2015C_Chubu.json",
+  "bytes": 2094,
+  "mtime": 1786432050.8116968
  },
  {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0b_straightrun_20260811_073159/maze_4014.json",
-  "bytes": 2083,
-  "mtime": 1786402911.9410143
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/l0b_straightrun_20260811_074936/maze_16MM2016CX.json",
+  "bytes": 1748,
+  "mtime": 1786432050.810469
  },
  {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0b_straightrun_20260811_073159/maze_4015.json",
-  "bytes": 2108,
-  "mtime": 1786402911.9401813
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/l0b_straightrun_20260811_074936/maze_16MM2016C_Chubu.json",
+  "bytes": 1753,
+  "mtime": 1786432050.8129764
  },
  {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0b_straightrun_20260811_073159/maze_4016.json",
-  "bytes": 2100,
-  "mtime": 1786402911.9391172
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/l0b_straightrun_20260811_074936/maze_16MM2016C_Kyushu.json",
+  "bytes": 2106,
+  "mtime": 1786432050.8133404
  },
  {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0b_straightrun_20260811_073159/maze_4017.json",
-  "bytes": 2099,
-  "mtime": 1786402911.9388416
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/l0b_straightrun_20260811_074936/maze_16MM2017CX.json",
+  "bytes": 1421,
+  "mtime": 1786432050.8138754
  },
  {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0b_straightrun_20260811_073159/maze_4018.json",
-  "bytes": 2086,
-  "mtime": 1786402911.9413347
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/l0b_straightrun_20260811_074936/maze_16MM2017CX_pre.json",
+  "bytes": 2120,
+  "mtime": 1786432050.8111067
  },
  {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0b_straightrun_20260811_073159/maze_4019.json",
-  "bytes": 1744,
-  "mtime": 1786402911.9399314
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/l0b_straightrun_20260811_074936/maze_16MM2017C_East.json",
+  "bytes": 1778,
+  "mtime": 1786432050.8095884
  },
  {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0c_slalom_20260811_073159/maze_4000.json",
-  "bytes": 2439,
-  "mtime": 1786402911.9519207
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/l0b_straightrun_20260811_074936/maze_16MM2017C_student.json",
+  "bytes": 1431,
+  "mtime": 1786432050.8107219
  },
  {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0c_slalom_20260811_073159/maze_4001.json",
-  "bytes": 2447,
-  "mtime": 1786402911.9511983
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/l0b_straightrun_20260811_074936/maze_16MM2018CX.json",
+  "bytes": 2102,
+  "mtime": 1786432050.8101912
  },
  {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0c_slalom_20260811_073159/maze_4002.json",
-  "bytes": 2448,
-  "mtime": 1786402911.9530118
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0c_slalom_20260811_073159/maze_4003.json",
-  "bytes": 2432,
-  "mtime": 1786402911.9527774
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0c_slalom_20260811_073159/maze_4004.json",
-  "bytes": 2446,
-  "mtime": 1786402911.9547791
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0c_slalom_20260811_073159/maze_4005.json",
-  "bytes": 2441,
-  "mtime": 1786402911.954061
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0c_slalom_20260811_073159/maze_4006.json",
-  "bytes": 2442,
-  "mtime": 1786402911.950963
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0c_slalom_20260811_073159/maze_4007.json",
-  "bytes": 2447,
-  "mtime": 1786402911.949855
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0c_slalom_20260811_073159/maze_4008.json",
-  "bytes": 2448,
-  "mtime": 1786402911.9545379
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0c_slalom_20260811_073159/maze_4009.json",
-  "bytes": 2442,
-  "mtime": 1786402911.9543016
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0c_slalom_20260811_073159/maze_4010.json",
-  "bytes": 2435,
-  "mtime": 1786402911.9505887
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0c_slalom_20260811_073159/maze_4011.json",
-  "bytes": 2443,
-  "mtime": 1786402911.950349
- },
- {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0c_slalom_20260811_073159/maze_4012.json",
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/l0b_straightrun_20260811_074936/maze_16MM2018C_student.json",
   "bytes": 2445,
-  "mtime": 1786402911.9552467
+  "mtime": 1786432050.8126786
  },
  {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0c_slalom_20260811_073159/maze_4013.json",
-  "bytes": 2447,
-  "mtime": 1786402911.9538174
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/l0b_straightrun_20260811_074936/maze_16MM2019CX.json",
+  "bytes": 1768,
+  "mtime": 1786432050.812327
  },
  {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0c_slalom_20260811_073159/maze_4014.json",
-  "bytes": 2447,
-  "mtime": 1786402911.953248
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/l0b_straightrun_20260811_074936/maze_16MM2019C_student.json",
+  "bytes": 1764,
+  "mtime": 1786432050.80929
  },
  {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0c_slalom_20260811_073159/maze_4015.json",
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/l0b_straightrun_20260811_074936/maze_16MM2020C_student.json",
+  "bytes": 2102,
+  "mtime": 1786432050.8086948
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/l0b_straightrun_20260811_074936/maze_16MM2021H_Kansai.json",
+  "bytes": 2114,
+  "mtime": 1786432050.8135927
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/l0c_slalom_20260811_074936/maze_16MM2012CX.json",
+  "bytes": 2454,
+  "mtime": 1786432050.7960134
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/l0c_slalom_20260811_074936/maze_16MM2013CX.json",
+  "bytes": 2455,
+  "mtime": 1786432050.7994528
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/l0c_slalom_20260811_074936/maze_16MM2014CX.json",
+  "bytes": 2454,
+  "mtime": 1786432050.7978272
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/l0c_slalom_20260811_074936/maze_16MM2015CX.json",
+  "bytes": 2454,
+  "mtime": 1786432050.8000488
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/l0c_slalom_20260811_074936/maze_16MM2015C_Chubu.json",
+  "bytes": 2450,
+  "mtime": 1786432050.7997289
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/l0c_slalom_20260811_074936/maze_16MM2016CX.json",
+  "bytes": 2448,
+  "mtime": 1786432050.7985117
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/l0c_slalom_20260811_074936/maze_16MM2016C_Chubu.json",
+  "bytes": 2452,
+  "mtime": 1786432050.800997
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/l0c_slalom_20260811_074936/maze_16MM2016C_Kyushu.json",
+  "bytes": 2461,
+  "mtime": 1786432050.8012571
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/l0c_slalom_20260811_074936/maze_16MM2017CX.json",
+  "bytes": 2445,
+  "mtime": 1786432050.8018637
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/l0c_slalom_20260811_074936/maze_16MM2017CX_pre.json",
+  "bytes": 2450,
+  "mtime": 1786432050.799165
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/l0c_slalom_20260811_074936/maze_16MM2017C_East.json",
+  "bytes": 2449,
+  "mtime": 1786432050.7975013
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/l0c_slalom_20260811_074936/maze_16MM2017C_student.json",
+  "bytes": 2468,
+  "mtime": 1786432050.7988355
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/l0c_slalom_20260811_074936/maze_16MM2018CX.json",
+  "bytes": 2449,
+  "mtime": 1786432050.7981455
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/l0c_slalom_20260811_074936/maze_16MM2018C_student.json",
+  "bytes": 2443,
+  "mtime": 1786432050.8006783
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/l0c_slalom_20260811_074936/maze_16MM2019CX.json",
+  "bytes": 2456,
+  "mtime": 1786432050.8003676
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/l0c_slalom_20260811_074936/maze_16MM2019C_student.json",
+  "bytes": 2455,
+  "mtime": 1786432050.7971447
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/l0c_slalom_20260811_074936/maze_16MM2020C_student.json",
+  "bytes": 2456,
+  "mtime": 1786432050.7963753
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/contest_reference/l0c_slalom_20260811_074936/maze_16MM2021H_Kansai.json",
+  "bytes": 2454,
+  "mtime": 1786432050.801556
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/adachi_classical_20260811_070512/maze_1000.json",
+  "bytes": 1425,
+  "mtime": 1786432050.825707
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/adachi_classical_20260811_070512/maze_1001.json",
+  "bytes": 1372,
+  "mtime": 1786432050.825989
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/adachi_classical_20260811_070512/maze_1002.json",
+  "bytes": 1420,
+  "mtime": 1786432050.8237257
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/adachi_classical_20260811_070512/maze_1003.json",
+  "bytes": 1744,
+  "mtime": 1786432050.8247879
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/adachi_classical_20260811_070512/maze_1004.json",
+  "bytes": 1417,
+  "mtime": 1786432050.8213859
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/adachi_classical_20260811_070512/maze_1005.json",
+  "bytes": 1744,
+  "mtime": 1786432050.8230941
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/adachi_classical_20260811_070512/maze_1006.json",
+  "bytes": 1413,
+  "mtime": 1786432050.8268042
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/adachi_classical_20260811_070512/maze_1007.json",
+  "bytes": 1768,
+  "mtime": 1786432050.8271034
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/adachi_classical_20260811_070512/maze_1008.json",
+  "bytes": 1758,
+  "mtime": 1786432050.8222775
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/adachi_classical_20260811_070512/maze_1009.json",
+  "bytes": 1755,
+  "mtime": 1786432050.8224742
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/adachi_classical_20260811_070512/maze_1010.json",
+  "bytes": 1750,
+  "mtime": 1786432050.8264968
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/adachi_classical_20260811_070512/maze_1011.json",
+  "bytes": 1744,
+  "mtime": 1786432050.8274145
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/adachi_classical_20260811_070512/maze_1012.json",
+  "bytes": 1423,
+  "mtime": 1786432050.82169
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/adachi_classical_20260811_070512/maze_1013.json",
+  "bytes": 1748,
+  "mtime": 1786432050.8227859
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/adachi_classical_20260811_070512/maze_1014.json",
+  "bytes": 1424,
+  "mtime": 1786432050.82405
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/adachi_classical_20260811_070512/maze_1015.json",
+  "bytes": 1744,
+  "mtime": 1786432050.8243613
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/adachi_classical_20260811_070512/maze_1016.json",
+  "bytes": 2077,
+  "mtime": 1786432050.825394
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/adachi_classical_20260811_070512/maze_1017.json",
+  "bytes": 1748,
+  "mtime": 1786432050.8262842
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/adachi_classical_20260811_070512/maze_1018.json",
+  "bytes": 1368,
+  "mtime": 1786432050.823417
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/adachi_classical_20260811_070512/maze_1019.json",
+  "bytes": 1423,
+  "mtime": 1786432050.8251226
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0b_straightrun_20260811_070512/maze_1000.json",
+  "bytes": 1747,
+  "mtime": 1786432050.819058
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0b_straightrun_20260811_070512/maze_1001.json",
+  "bytes": 1426,
+  "mtime": 1786432050.8193562
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0b_straightrun_20260811_070512/maze_1002.json",
+  "bytes": 1769,
+  "mtime": 1786432050.8170063
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0b_straightrun_20260811_070512/maze_1003.json",
+  "bytes": 1749,
+  "mtime": 1786432050.8181767
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0b_straightrun_20260811_070512/maze_1004.json",
+  "bytes": 1769,
+  "mtime": 1786432050.814569
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0b_straightrun_20260811_070512/maze_1005.json",
+  "bytes": 2089,
+  "mtime": 1786432050.8163667
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0b_straightrun_20260811_070512/maze_1006.json",
+  "bytes": 1769,
+  "mtime": 1786432050.820175
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0b_straightrun_20260811_070512/maze_1007.json",
+  "bytes": 2091,
+  "mtime": 1786432050.8205485
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0b_straightrun_20260811_070512/maze_1008.json",
+  "bytes": 2081,
+  "mtime": 1786432050.8154273
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0b_straightrun_20260811_070512/maze_1009.json",
+  "bytes": 2093,
+  "mtime": 1786432050.815728
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0b_straightrun_20260811_070512/maze_1010.json",
+  "bytes": 1757,
+  "mtime": 1786432050.819858
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0b_straightrun_20260811_070512/maze_1011.json",
+  "bytes": 1765,
+  "mtime": 1786432050.820851
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0b_straightrun_20260811_070512/maze_1012.json",
+  "bytes": 1737,
+  "mtime": 1786432050.8148696
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0b_straightrun_20260811_070512/maze_1013.json",
+  "bytes": 1764,
+  "mtime": 1786432050.816083
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0b_straightrun_20260811_070512/maze_1014.json",
+  "bytes": 1745,
+  "mtime": 1786432050.8175368
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0b_straightrun_20260811_070512/maze_1015.json",
+  "bytes": 2082,
+  "mtime": 1786432050.8178573
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0b_straightrun_20260811_070512/maze_1016.json",
+  "bytes": 2439,
+  "mtime": 1786432050.8187566
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0b_straightrun_20260811_070512/maze_1017.json",
+  "bytes": 2109,
+  "mtime": 1786432050.8196452
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0b_straightrun_20260811_070512/maze_1018.json",
+  "bytes": 1746,
+  "mtime": 1786432050.8166804
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0b_straightrun_20260811_070512/maze_1019.json",
+  "bytes": 1765,
+  "mtime": 1786432050.818425
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0c_slalom_20260811_070512/maze_1000.json",
+  "bytes": 2435,
+  "mtime": 1786432050.8322484
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0c_slalom_20260811_070512/maze_1001.json",
+  "bytes": 2451,
+  "mtime": 1786432050.8325229
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0c_slalom_20260811_070512/maze_1002.json",
+  "bytes": 2446,
+  "mtime": 1786432050.8303988
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0c_slalom_20260811_070512/maze_1003.json",
   "bytes": 2442,
-  "mtime": 1786402911.9523973
+  "mtime": 1786432050.8313735
  },
  {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0c_slalom_20260811_073159/maze_4016.json",
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0c_slalom_20260811_070512/maze_1004.json",
+  "bytes": 2442,
+  "mtime": 1786432050.8279498
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0c_slalom_20260811_070512/maze_1005.json",
+  "bytes": 2419,
+  "mtime": 1786432050.8297918
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0c_slalom_20260811_070512/maze_1006.json",
+  "bytes": 2445,
+  "mtime": 1786432050.8335586
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0c_slalom_20260811_070512/maze_1007.json",
+  "bytes": 2430,
+  "mtime": 1786432050.8338902
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0c_slalom_20260811_070512/maze_1008.json",
+  "bytes": 2449,
+  "mtime": 1786432050.8288531
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0c_slalom_20260811_070512/maze_1009.json",
+  "bytes": 2441,
+  "mtime": 1786432050.8291466
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0c_slalom_20260811_070512/maze_1010.json",
+  "bytes": 2441,
+  "mtime": 1786432050.8331172
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0c_slalom_20260811_070512/maze_1011.json",
+  "bytes": 2432,
+  "mtime": 1786432050.8341732
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0c_slalom_20260811_070512/maze_1012.json",
   "bytes": 2447,
-  "mtime": 1786402911.951674
+  "mtime": 1786432050.8282933
  },
  {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0c_slalom_20260811_073159/maze_4017.json",
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0c_slalom_20260811_070512/maze_1013.json",
+  "bytes": 2446,
+  "mtime": 1786432050.829499
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0c_slalom_20260811_070512/maze_1014.json",
+  "bytes": 2451,
+  "mtime": 1786432050.830759
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0c_slalom_20260811_070512/maze_1015.json",
+  "bytes": 2445,
+  "mtime": 1786432050.8310976
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0c_slalom_20260811_070512/maze_1016.json",
   "bytes": 2444,
-  "mtime": 1786402911.9514387
+  "mtime": 1786432050.831992
  },
  {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0c_slalom_20260811_073159/maze_4018.json",
-  "bytes": 2442,
-  "mtime": 1786402911.953578
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0c_slalom_20260811_070512/maze_1017.json",
+  "bytes": 2422,
+  "mtime": 1786432050.8328307
  },
  {
-  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/l0c_slalom_20260811_073159/maze_4019.json",
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0c_slalom_20260811_070512/maze_1018.json",
+  "bytes": 2448,
+  "mtime": 1786432050.8300812
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0c_slalom_20260811_070512/maze_1019.json",
+  "bytes": 2451,
+  "mtime": 1786432050.8316908
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/adachi_classical_20260811_080633/maze_1000.json",
+  "bytes": 2449,
+  "mtime": 1786432050.8534029
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/adachi_classical_20260811_080633/maze_1001.json",
+  "bytes": 2449,
+  "mtime": 1786432050.8537083
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/adachi_classical_20260811_080633/maze_1002.json",
+  "bytes": 2458,
+  "mtime": 1786432050.8514266
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/adachi_classical_20260811_080633/maze_1003.json",
   "bytes": 2447,
-  "mtime": 1786402911.9521596
+  "mtime": 1786432050.852524
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/adachi_classical_20260811_080633/maze_1004.json",
+  "bytes": 2445,
+  "mtime": 1786432050.8488863
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/adachi_classical_20260811_080633/maze_1005.json",
+  "bytes": 2438,
+  "mtime": 1786432050.8507469
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/adachi_classical_20260811_080633/maze_1006.json",
+  "bytes": 2458,
+  "mtime": 1786432050.8543923
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/adachi_classical_20260811_080633/maze_1007.json",
+  "bytes": 2451,
+  "mtime": 1786432050.8546999
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/adachi_classical_20260811_080633/maze_1008.json",
+  "bytes": 2447,
+  "mtime": 1786432050.8497655
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/adachi_classical_20260811_080633/maze_1009.json",
+  "bytes": 2453,
+  "mtime": 1786432050.850163
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/adachi_classical_20260811_080633/maze_1010.json",
+  "bytes": 2452,
+  "mtime": 1786432050.8541963
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/adachi_classical_20260811_080633/maze_1011.json",
+  "bytes": 2437,
+  "mtime": 1786432050.8550065
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/adachi_classical_20260811_080633/maze_1012.json",
+  "bytes": 2451,
+  "mtime": 1786432050.8491685
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/adachi_classical_20260811_080633/maze_1013.json",
+  "bytes": 2433,
+  "mtime": 1786432050.8504453
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/adachi_classical_20260811_080633/maze_1014.json",
+  "bytes": 2460,
+  "mtime": 1786432050.851835
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/adachi_classical_20260811_080633/maze_1015.json",
+  "bytes": 2436,
+  "mtime": 1786432050.8522449
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/adachi_classical_20260811_080633/maze_1016.json",
+  "bytes": 2446,
+  "mtime": 1786432050.8531
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/adachi_classical_20260811_080633/maze_1017.json",
+  "bytes": 2437,
+  "mtime": 1786432050.8539891
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/adachi_classical_20260811_080633/maze_1018.json",
+  "bytes": 2453,
+  "mtime": 1786432050.8511271
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/adachi_classical_20260811_080633/maze_1019.json",
+  "bytes": 2456,
+  "mtime": 1786432050.8527977
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0b_straightrun_20260811_080633/maze_1000.json",
+  "bytes": 2449,
+  "mtime": 1786432050.8398957
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0b_straightrun_20260811_080633/maze_1001.json",
+  "bytes": 2451,
+  "mtime": 1786432050.840298
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0b_straightrun_20260811_080633/maze_1002.json",
+  "bytes": 2449,
+  "mtime": 1786432050.837728
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0b_straightrun_20260811_080633/maze_1003.json",
+  "bytes": 2440,
+  "mtime": 1786432050.838883
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0b_straightrun_20260811_080633/maze_1004.json",
+  "bytes": 2446,
+  "mtime": 1786432050.8349204
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0b_straightrun_20260811_080633/maze_1005.json",
+  "bytes": 2434,
+  "mtime": 1786432050.837054
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0b_straightrun_20260811_080633/maze_1006.json",
+  "bytes": 2451,
+  "mtime": 1786432050.8412578
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0b_straightrun_20260811_080633/maze_1007.json",
+  "bytes": 2443,
+  "mtime": 1786432050.8415644
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0b_straightrun_20260811_080633/maze_1008.json",
+  "bytes": 2449,
+  "mtime": 1786432050.8359044
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0b_straightrun_20260811_080633/maze_1009.json",
+  "bytes": 2437,
+  "mtime": 1786432050.8363092
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0b_straightrun_20260811_080633/maze_1010.json",
+  "bytes": 2450,
+  "mtime": 1786432050.8408701
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0b_straightrun_20260811_080633/maze_1011.json",
+  "bytes": 2451,
+  "mtime": 1786432050.8418598
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0b_straightrun_20260811_080633/maze_1012.json",
+  "bytes": 2448,
+  "mtime": 1786432050.8352137
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0b_straightrun_20260811_080633/maze_1013.json",
+  "bytes": 2447,
+  "mtime": 1786432050.8366723
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0b_straightrun_20260811_080633/maze_1014.json",
+  "bytes": 2449,
+  "mtime": 1786432050.8380551
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0b_straightrun_20260811_080633/maze_1015.json",
+  "bytes": 2451,
+  "mtime": 1786432050.838405
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0b_straightrun_20260811_080633/maze_1016.json",
+  "bytes": 2451,
+  "mtime": 1786432050.8396142
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0b_straightrun_20260811_080633/maze_1017.json",
+  "bytes": 2449,
+  "mtime": 1786432050.8406136
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0b_straightrun_20260811_080633/maze_1018.json",
+  "bytes": 2442,
+  "mtime": 1786432050.8373303
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0b_straightrun_20260811_080633/maze_1019.json",
+  "bytes": 2446,
+  "mtime": 1786432050.8392005
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0c_slalom_20260811_080633/maze_1000.json",
+  "bytes": 2441,
+  "mtime": 1786432050.846545
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0c_slalom_20260811_080633/maze_1001.json",
+  "bytes": 2434,
+  "mtime": 1786432050.8468554
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0c_slalom_20260811_080633/maze_1002.json",
+  "bytes": 2440,
+  "mtime": 1786432050.8446474
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0c_slalom_20260811_080633/maze_1003.json",
+  "bytes": 2430,
+  "mtime": 1786432050.8456516
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0c_slalom_20260811_080633/maze_1004.json",
+  "bytes": 2436,
+  "mtime": 1786432050.842295
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0c_slalom_20260811_080633/maze_1005.json",
+  "bytes": 2445,
+  "mtime": 1786432050.844141
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0c_slalom_20260811_080633/maze_1006.json",
+  "bytes": 2433,
+  "mtime": 1786432050.8477592
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0c_slalom_20260811_080633/maze_1007.json",
+  "bytes": 2426,
+  "mtime": 1786432050.848086
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0c_slalom_20260811_080633/maze_1008.json",
+  "bytes": 2437,
+  "mtime": 1786432050.843222
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0c_slalom_20260811_080633/maze_1009.json",
+  "bytes": 2438,
+  "mtime": 1786432050.843523
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0c_slalom_20260811_080633/maze_1010.json",
+  "bytes": 2438,
+  "mtime": 1786432050.8474462
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0c_slalom_20260811_080633/maze_1011.json",
+  "bytes": 2433,
+  "mtime": 1786432050.8483973
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0c_slalom_20260811_080633/maze_1012.json",
+  "bytes": 2434,
+  "mtime": 1786432050.8426096
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0c_slalom_20260811_080633/maze_1013.json",
+  "bytes": 2435,
+  "mtime": 1786432050.8438365
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0c_slalom_20260811_080633/maze_1014.json",
+  "bytes": 2434,
+  "mtime": 1786432050.8449683
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0c_slalom_20260811_080633/maze_1015.json",
+  "bytes": 2436,
+  "mtime": 1786432050.8452342
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0c_slalom_20260811_080633/maze_1016.json",
+  "bytes": 2432,
+  "mtime": 1786432050.846269
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0c_slalom_20260811_080633/maze_1017.json",
+  "bytes": 2435,
+  "mtime": 1786432050.8471284
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0c_slalom_20260811_080633/maze_1018.json",
+  "bytes": 2439,
+  "mtime": 1786432050.8443465
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/l0c_slalom_20260811_080633/maze_1019.json",
+  "bytes": 2438,
+  "mtime": 1786432050.8459628
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/adachi_classical_20260811_073159/maze_4000.json",
+  "bytes": 2079,
+  "mtime": 1786432050.8650076
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/adachi_classical_20260811_073159/maze_4001.json",
+  "bytes": 1418,
+  "mtime": 1786432050.8639755
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/adachi_classical_20260811_073159/maze_4002.json",
+  "bytes": 1040,
+  "mtime": 1786432050.8662598
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/adachi_classical_20260811_073159/maze_4003.json",
+  "bytes": 1743,
+  "mtime": 1786432050.8659186
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/adachi_classical_20260811_073159/maze_4004.json",
+  "bytes": 1746,
+  "mtime": 1786432050.8684294
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/adachi_classical_20260811_073159/maze_4005.json",
+  "bytes": 1764,
+  "mtime": 1786432050.867543
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/adachi_classical_20260811_073159/maze_4006.json",
+  "bytes": 2076,
+  "mtime": 1786432050.863658
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/adachi_classical_20260811_073159/maze_4007.json",
+  "bytes": 1771,
+  "mtime": 1786432050.8625028
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/adachi_classical_20260811_073159/maze_4008.json",
+  "bytes": 1742,
+  "mtime": 1786432050.8681245
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/adachi_classical_20260811_073159/maze_4009.json",
+  "bytes": 1771,
+  "mtime": 1786432050.8678327
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/adachi_classical_20260811_073159/maze_4010.json",
+  "bytes": 1769,
+  "mtime": 1786432050.8633847
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/adachi_classical_20260811_073159/maze_4011.json",
+  "bytes": 1757,
+  "mtime": 1786432050.863049
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/adachi_classical_20260811_073159/maze_4012.json",
+  "bytes": 1746,
+  "mtime": 1786432050.868639
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/adachi_classical_20260811_073159/maze_4013.json",
+  "bytes": 1423,
+  "mtime": 1786432050.86722
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/adachi_classical_20260811_073159/maze_4014.json",
+  "bytes": 1743,
+  "mtime": 1786432050.866572
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/adachi_classical_20260811_073159/maze_4015.json",
+  "bytes": 1754,
+  "mtime": 1786432050.8656578
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/adachi_classical_20260811_073159/maze_4016.json",
+  "bytes": 1744,
+  "mtime": 1786432050.8647077
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/adachi_classical_20260811_073159/maze_4017.json",
+  "bytes": 1411,
+  "mtime": 1786432050.864306
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/adachi_classical_20260811_073159/maze_4018.json",
+  "bytes": 1755,
+  "mtime": 1786432050.8669355
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/adachi_classical_20260811_073159/maze_4019.json",
+  "bytes": 1371,
+  "mtime": 1786432050.8653235
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0b_straightrun_20260811_073159/maze_4000.json",
+  "bytes": 2443,
+  "mtime": 1786432050.858021
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0b_straightrun_20260811_073159/maze_4001.json",
+  "bytes": 1766,
+  "mtime": 1786432050.8571515
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0b_straightrun_20260811_073159/maze_4002.json",
+  "bytes": 1768,
+  "mtime": 1786432050.859178
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0b_straightrun_20260811_073159/maze_4003.json",
+  "bytes": 1755,
+  "mtime": 1786432050.8588908
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0b_straightrun_20260811_073159/maze_4004.json",
+  "bytes": 1768,
+  "mtime": 1786432050.8617873
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0b_straightrun_20260811_073159/maze_4005.json",
+  "bytes": 2103,
+  "mtime": 1786432050.8605812
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0b_straightrun_20260811_073159/maze_4006.json",
+  "bytes": 2421,
+  "mtime": 1786432050.8568485
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0b_straightrun_20260811_073159/maze_4007.json",
+  "bytes": 2113,
+  "mtime": 1786432050.8556938
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0b_straightrun_20260811_073159/maze_4008.json",
+  "bytes": 2076,
+  "mtime": 1786432050.8613937
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0b_straightrun_20260811_073159/maze_4009.json",
+  "bytes": 2097,
+  "mtime": 1786432050.860991
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0b_straightrun_20260811_073159/maze_4010.json",
+  "bytes": 2116,
+  "mtime": 1786432050.8565822
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0b_straightrun_20260811_073159/maze_4011.json",
+  "bytes": 2095,
+  "mtime": 1786432050.8562748
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0b_straightrun_20260811_073159/maze_4012.json",
+  "bytes": 2096,
+  "mtime": 1786432050.8620913
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0b_straightrun_20260811_073159/maze_4013.json",
+  "bytes": 1742,
+  "mtime": 1786432050.8601687
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0b_straightrun_20260811_073159/maze_4014.json",
+  "bytes": 2083,
+  "mtime": 1786432050.8595192
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0b_straightrun_20260811_073159/maze_4015.json",
+  "bytes": 2108,
+  "mtime": 1786432050.858618
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0b_straightrun_20260811_073159/maze_4016.json",
+  "bytes": 2100,
+  "mtime": 1786432050.8577507
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0b_straightrun_20260811_073159/maze_4017.json",
+  "bytes": 2099,
+  "mtime": 1786432050.8574555
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0b_straightrun_20260811_073159/maze_4018.json",
+  "bytes": 2086,
+  "mtime": 1786432050.859895
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0b_straightrun_20260811_073159/maze_4019.json",
+  "bytes": 1744,
+  "mtime": 1786432050.8583193
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0c_slalom_20260811_073159/maze_4000.json",
+  "bytes": 2439,
+  "mtime": 1786432050.87155
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0c_slalom_20260811_073159/maze_4001.json",
+  "bytes": 2447,
+  "mtime": 1786432050.8706279
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0c_slalom_20260811_073159/maze_4002.json",
+  "bytes": 2448,
+  "mtime": 1786432050.872719
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0c_slalom_20260811_073159/maze_4003.json",
+  "bytes": 2432,
+  "mtime": 1786432050.8724003
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0c_slalom_20260811_073159/maze_4004.json",
+  "bytes": 2446,
+  "mtime": 1786432050.8745549
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0c_slalom_20260811_073159/maze_4005.json",
+  "bytes": 2441,
+  "mtime": 1786432050.8737545
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0c_slalom_20260811_073159/maze_4006.json",
+  "bytes": 2442,
+  "mtime": 1786432050.8703492
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0c_slalom_20260811_073159/maze_4007.json",
+  "bytes": 2447,
+  "mtime": 1786432050.8691638
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0c_slalom_20260811_073159/maze_4008.json",
+  "bytes": 2448,
+  "mtime": 1786432050.8743408
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0c_slalom_20260811_073159/maze_4009.json",
+  "bytes": 2442,
+  "mtime": 1786432050.8740532
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0c_slalom_20260811_073159/maze_4010.json",
+  "bytes": 2435,
+  "mtime": 1786432050.870046
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0c_slalom_20260811_073159/maze_4011.json",
+  "bytes": 2443,
+  "mtime": 1786432050.8697505
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0c_slalom_20260811_073159/maze_4012.json",
+  "bytes": 2445,
+  "mtime": 1786432050.8748507
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0c_slalom_20260811_073159/maze_4013.json",
+  "bytes": 2447,
+  "mtime": 1786432050.8735406
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0c_slalom_20260811_073159/maze_4014.json",
+  "bytes": 2447,
+  "mtime": 1786432050.8729198
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0c_slalom_20260811_073159/maze_4015.json",
+  "bytes": 2442,
+  "mtime": 1786432050.872097
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0c_slalom_20260811_073159/maze_4016.json",
+  "bytes": 2447,
+  "mtime": 1786432050.871272
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0c_slalom_20260811_073159/maze_4017.json",
+  "bytes": 2444,
+  "mtime": 1786432050.870954
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0c_slalom_20260811_073159/maze_4018.json",
+  "bytes": 2442,
+  "mtime": 1786432050.8732285
+ },
+ {
+  "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/l0c_slalom_20260811_073159/maze_4019.json",
+  "bytes": 2447,
+  "mtime": 1786432050.8717964
  }
 ]

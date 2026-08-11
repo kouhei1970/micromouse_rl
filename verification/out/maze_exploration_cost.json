@@ -1,0 +1,556 @@
+{
+ "contest_reference": [
+  {
+   "maze": "maze_16MM2012CX",
+   "d_true": 69,
+   "explore_cells": 73,
+   "detour": 1.0579710144927537,
+   "detour_fixed": 1.0869565217391304
+  },
+  {
+   "maze": "maze_16MM2013CX",
+   "d_true": 105,
+   "explore_cells": 117,
+   "detour": 1.1142857142857143,
+   "detour_fixed": 1.1714285714285715
+  },
+  {
+   "maze": "maze_16MM2014CX",
+   "d_true": 104,
+   "explore_cells": 136,
+   "detour": 1.3076923076923077,
+   "detour_fixed": 1.1538461538461537
+  },
+  {
+   "maze": "maze_16MM2015CX",
+   "d_true": 85,
+   "explore_cells": 134,
+   "detour": 1.576470588235294,
+   "detour_fixed": 1.5411764705882354
+  },
+  {
+   "maze": "maze_16MM2015C_Chubu",
+   "d_true": 54,
+   "explore_cells": 90,
+   "detour": 1.6666666666666667,
+   "detour_fixed": 1.6666666666666667
+  },
+  {
+   "maze": "maze_16MM2016CX",
+   "d_true": 74,
+   "explore_cells": 160,
+   "detour": 2.1621621621621623,
+   "detour_fixed": 1.1081081081081081
+  },
+  {
+   "maze": "maze_16MM2016C_Chubu",
+   "d_true": 85,
+   "explore_cells": 123,
+   "detour": 1.4470588235294117,
+   "detour_fixed": 1.3529411764705883
+  },
+  {
+   "maze": "maze_16MM2016C_Kyushu",
+   "d_true": 63,
+   "explore_cells": 71,
+   "detour": 1.126984126984127,
+   "detour_fixed": 1.2222222222222223
+  },
+  {
+   "maze": "maze_16MM2017CX",
+   "d_true": 99,
+   "explore_cells": 143,
+   "detour": 1.4444444444444444,
+   "detour_fixed": 1.4848484848484849
+  },
+  {
+   "maze": "maze_16MM2017CX_pre",
+   "d_true": 47,
+   "explore_cells": 87,
+   "detour": 1.851063829787234,
+   "detour_fixed": 1.8936170212765957
+  },
+  {
+   "maze": "maze_16MM2017C_East",
+   "d_true": 70,
+   "explore_cells": 110,
+   "detour": 1.5714285714285714,
+   "detour_fixed": 1.6571428571428573
+  },
+  {
+   "maze": "maze_16MM2017C_student",
+   "d_true": 103,
+   "explore_cells": 169,
+   "detour": 1.6407766990291262,
+   "detour_fixed": 1.5436893203883495
+  },
+  {
+   "maze": "maze_16MM2018CX",
+   "d_true": 84,
+   "explore_cells": 140,
+   "detour": 1.6666666666666667,
+   "detour_fixed": 1.6904761904761905
+  },
+  {
+   "maze": "maze_16MM2018C_student",
+   "d_true": 48,
+   "explore_cells": 120,
+   "detour": 2.5,
+   "detour_fixed": 2.6666666666666665
+  },
+  {
+   "maze": "maze_16MM2019CX",
+   "d_true": 75,
+   "explore_cells": 90,
+   "detour": 1.2,
+   "detour_fixed": 1.1466666666666667
+  },
+  {
+   "maze": "maze_16MM2019C_student",
+   "d_true": 60,
+   "explore_cells": 196,
+   "detour": 3.2666666666666666,
+   "detour_fixed": 3.2333333333333334
+  },
+  {
+   "maze": "maze_16MM2020C_student",
+   "d_true": 70,
+   "explore_cells": 90,
+   "detour": 1.2857142857142858,
+   "detour_fixed": 1.2857142857142858
+  },
+  {
+   "maze": "maze_16MM2021H_Kansai",
+   "d_true": 58,
+   "explore_cells": 82,
+   "detour": 1.4137931034482758,
+   "detour_fixed": 1.3103448275862069
+  }
+ ],
+ "eval": [
+  {
+   "maze": "maze_1000",
+   "d_true": 97,
+   "explore_cells": 107,
+   "detour": 1.1030927835051547,
+   "detour_fixed": 1.1030927835051547
+  },
+  {
+   "maze": "maze_1001",
+   "d_true": 106,
+   "explore_cells": 106,
+   "detour": 1.0,
+   "detour_fixed": 1.0
+  },
+  {
+   "maze": "maze_1002",
+   "d_true": 74,
+   "explore_cells": 74,
+   "detour": 1.0,
+   "detour_fixed": 1.0
+  },
+  {
+   "maze": "maze_1003",
+   "d_true": 83,
+   "explore_cells": 83,
+   "detour": 1.0,
+   "detour_fixed": 1.0
+  },
+  {
+   "maze": "maze_1004",
+   "d_true": 75,
+   "explore_cells": 77,
+   "detour": 1.0266666666666666,
+   "detour_fixed": 1.08
+  },
+  {
+   "maze": "maze_1005",
+   "d_true": 52,
+   "explore_cells": 52,
+   "detour": 1.0,
+   "detour_fixed": 1.0
+  },
+  {
+   "maze": "maze_1006",
+   "d_true": 60,
+   "explore_cells": 74,
+   "detour": 1.2333333333333334,
+   "detour_fixed": 1.3
+  },
+  {
+   "maze": "maze_1007",
+   "d_true": 58,
+   "explore_cells": 68,
+   "detour": 1.1724137931034482,
+   "detour_fixed": 1.0
+  },
+  {
+   "maze": "maze_1008",
+   "d_true": 66,
+   "explore_cells": 66,
+   "detour": 1.0,
+   "detour_fixed": 1.0606060606060606
+  },
+  {
+   "maze": "maze_1009",
+   "d_true": 56,
+   "explore_cells": 64,
+   "detour": 1.1428571428571428,
+   "detour_fixed": 1.1428571428571428
+  },
+  {
+   "maze": "maze_1010",
+   "d_true": 60,
+   "explore_cells": 60,
+   "detour": 1.0,
+   "detour_fixed": 1.0
+  },
+  {
+   "maze": "maze_1011",
+   "d_true": 71,
+   "explore_cells": 81,
+   "detour": 1.1408450704225352,
+   "detour_fixed": 1.028169014084507
+  },
+  {
+   "maze": "maze_1012",
+   "d_true": 99,
+   "explore_cells": 99,
+   "detour": 1.0,
+   "detour_fixed": 1.0
+  },
+  {
+   "maze": "maze_1013",
+   "d_true": 82,
+   "explore_cells": 82,
+   "detour": 1.0,
+   "detour_fixed": 1.0975609756097562
+  },
+  {
+   "maze": "maze_1014",
+   "d_true": 83,
+   "explore_cells": 83,
+   "detour": 1.0,
+   "detour_fixed": 1.0
+  },
+  {
+   "maze": "maze_1015",
+   "d_true": 77,
+   "explore_cells": 77,
+   "detour": 1.0,
+   "detour_fixed": 1.025974025974026
+  },
+  {
+   "maze": "maze_1016",
+   "d_true": 53,
+   "explore_cells": 55,
+   "detour": 1.0377358490566038,
+   "detour_fixed": 1.4528301886792452
+  },
+  {
+   "maze": "maze_1017",
+   "d_true": 53,
+   "explore_cells": 55,
+   "detour": 1.0377358490566038,
+   "detour_fixed": 1.0377358490566038
+  },
+  {
+   "maze": "maze_1018",
+   "d_true": 83,
+   "explore_cells": 89,
+   "detour": 1.072289156626506,
+   "detour_fixed": 1.072289156626506
+  },
+  {
+   "maze": "maze_1019",
+   "d_true": 81,
+   "explore_cells": 89,
+   "detour": 1.0987654320987654,
+   "detour_fixed": 1.0987654320987654
+  }
+ ],
+ "validation": [
+  {
+   "maze": "maze_4000",
+   "d_true": 46,
+   "explore_cells": 52,
+   "detour": 1.1304347826086956,
+   "detour_fixed": 1.2173913043478262
+  },
+  {
+   "maze": "maze_4001",
+   "d_true": 70,
+   "explore_cells": 74,
+   "detour": 1.0571428571428572,
+   "detour_fixed": 1.0
+  },
+  {
+   "maze": "maze_4002",
+   "d_true": 67,
+   "explore_cells": 101,
+   "detour": 1.507462686567164,
+   "detour_fixed": 1.626865671641791
+  },
+  {
+   "maze": "maze_4003",
+   "d_true": 79,
+   "explore_cells": 79,
+   "detour": 1.0,
+   "detour_fixed": 1.0253164556962024
+  },
+  {
+   "maze": "maze_4004",
+   "d_true": 68,
+   "explore_cells": 68,
+   "detour": 1.0,
+   "detour_fixed": 1.0
+  },
+  {
+   "maze": "maze_4005",
+   "d_true": 54,
+   "explore_cells": 62,
+   "detour": 1.1481481481481481,
+   "detour_fixed": 1.1481481481481481
+  },
+  {
+   "maze": "maze_4006",
+   "d_true": 48,
+   "explore_cells": 56,
+   "detour": 1.1666666666666667,
+   "detour_fixed": 1.1666666666666667
+  },
+  {
+   "maze": "maze_4007",
+   "d_true": 61,
+   "explore_cells": 61,
+   "detour": 1.0,
+   "detour_fixed": 1.0
+  },
+  {
+   "maze": "maze_4008",
+   "d_true": 61,
+   "explore_cells": 71,
+   "detour": 1.1639344262295082,
+   "detour_fixed": 1.0
+  },
+  {
+   "maze": "maze_4009",
+   "d_true": 59,
+   "explore_cells": 59,
+   "detour": 1.0,
+   "detour_fixed": 1.0
+  },
+  {
+   "maze": "maze_4010",
+   "d_true": 57,
+   "explore_cells": 57,
+   "detour": 1.0,
+   "detour_fixed": 1.0
+  },
+  {
+   "maze": "maze_4011",
+   "d_true": 59,
+   "explore_cells": 65,
+   "detour": 1.1016949152542372,
+   "detour_fixed": 1.1016949152542372
+  },
+  {
+   "maze": "maze_4012",
+   "d_true": 71,
+   "explore_cells": 75,
+   "detour": 1.056338028169014,
+   "detour_fixed": 1.056338028169014
+  },
+  {
+   "maze": "maze_4013",
+   "d_true": 95,
+   "explore_cells": 103,
+   "detour": 1.0842105263157895,
+   "detour_fixed": 1.0842105263157895
+  },
+  {
+   "maze": "maze_4014",
+   "d_true": 62,
+   "explore_cells": 66,
+   "detour": 1.064516129032258,
+   "detour_fixed": 1.096774193548387
+  },
+  {
+   "maze": "maze_4015",
+   "d_true": 64,
+   "explore_cells": 66,
+   "detour": 1.03125,
+   "detour_fixed": 1.03125
+  },
+  {
+   "maze": "maze_4016",
+   "d_true": 69,
+   "explore_cells": 77,
+   "detour": 1.1159420289855073,
+   "detour_fixed": 1.0
+  },
+  {
+   "maze": "maze_4017",
+   "d_true": 60,
+   "explore_cells": 64,
+   "detour": 1.0666666666666667,
+   "detour_fixed": 1.1
+  },
+  {
+   "maze": "maze_4018",
+   "d_true": 62,
+   "explore_cells": 66,
+   "detour": 1.064516129032258,
+   "detour_fixed": 1.064516129032258
+  },
+  {
+   "maze": "maze_4019",
+   "d_true": 85,
+   "explore_cells": 151,
+   "detour": 1.776470588235294,
+   "detour_fixed": 1.776470588235294
+  }
+ ],
+ "eval_v2_short": [
+  {
+   "maze": "maze_1000",
+   "d_true": 19,
+   "explore_cells": 33,
+   "detour": 1.736842105263158,
+   "detour_fixed": 1.9473684210526316
+  },
+  {
+   "maze": "maze_1001",
+   "d_true": 26,
+   "explore_cells": 38,
+   "detour": 1.4615384615384615,
+   "detour_fixed": 1.4615384615384615
+  },
+  {
+   "maze": "maze_1002",
+   "d_true": 22,
+   "explore_cells": 24,
+   "detour": 1.0909090909090908,
+   "detour_fixed": 1.0909090909090908
+  },
+  {
+   "maze": "maze_1003",
+   "d_true": 25,
+   "explore_cells": 27,
+   "detour": 1.08,
+   "detour_fixed": 1.08
+  },
+  {
+   "maze": "maze_1004",
+   "d_true": 21,
+   "explore_cells": 51,
+   "detour": 2.4285714285714284,
+   "detour_fixed": 1.6666666666666667
+  },
+  {
+   "maze": "maze_1005",
+   "d_true": 16,
+   "explore_cells": 32,
+   "detour": 2.0,
+   "detour_fixed": 1.75
+  },
+  {
+   "maze": "maze_1006",
+   "d_true": 19,
+   "explore_cells": 19,
+   "detour": 1.0,
+   "detour_fixed": 1.0
+  },
+  {
+   "maze": "maze_1007",
+   "d_true": 20,
+   "explore_cells": 22,
+   "detour": 1.1,
+   "detour_fixed": 1.0
+  },
+  {
+   "maze": "maze_1008",
+   "d_true": 20,
+   "explore_cells": 28,
+   "detour": 1.4,
+   "detour_fixed": 1.4
+  },
+  {
+   "maze": "maze_1009",
+   "d_true": 16,
+   "explore_cells": 16,
+   "detour": 1.0,
+   "detour_fixed": 2.0
+  },
+  {
+   "maze": "maze_1010",
+   "d_true": 15,
+   "explore_cells": 17,
+   "detour": 1.1333333333333333,
+   "detour_fixed": 1.6666666666666667
+  },
+  {
+   "maze": "maze_1011",
+   "d_true": 20,
+   "explore_cells": 22,
+   "detour": 1.1,
+   "detour_fixed": 1.2
+  },
+  {
+   "maze": "maze_1012",
+   "d_true": 16,
+   "explore_cells": 36,
+   "detour": 2.25,
+   "detour_fixed": 2.25
+  },
+  {
+   "maze": "maze_1013",
+   "d_true": 19,
+   "explore_cells": 23,
+   "detour": 1.2105263157894737,
+   "detour_fixed": 2.0526315789473686
+  },
+  {
+   "maze": "maze_1014",
+   "d_true": 23,
+   "explore_cells": 23,
+   "detour": 1.0,
+   "detour_fixed": 1.0
+  },
+  {
+   "maze": "maze_1015",
+   "d_true": 22,
+   "explore_cells": 72,
+   "detour": 3.272727272727273,
+   "detour_fixed": 1.6363636363636365
+  },
+  {
+   "maze": "maze_1016",
+   "d_true": 20,
+   "explore_cells": 24,
+   "detour": 1.2,
+   "detour_fixed": 1.2
+  },
+  {
+   "maze": "maze_1017",
+   "d_true": 17,
+   "explore_cells": 41,
+   "detour": 2.411764705882353,
+   "detour_fixed": 2.2941176470588234
+  },
+  {
+   "maze": "maze_1018",
+   "d_true": 21,
+   "explore_cells": 21,
+   "detour": 1.0,
+   "detour_fixed": 1.0
+  },
+  {
+   "maze": "maze_1019",
+   "d_true": 19,
+   "explore_cells": 27,
+   "detour": 1.4210526315789473,
+   "detour_fixed": 1.0
+  }
+ ]
+}

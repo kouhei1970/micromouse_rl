@@ -9,7 +9,8 @@ D = json.loads((REPO / "verification" / "out" / "independent_kpi.json").read_tex
 C = D["conditions"]
 
 BANDS = [("eval", "評価帯 seed 1000-1019"), ("validation", "検証帯 seed 4000-4019"),
-         ("contest_reference", "大会実迷路")]
+         ("contest_reference", "大会実迷路"),
+         ("eval_v2_short", "是正前の短い評価帯 seed 1000-1019（対照）")]
 METHODS = [("adachi_classical", "L0-a 区画ごと停止"), ("l0b_straightrun", "L0-b 直進連続"),
            ("l0c_slalom", "L0-c スラローム")]
 

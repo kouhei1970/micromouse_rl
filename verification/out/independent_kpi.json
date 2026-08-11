@@ -3,44 +3,44 @@
  "note": "docs/RESEARCH_PLAN.md §2 の定義文のみから独立実装。評価器コード未参照。",
  "conditions": {
   "contest_reference/adachi_classical_20260811_074936": {
-   "n_mazes": 12,
+   "n_mazes": 18,
    "a_goal_rate": 1.0,
-   "a_count": "12/12",
-   "b_fast_done_rate": 0.25,
-   "b_count": "3/12",
-   "c_effective_rate_over_all": 0.25,
+   "a_count": "18/18",
+   "b_fast_done_rate": 0.2777777777777778,
+   "b_count": "5/18",
+   "c_effective_rate_over_all": 0.2777777777777778,
    "c_effective_rate_over_b": 1.0,
-   "c_count_over_all": "3/12",
-   "c_count_over_b": "3/3",
+   "c_count_over_all": "5/18",
+   "c_count_over_b": "5/5",
    "d_best_time": {
-    "n": 12,
+    "n": 18,
     "min": 62.089999998531766,
-    "q1": 99.02499999978409,
-    "median": 142.460000000082,
-    "q3": 157.4224999997282,
-    "max": 200.99999999869772,
-    "mean": 132.38999999940606
+    "q1": 89.02749999860335,
+    "median": 134.52500000026964,
+    "q3": 154.82249999978967,
+    "max": 241.57999999773813,
+    "mean": 131.9377777770743
    },
    "d_explore_time": {
-    "n": 12,
+    "n": 18,
     "min": 76.07000000018225,
-    "q1": 110.89750000034854,
-    "median": 142.460000000082,
-    "q3": 157.4224999997282,
-    "max": 200.99999999869772,
-    "mean": 138.26999999987785
+    "q1": 109.53750000034205,
+    "median": 141.34500000010837,
+    "q3": 154.82249999978967,
+    "max": 241.57999999773813,
+    "mean": 139.8444444442878
    },
    "d_fast_time": {
-    "n": 3,
+    "n": 5,
     "min": 62.089999998531766,
-    "q1": 64.30499999847939,
-    "median": 66.51999999842701,
-    "q3": 72.17499999829329,
-    "max": 77.82999999815956,
-    "mean": 68.81333333170612
+    "q1": 66.51999999842701,
+    "median": 77.82999999815956,
+    "q3": 79.33999999812389,
+    "max": 83.33999999802927,
+    "mean": 73.8239999982543
    },
    "e_first_fast_efficiency_A": {
-    "n": 3,
+    "n": 5,
     "min": 1.0,
     "q1": 1.0,
     "median": 1.0,
@@ -49,7 +49,7 @@
     "mean": 1.0
    },
    "e_first_fast_efficiency_B": {
-    "n": 3,
+    "n": 5,
     "min": 1.0,
     "q1": 1.0,
     "median": 1.0,
@@ -57,290 +57,297 @@
     "max": 1.0,
     "mean": 1.0
    },
-   "e_undefined_count": 9,
-   "e_A_equals_one_count": 3,
+   "e_undefined_count": 13,
+   "e_A_equals_one_count": 5,
    "runs_per_maze": {
-    "n": 12,
+    "n": 18,
+    "min": 1.0,
+    "q1": 1.25,
+    "median": 2.0,
+    "q3": 2.0,
+    "max": 3.0,
+    "mean": 1.8333333333333333
+   },
+   "goal_runs_per_maze": {
+    "n": 18,
+    "min": 1.0,
+    "q1": 1.0,
+    "median": 1.0,
+    "q3": 1.75,
+    "max": 2.0,
+    "mean": 1.2777777777777777
+   },
+   "fast_runs_per_maze": {
+    "n": 18,
+    "min": 0.0,
+    "q1": 0.0,
+    "median": 0.0,
+    "q3": 0.75,
+    "max": 1.0,
+    "mean": 0.2777777777777778
+   },
+   "fast_runs_per_maze_among_a": {
+    "n": 18,
+    "min": 0.0,
+    "q1": 0.0,
+    "median": 0.0,
+    "q3": 0.75,
+    "max": 1.0,
+    "mean": 0.2777777777777778
+   },
+   "explore_over_fast": {
+    "n": 5,
+    "min": 1.136194269591833,
+    "q1": 1.1435658448884707,
+    "median": 1.156793546791373,
+    "q3": 1.7117830573968171,
+    "max": 1.8118859720247458,
+    "mean": 1.392044538138648
+   },
+   "improvement_ratio": {
+    "n": 5,
+    "min": 0.1198688228209067,
+    "q1": 0.1255422637272559,
+    "median": 0.13554151233491507,
+    "q3": 0.4158138230899753,
+    "max": 0.4480888889036873,
+    "mean": 0.24897106217534803
+   },
+   "path_ratio": {
+    "n": 5,
+    "min": 1.1287400484813659,
+    "q1": 1.175979867785854,
+    "median": 1.2887678330643033,
+    "q3": 1.6773221567203846,
+    "max": 1.866551718505969,
+    "mean": 1.4274723249115753
+   },
+   "speed_ratio": {
+    "n": 5,
+    "min": 0.897596539200443,
+    "q1": 0.9661681298431325,
+    "median": 0.9707129751941838,
+    "q3": 1.0131348191526044,
+    "max": 1.0205451889718147,
+    "mean": 0.9736315304724357
+   },
+   "e_forced_one_count": 5,
+   "e_forced_one_frac_of_b": 1.0,
+   "c_threshold_sensitivity": {
+    "0.00": 5,
+    "0.05": 5,
+    "0.08": 5,
+    "0.10": 5,
+    "0.12": 4,
+    "0.15": 2,
+    "0.20": 2,
+    "0.30": 2
+   },
+   "c_near_threshold_count": 3,
+   "hit_run_cap_count": 0,
+   "last_run_timeout_count": 10,
+   "time_used": {
+    "n": 18,
+    "min": 106.31000000032559,
+    "q1": 245.53749999764975,
+    "median": 420.00999999352405,
+    "q3": 420.00999999352405,
+    "max": 420.00999999352405,
+    "mean": 342.32611110643785
+   },
+   "runs_per_maze_hist": {
+    "1": 5,
+    "2": 11,
+    "3": 2
+   },
+   "fast_runs_per_maze_hist": {
+    "0": 13,
+    "1": 5
+   },
+   "maze_ids": [
+    "maze_16MM2012CX",
+    "maze_16MM2013CX",
+    "maze_16MM2014CX",
+    "maze_16MM2015CX",
+    "maze_16MM2015C_Chubu",
+    "maze_16MM2016CX",
+    "maze_16MM2016C_Chubu",
+    "maze_16MM2016C_Kyushu",
+    "maze_16MM2017CX",
+    "maze_16MM2017CX_pre",
+    "maze_16MM2017C_East",
+    "maze_16MM2017C_student",
+    "maze_16MM2018CX",
+    "maze_16MM2018C_student",
+    "maze_16MM2019CX",
+    "maze_16MM2019C_student",
+    "maze_16MM2020C_student",
+    "maze_16MM2021H_Kansai"
+   ]
+  },
+  "contest_reference/l0b_straightrun_20260811_074936": {
+   "n_mazes": 18,
+   "a_goal_rate": 1.0,
+   "a_count": "18/18",
+   "b_fast_done_rate": 1.0,
+   "b_count": "18/18",
+   "c_effective_rate_over_all": 1.0,
+   "c_effective_rate_over_b": 1.0,
+   "c_count_over_all": "18/18",
+   "c_count_over_b": "18/18",
+   "d_best_time": {
+    "n": 18,
+    "min": 34.63999999918087,
+    "q1": 50.15499999881399,
+    "median": 59.31999999859727,
+    "q3": 73.57499999826021,
+    "max": 120.35999999715386,
+    "mean": 65.77555555400018
+   },
+   "d_explore_time": {
+    "n": 18,
+    "min": 58.65000000009883,
+    "q1": 87.63250000023721,
+    "median": 109.14000000033991,
+    "q3": 123.55000000040872,
+    "max": 192.94999999888927,
+    "mean": 110.37444444460418
+   },
+   "d_fast_time": {
+    "n": 18,
+    "min": 34.63999999918087,
+    "q1": 50.15499999881399,
+    "median": 59.31999999859727,
+    "q3": 73.57499999826021,
+    "max": 120.35999999715386,
+    "mean": 65.77555555400018
+   },
+   "e_first_fast_efficiency_A": {
+    "n": 18,
+    "min": 1.0,
+    "q1": 1.0,
+    "median": 1.0716531551837387,
+    "q3": 1.186761313367612,
+    "max": 1.6803874092009685,
+    "mean": 1.1374586734263246
+   },
+   "e_first_fast_efficiency_B": {
+    "n": 18,
+    "min": 1.0,
+    "q1": 1.0,
+    "median": 1.0716531551837387,
+    "q3": 1.186761313367612,
+    "max": 1.6803874092009685,
+    "mean": 1.1374586734263246
+   },
+   "e_undefined_count": 0,
+   "e_A_equals_one_count": 8,
+   "runs_per_maze": {
+    "n": 18,
+    "min": 2.0,
+    "q1": 3.0,
+    "median": 3.0,
+    "q3": 4.0,
+    "max": 5.0,
+    "mean": 3.3333333333333335
+   },
+   "goal_runs_per_maze": {
+    "n": 18,
+    "min": 2.0,
+    "q1": 2.0,
+    "median": 3.0,
+    "q3": 3.0,
+    "max": 4.0,
+    "mean": 2.8333333333333335
+   },
+   "fast_runs_per_maze": {
+    "n": 18,
     "min": 1.0,
     "q1": 1.0,
     "median": 2.0,
     "q3": 2.0,
     "max": 3.0,
-    "mean": 1.6666666666666667
-   },
-   "goal_runs_per_maze": {
-    "n": 12,
-    "min": 1.0,
-    "q1": 1.0,
-    "median": 1.0,
-    "q3": 1.25,
-    "max": 2.0,
-    "mean": 1.25
-   },
-   "fast_runs_per_maze": {
-    "n": 12,
-    "min": 0.0,
-    "q1": 0.0,
-    "median": 0.0,
-    "q3": 0.25,
-    "max": 1.0,
-    "mean": 0.25
+    "mean": 1.8333333333333333
    },
    "fast_runs_per_maze_among_a": {
-    "n": 12,
-    "min": 0.0,
-    "q1": 0.0,
-    "median": 0.0,
-    "q3": 0.25,
-    "max": 1.0,
-    "mean": 0.25
-   },
-   "explore_over_fast": {
-    "n": 3,
-    "min": 1.136194269591833,
-    "q1": 1.139880057240152,
-    "median": 1.1435658448884707,
-    "q3": 1.4777259084566081,
-    "max": 1.8118859720247458,
-    "mean": 1.3638820288350164
-   },
-   "improvement_ratio": {
-    "n": 3,
-    "min": 0.1198688228209067,
-    "q1": 0.12270554327408131,
-    "median": 0.1255422637272559,
-    "q3": 0.2868155763154716,
-    "max": 0.4480888889036873,
-    "mean": 0.23116665848395
-   },
-   "path_ratio": {
-    "n": 3,
-    "min": 1.1287400484813659,
-    "q1": 1.15235995813361,
-    "median": 1.175979867785854,
-    "q3": 1.5212657931459115,
-    "max": 1.866551718505969,
-    "mean": 1.3904238782577296
-   },
-   "speed_ratio": {
-    "n": 3,
-    "min": 0.9661681298431325,
-    "q1": 0.9684405525186581,
-    "median": 0.9707129751941838,
-    "q3": 0.9919238971733941,
-    "max": 1.0131348191526044,
-    "mean": 0.9833386413966402
-   },
-   "e_forced_one_count": 3,
-   "e_forced_one_frac_of_b": 1.0,
-   "c_threshold_sensitivity": {
-    "0.00": 3,
-    "0.05": 3,
-    "0.08": 3,
-    "0.10": 3,
-    "0.12": 2,
-    "0.15": 1,
-    "0.20": 1,
-    "0.30": 1
-   },
-   "c_near_threshold_count": 2,
-   "hit_run_cap_count": 0,
-   "last_run_timeout_count": 5,
-   "time_used": {
-    "n": 12,
-    "min": 106.31000000032559,
-    "q1": 159.32999999968828,
-    "median": 394.1699999941351,
-    "q3": 420.00999999352405,
-    "max": 420.00999999352405,
-    "mean": 303.7791666628878
-   },
-   "runs_per_maze_hist": {
-    "1": 5,
-    "2": 6,
-    "3": 1
-   },
-   "fast_runs_per_maze_hist": {
-    "0": 9,
-    "1": 3
-   },
-   "maze_ids": [
-    "maze_16MM2012CX",
-    "maze_16MM2013CX",
-    "maze_16MM2014CX",
-    "maze_16MM2015CX",
-    "maze_16MM2015C_Chubu",
-    "maze_16MM2016CX",
-    "maze_16MM2016C_Chubu",
-    "maze_16MM2016C_Kyushu",
-    "maze_16MM2017CX",
-    "maze_16MM2017CX_pre",
-    "maze_16MM2017C_East",
-    "maze_16MM2017C_student"
-   ]
-  },
-  "contest_reference/l0b_straightrun_20260811_074936": {
-   "n_mazes": 12,
-   "a_goal_rate": 1.0,
-   "a_count": "12/12",
-   "b_fast_done_rate": 1.0,
-   "b_count": "12/12",
-   "c_effective_rate_over_all": 1.0,
-   "c_effective_rate_over_b": 1.0,
-   "c_count_over_all": "12/12",
-   "c_count_over_b": "12/12",
-   "d_best_time": {
-    "n": 12,
-    "min": 45.42999999892572,
-    "q1": 56.18999999867128,
-    "median": 67.61499999840113,
-    "q3": 79.7624999981139,
-    "max": 120.35999999715386,
-    "mean": 72.85499999827722
-   },
-   "d_explore_time": {
-    "n": 12,
-    "min": 58.65000000009883,
-    "q1": 89.19000000024465,
-    "median": 112.46000000035576,
-    "q3": 125.16500000040648,
-    "max": 158.40999999970603,
-    "mean": 109.13500000021502
-   },
-   "d_fast_time": {
-    "n": 12,
-    "min": 45.42999999892572,
-    "q1": 56.18999999867128,
-    "median": 67.61499999840113,
-    "q3": 79.7624999981139,
-    "max": 120.35999999715386,
-    "mean": 72.85499999827722
-   },
-   "e_first_fast_efficiency_A": {
-    "n": 12,
+    "n": 18,
     "min": 1.0,
     "q1": 1.0,
-    "median": 1.0,
-    "q3": 1.2029306176017955,
-    "max": 1.6803874092009685,
-    "mean": 1.1316263660230248
-   },
-   "e_first_fast_efficiency_B": {
-    "n": 12,
-    "min": 1.0,
-    "q1": 1.0,
-    "median": 1.0,
-    "q3": 1.2029306176017955,
-    "max": 1.6803874092009685,
-    "mean": 1.1316263660230248
-   },
-   "e_undefined_count": 0,
-   "e_A_equals_one_count": 7,
-   "runs_per_maze": {
-    "n": 12,
-    "min": 2.0,
-    "q1": 2.75,
-    "median": 3.0,
-    "q3": 4.0,
-    "max": 4.0,
-    "mean": 3.0833333333333335
-   },
-   "goal_runs_per_maze": {
-    "n": 12,
-    "min": 2.0,
-    "q1": 2.0,
-    "median": 2.5,
-    "q3": 3.0,
-    "max": 4.0,
-    "mean": 2.5833333333333335
-   },
-   "fast_runs_per_maze": {
-    "n": 12,
-    "min": 1.0,
-    "q1": 1.0,
-    "median": 1.5,
+    "median": 2.0,
     "q3": 2.0,
     "max": 3.0,
-    "mean": 1.5833333333333333
-   },
-   "fast_runs_per_maze_among_a": {
-    "n": 12,
-    "min": 1.0,
-    "q1": 1.0,
-    "median": 1.5,
-    "q3": 2.0,
-    "max": 3.0,
-    "mean": 1.5833333333333333
+    "mean": 1.8333333333333333
    },
    "explore_over_fast": {
-    "n": 12,
+    "n": 18,
     "min": 1.1424151344010953,
-    "q1": 1.3059595518774734,
-    "median": 1.4621368920290758,
-    "q3": 1.7129688728461159,
-    "max": 2.0913569820305726,
-    "mean": 1.5340108615687589
+    "q1": 1.3122439993996988,
+    "median": 1.5693293593242692,
+    "q3": 1.9537014167083513,
+    "max": 3.9841007640605373,
+    "mean": 1.8017433755787846
    },
    "improvement_ratio": {
-    "n": 12,
+    "n": 18,
     "min": 0.12466145634157377,
-    "q1": 0.2342457377314668,
-    "median": 0.3124326315809144,
-    "q3": 0.41484311922326156,
-    "max": 0.5218415561799188,
-    "mean": 0.32406738675711094
+    "q1": 0.23794437217304593,
+    "median": 0.3627849441304193,
+    "q3": 0.4878789879357521,
+    "max": 0.7490023322149075,
+    "mean": 0.3774336675528049
    },
    "path_ratio": {
-    "n": 12,
+    "n": 18,
     "min": 1.115769513006267,
-    "q1": 1.1721047981851076,
-    "median": 1.3662366247271436,
-    "q3": 1.5689858428350565,
-    "max": 2.065426877628537,
-    "mean": 1.4172886292037348
+    "q1": 1.2061339037282106,
+    "median": 1.3794643241631523,
+    "q3": 1.6559666393247627,
+    "max": 3.006447881086309,
+    "mean": 1.572203167848211
    },
    "speed_ratio": {
-    "n": 12,
+    "n": 18,
     "min": 0.8336727676987835,
-    "q1": 0.9977553190944417,
-    "median": 1.086943033229128,
-    "q3": 1.214893403165648,
+    "q1": 1.0020567752275924,
+    "median": 1.1593104079492411,
+    "q3": 1.2487021215859126,
     "max": 1.4072640031121013,
-    "mean": 1.0959408544866485
+    "mean": 1.1317538059075822
    },
    "e_forced_one_count": 6,
-   "e_forced_one_frac_of_b": 0.5,
+   "e_forced_one_frac_of_b": 0.3333333333333333,
    "c_threshold_sensitivity": {
-    "0.00": 12,
-    "0.05": 12,
-    "0.08": 12,
-    "0.10": 12,
-    "0.12": 12,
-    "0.15": 11,
-    "0.20": 10,
-    "0.30": 6
+    "0.00": 18,
+    "0.05": 18,
+    "0.08": 18,
+    "0.10": 18,
+    "0.12": 18,
+    "0.15": 17,
+    "0.20": 15,
+    "0.30": 10
    },
    "c_near_threshold_count": 1,
-   "hit_run_cap_count": 0,
-   "last_run_timeout_count": 6,
+   "hit_run_cap_count": 1,
+   "last_run_timeout_count": 9,
    "time_used": {
-    "n": 12,
+    "n": 18,
     "min": 348.2699999952205,
-    "q1": 396.0099999940916,
-    "median": 417.51499999358305,
+    "q1": 404.1199999938998,
+    "median": 418.36499999356295,
     "q3": 420.00999999352405,
     "max": 420.00999999352405,
-    "mean": 403.67083332724377
+    "mean": 407.31222221604656
    },
    "runs_per_maze_hist": {
     "2": 3,
-    "3": 5,
-    "4": 4
+    "3": 7,
+    "4": 7,
+    "5": 1
    },
    "fast_runs_per_maze_hist": {
     "1": 6,
-    "2": 5,
-    "3": 1
+    "2": 9,
+    "3": 3
    },
    "maze_ids": [
     "maze_16MM2012CX",
@@ -354,7 +361,13 @@
     "maze_16MM2017CX",
     "maze_16MM2017CX_pre",
     "maze_16MM2017C_East",
-    "maze_16MM2017C_student"
+    "maze_16MM2017C_student",
+    "maze_16MM2018CX",
+    "maze_16MM2018C_student",
+    "maze_16MM2019CX",
+    "maze_16MM2019C_student",
+    "maze_16MM2020C_student",
+    "maze_16MM2021H_Kansai"
    ]
   },
   "contest_reference/l0c_slalom_20260811_074936": {
@@ -1062,6 +1075,552 @@
     "q3": 228.47499999805322,
     "max": 280.24999999682893,
     "mean": 206.3159999985772
+   },
+   "runs_per_maze_hist": {
+    "5": 20
+   },
+   "fast_runs_per_maze_hist": {
+    "4": 20
+   },
+   "maze_ids": [
+    "maze_1000",
+    "maze_1001",
+    "maze_1002",
+    "maze_1003",
+    "maze_1004",
+    "maze_1005",
+    "maze_1006",
+    "maze_1007",
+    "maze_1008",
+    "maze_1009",
+    "maze_1010",
+    "maze_1011",
+    "maze_1012",
+    "maze_1013",
+    "maze_1014",
+    "maze_1015",
+    "maze_1016",
+    "maze_1017",
+    "maze_1018",
+    "maze_1019"
+   ]
+  },
+  "eval_v2_short/adachi_classical_20260811_080633": {
+   "n_mazes": 20,
+   "a_goal_rate": 1.0,
+   "a_count": "20/20",
+   "b_fast_done_rate": 1.0,
+   "b_count": "20/20",
+   "c_effective_rate_over_all": 0.6,
+   "c_effective_rate_over_b": 0.6,
+   "c_count_over_all": "12/20",
+   "c_count_over_b": "12/20",
+   "d_best_time": {
+    "n": 20,
+    "min": 15.13000000001027,
+    "q1": 19.67749999995995,
+    "median": 22.85999999972411,
+    "q3": 24.319999999936286,
+    "max": 34.989999999172596,
+    "mean": 22.96849999964218
+   },
+   "d_explore_time": {
+    "n": 20,
+    "min": 16.670000000005988,
+    "q1": 24.06249999998876,
+    "median": 28.31499999997885,
+    "q3": 35.29499999998755,
+    "max": 82.73000000021405,
+    "mean": 33.39050000001062
+   },
+   "d_fast_time": {
+    "n": 20,
+    "min": 15.13000000001027,
+    "q1": 19.67749999995995,
+    "median": 23.339999999448082,
+    "q3": 25.58499999942917,
+    "max": 34.989999999172596,
+    "mean": 23.155499999566285
+   },
+   "e_first_fast_efficiency_A": {
+    "n": 20,
+    "min": 1.0,
+    "q1": 1.0003142019332636,
+    "median": 1.0009623353740176,
+    "q3": 1.0013368172591512,
+    "max": 1.1619005719103226,
+    "mean": 1.0090051238723272
+   },
+   "e_first_fast_efficiency_B": {
+    "n": 20,
+    "min": 1.0,
+    "q1": 1.000000000003072,
+    "median": 1.0007522227712582,
+    "q3": 1.001183616643498,
+    "max": 1.0033769523036795,
+    "mean": 1.000754096219603
+   },
+   "e_undefined_count": 0,
+   "e_A_equals_one_count": 5,
+   "runs_per_maze": {
+    "n": 20,
+    "min": 5.0,
+    "q1": 5.0,
+    "median": 5.0,
+    "q3": 5.0,
+    "max": 5.0,
+    "mean": 5.0
+   },
+   "goal_runs_per_maze": {
+    "n": 20,
+    "min": 5.0,
+    "q1": 5.0,
+    "median": 5.0,
+    "q3": 5.0,
+    "max": 5.0,
+    "mean": 5.0
+   },
+   "fast_runs_per_maze": {
+    "n": 20,
+    "min": 4.0,
+    "q1": 4.0,
+    "median": 4.0,
+    "q3": 4.0,
+    "max": 4.0,
+    "mean": 4.0
+   },
+   "fast_runs_per_maze_among_a": {
+    "n": 20,
+    "min": 4.0,
+    "q1": 4.0,
+    "median": 4.0,
+    "q3": 4.0,
+    "max": 4.0,
+    "mean": 4.0
+   },
+   "explore_over_fast": {
+    "n": 20,
+    "min": 0.8606588413635634,
+    "q1": 1.0452276388308213,
+    "median": 1.1961433292684815,
+    "q3": 1.721918794137136,
+    "max": 3.2686685105559206,
+    "mean": 1.4374425016100278
+   },
+   "improvement_ratio": {
+    "n": 20,
+    "min": -0.16190057191032262,
+    "q1": 0.042685689994177795,
+    "median": 0.16396624837972737,
+    "q3": 0.4187622784566327,
+    "max": 0.6940650308311856,
+    "mean": 0.21991108757738184
+   },
+   "path_ratio": {
+    "n": 20,
+    "min": 0.9973795930778658,
+    "q1": 1.094235059472499,
+    "median": 1.2187339108429156,
+    "q3": 1.822739895032958,
+    "max": 3.389232190609167,
+    "mean": 1.5344692338653467
+   },
+   "speed_ratio": {
+    "n": 20,
+    "min": 0.7722411938192697,
+    "q1": 0.9268238030815162,
+    "median": 0.9667028942325608,
+    "q3": 0.9988648996886242,
+    "max": 1.0221419292755995,
+    "mean": 0.9472605189681083
+   },
+   "e_forced_one_count": 0,
+   "e_forced_one_frac_of_b": 0.0,
+   "c_threshold_sensitivity": {
+    "0.00": 17,
+    "0.05": 15,
+    "0.08": 13,
+    "0.10": 12,
+    "0.12": 12,
+    "0.15": 11,
+    "0.20": 9,
+    "0.30": 6
+   },
+   "c_near_threshold_count": 4,
+   "hit_run_cap_count": 20,
+   "last_run_timeout_count": 0,
+   "time_used": {
+    "n": 20,
+    "min": 163.9299999995795,
+    "q1": 236.4849999978638,
+    "median": 266.4949999971542,
+    "q3": 304.7024999962507,
+    "max": 352.0199999951318,
+    "mean": 268.55549999710547
+   },
+   "runs_per_maze_hist": {
+    "5": 20
+   },
+   "fast_runs_per_maze_hist": {
+    "4": 20
+   },
+   "maze_ids": [
+    "maze_1000",
+    "maze_1001",
+    "maze_1002",
+    "maze_1003",
+    "maze_1004",
+    "maze_1005",
+    "maze_1006",
+    "maze_1007",
+    "maze_1008",
+    "maze_1009",
+    "maze_1010",
+    "maze_1011",
+    "maze_1012",
+    "maze_1013",
+    "maze_1014",
+    "maze_1015",
+    "maze_1016",
+    "maze_1017",
+    "maze_1018",
+    "maze_1019"
+   ]
+  },
+  "eval_v2_short/l0b_straightrun_20260811_080633": {
+   "n_mazes": 20,
+   "a_goal_rate": 1.0,
+   "a_count": "20/20",
+   "b_fast_done_rate": 1.0,
+   "b_count": "20/20",
+   "c_effective_rate_over_all": 0.85,
+   "c_effective_rate_over_b": 0.85,
+   "c_count_over_all": "17/20",
+   "c_count_over_b": "17/20",
+   "d_best_time": {
+    "n": 20,
+    "min": 10.370000000049515,
+    "q1": 14.447500000068985,
+    "median": 17.199999999835853,
+    "q3": 18.74499999955674,
+    "max": 28.169999999333868,
+    "mean": 17.163499999755288
+   },
+   "d_explore_time": {
+    "n": 20,
+    "min": 13.050000000004665,
+    "q1": 18.75250000000125,
+    "median": 22.829999999991745,
+    "q3": 27.507499999980844,
+    "max": 65.09000000012958,
+    "mean": 26.365500000005007
+   },
+   "d_fast_time": {
+    "n": 20,
+    "min": 10.370000000049515,
+    "q1": 14.447500000068985,
+    "median": 17.199999999835853,
+    "q3": 18.74499999955674,
+    "max": 28.169999999333868,
+    "mean": 17.163499999755288
+   },
+   "e_first_fast_efficiency_A": {
+    "n": 20,
+    "min": 1.0,
+    "q1": 1.005567541446843,
+    "median": 1.180617344041297,
+    "q3": 1.4953111772486658,
+    "max": 3.0799309949121487,
+    "mean": 1.4158471596082784
+   },
+   "e_first_fast_efficiency_B": {
+    "n": 20,
+    "min": 1.0,
+    "q1": 1.005567541446843,
+    "median": 1.180617344041297,
+    "q3": 1.4953111772486658,
+    "max": 3.0799309949121487,
+    "mean": 1.4158471596082784
+   },
+   "e_undefined_count": 0,
+   "e_A_equals_one_count": 3,
+   "runs_per_maze": {
+    "n": 20,
+    "min": 5.0,
+    "q1": 5.0,
+    "median": 5.0,
+    "q3": 5.0,
+    "max": 5.0,
+    "mean": 5.0
+   },
+   "goal_runs_per_maze": {
+    "n": 20,
+    "min": 5.0,
+    "q1": 5.0,
+    "median": 5.0,
+    "q3": 5.0,
+    "max": 5.0,
+    "mean": 5.0
+   },
+   "fast_runs_per_maze": {
+    "n": 20,
+    "min": 4.0,
+    "q1": 4.0,
+    "median": 4.0,
+    "q3": 4.0,
+    "max": 4.0,
+    "mean": 4.0
+   },
+   "fast_runs_per_maze_among_a": {
+    "n": 20,
+    "min": 4.0,
+    "q1": 4.0,
+    "median": 4.0,
+    "q3": 4.0,
+    "max": 4.0,
+    "mean": 4.0
+   },
+   "explore_over_fast": {
+    "n": 20,
+    "min": 1.0080506038193575,
+    "q1": 1.1555657927931395,
+    "median": 1.3010037516342527,
+    "q3": 1.7499377763430326,
+    "max": 3.4788882951185864,
+    "mean": 1.5297988840752064
+   },
+   "improvement_ratio": {
+    "n": 20,
+    "min": 0.007986309207945444,
+    "q1": 0.13424959040700996,
+    "median": 0.23128158927549053,
+    "q3": 0.4285511019141439,
+    "max": 0.7125518512902086,
+    "mean": 0.2768269498032306
+   },
+   "path_ratio": {
+    "n": 20,
+    "min": 0.9121660946164311,
+    "q1": 1.0620017331802623,
+    "median": 1.212558543853722,
+    "q3": 1.8278192481747517,
+    "max": 3.389877305689451,
+    "mean": 1.5258727063723752
+   },
+   "speed_ratio": {
+    "n": 20,
+    "min": 0.7454405319751835,
+    "q1": 0.9729058851763497,
+    "median": 1.0425967364214115,
+    "q3": 1.0962699834278746,
+    "max": 1.1699300133294395,
+    "mean": 1.027390881570702
+   },
+   "e_forced_one_count": 0,
+   "e_forced_one_frac_of_b": 0.0,
+   "c_threshold_sensitivity": {
+    "0.00": 20,
+    "0.05": 19,
+    "0.08": 17,
+    "0.10": 17,
+    "0.12": 15,
+    "0.15": 14,
+    "0.20": 11,
+    "0.30": 7
+   },
+   "c_near_threshold_count": 5,
+   "hit_run_cap_count": 20,
+   "last_run_timeout_count": 0,
+   "time_used": {
+    "n": 20,
+    "min": 116.37000000037362,
+    "q1": 177.40499999926087,
+    "median": 191.5199999989271,
+    "q3": 223.0674999981811,
+    "max": 277.8699999968852,
+    "mean": 194.33049999884412
+   },
+   "runs_per_maze_hist": {
+    "5": 20
+   },
+   "fast_runs_per_maze_hist": {
+    "4": 20
+   },
+   "maze_ids": [
+    "maze_1000",
+    "maze_1001",
+    "maze_1002",
+    "maze_1003",
+    "maze_1004",
+    "maze_1005",
+    "maze_1006",
+    "maze_1007",
+    "maze_1008",
+    "maze_1009",
+    "maze_1010",
+    "maze_1011",
+    "maze_1012",
+    "maze_1013",
+    "maze_1014",
+    "maze_1015",
+    "maze_1016",
+    "maze_1017",
+    "maze_1018",
+    "maze_1019"
+   ]
+  },
+  "eval_v2_short/l0c_slalom_20260811_080633": {
+   "n_mazes": 20,
+   "a_goal_rate": 1.0,
+   "a_count": "20/20",
+   "b_fast_done_rate": 1.0,
+   "b_count": "20/20",
+   "c_effective_rate_over_all": 1.0,
+   "c_effective_rate_over_b": 1.0,
+   "c_count_over_all": "20/20",
+   "c_count_over_b": "20/20",
+   "d_best_time": {
+    "n": 20,
+    "min": 3.100000000014802,
+    "q1": 3.735000000017834,
+    "median": 4.420000000021105,
+    "q3": 4.915000000023468,
+    "max": 6.310000000030129,
+    "mean": 4.383000000018614
+   },
+   "d_explore_time": {
+    "n": 20,
+    "min": 4.789999999999976,
+    "q1": 6.722499999998905,
+    "median": 7.779999999998585,
+    "q3": 12.39250000000385,
+    "max": 23.67999999998979,
+    "mean": 9.577500000000207
+   },
+   "d_fast_time": {
+    "n": 20,
+    "min": 3.100000000014802,
+    "q1": 3.735000000017834,
+    "median": 4.420000000021105,
+    "q3": 4.915000000023468,
+    "max": 6.310000000030129,
+    "mean": 4.383000000018614
+   },
+   "e_first_fast_efficiency_A": {
+    "n": 20,
+    "min": 1.0,
+    "q1": 1.0921809587436107,
+    "median": 1.5008382285776247,
+    "q3": 2.3085831004861115,
+    "max": 3.838445807754628,
+    "mean": 1.826189270713152
+   },
+   "e_first_fast_efficiency_B": {
+    "n": 20,
+    "min": 1.0,
+    "q1": 1.0921809587436107,
+    "median": 1.5008382285776247,
+    "q3": 2.3085831004861115,
+    "max": 3.838445807754628,
+    "mean": 1.826189270713152
+   },
+   "e_undefined_count": 0,
+   "e_A_equals_one_count": 1,
+   "runs_per_maze": {
+    "n": 20,
+    "min": 5.0,
+    "q1": 5.0,
+    "median": 5.0,
+    "q3": 5.0,
+    "max": 5.0,
+    "mean": 5.0
+   },
+   "goal_runs_per_maze": {
+    "n": 20,
+    "min": 5.0,
+    "q1": 5.0,
+    "median": 5.0,
+    "q3": 5.0,
+    "max": 5.0,
+    "mean": 5.0
+   },
+   "fast_runs_per_maze": {
+    "n": 20,
+    "min": 4.0,
+    "q1": 4.0,
+    "median": 4.0,
+    "q3": 4.0,
+    "max": 4.0,
+    "mean": 4.0
+   },
+   "fast_runs_per_maze_among_a": {
+    "n": 20,
+    "min": 4.0,
+    "q1": 4.0,
+    "median": 4.0,
+    "q3": 4.0,
+    "max": 4.0,
+    "mean": 4.0
+   },
+   "explore_over_fast": {
+    "n": 20,
+    "min": 1.3224568138130353,
+    "q1": 1.448168464719622,
+    "median": 1.8037004519796325,
+    "q3": 2.9237235067304534,
+    "max": 4.745490981939223,
+    "mean": 2.215101701329799
+   },
+   "improvement_ratio": {
+    "n": 20,
+    "min": 0.2438316400543142,
+    "q1": 0.30941249339747806,
+    "median": 0.44489833496850295,
+    "q3": 0.6578694817642785,
+    "max": 0.7892736486475516,
+    "mean": 0.4775712038932407
+   },
+   "path_ratio": {
+    "n": 20,
+    "min": 0.9890040243364162,
+    "q1": 1.092627196230029,
+    "median": 1.2161388885362487,
+    "q3": 1.8420507181823376,
+    "max": 3.3995113659895533,
+    "mean": 1.5467392409288652
+   },
+   "speed_ratio": {
+    "n": 20,
+    "min": 1.184415896669673,
+    "q1": 1.3090487736224365,
+    "median": 1.3769394803888502,
+    "q3": 1.5206221087721294,
+    "max": 2.0087681245945075,
+    "mean": 1.4367296904023135
+   },
+   "e_forced_one_count": 0,
+   "e_forced_one_frac_of_b": 0.0,
+   "c_threshold_sensitivity": {
+    "0.00": 20,
+    "0.05": 20,
+    "0.08": 20,
+    "0.10": 20,
+    "0.12": 20,
+    "0.15": 20,
+    "0.20": 20,
+    "0.30": 15
+   },
+   "c_near_threshold_count": 0,
+   "hit_run_cap_count": 20,
+   "last_run_timeout_count": 0,
+   "time_used": {
+    "n": 20,
+    "min": 51.79000000006526,
+    "q1": 64.54000000012614,
+    "median": 68.34000000014429,
+    "q3": 74.96750000017593,
+    "max": 88.43000000024021,
+    "mean": 69.32950000014901
    },
    "runs_per_maze_hist": {
     "5": 20
@@ -1922,6 +2481,145 @@
     "explore_over_fast": null,
     "time_used": 201.21999999869772,
     "hit_run_cap": false
+   },
+   {
+    "maze_id": "maze_16MM2018CX",
+    "n_runs": 2,
+    "outcomes": [
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 2,
+    "n_fast_runs": 1,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 142.66000000007728,
+    "fast_time": 83.33999999802927,
+    "best_time_all": 83.33999999802927,
+    "first_fast_time": 83.33999999802927,
+    "improvement_ratio": 0.4158138230899753,
+    "eff_A": 1.0,
+    "eff_B": 1.0,
+    "explore_over_fast": 1.7117830573968171,
+    "time_used": 416.46999999360776,
+    "hit_run_cap": false
+   },
+   {
+    "maze_id": "maze_16MM2018C_student",
+    "n_runs": 2,
+    "outcomes": [
+     "goal",
+     "timeout"
+    ],
+    "n_goal_runs": 1,
+    "n_fast_runs": 0,
+    "goal_reached": true,
+    "fast_run_done": false,
+    "fast_run_effective": false,
+    "explore_time": 152.66999999984057,
+    "fast_time": null,
+    "best_time_all": 152.66999999984057,
+    "first_fast_time": null,
+    "improvement_ratio": null,
+    "eff_A": null,
+    "eff_B": null,
+    "explore_over_fast": null,
+    "time_used": 420.00999999352405,
+    "hit_run_cap": false
+   },
+   {
+    "maze_id": "maze_16MM2019CX",
+    "n_runs": 2,
+    "outcomes": [
+     "goal",
+     "timeout"
+    ],
+    "n_goal_runs": 1,
+    "n_fast_runs": 0,
+    "goal_reached": true,
+    "fast_run_done": false,
+    "fast_run_effective": false,
+    "explore_time": 120.72000000039544,
+    "fast_time": null,
+    "best_time_all": 120.72000000039544,
+    "first_fast_time": null,
+    "improvement_ratio": null,
+    "eff_A": null,
+    "eff_B": null,
+    "explore_over_fast": null,
+    "time_used": 420.00999999352405,
+    "hit_run_cap": false
+   },
+   {
+    "maze_id": "maze_16MM2019C_student",
+    "n_runs": 2,
+    "outcomes": [
+     "goal",
+     "timeout"
+    ],
+    "n_goal_runs": 1,
+    "n_fast_runs": 0,
+    "goal_reached": true,
+    "fast_run_done": false,
+    "fast_run_effective": false,
+    "explore_time": 241.57999999773813,
+    "fast_time": null,
+    "best_time_all": 241.57999999773813,
+    "first_fast_time": null,
+    "improvement_ratio": null,
+    "eff_A": null,
+    "eff_B": null,
+    "explore_over_fast": null,
+    "time_used": 420.00999999352405,
+    "hit_run_cap": false
+   },
+   {
+    "maze_id": "maze_16MM2020C_student",
+    "n_runs": 3,
+    "outcomes": [
+     "goal",
+     "goal",
+     "timeout"
+    ],
+    "n_goal_runs": 2,
+    "n_fast_runs": 1,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 91.78000000025726,
+    "fast_time": 79.33999999812389,
+    "best_time_all": 79.33999999812389,
+    "first_fast_time": 79.33999999812389,
+    "improvement_ratio": 0.13554151233491507,
+    "eff_A": 1.0,
+    "eff_B": 1.0,
+    "explore_over_fast": 1.156793546791373,
+    "time_used": 420.00999999352405,
+    "hit_run_cap": false
+   },
+   {
+    "maze_id": "maze_16MM2021H_Kansai",
+    "n_runs": 2,
+    "outcomes": [
+     "goal",
+     "timeout"
+    ],
+    "n_goal_runs": 1,
+    "n_fast_runs": 0,
+    "goal_reached": true,
+    "fast_run_done": false,
+    "fast_run_effective": false,
+    "explore_time": 108.55000000033733,
+    "fast_time": null,
+    "best_time_all": 108.55000000033733,
+    "first_fast_time": null,
+    "improvement_ratio": null,
+    "eff_A": null,
+    "eff_B": null,
+    "explore_over_fast": null,
+    "time_used": 420.00999999352405,
+    "hit_run_cap": false
    }
   ],
   "contest_reference/l0b_straightrun_20260811_074936": [
@@ -2212,6 +2910,155 @@
     "eff_B": 1.0,
     "explore_over_fast": 1.3161349285763704,
     "time_used": 408.9799999937849,
+    "hit_run_cap": false
+   },
+   {
+    "maze_id": "maze_16MM2018CX",
+    "n_runs": 4,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "timeout"
+    ],
+    "n_goal_runs": 3,
+    "n_fast_runs": 2,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 106.43000000032697,
+    "fast_time": 53.76999999872851,
+    "best_time_all": 53.76999999872851,
+    "first_fast_time": 54.27999999871645,
+    "improvement_ratio": 0.4947853049087351,
+    "eff_A": 1.0094848428491725,
+    "eff_B": 1.0094848428491725,
+    "explore_over_fast": 1.979356518557629,
+    "time_used": 420.00999999352405,
+    "hit_run_cap": false
+   },
+   {
+    "maze_id": "maze_16MM2018C_student",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "timeout"
+    ],
+    "n_goal_runs": 4,
+    "n_fast_runs": 3,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 122.77000000040499,
+    "fast_time": 34.63999999918087,
+    "best_time_all": 34.63999999918087,
+    "first_fast_time": 40.28999999904727,
+    "improvement_ratio": 0.7178463794162532,
+    "eff_A": 1.16310623556582,
+    "eff_B": 1.16310623556582,
+    "explore_over_fast": 3.5441685913195182,
+    "time_used": 420.00999999352405,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_16MM2019CX",
+    "n_runs": 3,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 3,
+    "n_fast_runs": 2,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 98.66000000028987,
+    "fast_time": 69.71999999835134,
+    "best_time_all": 69.71999999835134,
+    "first_fast_time": 81.01999999808416,
+    "improvement_ratio": 0.29333063046679,
+    "eff_A": 1.1620768789443492,
+    "eff_B": 1.1620768789443492,
+    "explore_over_fast": 1.41508892717474,
+    "time_used": 407.9899999938083,
+    "hit_run_cap": false
+   },
+   {
+    "maze_id": "maze_16MM2019C_student",
+    "n_runs": 3,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 3,
+    "n_fast_runs": 2,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 192.94999999888927,
+    "fast_time": 48.42999999885481,
+    "best_time_all": 48.42999999885481,
+    "first_fast_time": 48.42999999885481,
+    "improvement_ratio": 0.7490023322149075,
+    "eff_A": 1.0,
+    "eff_B": 1.0,
+    "explore_over_fast": 3.9841007640605373,
+    "time_used": 402.8299999939303,
+    "hit_run_cap": false
+   },
+   {
+    "maze_id": "maze_16MM2020C_student",
+    "n_runs": 4,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "timeout"
+    ],
+    "n_goal_runs": 3,
+    "n_fast_runs": 2,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 69.83000000015221,
+    "fast_time": 57.05999999865071,
+    "best_time_all": 57.05999999865071,
+    "first_fast_time": 66.31999999843174,
+    "improvement_ratio": 0.18287269084166785,
+    "eff_A": 1.162285313704872,
+    "eff_B": 1.162285313704872,
+    "explore_over_fast": 1.2237995093200749,
+    "time_used": 420.00999999352405,
+    "hit_run_cap": false
+   },
+   {
+    "maze_id": "maze_16MM2021H_Kansai",
+    "n_runs": 4,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 4,
+    "n_fast_runs": 3,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 86.48000000023171,
+    "fast_time": 46.07999999891035,
+    "best_time_all": 46.07999999891035,
+    "first_fast_time": 64.4099999984769,
+    "improvement_ratio": 0.46716003701680286,
+    "eff_A": 1.3977864583333333,
+    "eff_B": 1.3977864583333333,
+    "explore_over_fast": 1.8767361111605185,
+    "time_used": 416.71999999360185,
     "hit_run_cap": false
    }
   ],
@@ -4170,6 +5017,1572 @@
     "hit_run_cap": true
    }
   ],
+  "eval_v2_short/adachi_classical_20260811_080633": [
+   {
+    "maze_id": "maze_1000",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 34.38999999998323,
+    "fast_time": 18.85999999955402,
+    "best_time_all": 18.85999999955402,
+    "first_fast_time": 18.890000000090197,
+    "improvement_ratio": 0.4515847630252045,
+    "eff_A": 1.0015906681090607,
+    "eff_B": 1.0015906681090607,
+    "explore_over_fast": 1.8234358430963122,
+    "time_used": 241.4199999977471,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1001",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 48.050000000048456,
+    "fast_time": 34.989999999172596,
+    "best_time_all": 34.989999999172596,
+    "first_fast_time": 35.029999999925664,
+    "improvement_ratio": 0.2718002081344993,
+    "eff_A": 1.00114318378834,
+    "eff_B": 1.00114318378834,
+    "explore_over_fast": 1.37324949989096,
+    "time_used": 352.0199999951318,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1002",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": false,
+    "explore_time": 24.179999999988485,
+    "fast_time": 22.719999999462743,
+    "best_time_all": 22.719999999462743,
+    "first_fast_time": 22.749999999597875,
+    "improvement_ratio": 0.060380479757090044,
+    "eff_A": 1.0013204225411902,
+    "eff_B": 1.0013204225411902,
+    "explore_over_fast": 1.0642605634049414,
+    "time_used": 292.8199999965317,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1003",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": false,
+    "explore_time": 33.15999999997736,
+    "fast_time": 30.01999999929012,
+    "best_time_all": 30.01999999929012,
+    "first_fast_time": 30.040000000143436,
+    "improvement_ratio": 0.0946924005032986,
+    "eff_A": 1.0006662225467617,
+    "eff_B": 1.0006662225467617,
+    "explore_over_fast": 1.1045969354017817,
+    "time_used": 314.98999999600744,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1004",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 64.12000000012519,
+    "fast_time": 28.85999999931755,
+    "best_time_all": 28.85999999931755,
+    "first_fast_time": 28.900000000096767,
+    "improvement_ratio": 0.5499064254637991,
+    "eff_A": 1.001386001413034,
+    "eff_B": 1.001386001413034,
+    "explore_over_fast": 2.2217602218170973,
+    "time_used": 313.1399999960512,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1005",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 31.159999999972218,
+    "fast_time": 18.410000000087905,
+    "best_time_all": 18.410000000087905,
+    "first_fast_time": 18.410000000087905,
+    "improvement_ratio": 0.4091784338862542,
+    "eff_A": 1.0,
+    "eff_B": 1.0,
+    "explore_over_fast": 1.6925583921685732,
+    "time_used": 236.7599999978573,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1006",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": false,
+    "explore_time": 18.010000000002865,
+    "fast_time": 17.989999999574593,
+    "best_time_all": 17.989999999574593,
+    "first_fast_time": 18.010000000085995,
+    "improvement_ratio": 0.0011104941936851149,
+    "eff_A": 1.0011117287666411,
+    "eff_B": 1.0011117287666411,
+    "explore_over_fast": 1.0011117287620204,
+    "time_used": 219.1599999982735,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1007",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": false,
+    "explore_time": 25.2899999999859,
+    "fast_time": 23.859999999435786,
+    "best_time_all": 23.859999999435786,
+    "first_fast_time": 23.880000000114023,
+    "improvement_ratio": 0.056544088594342026,
+    "eff_A": 1.0008382229957549,
+    "eff_B": 1.0008382229957549,
+    "explore_over_fast": 1.0599329421870882,
+    "time_used": 235.65999999788332,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1008",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 31.29999999997189,
+    "fast_time": 23.86999999943555,
+    "best_time_all": 23.86999999943555,
+    "first_fast_time": 23.879999999598724,
+    "improvement_ratio": 0.23738019171063945,
+    "eff_A": 1.0004189359096527,
+    "eff_B": 1.0004189359096527,
+    "explore_over_fast": 1.3112693758153346,
+    "time_used": 299.90999999636404,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1009",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": false,
+    "explore_time": 16.670000000005988,
+    "fast_time": 16.70999999960486,
+    "best_time_all": 16.670000000005988,
+    "first_fast_time": 16.710000000079788,
+    "improvement_ratio": -0.0023995200719171285,
+    "eff_A": 1.002399520100407,
+    "eff_B": 1.0000000000284217,
+    "explore_over_fast": 0.9976062238420216,
+    "time_used": 184.14999999910137,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1010",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 17.590000000003844,
+    "fast_time": 15.13000000001027,
+    "best_time_all": 15.13000000001027,
+    "first_fast_time": 15.130000000072243,
+    "improvement_ratio": 0.13985218874320843,
+    "eff_A": 1.000000000004096,
+    "eff_B": 1.000000000004096,
+    "explore_over_fast": 1.1625908790477135,
+    "time_used": 163.9299999995795,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1011",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": false,
+    "explore_time": 22.729999999991865,
+    "fast_time": 26.40999999951218,
+    "best_time_all": 22.729999999991865,
+    "first_fast_time": 26.40999999951218,
+    "improvement_ratio": -0.16190057191032262,
+    "eff_A": 1.1619005719103226,
+    "eff_B": 1.0,
+    "explore_over_fast": 0.8606588413635634,
+    "time_used": 318.6499999959209,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1012",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 38.01000000000052,
+    "fast_time": 20.999999999503416,
+    "best_time_all": 20.999999999503416,
+    "first_fast_time": 21.020000000025036,
+    "improvement_ratio": 0.4475138121677682,
+    "eff_A": 1.0009523809772425,
+    "eff_B": 1.0009523809772425,
+    "explore_over_fast": 1.8100000000428254,
+    "time_used": 267.1199999971394,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1013",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 28.57999999997823,
+    "fast_time": 23.99000000011455,
+    "best_time_all": 23.99000000011455,
+    "first_fast_time": 23.99000000011455,
+    "improvement_ratio": 0.1606018194495164,
+    "eff_A": 1.0,
+    "eff_B": 1.0,
+    "explore_over_fast": 1.1913297207103695,
+    "time_used": 265.869999997169,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1014",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": false,
+    "explore_time": 27.759999999980142,
+    "fast_time": 27.77999999934309,
+    "best_time_all": 27.759999999980142,
+    "first_fast_time": 27.780000000132645,
+    "improvement_ratio": -0.0007204610721528307,
+    "eff_A": 1.000720461100595,
+    "eff_B": 1.0000000000284217,
+    "explore_over_fast": 0.9992800576183074,
+    "time_used": 282.7799999967691,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1015",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 82.73000000021405,
+    "fast_time": 25.309999999401498,
+    "best_time_all": 25.309999999401498,
+    "first_fast_time": 25.309999999401498,
+    "improvement_ratio": 0.6940650308311856,
+    "eff_A": 1.0,
+    "eff_B": 1.0,
+    "explore_over_fast": 3.2686685105559206,
+    "time_used": 350.5099999951675,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1016",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 27.60999999998049,
+    "fast_time": 22.98999999945636,
+    "best_time_all": 22.98999999945636,
+    "first_fast_time": 23.020000000109917,
+    "improvement_ratio": 0.16733067730993834,
+    "eff_A": 1.0013049152089721,
+    "eff_B": 1.0013049152089721,
+    "explore_over_fast": 1.2009569378265934,
+    "time_used": 259.1099999973288,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1017",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 44.71000000003251,
+    "fast_time": 19.950000000095258,
+    "best_time_all": 19.950000000095258,
+    "first_fast_time": 19.950000000095258,
+    "improvement_ratio": 0.5537910981865186,
+    "eff_A": 1.0,
+    "eff_B": 1.0,
+    "explore_over_fast": 2.241102756883159,
+    "time_used": 223.35999999817417,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1018",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": false,
+    "explore_time": 23.70999999998958,
+    "fast_time": 23.689999999439806,
+    "best_time_all": 23.689999999439806,
+    "first_fast_time": 23.76999999951208,
+    "improvement_ratio": 0.000843525961610447,
+    "eff_A": 1.0033769523036795,
+    "eff_B": 1.0033769523036795,
+    "explore_over_fast": 1.0008442380983642,
+    "time_used": 301.8899999963172,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1019",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 28.049999999979466,
+    "fast_time": 20.569999999513584,
+    "best_time_all": 20.569999999513584,
+    "first_fast_time": 20.590000000098314,
+    "improvement_ratio": 0.2666666666834709,
+    "eff_A": 1.0009722897707927,
+    "eff_B": 1.0009722897707927,
+    "explore_over_fast": 1.3636363636676112,
+    "time_used": 247.85999999759483,
+    "hit_run_cap": true
+   }
+  ],
+  "eval_v2_short/l0b_straightrun_20260811_080633": [
+   {
+    "maze_id": "maze_1000",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 26.209999999983868,
+    "fast_time": 12.630000000060306,
+    "best_time_all": 12.630000000060306,
+    "first_fast_time": 12.860000000061405,
+    "improvement_ratio": 0.5181228538699703,
+    "eff_A": 1.0182106096595407,
+    "eff_B": 1.0182106096595407,
+    "explore_over_fast": 2.075217735539091,
+    "time_used": 149.3699999999238,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1001",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 38.96000000000481,
+    "fast_time": 28.169999999333868,
+    "best_time_all": 28.169999999333868,
+    "first_fast_time": 28.230000000134794,
+    "improvement_ratio": 0.27695071870301874,
+    "eff_A": 1.0021299254810914,
+    "eff_B": 1.0021299254810914,
+    "explore_over_fast": 1.3830315939270887,
+    "time_used": 277.8699999968852,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1002",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 18.52000000000179,
+    "fast_time": 15.579999999631582,
+    "best_time_all": 15.579999999631582,
+    "first_fast_time": 20.34000000009712,
+    "improvement_ratio": 0.158747300235957,
+    "eff_A": 1.3055198973413413,
+    "eff_B": 1.3055198973413413,
+    "explore_over_fast": 1.1887034660102522,
+    "time_used": 177.29999999926335,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1003",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 26.8399999999824,
+    "fast_time": 22.70999999946298,
+    "best_time_all": 22.70999999946298,
+    "first_fast_time": 25.840000000123382,
+    "improvement_ratio": 0.15387481373033265,
+    "eff_A": 1.1378247468399127,
+    "eff_B": 1.1378247468399127,
+    "explore_over_fast": 1.1818582122684755,
+    "time_used": 231.2199999979883,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1004",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 52.01000000006712,
+    "fast_time": 23.539999999443353,
+    "best_time_all": 23.539999999443353,
+    "first_fast_time": 23.89000000011407,
+    "improvement_ratio": 0.5473947317936364,
+    "eff_A": 1.0148683092896769,
+    "eff_B": 1.0148683092896769,
+    "explore_over_fast": 2.2094307562148257,
+    "time_used": 258.299999997348,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1005",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 24.05999999998888,
+    "fast_time": 13.750000000065654,
+    "best_time_all": 13.750000000065654,
+    "first_fast_time": 13.750000000065654,
+    "improvement_ratio": 0.4285120531973396,
+    "eff_A": 1.0,
+    "eff_B": 1.0,
+    "explore_over_fast": 1.749818181809018,
+    "time_used": 179.75999999920518,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1006",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 13.540000000005264,
+    "fast_time": 11.580000000055293,
+    "best_time_all": 11.580000000055293,
+    "first_fast_time": 15.520000000074106,
+    "improvement_ratio": 0.14475627769196525,
+    "eff_A": 1.3402417962003454,
+    "eff_B": 1.3402417962003454,
+    "explore_over_fast": 1.1692573402366677,
+    "time_used": 141.71000000010494,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1007",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 20.14999999999799,
+    "fast_time": 18.079999999672495,
+    "best_time_all": 18.079999999672495,
+    "first_fast_time": 18.08000000008633,
+    "improvement_ratio": 0.10272952855214405,
+    "eff_A": 1.000000000022889,
+    "eff_B": 1.000000000022889,
+    "explore_over_fast": 1.114491150462555,
+    "time_used": 181.7799999991574,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1008",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 24.68999999998741,
+    "fast_time": 18.090000000086377,
+    "best_time_all": 18.090000000086377,
+    "first_fast_time": 18.21000000008695,
+    "improvement_ratio": 0.2673147023047549,
+    "eff_A": 1.0066334991708126,
+    "eff_B": 1.0066334991708126,
+    "explore_over_fast": 1.3648424543874804,
+    "time_used": 195.61999999883014,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1009",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 13.050000000004665,
+    "fast_time": 11.710000000055913,
+    "best_time_all": 11.710000000055913,
+    "first_fast_time": 11.710000000055913,
+    "improvement_ratio": 0.102681992333201,
+    "eff_A": 1.0,
+    "eff_B": 1.0,
+    "explore_over_fast": 1.1144321093033607,
+    "time_used": 136.15000000023642,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1010",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 13.630000000005374,
+    "fast_time": 10.370000000049515,
+    "best_time_all": 10.370000000049515,
+    "first_fast_time": 17.910000000051266,
+    "improvement_ratio": 0.2391782831954933,
+    "eff_A": 1.7270973963322804,
+    "eff_B": 1.7270973963322804,
+    "explore_over_fast": 1.3143683702931817,
+    "time_used": 116.37000000037362,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1011",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": false,
+    "explore_time": 17.530000000004097,
+    "fast_time": 17.38999999958878,
+    "best_time_all": 17.38999999958878,
+    "first_fast_time": 53.56000000025574,
+    "improvement_ratio": 0.007986309207945444,
+    "eff_A": 3.0799309949121487,
+    "eff_B": 3.0799309949121487,
+    "explore_over_fast": 1.0080506038193575,
+    "time_used": 242.45999999772252,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1012",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 29.509999999976177,
+    "fast_time": 16.859999999601314,
+    "best_time_all": 16.859999999601314,
+    "first_fast_time": 18.70000000008929,
+    "improvement_ratio": 0.42866824806455694,
+    "eff_A": 1.1091340451086291,
+    "eff_B": 1.1091340451086291,
+    "explore_over_fast": 1.7502965599450768,
+    "time_used": 190.56999999894956,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1013",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 23.20999999999086,
+    "fast_time": 18.849999999554257,
+    "best_time_all": 18.849999999554257,
+    "first_fast_time": 25.430000000121424,
+    "improvement_ratio": 0.18785006464620077,
+    "eff_A": 1.3490716180754783,
+    "eff_B": 1.3490716180754783,
+    "explore_over_fast": 1.2312997347766421,
+    "time_used": 192.46999999890463,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1014",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": false,
+    "explore_time": 22.44999999999263,
+    "fast_time": 21.09999999950105,
+    "best_time_all": 21.09999999950105,
+    "first_fast_time": 21.150000000100988,
+    "improvement_ratio": 0.06013363031144868,
+    "eff_A": 1.0023696682749346,
+    "eff_B": 1.0023696682749346,
+    "explore_over_fast": 1.063981042678839,
+    "time_used": 220.34999999824535,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1015",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 65.09000000012958,
+    "fast_time": 18.709999999557567,
+    "best_time_all": 18.709999999557567,
+    "first_fast_time": 22.890000000109296,
+    "improvement_ratio": 0.7125518512902086,
+    "eff_A": 1.2234099412426815,
+    "eff_B": 1.2234099412426815,
+    "explore_over_fast": 3.4788882951185864,
+    "time_used": 241.4499999977464,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1016",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 21.979999999993726,
+    "fast_time": 17.070000000081507,
+    "best_time_all": 17.070000000081507,
+    "first_fast_time": 36.77000000017557,
+    "improvement_ratio": 0.22338489535548778,
+    "eff_A": 2.1540714704159343,
+    "eff_B": 2.1540714704159343,
+    "explore_over_fast": 1.2876391329753236,
+    "time_used": 196.07999999881926,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1017",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 35.40999999998786,
+    "fast_time": 15.069999999643642,
+    "best_time_all": 15.069999999643642,
+    "first_fast_time": 21.37000000010204,
+    "improvement_ratio": 0.5744140073524765,
+    "eff_A": 1.4180491042207943,
+    "eff_B": 1.4180491042207943,
+    "explore_over_fast": 2.3497013935517717,
+    "time_used": 177.43999999926004,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1018",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": false,
+    "explore_time": 18.830000000001068,
+    "fast_time": 17.3299999995902,
+    "best_time_all": 17.3299999995902,
+    "first_fast_time": 31.53000000015055,
+    "improvement_ratio": 0.07966011685665336,
+    "eff_A": 1.8193883439640008,
+    "eff_B": 1.8193883439640008,
+    "explore_over_fast": 1.0865551067770536,
+    "time_used": 193.58999999887814,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1019",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 21.63999999999452,
+    "fast_time": 14.680000000070095,
+    "best_time_all": 14.680000000070095,
+    "first_fast_time": 38.30000000018288,
+    "improvement_ratio": 0.3216266173718201,
+    "eff_A": 2.608991825613079,
+    "eff_B": 2.608991825613079,
+    "explore_over_fast": 1.4741144414094818,
+    "time_used": 186.7499999990399,
+    "hit_run_cap": true
+   }
+  ],
+  "eval_v2_short/l0c_slalom_20260811_080633": [
+   {
+    "maze_id": "maze_1000",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 12.490000000003969,
+    "fast_time": 3.4500000000164732,
+    "best_time_all": 3.4500000000164732,
+    "first_fast_time": 4.539999999989419,
+    "improvement_ratio": 0.7237790232173437,
+    "eff_A": 1.315942028976157,
+    "eff_B": 1.315942028976157,
+    "explore_over_fast": 3.6202898550563276,
+    "time_used": 62.68000000011726,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1001",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 12.640000000004152,
+    "fast_time": 6.310000000030129,
+    "best_time_all": 6.310000000030129,
+    "first_fast_time": 6.739999999988694,
+    "improvement_ratio": 0.5007911392382867,
+    "eff_A": 1.0681458003100652,
+    "eff_B": 1.0681458003100652,
+    "explore_over_fast": 2.0031695720988587,
+    "time_used": 82.81000000021338,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1002",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 7.4199999999985184,
+    "fast_time": 4.400000000021009,
+    "best_time_all": 4.400000000021009,
+    "first_fast_time": 5.949999999986133,
+    "improvement_ratio": 0.4070080862504194,
+    "eff_A": 1.3522727272631188,
+    "eff_B": 1.3522727272631188,
+    "explore_over_fast": 1.6863636363552474,
+    "time_used": 69.25000000014863,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1003",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 8.139999999998652,
+    "fast_time": 5.780000000027599,
+    "best_time_all": 5.780000000027599,
+    "first_fast_time": 8.029999999981285,
+    "improvement_ratio": 0.28992628992278185,
+    "eff_A": 1.3892733563915127,
+    "eff_B": 1.3892733563915127,
+    "explore_over_fast": 1.4083044982629387,
+    "time_used": 79.28000000019652,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1004",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 15.630000000007806,
+    "fast_time": 5.1900000000247815,
+    "best_time_all": 5.1900000000247815,
+    "first_fast_time": 5.709999999996636,
+    "improvement_ratio": 0.6679462571962771,
+    "eff_A": 1.100192678221459,
+    "eff_B": 1.100192678221459,
+    "explore_over_fast": 3.0115606936287427,
+    "time_used": 75.35000000017776,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1005",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 10.420000000001439,
+    "fast_time": 3.6000000000171894,
+    "best_time_all": 3.6000000000171894,
+    "first_fast_time": 3.6100000000101993,
+    "improvement_ratio": 0.654510556620279,
+    "eff_A": 1.0027777777758229,
+    "eff_B": 1.0027777777758229,
+    "explore_over_fast": 2.8944444444310236,
+    "time_used": 67.87000000014204,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1006",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 5.8299999999994,
+    "fast_time": 3.3500000000159957,
+    "best_time_all": 3.3500000000159957,
+    "first_fast_time": 7.059999999983546,
+    "improvement_ratio": 0.42538593481709425,
+    "eff_A": 2.1074626865521897,
+    "eff_B": 2.1074626865521897,
+    "explore_over_fast": 1.7402985074541977,
+    "time_used": 61.1800000001101,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1007",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 6.639999999998951,
+    "fast_time": 4.659999999990026,
+    "best_time_all": 4.659999999990026,
+    "first_fast_time": 4.659999999990026,
+    "improvement_ratio": 0.29819277108572856,
+    "eff_A": 1.0,
+    "eff_B": 1.0,
+    "explore_over_fast": 1.4248927038654855,
+    "time_used": 60.45000000010661,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1008",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 8.569999999999178,
+    "fast_time": 4.5900000000219165,
+    "best_time_all": 4.5900000000219165,
+    "first_fast_time": 5.849999999986366,
+    "improvement_ratio": 0.46441073511991166,
+    "eff_A": 1.2745098039125127,
+    "eff_B": 1.2745098039125127,
+    "explore_over_fast": 1.867102396505067,
+    "time_used": 67.6100000001408,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1009",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 4.789999999999976,
+    "fast_time": 3.290000000001637,
+    "best_time_all": 3.290000000001637,
+    "first_fast_time": 3.309999999992286,
+    "improvement_ratio": 0.3131524008347279,
+    "eff_A": 1.0060790273527778,
+    "eff_B": 1.0060790273527778,
+    "explore_over_fast": 1.4559270516710008,
+    "time_used": 55.05000000008083,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1010",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 6.209999999999189,
+    "fast_time": 3.100000000014802,
+    "best_time_all": 3.100000000014802,
+    "first_fast_time": 6.989999999992021,
+    "improvement_ratio": 0.5008051529766172,
+    "eff_A": 2.254838709664079,
+    "eff_B": 2.254838709664079,
+    "explore_over_fast": 2.0032258064417863,
+    "time_used": 51.79000000006526,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1011",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 6.74999999999889,
+    "fast_time": 4.890000000023349,
+    "best_time_all": 4.890000000023349,
+    "first_fast_time": 18.770000000009755,
+    "improvement_ratio": 0.2755555555519773,
+    "eff_A": 3.838445807754628,
+    "eff_B": 3.838445807754628,
+    "explore_over_fast": 1.3803680981526911,
+    "time_used": 82.63000000021252,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1012",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 12.36000000000381,
+    "fast_time": 3.8700000000184787,
+    "best_time_all": 3.8700000000184787,
+    "first_fast_time": 6.239999999985457,
+    "improvement_ratio": 0.6868932038820966,
+    "eff_A": 1.612403100763737,
+    "eff_B": 1.612403100763737,
+    "explore_over_fast": 3.1937984495981375,
+    "time_used": 65.1600000001291,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1013",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 6.869999999998823,
+    "fast_time": 4.400000000021009,
+    "best_time_all": 4.400000000021009,
+    "first_fast_time": 8.859999999979351,
+    "improvement_ratio": 0.35953420669261094,
+    "eff_A": 2.013636363622056,
+    "eff_B": 2.013636363622056,
+    "explore_over_fast": 1.5613636363559136,
+    "time_used": 67.3800000001397,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1014",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 6.889999999998812,
+    "fast_time": 5.210000000024877,
+    "best_time_all": 5.210000000024877,
+    "first_fast_time": 5.229999999987811,
+    "improvement_ratio": 0.2438316400543142,
+    "eff_A": 1.0038387715859576,
+    "eff_B": 1.0038387715859576,
+    "explore_over_fast": 1.3224568138130353,
+    "time_used": 69.78000000015116,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1015",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 23.67999999998979,
+    "fast_time": 4.9900000000238265,
+    "best_time_all": 4.9900000000238265,
+    "first_fast_time": 9.210000000043976,
+    "improvement_ratio": 0.7892736486475516,
+    "eff_A": 1.845691382765531,
+    "eff_B": 1.845691382765531,
+    "explore_over_fast": 4.745490981939223,
+    "time_used": 88.43000000024021,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1016",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 7.269999999998602,
+    "fast_time": 4.4400000000212,
+    "best_time_all": 4.4400000000212,
+    "first_fast_time": 13.409999999968747,
+    "improvement_ratio": 0.3892709766131975,
+    "eff_A": 3.02027027024881,
+    "eff_B": 3.02027027024881,
+    "explore_over_fast": 1.6373873873792542,
+    "time_used": 69.52000000014992,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1017",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 14.280000000006156,
+    "fast_time": 3.810000000018192,
+    "best_time_all": 3.810000000018192,
+    "first_fast_time": 9.409999999992845,
+    "improvement_ratio": 0.7331932773097655,
+    "eff_A": 2.469816272952208,
+    "eff_B": 2.469816272952208,
+    "explore_over_fast": 3.748031496046712,
+    "time_used": 68.81000000014653,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1018",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 6.3299999999991226,
+    "fast_time": 4.5500000000217256,
+    "best_time_all": 4.5500000000217256,
+    "first_fast_time": 12.549999999984959,
+    "improvement_ratio": 0.2812006319080006,
+    "eff_A": 2.758241758225282,
+    "eff_B": 2.758241758225282,
+    "explore_over_fast": 1.3912087912019555,
+    "time_used": 74.84000000017532,
+    "hit_run_cap": true
+   },
+   {
+    "maze_id": "maze_1019",
+    "n_runs": 5,
+    "outcomes": [
+     "goal",
+     "goal",
+     "goal",
+     "goal",
+     "goal"
+    ],
+    "n_goal_runs": 5,
+    "n_fast_runs": 4,
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 8.339999999998897,
+    "fast_time": 3.780000000018049,
+    "best_time_all": 3.780000000018049,
+    "first_fast_time": 11.679999999972779,
+    "improvement_ratio": 0.5467625899258335,
+    "eff_A": 3.0899470899251344,
+    "eff_B": 3.0899470899251344,
+    "explore_over_fast": 2.2063492063383796,
+    "time_used": 66.72000000013655,
+    "hit_run_cap": true
+   }
+  ],
   "validation/adachi_classical_20260811_073159": [
    {
     "maze_id": "maze_4000",
@@ -5673,7 +8086,7 @@
   {
    "condition": "eval/adachi_classical_20260811_070512",
    "maze": "maze_1002",
-   "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/adachi_classical_20260811_070512/maze_1002.json",
+   "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/adachi_classical_20260811_070512/maze_1002.json",
    "field": "first_fast_efficiency_A",
    "mine": 1.0004584001570003,
    "evaluator": 1.0
@@ -5681,7 +8094,7 @@
   {
    "condition": "eval/adachi_classical_20260811_070512",
    "maze": "maze_1008",
-   "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/adachi_classical_20260811_070512/maze_1008.json",
+   "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/adachi_classical_20260811_070512/maze_1008.json",
    "field": "first_fast_efficiency_A",
    "mine": 1.000915870705311,
    "evaluator": 1.0
@@ -5689,7 +8102,7 @@
   {
    "condition": "eval/adachi_classical_20260811_070512",
    "maze": "maze_1013",
-   "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/adachi_classical_20260811_070512/maze_1013.json",
+   "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/adachi_classical_20260811_070512/maze_1013.json",
    "field": "first_fast_efficiency_A",
    "mine": 1.000518457045196,
    "evaluator": 1.0
@@ -5697,15 +8110,39 @@
   {
    "condition": "eval/l0b_straightrun_20260811_070512",
    "maze": "maze_1018",
-   "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/eval/l0b_straightrun_20260811_070512/maze_1018.json",
+   "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval/l0b_straightrun_20260811_070512/maze_1018.json",
    "field": "first_fast_efficiency_A",
    "mine": 1.0094551471191995,
    "evaluator": 1.0
   },
   {
+   "condition": "eval_v2_short/adachi_classical_20260811_080633",
+   "maze": "maze_1009",
+   "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/adachi_classical_20260811_080633/maze_1009.json",
+   "field": "first_fast_efficiency_A",
+   "mine": 1.002399520100407,
+   "evaluator": 1.0000000000284217
+  },
+  {
+   "condition": "eval_v2_short/adachi_classical_20260811_080633",
+   "maze": "maze_1011",
+   "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/adachi_classical_20260811_080633/maze_1011.json",
+   "field": "first_fast_efficiency_A",
+   "mine": 1.1619005719103226,
+   "evaluator": 1.0
+  },
+  {
+   "condition": "eval_v2_short/adachi_classical_20260811_080633",
+   "maze": "maze_1014",
+   "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/eval_v2_short/adachi_classical_20260811_080633/maze_1014.json",
+   "field": "first_fast_efficiency_A",
+   "mine": 1.000720461100595,
+   "evaluator": 1.0000000000284217
+  },
+  {
    "condition": "validation/adachi_classical_20260811_073159",
    "maze": "maze_4004",
-   "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/adachi_classical_20260811_073159/maze_4004.json",
+   "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/adachi_classical_20260811_073159/maze_4004.json",
    "field": "first_fast_efficiency_A",
    "mine": 1.0003499358187755,
    "evaluator": 1.0
@@ -5713,7 +8150,7 @@
   {
    "condition": "validation/adachi_classical_20260811_073159",
    "maze": "maze_4007",
-   "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snapshot/validation/adachi_classical_20260811_073159/maze_4007.json",
+   "path": "/private/tmp/claude-501/-Users-kouhei-tmp-github-micromouse-rl/1ebd8fbf-9229-4f96-a0cd-fc785a0971ca/scratchpad/exp007_snap2/validation/adachi_classical_20260811_073159/maze_4007.json",
    "field": "first_fast_efficiency_A",
    "mine": 1.0009718172724136,
    "evaluator": 1.0001387154945207
@@ -5722,17 +8159,311 @@
  "summary_json_crosscheck": [
   {
    "condition": "contest_reference/adachi_classical_20260811_074936",
-   "field": "(summary.json 自体)",
-   "mine": "-",
-   "evaluator": "ファイルなし（実行未完）",
-   "status": "MISSING"
+   "field": "n_mazes",
+   "mine": 18,
+   "evaluator": 18,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/adachi_classical_20260811_074936",
+   "field": "(a) rate",
+   "mine": 1.0,
+   "evaluator": 1.0,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/adachi_classical_20260811_074936",
+   "field": "(a) n",
+   "mine": 18,
+   "evaluator": 18,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/adachi_classical_20260811_074936",
+   "field": "success_rate",
+   "mine": 1.0,
+   "evaluator": 1.0,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/adachi_classical_20260811_074936",
+   "field": "(b) rate",
+   "mine": 0.2777777777777778,
+   "evaluator": 0.2777777777777778,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/adachi_classical_20260811_074936",
+   "field": "(b) n",
+   "mine": 5,
+   "evaluator": 5,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/adachi_classical_20260811_074936",
+   "field": "(c) rate",
+   "mine": 0.2777777777777778,
+   "evaluator": 0.2777777777777778,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/adachi_classical_20260811_074936",
+   "field": "(c) n",
+   "mine": 5,
+   "evaluator": 5,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/adachi_classical_20260811_074936",
+   "field": "(d) median",
+   "mine": 134.52500000026964,
+   "evaluator": 134.52500000026964,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/adachi_classical_20260811_074936",
+   "field": "(d) mean",
+   "mine": 131.9377777770743,
+   "evaluator": 131.9377777770743,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/adachi_classical_20260811_074936",
+   "field": "(d) min",
+   "mine": 62.089999998531766,
+   "evaluator": 62.089999998531766,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/adachi_classical_20260811_074936",
+   "field": "(d) max",
+   "mine": 241.57999999773813,
+   "evaluator": 241.57999999773813,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/adachi_classical_20260811_074936",
+   "field": "median_best_time",
+   "mine": 134.52500000026964,
+   "evaluator": 134.52500000026964,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/adachi_classical_20260811_074936",
+   "field": "mean_best_time",
+   "mine": 131.9377777770743,
+   "evaluator": 131.9377777770743,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/adachi_classical_20260811_074936",
+   "field": "explore_time median",
+   "mine": 141.34500000010837,
+   "evaluator": 141.34500000010837,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/adachi_classical_20260811_074936",
+   "field": "fast_time median",
+   "mine": 77.82999999815956,
+   "evaluator": 77.82999999815956,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/adachi_classical_20260811_074936",
+   "field": "(e) median",
+   "mine": 1.0,
+   "evaluator": 1.0,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/adachi_classical_20260811_074936",
+   "field": "(e) mean",
+   "mine": 1.0,
+   "evaluator": 1.0,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/adachi_classical_20260811_074936",
+   "field": "(e) min",
+   "mine": 1.0,
+   "evaluator": 1.0,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/adachi_classical_20260811_074936",
+   "field": "(e) max",
+   "mine": 1.0,
+   "evaluator": 1.0,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/adachi_classical_20260811_074936",
+   "field": "(e) n_defined",
+   "mine": 5,
+   "evaluator": 5,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/adachi_classical_20260811_074936",
+   "field": "(e) n_undefined",
+   "mine": 13,
+   "evaluator": 13,
+   "status": "OK"
   },
   {
    "condition": "contest_reference/l0b_straightrun_20260811_074936",
-   "field": "(summary.json 自体)",
-   "mine": "-",
-   "evaluator": "ファイルなし（実行未完）",
-   "status": "MISSING"
+   "field": "n_mazes",
+   "mine": 18,
+   "evaluator": 18,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/l0b_straightrun_20260811_074936",
+   "field": "(a) rate",
+   "mine": 1.0,
+   "evaluator": 1.0,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/l0b_straightrun_20260811_074936",
+   "field": "(a) n",
+   "mine": 18,
+   "evaluator": 18,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/l0b_straightrun_20260811_074936",
+   "field": "success_rate",
+   "mine": 1.0,
+   "evaluator": 1.0,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/l0b_straightrun_20260811_074936",
+   "field": "(b) rate",
+   "mine": 1.0,
+   "evaluator": 1.0,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/l0b_straightrun_20260811_074936",
+   "field": "(b) n",
+   "mine": 18,
+   "evaluator": 18,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/l0b_straightrun_20260811_074936",
+   "field": "(c) rate",
+   "mine": 1.0,
+   "evaluator": 1.0,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/l0b_straightrun_20260811_074936",
+   "field": "(c) n",
+   "mine": 18,
+   "evaluator": 18,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/l0b_straightrun_20260811_074936",
+   "field": "(d) median",
+   "mine": 59.31999999859727,
+   "evaluator": 59.31999999859727,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/l0b_straightrun_20260811_074936",
+   "field": "(d) mean",
+   "mine": 65.77555555400018,
+   "evaluator": 65.77555555400016,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/l0b_straightrun_20260811_074936",
+   "field": "(d) min",
+   "mine": 34.63999999918087,
+   "evaluator": 34.63999999918087,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/l0b_straightrun_20260811_074936",
+   "field": "(d) max",
+   "mine": 120.35999999715386,
+   "evaluator": 120.35999999715386,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/l0b_straightrun_20260811_074936",
+   "field": "median_best_time",
+   "mine": 59.31999999859727,
+   "evaluator": 59.31999999859727,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/l0b_straightrun_20260811_074936",
+   "field": "mean_best_time",
+   "mine": 65.77555555400018,
+   "evaluator": 65.77555555400016,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/l0b_straightrun_20260811_074936",
+   "field": "explore_time median",
+   "mine": 109.14000000033991,
+   "evaluator": 109.14000000033991,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/l0b_straightrun_20260811_074936",
+   "field": "fast_time median",
+   "mine": 59.31999999859727,
+   "evaluator": 59.31999999859727,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/l0b_straightrun_20260811_074936",
+   "field": "(e) median",
+   "mine": 1.0716531551837387,
+   "evaluator": 1.0716531551837387,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/l0b_straightrun_20260811_074936",
+   "field": "(e) mean",
+   "mine": 1.1374586734263246,
+   "evaluator": 1.1374586734263246,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/l0b_straightrun_20260811_074936",
+   "field": "(e) min",
+   "mine": 1.0,
+   "evaluator": 1.0,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/l0b_straightrun_20260811_074936",
+   "field": "(e) max",
+   "mine": 1.6803874092009685,
+   "evaluator": 1.6803874092009685,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/l0b_straightrun_20260811_074936",
+   "field": "(e) n_defined",
+   "mine": 18,
+   "evaluator": 18,
+   "status": "OK"
+  },
+  {
+   "condition": "contest_reference/l0b_straightrun_20260811_074936",
+   "field": "(e) n_undefined",
+   "mine": 0,
+   "evaluator": 0,
+   "status": "OK"
   },
   {
    "condition": "contest_reference/l0c_slalom_20260811_074936",
@@ -6351,6 +9082,468 @@
    "status": "OK"
   },
   {
+   "condition": "eval_v2_short/adachi_classical_20260811_080633",
+   "field": "n_mazes",
+   "mine": 20,
+   "evaluator": 20,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/adachi_classical_20260811_080633",
+   "field": "(a) rate",
+   "mine": 1.0,
+   "evaluator": 1.0,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/adachi_classical_20260811_080633",
+   "field": "(a) n",
+   "mine": 20,
+   "evaluator": 20,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/adachi_classical_20260811_080633",
+   "field": "success_rate",
+   "mine": 1.0,
+   "evaluator": 1.0,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/adachi_classical_20260811_080633",
+   "field": "(b) rate",
+   "mine": 1.0,
+   "evaluator": 1.0,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/adachi_classical_20260811_080633",
+   "field": "(b) n",
+   "mine": 20,
+   "evaluator": 20,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/adachi_classical_20260811_080633",
+   "field": "(c) rate",
+   "mine": 0.6,
+   "evaluator": 0.6,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/adachi_classical_20260811_080633",
+   "field": "(c) n",
+   "mine": 12,
+   "evaluator": 12,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/adachi_classical_20260811_080633",
+   "field": "(d) median",
+   "mine": 22.85999999972411,
+   "evaluator": 22.85999999972411,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/adachi_classical_20260811_080633",
+   "field": "(d) mean",
+   "mine": 22.96849999964218,
+   "evaluator": 22.96849999964218,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/adachi_classical_20260811_080633",
+   "field": "(d) min",
+   "mine": 15.13000000001027,
+   "evaluator": 15.13000000001027,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/adachi_classical_20260811_080633",
+   "field": "(d) max",
+   "mine": 34.989999999172596,
+   "evaluator": 34.989999999172596,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/adachi_classical_20260811_080633",
+   "field": "median_best_time",
+   "mine": 22.85999999972411,
+   "evaluator": 22.85999999972411,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/adachi_classical_20260811_080633",
+   "field": "mean_best_time",
+   "mine": 22.96849999964218,
+   "evaluator": 22.96849999964218,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/adachi_classical_20260811_080633",
+   "field": "explore_time median",
+   "mine": 28.31499999997885,
+   "evaluator": 28.31499999997885,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/adachi_classical_20260811_080633",
+   "field": "fast_time median",
+   "mine": 23.339999999448082,
+   "evaluator": 23.339999999448082,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/adachi_classical_20260811_080633",
+   "field": "(e) median",
+   "mine": 1.0007522227712582,
+   "evaluator": 1.0007522227712582,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/adachi_classical_20260811_080633",
+   "field": "(e) mean",
+   "mine": 1.000754096219603,
+   "evaluator": 1.000754096219603,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/adachi_classical_20260811_080633",
+   "field": "(e) min",
+   "mine": 1.0,
+   "evaluator": 1.0,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/adachi_classical_20260811_080633",
+   "field": "(e) max",
+   "mine": 1.0033769523036795,
+   "evaluator": 1.0033769523036795,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/adachi_classical_20260811_080633",
+   "field": "(e) n_defined",
+   "mine": 20,
+   "evaluator": 20,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/adachi_classical_20260811_080633",
+   "field": "(e) n_undefined",
+   "mine": 0,
+   "evaluator": 0,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0b_straightrun_20260811_080633",
+   "field": "n_mazes",
+   "mine": 20,
+   "evaluator": 20,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0b_straightrun_20260811_080633",
+   "field": "(a) rate",
+   "mine": 1.0,
+   "evaluator": 1.0,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0b_straightrun_20260811_080633",
+   "field": "(a) n",
+   "mine": 20,
+   "evaluator": 20,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0b_straightrun_20260811_080633",
+   "field": "success_rate",
+   "mine": 1.0,
+   "evaluator": 1.0,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0b_straightrun_20260811_080633",
+   "field": "(b) rate",
+   "mine": 1.0,
+   "evaluator": 1.0,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0b_straightrun_20260811_080633",
+   "field": "(b) n",
+   "mine": 20,
+   "evaluator": 20,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0b_straightrun_20260811_080633",
+   "field": "(c) rate",
+   "mine": 0.85,
+   "evaluator": 0.85,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0b_straightrun_20260811_080633",
+   "field": "(c) n",
+   "mine": 17,
+   "evaluator": 17,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0b_straightrun_20260811_080633",
+   "field": "(d) median",
+   "mine": 17.199999999835853,
+   "evaluator": 17.199999999835853,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0b_straightrun_20260811_080633",
+   "field": "(d) mean",
+   "mine": 17.163499999755288,
+   "evaluator": 17.163499999755288,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0b_straightrun_20260811_080633",
+   "field": "(d) min",
+   "mine": 10.370000000049515,
+   "evaluator": 10.370000000049515,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0b_straightrun_20260811_080633",
+   "field": "(d) max",
+   "mine": 28.169999999333868,
+   "evaluator": 28.169999999333868,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0b_straightrun_20260811_080633",
+   "field": "median_best_time",
+   "mine": 17.199999999835853,
+   "evaluator": 17.199999999835853,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0b_straightrun_20260811_080633",
+   "field": "mean_best_time",
+   "mine": 17.163499999755288,
+   "evaluator": 17.163499999755288,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0b_straightrun_20260811_080633",
+   "field": "explore_time median",
+   "mine": 22.829999999991745,
+   "evaluator": 22.829999999991745,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0b_straightrun_20260811_080633",
+   "field": "fast_time median",
+   "mine": 17.199999999835853,
+   "evaluator": 17.199999999835853,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0b_straightrun_20260811_080633",
+   "field": "(e) median",
+   "mine": 1.180617344041297,
+   "evaluator": 1.180617344041297,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0b_straightrun_20260811_080633",
+   "field": "(e) mean",
+   "mine": 1.4158471596082784,
+   "evaluator": 1.4158471596082787,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0b_straightrun_20260811_080633",
+   "field": "(e) min",
+   "mine": 1.0,
+   "evaluator": 1.0,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0b_straightrun_20260811_080633",
+   "field": "(e) max",
+   "mine": 3.0799309949121487,
+   "evaluator": 3.0799309949121487,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0b_straightrun_20260811_080633",
+   "field": "(e) n_defined",
+   "mine": 20,
+   "evaluator": 20,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0b_straightrun_20260811_080633",
+   "field": "(e) n_undefined",
+   "mine": 0,
+   "evaluator": 0,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0c_slalom_20260811_080633",
+   "field": "n_mazes",
+   "mine": 20,
+   "evaluator": 20,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0c_slalom_20260811_080633",
+   "field": "(a) rate",
+   "mine": 1.0,
+   "evaluator": 1.0,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0c_slalom_20260811_080633",
+   "field": "(a) n",
+   "mine": 20,
+   "evaluator": 20,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0c_slalom_20260811_080633",
+   "field": "success_rate",
+   "mine": 1.0,
+   "evaluator": 1.0,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0c_slalom_20260811_080633",
+   "field": "(b) rate",
+   "mine": 1.0,
+   "evaluator": 1.0,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0c_slalom_20260811_080633",
+   "field": "(b) n",
+   "mine": 20,
+   "evaluator": 20,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0c_slalom_20260811_080633",
+   "field": "(c) rate",
+   "mine": 1.0,
+   "evaluator": 1.0,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0c_slalom_20260811_080633",
+   "field": "(c) n",
+   "mine": 20,
+   "evaluator": 20,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0c_slalom_20260811_080633",
+   "field": "(d) median",
+   "mine": 4.420000000021105,
+   "evaluator": 4.420000000021105,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0c_slalom_20260811_080633",
+   "field": "(d) mean",
+   "mine": 4.383000000018614,
+   "evaluator": 4.383000000018614,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0c_slalom_20260811_080633",
+   "field": "(d) min",
+   "mine": 3.100000000014802,
+   "evaluator": 3.100000000014802,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0c_slalom_20260811_080633",
+   "field": "(d) max",
+   "mine": 6.310000000030129,
+   "evaluator": 6.310000000030129,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0c_slalom_20260811_080633",
+   "field": "median_best_time",
+   "mine": 4.420000000021105,
+   "evaluator": 4.420000000021105,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0c_slalom_20260811_080633",
+   "field": "mean_best_time",
+   "mine": 4.383000000018614,
+   "evaluator": 4.383000000018614,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0c_slalom_20260811_080633",
+   "field": "explore_time median",
+   "mine": 7.779999999998585,
+   "evaluator": 7.779999999998585,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0c_slalom_20260811_080633",
+   "field": "fast_time median",
+   "mine": 4.420000000021105,
+   "evaluator": 4.420000000021105,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0c_slalom_20260811_080633",
+   "field": "(e) median",
+   "mine": 1.5008382285776247,
+   "evaluator": 1.5008382285776247,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0c_slalom_20260811_080633",
+   "field": "(e) mean",
+   "mine": 1.826189270713152,
+   "evaluator": 1.826189270713152,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0c_slalom_20260811_080633",
+   "field": "(e) min",
+   "mine": 1.0,
+   "evaluator": 1.0,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0c_slalom_20260811_080633",
+   "field": "(e) max",
+   "mine": 3.838445807754628,
+   "evaluator": 3.838445807754628,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0c_slalom_20260811_080633",
+   "field": "(e) n_defined",
+   "mine": 20,
+   "evaluator": 20,
+   "status": "OK"
+  },
+  {
+   "condition": "eval_v2_short/l0c_slalom_20260811_080633",
+   "field": "(e) n_undefined",
+   "mine": 0,
+   "evaluator": 0,
+   "status": "OK"
+  },
+  {
    "condition": "validation/adachi_classical_20260811_073159",
    "field": "n_mazes",
    "mine": 20,
@@ -6813,5 +10006,5 @@
    "status": "OK"
   }
  ],
- "file_inventory_count": 162
+ "file_inventory_count": 234
 }
