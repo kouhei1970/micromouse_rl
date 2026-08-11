@@ -36,12 +36,29 @@ M1（`mouse/corridor_env.py`、分岐なしの 1 本道）との違い:
   d はゴールまでの迷路距離 [m]（幅優先で計算。学習時の報酬にのみ使う）。
   D₀ はスタート区画の d（エピソード内で定数）なので Φ ≥ 0 になり、滞留は必ず損。
 
-  実装前の検算（D₀ = 1.8 m・速度 0.96 m/s・上限 6000 ステップ）:
+  実装前の検算（D₀ = 1.8 m・速度 0.96 m/s・上限 6000 ステップ、**行動の高周波成分への
+  罰（案3, k=8.7e-3）を含まない前提**の値であり、かつ割引前／割引後の区別が曖昧なまま
+  書かれている。古い数値は消さず、以下に是正の注記を追記する。2026-08-11 是正）:
     最短でゴール +0.975 > 遠回りしてゴール +0.340 > 探索だけで時間切れ +0.160
     > 半分進んで衝突 −0.137 > その場に留まる −0.200
   訪問報酬なし（r_v=0）だと「遠回りしてゴール」が −0.020 とほぼゼロになり学習信号が
   弱すぎる。r_v=0.05 まで上げると探索（+0.700）がゴール（+0.975）に迫って危ない。
-  **r_v=0.02** は 36 区画ぶんの総和 0.72 がゴールボーナス 1.0 を下回り、順序が保たれる。
+  **r_v=0.02** は訪問報酬の対象区画ぶんの総和がゴールボーナス 1.0 を下回るように選んだ
+  （旧記載「36 区画ぶんの総和 0.72」は誤り。**スタート区画は reset() で _visited に
+  入るので訪問報酬の対象は最大 35 区画 = 0.70**。2026-08-11 是正）。
+
+  **これは罰なし（k=0）前提の設計時検算にすぎない。**実際に投入した
+  k=8.7e-3・E‖a−ā‖²=0.459 込みの再計算は
+  `experiments/exp_012_continuous_potential/design.md` §2 にある。是正後の値
+  （k=8.7e-3・検証帯 D₀ 中央値 9.5 区画での割引後総収益）:
+    ゴール +0.30〜+0.94 > 滞留 −0.200 / 衝突 −0.16〜−0.55 > 探索(6000歩) −0.802
+    ＝ 望ましい順序「ゴール > 探索 > 滞留 > 衝突」は 20 面すべてで崩れている
+
+continuous_potential=True（exp_012 で追加。既定 False）にすると、Φ を区画単位の
+階段関数ではなく、開口部の中点を経由する折れ線へ真の位置を射影した連続量にする
+（M1 `mouse/corridor_env.py` の Φ と同じ考え方）。動機・数式の導出・検算は
+`experiments/exp_012_continuous_potential/design.md` を参照。既定 False では
+挙動は変わらない（`Maze6Env._potential_stair()` が既存の階段版そのもの）。
 """
 import math
 import os
@@ -53,8 +70,9 @@ from gymnasium import spaces
 import mujoco
 import numpy as np
 
+from mouse.corridor_gen import path_cumulative_lengths, remaining_path_length
 from mouse.maze6_gen import (
-    GOAL_CELLS, SIZE, generate_maze, initial_heading_deg, shortest_distances,
+    GOAL_CELLS, SIZE, cells_open, generate_maze, initial_heading_deg, shortest_distances,
 )
 from mouse.mjcf import build_maze_robot_xml
 from mouse.params import RobotParams
@@ -93,7 +111,8 @@ class Maze6Env(gym.Env):
                  collision_penalty: float = _COLLISION_PENALTY,
                  action_smooth_penalty: float = 0.0,
                  action_highpass_penalty: float = 0.0,
-                 action_highpass_alpha: float = 0.5):
+                 action_highpass_alpha: float = 0.5,
+                 continuous_potential: bool = False):
         super().__init__()
         if mode not in ("fixed", "generate"):
             raise ValueError(f"mode は 'fixed' か 'generate': {mode!r}")
@@ -121,6 +140,9 @@ class Maze6Env(gym.Env):
             raise ValueError(
                 f"action_highpass_alpha は 0 以上 1 未満: {action_highpass_alpha!r}")
         self.action_highpass_alpha = float(action_highpass_alpha)
+        # Φ を連続化するか（exp_012）。既定 False では _potential_stair() のみを通り、
+        # 挙動は本変更の前と bit 単位で同一。
+        self.continuous_potential = bool(continuous_potential)
         self._n_dist = len(self.params.sensors)
 
         # 距離 n + 差分 n + ジャイロ1 + 加速度2 + 車輪2 + 前回行動2 + ゴール相対2
@@ -139,6 +161,8 @@ class Maze6Env(gym.Env):
         self.maze = None
         self._dist_map = None          # 区画 → ゴールまでの歩数
         self._prev_potential = None
+        self._cell = None              # 直近の区画（区画遷移の検出に使う）
+        self._prev_cell = None         # c_prev: 直前に居た区画（連続 Φ 専用。reset で None）
         self._prev_action = np.zeros(2, dtype=np.float32)
         self._action_lowpass = np.zeros(2, dtype=np.float64)   # ā_(−1) = 0（案 3）
         self._prev_dist_raw = None
@@ -183,12 +207,113 @@ class Maze6Env(gym.Env):
         cs = self.params.cell_size
         return (min(max(int(x / cs), 0), SIZE - 1), min(max(int(y / cs), 0), SIZE - 1))
 
-    def _potential(self, cell) -> float:
-        """Φ = D₀ − d(cell) [m]。d はゴールまでの迷路距離。"""
+    def _potential_stair(self, cell) -> float:
+        """Φ = D₀ − d(cell) [m]（区画単位の階段関数。continuous_potential=False の実装）。
+
+        d はゴールまでの迷路距離。本メソッドは exp_012 以前の `_potential()` そのもの
+        （リネームのみ、本体は変更していない）。
+        """
         d = self._dist_map.get(cell, -1)
         if d < 0:
             d = self._d_start          # 到達不能（起きない想定）は基準値で据え置く
         return (self._d_start - d) * self.params.cell_size
+
+    # ------------------------------------------------------------------
+    # 連続版 Φ の幾何ヘルパ（exp_012）
+    # ------------------------------------------------------------------
+    def _cell_center(self, cell):
+        """区画中心の座標 [m]（真の位置系）。"""
+        cs = self.params.cell_size
+        return (cell[0] * cs + cs / 2.0, cell[1] * cs + cs / 2.0)
+
+    def _edge_midpoint(self, a, b):
+        """隣接する区画 a, b の共有辺の中点 w(a, b) = 2 区画中心の中点 [m]。
+
+        a, b の順序に依存しない（対称な平均なので浮動小数点でも bit 単位で一致する。
+        w_in == w_out の判定に使う恒等性はこれに依存している）。
+        """
+        ax, ay = self._cell_center(a)
+        bx, by = self._cell_center(b)
+        return ((ax + bx) / 2.0, (ay + by) / 2.0)
+
+    def _open_neighbors(self, cell):
+        """区画 cell の開通済み隣接区画一覧（上下左右）。壁配列の規約は maze6_gen と同一。"""
+        x, y = cell
+        out = []
+        for nb in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+            nx, ny = nb
+            if (0 <= nx < SIZE and 0 <= ny < SIZE
+                    and cells_open(self.maze["v_walls"], self.maze["h_walls"], cell, nb)):
+                out.append(nb)
+        return out
+
+    def _descending_neighbor(self, cell):
+        """cell の**降下隣接**: 開通した隣接区画のうち d が cell よりちょうど 1 小さいもの。
+
+        複数あれば (x, y) の辞書順で最小のものを決定的に選ぶ（迷路グラフは格子の部分
+        グラフで二部グラフなので、開通した隣接の d は必ず ±1 だけ違う。d(cell) が 0
+        でなければ降下隣接は必ず 1 つ以上存在する）。
+        """
+        d0 = self._dist_map[cell]
+        cands = [nb for nb in self._open_neighbors(cell)
+                 if self._dist_map.get(nb, -1) == d0 - 1]
+        if not cands:
+            raise AssertionError(f"降下隣接が見つからない: cell={cell} d={d0}")
+        return min(cands)
+
+    def _potential_continuous(self, cell, prev_cell, x: float, y: float) -> float:
+        """Φ の連続版（exp_012。continuous_potential=True）。
+
+        区画単位の階段を、開口部の中点を経由する折れ線への射影に置き換える。
+        真の位置 (x, y) は**報酬計算にのみ使う**（方策へは渡さない）。cs = 区画寸法
+        (params.cell_size = 0.18 m)。
+
+          n     = cell の降下隣接（_descending_neighbor）
+          w_out = w(cell, n)
+          w_in  = w(prev_cell, cell)（prev_cell が None なら w_out と同じ扱い）
+          折れ線 = [w_in, center(cell), w_out]（w_in == w_out なら [center(cell), w_out]）
+          ℓ     = 折れ線上への射影点から w_out までの弧長
+                  （corridor_gen.remaining_path_length をそのまま再利用）
+          残り距離 = ℓ + d(n)·cs + cs/2
+          Φ = d_start·cs − 残り距離
+
+        検算（設計書 `experiments/exp_012_continuous_potential/design.md` §4 と同一）:
+          - cell の中心では ℓ=cs/2 なので 残り距離 = cs/2 + d(n)·cs + cs/2
+            = (d(n)+1)·cs = d(cell)·cs  → 階段版 `_potential_stair` と一致
+          - w_out 上では ℓ=0 なので 残り距離 = d(n)·cs + cs/2
+          - n に入った直後、同じ点を n 側から計算すると w_in(n) = w_out(cell) なので
+            ℓ=cs（折れ線全長）、残り距離 = cs + (d(n)−1)·cs + cs/2 = d(n)·cs + cs/2
+            → cell 側の値と一致（連続）。**この一致は n への進入方向が曲がっていても
+            成立する**（開口部を経由するため）。区画中心だけを結ぶ折れ線だと、
+            ここで cs/2 = 0.09 m 跳ぶ。
+        """
+        cs = self.params.cell_size
+        d0 = self._dist_map.get(cell, -1)
+        if d0 < 0:
+            d0 = self._d_start          # 到達不能（起きない想定）は基準値で据え置く
+        if d0 == 0:
+            remaining = 0.0             # (i) ゴール区画: 残り距離は 0
+        else:
+            n = self._descending_neighbor(cell)
+            w_out = self._edge_midpoint(cell, n)
+            w_in = w_out if prev_cell is None else self._edge_midpoint(prev_cell, cell)
+            centers = ([self._cell_center(cell), w_out] if w_in == w_out
+                       else [w_in, self._cell_center(cell), w_out])
+            cum = path_cumulative_lengths(centers)
+            ell = remaining_path_length(centers, cum, x, y)
+            d_n = self._dist_map[n]
+            remaining = ell + d_n * cs + cs / 2.0
+        return self._d_start * cs - remaining
+
+    def _potential(self, cell, prev_cell=None, x: float = None, y: float = None) -> float:
+        """Φ [m]。continuous_potential に応じて階段版／連続版を切り替える。
+
+        continuous_potential=False（既定）では x, y, prev_cell は無視され、
+        _potential_stair(cell) のみで決まる（既存挙動を bit 単位で保つ）。
+        """
+        if not self.continuous_potential:
+            return self._potential_stair(cell)
+        return self._potential_continuous(cell, prev_cell, x, y)
 
     def _update_odometry(self, raw):
         """自前センサだけから自己位置を積分する（実機のデッドレコニングと同じ）。
@@ -298,7 +423,9 @@ class Maze6Env(gym.Env):
         self._prev_action = np.zeros(2, dtype=np.float32)
         self._action_lowpass = np.zeros(2, dtype=np.float64)   # ā_(−1) = 0（案 3）
         self._prev_dist_raw = None
-        self._prev_potential = self._potential(start)
+        self._cell = start
+        self._prev_cell = None      # c_prev（連続 Φ 用）。reset 直後は「直前の区画」が無い
+        self._prev_potential = self._potential(start, self._prev_cell, tx, ty)
 
         obs = self._make_observation()
         return obs, self._make_info(start, False, False, self.sim.sim_time)
@@ -312,10 +439,15 @@ class Maze6Env(gym.Env):
 
         x, y, _yaw = self.sim.privileged_pose()
         cell = self._cell_of(x, y)
+        if cell != self._cell:
+            # 区画が変わった瞬間の直前区画を c_prev として保持する（連続 Φ 専用）。
+            # 同じ区画に留まっている間は c_prev を更新しない（課題の仕様どおり）。
+            self._prev_cell = self._cell
+            self._cell = cell
         goal_reached = cell in GOAL_CELLS
         physical_fail = bool(result["collision"] or result["tipped"])
 
-        potential = self._potential(cell)
+        potential = self._potential(cell, self._prev_cell, x, y)
         reward = self.gamma * potential - self._prev_potential - _TIME_PENALTY
         if goal_reached:
             reward += _GOAL_BONUS
