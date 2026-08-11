@@ -1,0 +1,58 @@
+{
+  "maze_dir": "competition/mazes/validation",
+  "n_mazes": 5,
+  "mazes": [
+    "maze_4000",
+    "maze_4001",
+    "maze_4002",
+    "maze_4003",
+    "maze_4004"
+  ],
+  "results": {
+    "L0-a 超信地旋回走行（区画ごと停止）": {
+      "n_steps": 210005,
+      "lat_max_mm": 8.825291395711421,
+      "lat_straight_max_mm": 8.727069711480961,
+      "lat_straight_rms_mm": 2.4908128015376816,
+      "lat_straight_p95_mm": 4.162911584690909,
+      "n_straight": 176248,
+      "sat_frac": 0.0,
+      "omega_ratio_median": 0.9069717749120103,
+      "omega_ratio_p05": 0.7161433012646125,
+      "n_omega": 66103,
+      "speed_p95": 0.3042820906350815,
+      "speed_max": 0.3050377764226015,
+      "omega_p95": 4.783249768833894
+    },
+    "L0-b 超信地旋回走行（直進連続）": {
+      "n_steps": 208136,
+      "lat_max_mm": 14.012714263291537,
+      "lat_straight_max_mm": 13.937351212639948,
+      "lat_straight_rms_mm": 3.921159922456327,
+      "lat_straight_p95_mm": 7.626519616826366,
+      "n_straight": 164871,
+      "sat_frac": 0.0,
+      "omega_ratio_median": 0.907301888413641,
+      "omega_ratio_p05": 0.7161680345201984,
+      "n_omega": 84749,
+      "speed_p95": 0.6030312428844906,
+      "speed_max": 0.6046723859093122,
+      "omega_p95": 5.322019267948343
+    },
+    "L0-c スラローム走行": {
+      "n_steps": 98389,
+      "lat_max_mm": 27.36813909496573,
+      "lat_straight_max_mm": 20.11337833788773,
+      "lat_straight_rms_mm": 6.123687559529411,
+      "lat_straight_p95_mm": 12.366953891129738,
+      "n_straight": 68693,
+      "sat_frac": 0.0,
+      "omega_ratio_median": 0.9697138875493159,
+      "omega_ratio_p05": 0.3290679162826911,
+      "n_omega": 69662,
+      "speed_p95": 0.87856190440513,
+      "speed_max": 2.7617352575849963,
+      "omega_p95": 8.52094797986769
+    }
+  }
+}
