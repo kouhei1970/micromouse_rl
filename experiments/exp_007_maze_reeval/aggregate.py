@@ -38,8 +38,10 @@ POLICIES = OrderedDict([
     ("l0c_slalom", "L0-c スラローム走行"),
 ])
 MAZE_DIRS = {
-    "eval": "competition/mazes/eval",
-    "validation": "competition/mazes/validation",
+    # exp_007 は **v2 帯（低遠回り）** で測った実験。2026-08-11 に v3 帯が
+    # 凍結されて eval/validation の中身が入れ替わったので、退避先を指す。
+    "eval": "competition/mazes/eval_v2_low_detour",
+    "validation": "competition/mazes/validation_v2_low_detour",
     "contest_reference": "competition/mazes/contest_reference",
     "eval_v2_short": "competition/mazes/eval_v2_short",
 }

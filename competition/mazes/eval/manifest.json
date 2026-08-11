@@ -1,161 +1,228 @@
 {
-  "generator": "competition/maze_gen_v2.py",
+  "generator": "competition/maze_gen_v3.py",
+  "policy": "経路比 R の層別サンプリング。**最大化ではなく大会実迷路の分布への一致**。位置づけは「実物がそうなっているから合わせる」であって「古典が苦手なものを選ぶ」ではない（教授裁定 2026-08-11）",
   "rules": [
     "IEEE R2SAC 4.3 (gateway=1, start 3 walls)",
     "IEEE R2SAC 4.5 (wall-follower cannot reach goal, multiple paths)",
     "NTF 注意9 (no walls/posts inside goal)",
     "NTF 2-4 (every post has >=1 wall except goal center; outer walls complete)"
   ],
-  "extra_open_target": 15,
-  "d0_window": [
+  "seed_from": 1000,
+  "seed_to": 1999,
+  "n_per_band": 5,
+  "r_band_edges": [
+    1.058,
+    1.339,
+    1.625,
+    1.88,
+    3.267
+  ],
+  "d_window": [
     45,
     110
   ],
-  "path_protected_open": true,
+  "d_window_applied_to": "final",
+  "extra_open_target": 15,
   "mazes": [
     {
-      "seed": 1000,
-      "attempts": 3,
+      "seed": 1018,
+      "d_true": 83,
+      "d0_tree": 83,
       "cycles": 19,
       "open_edges": 274,
+      "gateway": [
+        "v",
+        9,
+        7
+      ],
+      "extra_opened": 15,
+      "R": 1.072289156626506,
+      "R_compass": 1.072289156626506
+    },
+    {
+      "seed": 1019,
+      "d_true": 81,
+      "d0_tree": 81,
+      "cycles": 19,
+      "open_edges": 274,
+      "gateway": [
+        "v",
+        7,
+        8
+      ],
+      "extra_opened": 15,
+      "R": 1.0987654320987654,
+      "R_compass": 1.0987654320987654
+    },
+    {
+      "seed": 1021,
+      "d_true": 49,
+      "d0_tree": 49,
+      "cycles": 19,
+      "open_edges": 274,
+      "gateway": [
+        "v",
+        9,
+        7
+      ],
+      "extra_opened": 15,
+      "R": 1.163265306122449,
+      "R_compass": 1.163265306122449
+    },
+    {
+      "seed": 1023,
+      "d_true": 81,
+      "d0_tree": 81,
+      "cycles": 18,
+      "open_edges": 273,
+      "gateway": [
+        "v",
+        7,
+        8
+      ],
+      "extra_opened": 15,
+      "R": 1.2469135802469136,
+      "R_compass": 1.2469135802469136
+    },
+    {
+      "seed": 1024,
+      "d_true": 49,
+      "d0_tree": 49,
+      "cycles": 20,
+      "open_edges": 275,
       "gateway": [
         "h",
         8,
         7
       ],
       "extra_opened": 15,
-      "d0": 97,
-      "d_shortest": 97
+      "R": 1.163265306122449,
+      "R_compass": 1.163265306122449
     },
     {
-      "seed": 1001,
-      "attempts": 1,
+      "seed": 1041,
+      "d_true": 71,
+      "d0_tree": 71,
       "cycles": 18,
       "open_edges": 273,
-      "gateway": [
-        "h",
-        8,
-        9
-      ],
-      "extra_opened": 15,
-      "d0": 106,
-      "d_shortest": 106
-    },
-    {
-      "seed": 1002,
-      "attempts": 1,
-      "cycles": 18,
-      "open_edges": 273,
-      "gateway": [
-        "v",
-        9,
-        8
-      ],
-      "extra_opened": 15,
-      "d0": 74,
-      "d_shortest": 74
-    },
-    {
-      "seed": 1003,
-      "attempts": 2,
-      "cycles": 19,
-      "open_edges": 274,
       "gateway": [
         "h",
         7,
         9
       ],
       "extra_opened": 15,
-      "d0": 83,
-      "d_shortest": 83
+      "R": 1.3661971830985915,
+      "R_compass": 1.676056338028169
     },
     {
-      "seed": 1004,
-      "attempts": 1,
+      "seed": 1046,
+      "d_true": 45,
+      "d0_tree": 45,
       "cycles": 20,
       "open_edges": 275,
+      "gateway": [
+        "h",
+        7,
+        9
+      ],
+      "extra_opened": 15,
+      "R": 1.3555555555555556,
+      "R_compass": 1.4
+    },
+    {
+      "seed": 1048,
+      "d_true": 58,
+      "d0_tree": 58,
+      "cycles": 19,
+      "open_edges": 274,
+      "gateway": [
+        "v",
+        7,
+        7
+      ],
+      "extra_opened": 15,
+      "R": 1.8275862068965518,
+      "R_compass": 1.8275862068965518
+    },
+    {
+      "seed": 1062,
+      "d_true": 56,
+      "d0_tree": 56,
+      "cycles": 19,
+      "open_edges": 274,
+      "gateway": [
+        "v",
+        7,
+        7
+      ],
+      "extra_opened": 15,
+      "R": 1.3571428571428572,
+      "R_compass": 1.3571428571428572
+    },
+    {
+      "seed": 1073,
+      "d_true": 89,
+      "d0_tree": 89,
+      "cycles": 18,
+      "open_edges": 273,
       "gateway": [
         "v",
         9,
         7
       ],
       "extra_opened": 15,
-      "d0": 75,
-      "d_shortest": 75
+      "R": 1.6067415730337078,
+      "R_compass": 1.5393258426966292
     },
     {
-      "seed": 1005,
-      "attempts": 3,
+      "seed": 1089,
+      "d_true": 93,
+      "d0_tree": 93,
+      "cycles": 19,
+      "open_edges": 274,
+      "gateway": [
+        "v",
+        7,
+        8
+      ],
+      "extra_opened": 15,
+      "R": 1.4301075268817205,
+      "R_compass": 1.3870967741935485
+    },
+    {
+      "seed": 1103,
+      "d_true": 71,
+      "d0_tree": 71,
+      "cycles": 17,
+      "open_edges": 272,
+      "gateway": [
+        "v",
+        9,
+        7
+      ],
+      "extra_opened": 15,
+      "R": 1.7605633802816902,
+      "R_compass": 1.619718309859155
+    },
+    {
+      "seed": 1138,
+      "d_true": 58,
+      "d0_tree": 58,
       "cycles": 21,
       "open_edges": 276,
       "gateway": [
         "h",
-        8,
-        9
-      ],
-      "extra_opened": 15,
-      "d0": 52,
-      "d_shortest": 52
-    },
-    {
-      "seed": 1006,
-      "attempts": 2,
-      "cycles": 19,
-      "open_edges": 274,
-      "gateway": [
-        "h",
         7,
         7
       ],
       "extra_opened": 15,
-      "d0": 60,
-      "d_shortest": 60
+      "R": 2.0344827586206895,
+      "R_compass": 2.103448275862069
     },
     {
-      "seed": 1007,
-      "attempts": 3,
-      "cycles": 19,
-      "open_edges": 274,
-      "gateway": [
-        "v",
-        9,
-        8
-      ],
-      "extra_opened": 15,
-      "d0": 58,
-      "d_shortest": 58
-    },
-    {
-      "seed": 1008,
-      "attempts": 2,
-      "cycles": 20,
-      "open_edges": 275,
-      "gateway": [
-        "v",
-        7,
-        7
-      ],
-      "extra_opened": 15,
-      "d0": 66,
-      "d_shortest": 66
-    },
-    {
-      "seed": 1009,
-      "attempts": 2,
-      "cycles": 20,
-      "open_edges": 275,
-      "gateway": [
-        "h",
-        7,
-        7
-      ],
-      "extra_opened": 15,
-      "d0": 56,
-      "d_shortest": 56
-    },
-    {
-      "seed": 1010,
-      "attempts": 3,
+      "seed": 1157,
+      "d_true": 56,
+      "d0_tree": 56,
       "cycles": 20,
       "open_edges": 275,
       "gateway": [
@@ -164,26 +231,28 @@
         8
       ],
       "extra_opened": 15,
-      "d0": 60,
-      "d_shortest": 60
+      "R": 1.8214285714285714,
+      "R_compass": 1.6785714285714286
     },
     {
-      "seed": 1011,
-      "attempts": 7,
-      "cycles": 20,
-      "open_edges": 275,
+      "seed": 1160,
+      "d_true": 52,
+      "d0_tree": 52,
+      "cycles": 19,
+      "open_edges": 274,
       "gateway": [
-        "v",
-        9,
+        "h",
+        7,
         7
       ],
       "extra_opened": 15,
-      "d0": 71,
-      "d_shortest": 71
+      "R": 2.1923076923076925,
+      "R_compass": 2.269230769230769
     },
     {
-      "seed": 1012,
-      "attempts": 4,
+      "seed": 1189,
+      "d_true": 45,
+      "d0_tree": 45,
       "cycles": 19,
       "open_edges": 274,
       "gateway": [
@@ -192,106 +261,2108 @@
         9
       ],
       "extra_opened": 15,
-      "d0": 99,
-      "d_shortest": 99
+      "R": 2.022222222222222,
+      "R_compass": 2.111111111111111
     },
     {
-      "seed": 1013,
-      "attempts": 2,
+      "seed": 1215,
+      "d_true": 45,
+      "d0_tree": 45,
+      "cycles": 19,
+      "open_edges": 274,
+      "gateway": [
+        "v",
+        9,
+        7
+      ],
+      "extra_opened": 15,
+      "R": 1.6666666666666667,
+      "R_compass": 2.022222222222222
+    },
+    {
+      "seed": 1223,
+      "d_true": 54,
+      "d0_tree": 54,
+      "cycles": 19,
+      "open_edges": 274,
+      "gateway": [
+        "v",
+        9,
+        8
+      ],
+      "extra_opened": 15,
+      "R": 1.7037037037037037,
+      "R_compass": 1.2592592592592593
+    },
+    {
+      "seed": 1255,
+      "d_true": 76,
+      "d0_tree": 76,
       "cycles": 18,
       "open_edges": 273,
       "gateway": [
-        "v",
-        7,
-        7
-      ],
-      "extra_opened": 15,
-      "d0": 82,
-      "d_shortest": 82
-    },
-    {
-      "seed": 1014,
-      "attempts": 2,
-      "cycles": 19,
-      "open_edges": 274,
-      "gateway": [
         "h",
         8,
-        7
+        9
       ],
       "extra_opened": 15,
-      "d0": 83,
-      "d_shortest": 83
+      "R": 2.236842105263158,
+      "R_compass": 2.1052631578947367
     },
     {
-      "seed": 1015,
-      "attempts": 3,
+      "seed": 1322,
+      "d_true": 58,
+      "d0_tree": 58,
       "cycles": 20,
       "open_edges": 275,
       "gateway": [
         "h",
-        8,
+        7,
         7
       ],
       "extra_opened": 15,
-      "d0": 77,
-      "d_shortest": 77
+      "R": 2.0,
+      "R_compass": 1.8620689655172413
+    }
+  ],
+  "candidate_log": [
+    {
+      "seed": 1000,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1001,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 106,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1002,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 74,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1003,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1004,
+      "accepted": false,
+      "R": 1.0266666666666666,
+      "d_true": 75,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1005,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1006,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1007,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1008,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1009,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1010,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1011,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1012,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1013,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1014,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1015,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
     },
     {
       "seed": 1016,
-      "attempts": 2,
-      "cycles": 19,
-      "open_edges": 274,
-      "gateway": [
-        "h",
-        7,
-        9
-      ],
-      "extra_opened": 15,
-      "d0": 53,
-      "d_shortest": 53
+      "accepted": false,
+      "reason": "規定/窓で不合格"
     },
     {
       "seed": 1017,
-      "attempts": 1,
-      "cycles": 19,
-      "open_edges": 274,
-      "gateway": [
-        "h",
-        7,
-        9
-      ],
-      "extra_opened": 15,
-      "d0": 53,
-      "d_shortest": 53
+      "accepted": false,
+      "R": 1.0377358490566038,
+      "d_true": 53,
+      "band": null,
+      "reason": "R が層の範囲外"
     },
     {
       "seed": 1018,
-      "attempts": 1,
-      "cycles": 19,
-      "open_edges": 274,
-      "gateway": [
-        "v",
-        9,
-        7
-      ],
-      "extra_opened": 15,
-      "d0": 83,
-      "d_shortest": 83
+      "accepted": true,
+      "R": 1.072289156626506,
+      "d_true": 83,
+      "band": 0,
+      "reason": "層 1 に採用"
     },
     {
       "seed": 1019,
-      "attempts": 1,
-      "cycles": 19,
-      "open_edges": 274,
-      "gateway": [
-        "v",
-        7,
-        8
-      ],
-      "extra_opened": 15,
-      "d0": 81,
-      "d_shortest": 81
+      "accepted": true,
+      "R": 1.0987654320987654,
+      "d_true": 81,
+      "band": 0,
+      "reason": "層 1 に採用"
+    },
+    {
+      "seed": 1020,
+      "accepted": false,
+      "R": 1.0357142857142858,
+      "d_true": 56,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1021,
+      "accepted": true,
+      "R": 1.163265306122449,
+      "d_true": 49,
+      "band": 0,
+      "reason": "層 1 に採用"
+    },
+    {
+      "seed": 1022,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 62,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1023,
+      "accepted": true,
+      "R": 1.2469135802469136,
+      "d_true": 81,
+      "band": 0,
+      "reason": "層 1 に採用"
+    },
+    {
+      "seed": 1024,
+      "accepted": true,
+      "R": 1.163265306122449,
+      "d_true": 49,
+      "band": 0,
+      "reason": "層 1 に採用"
+    },
+    {
+      "seed": 1025,
+      "accepted": false,
+      "R": 1.0833333333333333,
+      "d_true": 96,
+      "band": 0,
+      "reason": "層 1 は充足済み"
+    },
+    {
+      "seed": 1026,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1027,
+      "accepted": false,
+      "R": 1.032258064516129,
+      "d_true": 62,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1028,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1029,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 46,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1030,
+      "accepted": false,
+      "R": 1.0273972602739727,
+      "d_true": 73,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1031,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 56,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1032,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1033,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 50,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1034,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1035,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1036,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 82,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1037,
+      "accepted": false,
+      "R": 1.0289855072463767,
+      "d_true": 69,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1038,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1039,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1040,
+      "accepted": false,
+      "R": 1.0294117647058822,
+      "d_true": 68,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1041,
+      "accepted": true,
+      "R": 1.3661971830985915,
+      "d_true": 71,
+      "band": 1,
+      "reason": "層 2 に採用"
+    },
+    {
+      "seed": 1042,
+      "accepted": false,
+      "R": 1.1333333333333333,
+      "d_true": 60,
+      "band": 0,
+      "reason": "層 1 は充足済み"
+    },
+    {
+      "seed": 1043,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1044,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1045,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1046,
+      "accepted": true,
+      "R": 1.3555555555555556,
+      "d_true": 45,
+      "band": 1,
+      "reason": "層 2 に採用"
+    },
+    {
+      "seed": 1047,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1048,
+      "accepted": true,
+      "R": 1.8275862068965518,
+      "d_true": 58,
+      "band": 2,
+      "reason": "層 3 に採用"
+    },
+    {
+      "seed": 1049,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1050,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1051,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1052,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1053,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1054,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 58,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1055,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 66,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1056,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1057,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1058,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1059,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1060,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1061,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1062,
+      "accepted": true,
+      "R": 1.3571428571428572,
+      "d_true": 56,
+      "band": 1,
+      "reason": "層 2 に採用"
+    },
+    {
+      "seed": 1063,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 95,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1064,
+      "accepted": false,
+      "R": 1.054054054054054,
+      "d_true": 74,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1065,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1066,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1067,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1068,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1069,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 53,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1070,
+      "accepted": false,
+      "R": 1.1702127659574468,
+      "d_true": 47,
+      "band": 0,
+      "reason": "層 1 は充足済み"
+    },
+    {
+      "seed": 1071,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 64,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1072,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1073,
+      "accepted": true,
+      "R": 1.6067415730337078,
+      "d_true": 89,
+      "band": 1,
+      "reason": "層 2 に採用"
+    },
+    {
+      "seed": 1074,
+      "accepted": false,
+      "R": 1.0294117647058822,
+      "d_true": 68,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1075,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1076,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1077,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 76,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1078,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1079,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1080,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1081,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1082,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1083,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1084,
+      "accepted": false,
+      "R": 1.0952380952380953,
+      "d_true": 84,
+      "band": 0,
+      "reason": "層 1 は充足済み"
+    },
+    {
+      "seed": 1085,
+      "accepted": false,
+      "R": 1.1851851851851851,
+      "d_true": 54,
+      "band": 0,
+      "reason": "層 1 は充足済み"
+    },
+    {
+      "seed": 1086,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1087,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1088,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1089,
+      "accepted": true,
+      "R": 1.4301075268817205,
+      "d_true": 93,
+      "band": 1,
+      "reason": "層 2 に採用"
+    },
+    {
+      "seed": 1090,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 59,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1091,
+      "accepted": false,
+      "R": 1.1666666666666667,
+      "d_true": 72,
+      "band": 0,
+      "reason": "層 1 は充足済み"
+    },
+    {
+      "seed": 1092,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1093,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1094,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1095,
+      "accepted": false,
+      "R": 1.3396226415094339,
+      "d_true": 53,
+      "band": 1,
+      "reason": "層 2 は充足済み"
+    },
+    {
+      "seed": 1096,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1097,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1098,
+      "accepted": false,
+      "R": 1.1944444444444444,
+      "d_true": 72,
+      "band": 0,
+      "reason": "層 1 は充足済み"
+    },
+    {
+      "seed": 1099,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1100,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1101,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1102,
+      "accepted": false,
+      "R": 1.125,
+      "d_true": 64,
+      "band": 0,
+      "reason": "層 1 は充足済み"
+    },
+    {
+      "seed": 1103,
+      "accepted": true,
+      "R": 1.7605633802816902,
+      "d_true": 71,
+      "band": 2,
+      "reason": "層 3 に採用"
+    },
+    {
+      "seed": 1104,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1105,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1106,
+      "accepted": false,
+      "R": 1.565217391304348,
+      "d_true": 46,
+      "band": 1,
+      "reason": "層 2 は充足済み"
+    },
+    {
+      "seed": 1107,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1108,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1109,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1110,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1111,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1112,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1113,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1114,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1115,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 65,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1116,
+      "accepted": false,
+      "R": 1.1355932203389831,
+      "d_true": 59,
+      "band": 0,
+      "reason": "層 1 は充足済み"
+    },
+    {
+      "seed": 1117,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1118,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1119,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 47,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1120,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 57,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1121,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1122,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 65,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1123,
+      "accepted": false,
+      "R": 1.6,
+      "d_true": 60,
+      "band": 1,
+      "reason": "層 2 は充足済み"
+    },
+    {
+      "seed": 1124,
+      "accepted": false,
+      "R": 1.1126760563380282,
+      "d_true": 71,
+      "band": 0,
+      "reason": "層 1 は充足済み"
+    },
+    {
+      "seed": 1125,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1126,
+      "accepted": false,
+      "R": 1.5185185185185186,
+      "d_true": 54,
+      "band": 1,
+      "reason": "層 2 は充足済み"
+    },
+    {
+      "seed": 1127,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1128,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 55,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1129,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1130,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1131,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1132,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1133,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1134,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1135,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1136,
+      "accepted": false,
+      "R": 1.0879120879120878,
+      "d_true": 91,
+      "band": 0,
+      "reason": "層 1 は充足済み"
+    },
+    {
+      "seed": 1137,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1138,
+      "accepted": true,
+      "R": 2.0344827586206895,
+      "d_true": 58,
+      "band": 3,
+      "reason": "層 4 に採用"
+    },
+    {
+      "seed": 1139,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1140,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 59,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1141,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 68,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1142,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1143,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 47,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1144,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1145,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1146,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1147,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1148,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1149,
+      "accepted": false,
+      "R": 1.163265306122449,
+      "d_true": 49,
+      "band": 0,
+      "reason": "層 1 は充足済み"
+    },
+    {
+      "seed": 1150,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1151,
+      "accepted": false,
+      "R": 1.021505376344086,
+      "d_true": 93,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1152,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1153,
+      "accepted": false,
+      "R": 1.1818181818181819,
+      "d_true": 55,
+      "band": 0,
+      "reason": "層 1 は充足済み"
+    },
+    {
+      "seed": 1154,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1155,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1156,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 60,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1157,
+      "accepted": true,
+      "R": 1.8214285714285714,
+      "d_true": 56,
+      "band": 2,
+      "reason": "層 3 に採用"
+    },
+    {
+      "seed": 1158,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1159,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1160,
+      "accepted": true,
+      "R": 2.1923076923076925,
+      "d_true": 52,
+      "band": 3,
+      "reason": "層 4 に採用"
+    },
+    {
+      "seed": 1161,
+      "accepted": false,
+      "R": 1.4081632653061225,
+      "d_true": 49,
+      "band": 1,
+      "reason": "層 2 は充足済み"
+    },
+    {
+      "seed": 1162,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1163,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 50,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1164,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 53,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1165,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 49,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1166,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1167,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 63,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1168,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1169,
+      "accepted": false,
+      "R": 1.0833333333333333,
+      "d_true": 48,
+      "band": 0,
+      "reason": "層 1 は充足済み"
+    },
+    {
+      "seed": 1170,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1171,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 46,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1172,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1173,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1174,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1175,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1176,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 79,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1177,
+      "accepted": false,
+      "R": 1.2448979591836735,
+      "d_true": 98,
+      "band": 0,
+      "reason": "層 1 は充足済み"
+    },
+    {
+      "seed": 1178,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1179,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 75,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1180,
+      "accepted": false,
+      "R": 1.5098039215686274,
+      "d_true": 51,
+      "band": 1,
+      "reason": "層 2 は充足済み"
+    },
+    {
+      "seed": 1181,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1182,
+      "accepted": false,
+      "R": 1.2692307692307692,
+      "d_true": 52,
+      "band": 0,
+      "reason": "層 1 は充足済み"
+    },
+    {
+      "seed": 1183,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1184,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 78,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1185,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1186,
+      "accepted": false,
+      "R": 1.1923076923076923,
+      "d_true": 52,
+      "band": 0,
+      "reason": "層 1 は充足済み"
+    },
+    {
+      "seed": 1187,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1188,
+      "accepted": false,
+      "R": 1.0273972602739727,
+      "d_true": 73,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1189,
+      "accepted": true,
+      "R": 2.022222222222222,
+      "d_true": 45,
+      "band": 3,
+      "reason": "層 4 に採用"
+    },
+    {
+      "seed": 1190,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1191,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1192,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1193,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1194,
+      "accepted": false,
+      "R": 1.3243243243243243,
+      "d_true": 74,
+      "band": 0,
+      "reason": "層 1 は充足済み"
+    },
+    {
+      "seed": 1195,
+      "accepted": false,
+      "R": 1.1403508771929824,
+      "d_true": 57,
+      "band": 0,
+      "reason": "層 1 は充足済み"
+    },
+    {
+      "seed": 1196,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1197,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 94,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1198,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1199,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1200,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1201,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1202,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1203,
+      "accepted": false,
+      "R": 1.1224489795918366,
+      "d_true": 49,
+      "band": 0,
+      "reason": "層 1 は充足済み"
+    },
+    {
+      "seed": 1204,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 50,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1205,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1206,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1207,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 106,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1208,
+      "accepted": false,
+      "R": 1.086021505376344,
+      "d_true": 93,
+      "band": 0,
+      "reason": "層 1 は充足済み"
+    },
+    {
+      "seed": 1209,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 70,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1210,
+      "accepted": false,
+      "R": 1.3278688524590163,
+      "d_true": 61,
+      "band": 0,
+      "reason": "層 1 は充足済み"
+    },
+    {
+      "seed": 1211,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1212,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1213,
+      "accepted": false,
+      "R": 1.1777777777777778,
+      "d_true": 45,
+      "band": 0,
+      "reason": "層 1 は充足済み"
+    },
+    {
+      "seed": 1214,
+      "accepted": false,
+      "R": 1.0634920634920635,
+      "d_true": 63,
+      "band": 0,
+      "reason": "層 1 は充足済み"
+    },
+    {
+      "seed": 1215,
+      "accepted": true,
+      "R": 1.6666666666666667,
+      "d_true": 45,
+      "band": 2,
+      "reason": "層 3 に採用"
+    },
+    {
+      "seed": 1216,
+      "accepted": false,
+      "R": 1.0579710144927537,
+      "d_true": 69,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1217,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1218,
+      "accepted": false,
+      "R": 1.019047619047619,
+      "d_true": 105,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1219,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 47,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1220,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 61,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1221,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1222,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1223,
+      "accepted": true,
+      "R": 1.7037037037037037,
+      "d_true": 54,
+      "band": 2,
+      "reason": "層 3 に採用"
+    },
+    {
+      "seed": 1224,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 81,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1225,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1226,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1227,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1228,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1229,
+      "accepted": false,
+      "R": 1.25,
+      "d_true": 72,
+      "band": 0,
+      "reason": "層 1 は充足済み"
+    },
+    {
+      "seed": 1230,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 53,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1231,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1232,
+      "accepted": false,
+      "R": 1.0266666666666666,
+      "d_true": 75,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1233,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 66,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1234,
+      "accepted": false,
+      "R": 1.0571428571428572,
+      "d_true": 70,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1235,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1236,
+      "accepted": false,
+      "R": 1.1886792452830188,
+      "d_true": 53,
+      "band": 0,
+      "reason": "層 1 は充足済み"
+    },
+    {
+      "seed": 1237,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1238,
+      "accepted": false,
+      "R": 1.0571428571428572,
+      "d_true": 105,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1239,
+      "accepted": false,
+      "R": 1.588235294117647,
+      "d_true": 51,
+      "band": 1,
+      "reason": "層 2 は充足済み"
+    },
+    {
+      "seed": 1240,
+      "accepted": false,
+      "R": 1.6764705882352942,
+      "d_true": 68,
+      "band": 2,
+      "reason": "層 3 は充足済み"
+    },
+    {
+      "seed": 1241,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1242,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 83,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1243,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1244,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1245,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1246,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1247,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1248,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 108,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1249,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1250,
+      "accepted": false,
+      "R": 1.1204819277108433,
+      "d_true": 83,
+      "band": 0,
+      "reason": "層 1 は充足済み"
+    },
+    {
+      "seed": 1251,
+      "accepted": false,
+      "R": 1.0909090909090908,
+      "d_true": 110,
+      "band": 0,
+      "reason": "層 1 は充足済み"
+    },
+    {
+      "seed": 1252,
+      "accepted": false,
+      "R": 1.125,
+      "d_true": 48,
+      "band": 0,
+      "reason": "層 1 は充足済み"
+    },
+    {
+      "seed": 1253,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1254,
+      "accepted": false,
+      "R": 1.3870967741935485,
+      "d_true": 62,
+      "band": 1,
+      "reason": "層 2 は充足済み"
+    },
+    {
+      "seed": 1255,
+      "accepted": true,
+      "R": 2.236842105263158,
+      "d_true": 76,
+      "band": 3,
+      "reason": "層 4 に採用"
+    },
+    {
+      "seed": 1256,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1257,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1258,
+      "accepted": false,
+      "R": 1.103896103896104,
+      "d_true": 77,
+      "band": 0,
+      "reason": "層 1 は充足済み"
+    },
+    {
+      "seed": 1259,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 62,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1260,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1261,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1262,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 77,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1263,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1264,
+      "accepted": false,
+      "R": 1.0481927710843373,
+      "d_true": 83,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1265,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1266,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 96,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1267,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1268,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1269,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1270,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 70,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1271,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 48,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1272,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1273,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1274,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1275,
+      "accepted": false,
+      "R": 1.8,
+      "d_true": 85,
+      "band": 2,
+      "reason": "層 3 は充足済み"
+    },
+    {
+      "seed": 1276,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1277,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1278,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1279,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1280,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1281,
+      "accepted": false,
+      "R": 1.1041666666666667,
+      "d_true": 96,
+      "band": 0,
+      "reason": "層 1 は充足済み"
+    },
+    {
+      "seed": 1282,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1283,
+      "accepted": false,
+      "R": 1.24,
+      "d_true": 50,
+      "band": 0,
+      "reason": "層 1 は充足済み"
+    },
+    {
+      "seed": 1284,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1285,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 55,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1286,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1287,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1288,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 81,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1289,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1290,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1291,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1292,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1293,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1294,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1295,
+      "accepted": false,
+      "R": 1.0222222222222221,
+      "d_true": 90,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1296,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1297,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 104,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1298,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1299,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1300,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1301,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1302,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1303,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1304,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1305,
+      "accepted": false,
+      "R": 1.1428571428571428,
+      "d_true": 70,
+      "band": 0,
+      "reason": "層 1 は充足済み"
+    },
+    {
+      "seed": 1306,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1307,
+      "accepted": false,
+      "R": 1.0307692307692307,
+      "d_true": 65,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1308,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1309,
+      "accepted": false,
+      "R": 1.411764705882353,
+      "d_true": 102,
+      "band": 1,
+      "reason": "層 2 は充足済み"
+    },
+    {
+      "seed": 1310,
+      "accepted": false,
+      "R": 1.1818181818181819,
+      "d_true": 55,
+      "band": 0,
+      "reason": "層 1 は充足済み"
+    },
+    {
+      "seed": 1311,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 56,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1312,
+      "accepted": false,
+      "R": 1.043956043956044,
+      "d_true": 91,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1313,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 47,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1314,
+      "accepted": false,
+      "R": 1.0,
+      "d_true": 46,
+      "band": null,
+      "reason": "R が層の範囲外"
+    },
+    {
+      "seed": 1315,
+      "accepted": false,
+      "R": 1.5217391304347827,
+      "d_true": 46,
+      "band": 1,
+      "reason": "層 2 は充足済み"
+    },
+    {
+      "seed": 1316,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1317,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1318,
+      "accepted": false,
+      "R": 1.3225806451612903,
+      "d_true": 62,
+      "band": 0,
+      "reason": "層 1 は充足済み"
+    },
+    {
+      "seed": 1319,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1320,
+      "accepted": false,
+      "reason": "規定/窓で不合格"
+    },
+    {
+      "seed": 1321,
+      "accepted": false,
+      "R": 1.1538461538461537,
+      "d_true": 52,
+      "band": 0,
+      "reason": "層 1 は充足済み"
+    },
+    {
+      "seed": 1322,
+      "accepted": true,
+      "R": 2.0,
+      "d_true": 58,
+      "band": 3,
+      "reason": "層 4 に採用"
     }
   ]
 }

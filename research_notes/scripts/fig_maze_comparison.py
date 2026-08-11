@@ -53,8 +53,8 @@ WALL = "#3b3a37"
 
 BANDS = [
     ("是正前の評価迷路", "competition/mazes/eval_v2_short", "maze_*.npz", False),
-    ("1 回目の是正（現行）", "competition/mazes/eval", "maze_*.npz", False),
-    ("2 回目の是正（v3 候補）", "competition/mazes/eval_v3", "maze_*.npz", False),
+    ("1 回目の是正（退役）", "competition/mazes/eval_v2_low_detour", "maze_*.npz", False),
+    ("2 回目の是正（現行 v3）", "competition/mazes/eval", "maze_*.npz", False),
     ("大会実迷路（本物）", "competition/reference_mazes/contest", "contest_*.npz", True),
 ]
 

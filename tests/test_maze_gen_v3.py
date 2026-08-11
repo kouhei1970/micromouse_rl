@@ -37,8 +37,9 @@ from competition.maze_gen_v2 import all_cells_reachable  # noqa: E402
 from competition.maze_gen_v3 import (  # noqa: E402
     D_WINDOW, R_BAND_EDGES, band_of, generate_candidate, select_stratified)
 
-BANDS = [("competition/mazes/eval_v3", "eval_v3", (1000, 1999)),
-         ("competition/mazes/validation_v3", "validation_v3", (4000, 4999))]
+# v3 帯は 2026-08-11 に凍結され、現行帯（eval / validation）になった。
+BANDS = [("competition/mazes/eval", "eval(v3)", (1000, 1999)),
+         ("competition/mazes/validation", "validation(v3)", (4000, 4999))]
 RESULTS = []
 
 
@@ -175,8 +176,8 @@ def test5_band_separation_and_strata():
         record(f"{band} の各層がちょうど 5 面", {i: 5 for i in range(n_bands)},
                {i: per_band.get(i, 0) for i in range(n_bands)}, filled)
         ok_all = ok_all and in_range and filled
-    overlap = walls["eval_v3"] & walls["validation_v3"]
-    record("eval_v3 と validation_v3 の迷路が重複しない", 0, len(overlap), len(overlap) == 0)
+    overlap = walls["eval(v3)"] & walls["validation(v3)"]
+    record("eval と validation の迷路が重複しない", 0, len(overlap), len(overlap) == 0)
     return ok_all and not overlap
 
 
