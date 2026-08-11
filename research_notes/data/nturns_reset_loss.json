@@ -1,0 +1,28 @@
+{
+  "l0a": {
+    "n_runs": 53,
+    "lost_frac_med": 0.42206414546670595,
+    "lost_frac_p25": 0.4016371311613471,
+    "lost_frac_p75": 0.43980241818021765,
+    "n_reset_med": 119.0,
+    "reset_mag_med": 0.2413579947838179,
+    "reset_mag_max": 44.99970153379533,
+    "n_reset_near45": 1810,
+    "n_reset_total": 7632,
+    "n_turns_med": 37.0,
+    "n_turns_noreset_med": 67.96090289870138
+  },
+  "l0c": {
+    "n_runs": 100,
+    "lost_frac_med": 0.12264183529306713,
+    "lost_frac_p25": 0.11076744866369118,
+    "lost_frac_p75": 0.140603947978619,
+    "n_reset_med": 41.0,
+    "reset_mag_med": 10.745761390297886,
+    "reset_mag_max": 44.99138146415512,
+    "n_reset_near45": 188,
+    "n_reset_total": 4881,
+    "n_turns_med": 73.0,
+    "n_turns_noreset_med": 87.26157649859277
+  }
+}
