@@ -114,9 +114,18 @@ def g_goal(d_cells, gamma, c, rho=1.0, v=V_RUN):
             + visit_return(n_new, spc, gamma))
 
 
-def g_dwell(gamma, c):
-    """滞留（スタート区画に留まって時間切れ）。Φ_T = 0、訪問なし。"""
-    return -(TIME_PENALTY + c) * S(TIME_LIMIT, gamma)
+def g_dwell(gamma, c_stop=None, k=K_M1):
+    """滞留（スタート区画に留まって時間切れ）。Φ_T = 0、訪問なし。
+
+    **滑らかさの罰は「走行時の値」を使ってはいけない。**罰は挙動に依存し、
+    凍結した方策は E‖a−ā‖² を実測 1.086e-4 まで落として**罰そのものを消している**
+    （走行時 0.459 の 4200 分の 1）。走行時の c を滞留に適用すると滞留を
+    0.999 と 5 倍過大に見積もり、**順序判定を誤る**。
+    引き継ぎメモ (3)-3「罰の大きさは挙動に依存する。比較表の各行で測り直すこと」。
+    """
+    if c_stop is None:
+        c_stop = k * MEASURED_HP2_STOP
+    return -(TIME_PENALTY + c_stop) * S(TIME_LIMIT, gamma)
 
 
 def g_explore(gamma, c, phi_T=0.0, v=V_RUN, revisit=1.0):
@@ -150,20 +159,27 @@ def g_collide(x, gamma, c, v=V_RUN, phi_mode="stair"):
 
 
 def best_collide(d_cells, gamma, c, v=V_RUN, n=400):
-    """最も得な衝突（衝突位置 x を最短経路長まで振った最大値）。"""
-    xs = np.linspace(0.02, d_cells * CELL, n)
+    """最も得な衝突（衝突位置 x を振った最大値）。
+
+    **x の上限は D₀·CELL より真に小さくとる。**x = D₀·CELL はゴール区画に入った
+    位置であり、そこでは環境がゴールで終端するので「衝突」は起こりえない。
+    上限を含めると進んだ区画数が D₀ になり、**衝突を 1 区画ぶん過大評価する**
+    （D₀=4 で −0.445 対 正しくは −0.546、D₀ が小さい面ほど影響が大きい）。
+    """
+    xs = np.linspace(0.02, d_cells * CELL - 1e-9, n)
     gs = np.array([g_collide(x, gamma, c, v) for x in xs])
     i = int(np.argmax(gs))
     return float(gs[i]), float(xs[i])
 
 
-def rho_max(d_cells, gamma, c, v=V_RUN, hi=60.0):
+def rho_max(d_cells, gamma, c, v=V_RUN, hi=60.0, k_drive=K_M1):
     """G_goal(ρ) > max(滞留, 探索, 最も得な衝突) を保つ最大の ρ。
 
     エピソード上限 6000 歩を超える ρ は物理的に成立しないので、その場合は
     上限（= 6000 歩に相当する ρ）で打ち切って「上限まで成立」と報告する。
     """
-    alt = max(g_dwell(gamma, c), g_explore(gamma, c), best_collide(d_cells, gamma, c, v)[0])
+    alt = max(g_dwell(gamma, k=k_drive), g_explore(gamma, c),
+              best_collide(d_cells, gamma, c, v)[0])
     spc = CELL / (v * DT)
     rho_cap = TIME_LIMIT / (d_cells * spc)        # 6000 歩に相当する ρ
     if g_goal(d_cells, gamma, c, 1.0, v) <= alt:
@@ -289,7 +305,7 @@ def sec1_premise(mazes, mean_hp2, k):
         h = 1.0 / (1.0 - g)
         Tmed = float(np.median(d)) * spc
         print(f"    {g:>7.3f}{h:>13.0f}{h*DT:>7.1f}{h/spc:>9.1f}"
-              f"{g**Tmed:>18.3f}{g_dwell(g, c):>10.3f}")
+              f"{g**Tmed:>18.3f}{g_dwell(g):>10.3f}")
     print()
     print("  【要点】6x6 の最短経路 75〜281 歩は γ=0.995 の実効地平 200 歩と同程度で、")
     print("  γ^T は 0.245〜0.687。16x16 で報告された γ^T = 0.00115 のような潰れは起きない。")
@@ -312,7 +328,7 @@ def sec2_per_maze(mazes, gamma, c, k, mean_hp2):
         T = d * spc
         gg = g_goal(d, gamma, c)
         ge = g_explore(gamma, c)
-        gd = g_dwell(gamma, c)
+        gd = g_dwell(gamma)
         gc, xs = best_collide(d, gamma, c)
         alt = max(ge, gd, gc)
         # 望ましい順序は ゴール > 探索 > 滞留 > 衝突。実際の順序を並べて出す
@@ -585,7 +601,7 @@ def sec5_landmines(mazes, c, k, mean_hp2):
     print("     **衝突（−1.0 の一発）が滞留より相対的に得になる方向に動く。**下表参照:")
     print(f"    {'γ':>7}{'滞留 G':>10}{'即衝突 G':>11}{'滞留 − 即衝突':>16}{'判定':>18}")
     for g in gammas:
-        gd = g_dwell(g, c)
+        gd = g_dwell(g)
         gimm = g_collide(0.05, g, c)
         note = "滞留の方が得" if gd > gimm else "**即衝突の方が得**"
         print(f"    {g:>7.3f}{gd:>10.3f}{gimm:>11.3f}{gd-gimm:>16.3f}{note:>18}")
