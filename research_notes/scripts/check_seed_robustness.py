@@ -10,10 +10,23 @@ exp_006c（k × 学習 seed の要因計画）の**最終モデル**を、検証
   （完走するには曲がる必要があり、曲がれば舵を切り、舵を切れば反転が増える）
 - 結論は **x / N seed** の形で書く。条件間の比較は同じ seed 数で揃える
 
-判定基準（3 つ同時。exp_006 と同じ）:
-  符号反転 10 回/s 未満・完走率 90% 以上・1 区画 0.205 s 以内（exp_005 の 0.171 s から 20%）
-横偏差（最大・RMS）も併記する（exp_005 の基準値は 最大 52.0 mm・RMS 14.5 mm、
-接触水準 54 mm にほぼ達している）。
+判定基準（3 つ同時）:
+
+| 項目 | 線 | 由来 |
+|---|---|---|
+| 符号反転 | **15.4 回/s 未満**（暫定 gate） | 車輪ジョイントの遮断 7.72 Hz（τ=20.6 ms）から導出 |
+| 完走率 | 90% 以上 | M1 の gate |
+| 1 区画所要 | 0.205 s 以内 | exp_005 の 0.171 s から 20% 低下まで |
+
+**旧基準「10 回/s」は gate から外した**（2026-08-11 教授裁定）。由来が仕様書からも
+文書からも復元できず、**根拠を失った決定をそのまま使い続けることは
+`research_notes/note_009` に記録した失敗そのもの**であるため。参考値としては残す。
+
+**横偏差は安全性の指標にならない**（最大値は壁が無い交差点で記録される）。
+安全余裕は `check_min_wall_clearance.py` の**最小壁余裕**で見ること。
+本スクリプトの横偏差は過去の記録との照合のために残しているだけである。
+なお文書の「接触水準 54 mm」はシャーシ半幅から計算された誤りで、
+機体の最外部は車輪の外面 39.5 mm なので**真の接触水準は 44.5 mm**。
 
 使い方:
     .venv/bin/python research_notes/scripts/check_seed_robustness.py            # 検証帯のみ
@@ -55,13 +68,17 @@ RUNS = [
     ("案3 k=8.7e-3", None, 1, "models/exp_006d_hp_k8.7e-3_seed1.zip"),
     ("案3 k=8.7e-3", None, 2, "models/exp_006d_hp_k8.7e-3_seed2.zip"),
     ("案3 k=8.7e-3", None, 3, "models/exp_006d_hp_k8.7e-3_seed3.zip"),
+    ("案3 k=1.1e-2", None, 1, "models/exp_006d_hp_k1.1e-2_seed1.zip"),
+    ("案3 k=1.1e-2", None, 2, "models/exp_006d_hp_k1.1e-2_seed2.zip"),
+    ("案3 k=1.1e-2", None, 3, "models/exp_006d_hp_k1.1e-2_seed3.zip"),
     # exp_008: 並列環境数のみ 1 → 6（罰なし）。比較の基準は k=0 の行
     ("並列6 k=0", 0.0, 0, "models/exp_008_nenvs6_seed0.zip"),
     ("並列6 k=0", 0.0, 1, "models/exp_008_nenvs6_seed1.zip"),
 ]
 
-# 3 基準（exp_006 と同じ）
-CRIT_FLIP_PER_S = 10.0
+# 3 基準。反転は**暫定 gate 15.4 回/s**（仕様書から導ける唯一の線）を使う
+CRIT_FLIP_PER_S = 15.4      # 車輪ジョイントの遮断 7.72 Hz ×2
+CRIT_FLIP_LEGACY = 10.0     # 由来不明。gate から外したが参考値として残す
 CRIT_COMPLETION = 0.90
 CRIT_SEC_PER_CELL = 0.205
 
@@ -150,6 +167,13 @@ def print_table(title, rows, n_desc):
               f"{f('flip', '.1f'):>12}{f('lat_max_mm', '.1f'):>15}"
               f"{f('lat_rms_mm', '.1f'):>10}"
               f"{'✅' if r['all_criteria'] else '—':>7}")
+    print(f"\n  3 基準 = 反転 < {CRIT_FLIP_PER_S}（暫定 gate。車輪の遮断 7.72 Hz 由来）"
+          f"・完走率 ≥ {CRIT_COMPLETION}・1 区画 ≤ {CRIT_SEC_PER_CELL} s")
+    legacy = [r["label"] + f" seed{r['seed']}" for r in rows
+              if r["flip"] is not None and r["flip"] < CRIT_FLIP_LEGACY
+              and r["completion"] >= CRIT_COMPLETION]
+    print(f"  参考: 旧基準 {CRIT_FLIP_LEGACY} 回/s（由来不明・gate から除外）も満たすもの: "
+          + (", ".join(legacy) if legacy else "なし"))
     print("\n  参考: 全試行（失敗を含む）での値 — 過去の記録との照合用")
     print(f"{'条件':<12}{'seed':>5}{'反転[回/s]':>12}{'横偏差最大[mm]':>16}{'RMS[mm]':>10}")
     for r in rows:

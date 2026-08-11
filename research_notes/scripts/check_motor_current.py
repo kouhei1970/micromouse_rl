@@ -78,6 +78,9 @@ MODELS = [
     ("案3 k=8.7e-3", 1, "models/exp_006d_hp_k8.7e-3_seed1.zip"),
     ("案3 k=8.7e-3", 2, "models/exp_006d_hp_k8.7e-3_seed2.zip"),
     ("案3 k=8.7e-3", 3, "models/exp_006d_hp_k8.7e-3_seed3.zip"),
+    ("案3 k=1.1e-2", 1, "models/exp_006d_hp_k1.1e-2_seed1.zip"),
+    ("案3 k=1.1e-2", 2, "models/exp_006d_hp_k1.1e-2_seed2.zip"),
+    ("案3 k=1.1e-2", 3, "models/exp_006d_hp_k1.1e-2_seed3.zip"),
 ]
 
 CONT_TORQUE_NM = 1.16e-3      # 連続定格トルク（モータ軸）[N·m]。docs/ROBOT_SPEC.md §3
