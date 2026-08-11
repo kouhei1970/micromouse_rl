@@ -1,0 +1,329 @@
+{
+  "split": "eval",
+  "mode": "loop",
+  "seeds": [
+    6000,
+    6001,
+    6002,
+    6003,
+    6004,
+    6005,
+    6006,
+    6007,
+    6008,
+    6009,
+    6010,
+    6011,
+    6012,
+    6013,
+    6014,
+    6015,
+    6016,
+    6017,
+    6018,
+    6019
+  ],
+  "generator": "mouse/maze6_gen.py: generate_maze",
+  "mazes": [
+    {
+      "seed": 6000,
+      "start": [
+        5,
+        5
+      ],
+      "gateway": [
+        "h",
+        2,
+        4
+      ],
+      "dist_from_start": 11,
+      "npz": "assets/maze6/loop/eval/maze6_6000.npz",
+      "xml": "assets/maze6/loop/eval/maze6_6000.xml"
+    },
+    {
+      "seed": 6001,
+      "start": [
+        5,
+        5
+      ],
+      "gateway": [
+        "v",
+        4,
+        3
+      ],
+      "dist_from_start": 4,
+      "npz": "assets/maze6/loop/eval/maze6_6001.npz",
+      "xml": "assets/maze6/loop/eval/maze6_6001.xml"
+    },
+    {
+      "seed": 6002,
+      "start": [
+        5,
+        0
+      ],
+      "gateway": [
+        "v",
+        4,
+        2
+      ],
+      "dist_from_start": 4,
+      "npz": "assets/maze6/loop/eval/maze6_6002.npz",
+      "xml": "assets/maze6/loop/eval/maze6_6002.xml"
+    },
+    {
+      "seed": 6003,
+      "start": [
+        0,
+        0
+      ],
+      "gateway": [
+        "h",
+        3,
+        4
+      ],
+      "dist_from_start": 12,
+      "npz": "assets/maze6/loop/eval/maze6_6003.npz",
+      "xml": "assets/maze6/loop/eval/maze6_6003.xml"
+    },
+    {
+      "seed": 6004,
+      "start": [
+        5,
+        0
+      ],
+      "gateway": [
+        "v",
+        2,
+        3
+      ],
+      "dist_from_start": 10,
+      "npz": "assets/maze6/loop/eval/maze6_6004.npz",
+      "xml": "assets/maze6/loop/eval/maze6_6004.xml"
+    },
+    {
+      "seed": 6005,
+      "start": [
+        0,
+        5
+      ],
+      "gateway": [
+        "v",
+        2,
+        3
+      ],
+      "dist_from_start": 4,
+      "npz": "assets/maze6/loop/eval/maze6_6005.npz",
+      "xml": "assets/maze6/loop/eval/maze6_6005.xml"
+    },
+    {
+      "seed": 6006,
+      "start": [
+        0,
+        5
+      ],
+      "gateway": [
+        "h",
+        3,
+        2
+      ],
+      "dist_from_start": 12,
+      "npz": "assets/maze6/loop/eval/maze6_6006.npz",
+      "xml": "assets/maze6/loop/eval/maze6_6006.xml"
+    },
+    {
+      "seed": 6007,
+      "start": [
+        0,
+        0
+      ],
+      "gateway": [
+        "v",
+        4,
+        3
+      ],
+      "dist_from_start": 12,
+      "npz": "assets/maze6/loop/eval/maze6_6007.npz",
+      "xml": "assets/maze6/loop/eval/maze6_6007.xml"
+    },
+    {
+      "seed": 6008,
+      "start": [
+        5,
+        0
+      ],
+      "gateway": [
+        "h",
+        2,
+        4
+      ],
+      "dist_from_start": 12,
+      "npz": "assets/maze6/loop/eval/maze6_6008.npz",
+      "xml": "assets/maze6/loop/eval/maze6_6008.xml"
+    },
+    {
+      "seed": 6009,
+      "start": [
+        5,
+        5
+      ],
+      "gateway": [
+        "v",
+        4,
+        3
+      ],
+      "dist_from_start": 6,
+      "npz": "assets/maze6/loop/eval/maze6_6009.npz",
+      "xml": "assets/maze6/loop/eval/maze6_6009.xml"
+    },
+    {
+      "seed": 6010,
+      "start": [
+        5,
+        0
+      ],
+      "gateway": [
+        "h",
+        2,
+        4
+      ],
+      "dist_from_start": 12,
+      "npz": "assets/maze6/loop/eval/maze6_6010.npz",
+      "xml": "assets/maze6/loop/eval/maze6_6010.xml"
+    },
+    {
+      "seed": 6011,
+      "start": [
+        0,
+        5
+      ],
+      "gateway": [
+        "h",
+        3,
+        4
+      ],
+      "dist_from_start": 5,
+      "npz": "assets/maze6/loop/eval/maze6_6011.npz",
+      "xml": "assets/maze6/loop/eval/maze6_6011.xml"
+    },
+    {
+      "seed": 6012,
+      "start": [
+        5,
+        0
+      ],
+      "gateway": [
+        "h",
+        3,
+        2
+      ],
+      "dist_from_start": 4,
+      "npz": "assets/maze6/loop/eval/maze6_6012.npz",
+      "xml": "assets/maze6/loop/eval/maze6_6012.xml"
+    },
+    {
+      "seed": 6013,
+      "start": [
+        0,
+        0
+      ],
+      "gateway": [
+        "v",
+        4,
+        2
+      ],
+      "dist_from_start": 17,
+      "npz": "assets/maze6/loop/eval/maze6_6013.npz",
+      "xml": "assets/maze6/loop/eval/maze6_6013.xml"
+    },
+    {
+      "seed": 6014,
+      "start": [
+        5,
+        5
+      ],
+      "gateway": [
+        "h",
+        2,
+        2
+      ],
+      "dist_from_start": 8,
+      "npz": "assets/maze6/loop/eval/maze6_6014.npz",
+      "xml": "assets/maze6/loop/eval/maze6_6014.xml"
+    },
+    {
+      "seed": 6015,
+      "start": [
+        5,
+        0
+      ],
+      "gateway": [
+        "v",
+        2,
+        3
+      ],
+      "dist_from_start": 14,
+      "npz": "assets/maze6/loop/eval/maze6_6015.npz",
+      "xml": "assets/maze6/loop/eval/maze6_6015.xml"
+    },
+    {
+      "seed": 6016,
+      "start": [
+        5,
+        0
+      ],
+      "gateway": [
+        "h",
+        3,
+        2
+      ],
+      "dist_from_start": 4,
+      "npz": "assets/maze6/loop/eval/maze6_6016.npz",
+      "xml": "assets/maze6/loop/eval/maze6_6016.xml"
+    },
+    {
+      "seed": 6017,
+      "start": [
+        0,
+        0
+      ],
+      "gateway": [
+        "h",
+        3,
+        2
+      ],
+      "dist_from_start": 9,
+      "npz": "assets/maze6/loop/eval/maze6_6017.npz",
+      "xml": "assets/maze6/loop/eval/maze6_6017.xml"
+    },
+    {
+      "seed": 6018,
+      "start": [
+        5,
+        5
+      ],
+      "gateway": [
+        "h",
+        2,
+        2
+      ],
+      "dist_from_start": 10,
+      "npz": "assets/maze6/loop/eval/maze6_6018.npz",
+      "xml": "assets/maze6/loop/eval/maze6_6018.xml"
+    },
+    {
+      "seed": 6019,
+      "start": [
+        5,
+        0
+      ],
+      "gateway": [
+        "v",
+        2,
+        3
+      ],
+      "dist_from_start": 18,
+      "npz": "assets/maze6/loop/eval/maze6_6019.npz",
+      "xml": "assets/maze6/loop/eval/maze6_6019.xml"
+    }
+  ]
+}

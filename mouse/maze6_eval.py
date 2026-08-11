@@ -1,0 +1,195 @@
+"""
+mouse/maze6_eval.py
+===================
+M2-0（6x6 迷路の単走）の評価器。`mouse/corridor_eval.py` と同じ様式で、
+**方策を決定論的に走らせ、迷路ごとに複数試行して指標を集計する**。
+
+## 帯の分割（研究計画書 §9-7、`experiments/m2_design.md` の裁定 D）
+
+| 用途 | maze seed | 既定の試行数 |
+|---|---|---|
+| 学習 | 8000 以降（予約帯は `Maze6Env._next_maze_seed()` が決定的に読み飛ばす） | — |
+| 日常判断・チェックポイント選択 | **検証帯 7000-7019** | 1 |
+| gate 判定 | **評価帯 6000-6019** | 5 |
+
+## 集計の作法（M1 で確立。`experiments/exp_006_action_smoothness/card.md` §7）
+
+- **速度・符号反転・最小壁余裕は「壁接触なしでゴールした走行のみ」で集計する。**
+  失敗走行は壁に当たるまでの短い区間の値であり、成功走行と同じ土俵の量ではない
+- 完走できなかった方策の指標を、完走できた方策の指標と混ぜない
+- 結論は「x / N seed」の形で書き、条件間の比較は同じ seed 数で揃える
+
+使い方:
+    .venv/bin/python -m mouse.maze6_eval --model models/exp_010_m2_0.zip
+    .venv/bin/python -m mouse.maze6_eval --model ... --split validation
+"""
+import argparse
+import json
+import math
+from pathlib import Path
+
+import numpy as np
+
+from mouse.maze6_env import Maze6Env
+from mouse.params import RobotParams
+
+EVAL_MAZE_DIR = "assets/maze6/loop/eval"              # seed 6000-6019
+VALIDATION_MAZE_DIR = "assets/maze6/loop/validation"  # seed 7000-7019
+DEFAULT_N_TRIALS = 5
+
+
+def _trial_seed(base: int, maze_seed: int, trial_idx: int) -> int:
+    """(base, maze_seed, trial) から決定的に試行 seed を導く（corridor_eval と同じ規約）。"""
+    return (base * 1_000_003 + maze_seed * 10_007 + trial_idx) % (2 ** 31 - 1)
+
+
+def _run_one_trial(env, policy_fn, tseed: int) -> dict:
+    obs, info = env.reset(seed=tseed)
+    p = RobotParams()
+    prev_sign = np.sign(np.zeros(2))
+    flips = np.zeros(2, dtype=int)
+    acts, n_steps = [], 0
+    outcome = "timeout"
+    while True:
+        a = np.clip(np.asarray(policy_fn(obs), dtype=np.float64), -1.0, 1.0)
+        acts.append(a)
+        s = np.sign(a)
+        flips += (s * prev_sign < 0).astype(int)
+        prev_sign = s
+        obs, _r, term, trunc, info = env.step(a)
+        n_steps += 1
+        if term or trunc:
+            outcome = ("goal" if info.get("goal") else
+                       "collision" if info.get("collision") else "timeout")
+            break
+
+    sim_time = float(info["sim_time"])
+    acts = np.array(acts)
+    d = np.diff(acts, axis=0, prepend=np.zeros((1, 2)))
+    no_contact_goal = bool(outcome == "goal")
+    return dict(
+        outcome=outcome,
+        no_contact_goal=no_contact_goal,
+        n_steps=n_steps,
+        sim_time=sim_time,
+        # 到達までの所要時間（ゴールした走行のみ意味を持つ）
+        goal_time_s=sim_time if no_contact_goal else None,
+        # 1 区画あたり所要時間: 最短歩数で割る（迷路ごとの難度で正規化する）
+        sec_per_cell=(sim_time / info["d_start"]) if (no_contact_goal
+                                                      and info.get("d_start")) else None,
+        n_visited=int(info.get("n_visited", 0)),
+        odom_error_m=float(info.get("odom_error_m", float("nan"))),
+        action_diff_rms=float(np.sqrt((d ** 2).sum(axis=1).mean())),
+        sign_flip_rate_left=float(flips[0] / sim_time) if sim_time > 0 else 0.0,
+        sign_flip_rate_right=float(flips[1] / sim_time) if sim_time > 0 else 0.0,
+        # モータ電流の RMS（左右平均）。M1 で一次指標に採用（card.md §3-9）
+        i_rms=float(np.sqrt(((acts * p.voltage_limit / p.motor_R) ** 2).mean())),
+    )
+
+
+def _mean(xs):
+    xs = [x for x in xs if x is not None]
+    return float(np.mean(xs)) if xs else None
+
+
+def evaluate_maze6(policy_fn, maze_dir=EVAL_MAZE_DIR, n_trials=DEFAULT_N_TRIALS,
+                   seed=0, gamma=0.995, maze_mode="loop") -> dict:
+    """M2-0 の評価を実行する。
+
+    Args:
+        policy_fn: obs -> action。SB3 なら
+            `lambda o: model.predict(o, deterministic=True)[0]`。
+        maze_dir: 迷路 npz+xml のディレクトリ（既定は評価帯 6000-6019）。
+        n_trials: 迷路あたりの試行数（gate は 20 面 ×5 = 100 試行）。
+
+    Returns:
+        dict: goal_rate（gate 本体）ほかの指標を含む summary。
+        **速度・反転・電流はゴールした走行のみで集計する。**
+    """
+    maze_dir = Path(maze_dir)
+    npz_paths = sorted(maze_dir.glob("maze6_*.npz"))
+    if not npz_paths:
+        raise ValueError(f"迷路が見つかりません: {maze_dir}。"
+                         f"`python -m mouse.maze6_gen --split ... --seeds ...` で生成してください")
+    maze_seeds = [int(np.load(p)["seed"]) for p in npz_paths]
+
+    per_maze, all_trials = [], []
+    for ms in maze_seeds:
+        env = Maze6Env(maze_dir=maze_dir, maze_seeds=[ms], max_cache=2,
+                       gamma=gamma, mode="fixed", maze_mode=maze_mode)
+        trials = [_run_one_trial(env, policy_fn, _trial_seed(seed, ms, t))
+                  for t in range(n_trials)]
+        env.close() if hasattr(env, "close") else None
+        all_trials.extend(trials)
+        per_maze.append(dict(maze_seed=ms, n_trials=n_trials,
+                             n_goal=sum(1 for r in trials if r["no_contact_goal"]),
+                             n_collision=sum(1 for r in trials
+                                             if r["outcome"] == "collision"),
+                             n_timeout=sum(1 for r in trials
+                                           if r["outcome"] == "timeout"),
+                             trials=trials))
+
+    n = len(all_trials)
+    ok = [r for r in all_trials if r["no_contact_goal"]]      # **成功走行のみ**
+    return dict(
+        n_mazes=len(maze_seeds), n_trials_per_maze=n_trials, n_total_trials=n,
+        goal_rate=sum(1 for r in all_trials if r["no_contact_goal"]) / n,
+        collision_rate=sum(1 for r in all_trials if r["outcome"] == "collision") / n,
+        timeout_rate=sum(1 for r in all_trials if r["outcome"] == "timeout") / n,
+        n_success=len(ok),
+        # --- 以下はすべて成功走行のみの集計 ---
+        mean_goal_time_s=_mean([r["goal_time_s"] for r in ok]),
+        mean_sec_per_cell=_mean([r["sec_per_cell"] for r in ok]),
+        mean_n_visited=_mean([r["n_visited"] for r in ok]),
+        mean_odom_error_m=_mean([r["odom_error_m"] for r in ok]),
+        action_diff_rms_mean=_mean([r["action_diff_rms"] for r in ok]),
+        sign_flip_rate_mean=_mean([0.5 * (r["sign_flip_rate_left"]
+                                          + r["sign_flip_rate_right"]) for r in ok]),
+        i_rms_mean=_mean([r["i_rms"] for r in ok]),
+        failed_maze_seeds=[pm["maze_seed"] for pm in per_maze if pm["n_goal"] == 0],
+        maze_dir=str(maze_dir), seed=seed, gamma=gamma, maze_mode=maze_mode,
+        per_maze=per_maze,
+    )
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description="M2-0（6x6 迷路の単走）の評価")
+    ap.add_argument("--model", type=str, required=True)
+    ap.add_argument("--split", choices=["eval", "validation"], default="eval")
+    ap.add_argument("--n-trials", type=int, default=DEFAULT_N_TRIALS)
+    ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--out", type=str, default=None)
+    args = ap.parse_args(argv)
+
+    from stable_baselines3 import PPO
+    model = PPO.load(args.model, device="cpu")
+    maze_dir = EVAL_MAZE_DIR if args.split == "eval" else VALIDATION_MAZE_DIR
+    s = evaluate_maze6(lambda o: model.predict(o, deterministic=True)[0],
+                       maze_dir=maze_dir, n_trials=args.n_trials, seed=args.seed)
+
+    print(f"=== M2-0 評価: {args.model} / {args.split}帯 "
+          f"({s['n_mazes']} 面 ×{s['n_trials_per_maze']} 試行 = {s['n_total_trials']} 試行) ===")
+    print(f"  ゴール到達率     {s['goal_rate']:.2f}"
+          f"  （衝突 {s['collision_rate']:.2f} / 時間切れ {s['timeout_rate']:.2f}）")
+    print(f"  --- 以下はゴールした {s['n_success']} 走行のみの集計 ---")
+    for label, key, fmt in [("到達時間 [s]", "mean_goal_time_s", ".2f"),
+                            ("1 歩あたり [s]", "mean_sec_per_cell", ".3f"),
+                            ("訪問区画数", "mean_n_visited", ".1f"),
+                            ("オドメトリ誤差 [m]", "mean_odom_error_m", ".4f"),
+                            ("符号反転 [回/s]", "sign_flip_rate_mean", ".1f"),
+                            ("RMS 電流 [A]", "i_rms_mean", ".3f")]:
+        v = s[key]
+        print(f"  {label:<20}" + (format(v, fmt) if v is not None else "—"))
+    if s["failed_maze_seeds"]:
+        print(f"  全滅した迷路: {s['failed_maze_seeds']}")
+
+    if args.out:
+        Path(args.out).parent.mkdir(parents=True, exist_ok=True)
+        with open(args.out, "w", encoding="utf-8") as f:
+            json.dump(s, f, indent=2, ensure_ascii=False)
+        print(f"[saved] {args.out}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -91,7 +91,9 @@ class Maze6Env(gym.Env):
                  gamma: float = 0.995, mode: str = "fixed", base_seed: int = 8000,
                  maze_mode: str = "loop", visit_bonus: float = _VISIT_BONUS,
                  collision_penalty: float = _COLLISION_PENALTY,
-                 action_smooth_penalty: float = 0.0):
+                 action_smooth_penalty: float = 0.0,
+                 action_highpass_penalty: float = 0.0,
+                 action_highpass_alpha: float = 0.5):
         super().__init__()
         if mode not in ("fixed", "generate"):
             raise ValueError(f"mode は 'fixed' か 'generate': {mode!r}")
@@ -106,6 +108,19 @@ class Maze6Env(gym.Env):
         self.visit_bonus = float(visit_bonus)
         self.collision_penalty = float(collision_penalty)
         self.action_smooth_penalty = float(action_smooth_penalty)
+        # 案 3（M1 で検証済みの構成をそのまま M2 へ持ってくる）。行動の低域通過成分 ā を
+        # 環境側で持ち、毎ステップ −k·‖a_t − ā_t‖² を元報酬へ加える。
+        #     ā_t = α·ā_(t−1) + (1 − α)·a_t   （ā_(−1) = 0）
+        # M1 の実測: α=0.5・k=8.7e-3 で符号反転 11.6〜14.8 回/s（仕様書由来の必達線
+        # 15.4 を下回る）・gate 完走率 0.94〜0.97・1 区画 0.142 s（exp_005 比 20% 高速）・
+        # 銅損 9.33 W → 1.01 W。詳細は experiments/exp_006_action_smoothness/card.md。
+        # **M2 は分岐が増えて舵を切る場面が多いので、α の再評価は M2 の実測で行う**
+        # （2026-08-11 教授裁定。いま決めるより M2 の舵の帯域を測ってからの方が良い）。
+        self.action_highpass_penalty = float(action_highpass_penalty)
+        if not 0.0 <= float(action_highpass_alpha) < 1.0:
+            raise ValueError(
+                f"action_highpass_alpha は 0 以上 1 未満: {action_highpass_alpha!r}")
+        self.action_highpass_alpha = float(action_highpass_alpha)
         self._n_dist = len(self.params.sensors)
 
         # 距離 n + 差分 n + ジャイロ1 + 加速度2 + 車輪2 + 前回行動2 + ゴール相対2
@@ -125,6 +140,7 @@ class Maze6Env(gym.Env):
         self._dist_map = None          # 区画 → ゴールまでの歩数
         self._prev_potential = None
         self._prev_action = np.zeros(2, dtype=np.float32)
+        self._action_lowpass = np.zeros(2, dtype=np.float64)   # ā_(−1) = 0（案 3）
         self._prev_dist_raw = None
         self._visited = set()
         self._step_count = 0
@@ -280,6 +296,7 @@ class Maze6Env(gym.Env):
         self._visited = {start}
         self._step_count = 0
         self._prev_action = np.zeros(2, dtype=np.float32)
+        self._action_lowpass = np.zeros(2, dtype=np.float64)   # ā_(−1) = 0（案 3）
         self._prev_dist_raw = None
         self._prev_potential = self._potential(start)
 
@@ -310,6 +327,13 @@ class Maze6Env(gym.Env):
         if self.action_smooth_penalty != 0.0:
             d = action - self._prev_action
             reward -= self.action_smooth_penalty * float(np.dot(d, d))
+        # ā の更新は罰の有無によらず**無条件**（k=0 と k>0 で内部状態の進み方を揃える）。
+        # ā は観測には入らない。corridor_env と同じ規約。
+        alpha = self.action_highpass_alpha
+        self._action_lowpass = alpha * self._action_lowpass + (1.0 - alpha) * action
+        if self.action_highpass_penalty != 0.0:
+            hp = action - self._action_lowpass
+            reward -= self.action_highpass_penalty * float(np.dot(hp, hp))
         self._prev_potential = potential
 
         terminated = bool(goal_reached or physical_fail)
