@@ -76,6 +76,7 @@ if _REPO_ROOT not in sys.path:
 from competition import maze_gen_v2 as G  # noqa: E402
 from competition.explore_cost import (  # noqa: E402
     detour_ratio, n_delta, true_shortest)
+from competition.macro_routes import n_macro_routes  # noqa: E402
 
 W = H = 16
 GOAL_CELLS = ((7, 7), (7, 8), (8, 7), (8, 8))
@@ -91,13 +92,25 @@ EXTRA_OPEN_TARGET = 15
 # 既定値は再計算結果をそのまま置いている（生成のたびに参照迷路を読まないため）。
 R_BAND_EDGES = (1.058, 1.339, 1.625, 1.880, 3.267)
 
+# 候補経路の本数 K の定義に使うパラメータ。**受理条件に使うので凍結する**
+# （後から変えられる自由度を残すと、目標を満たすように調整できてしまう。教授指示）。
+# 大会実迷路 窓内 33 面で中央値 2.0・82% が 2 本以上になる設定。掃引で広い範囲が
+# 中央値 2 になることを確認済み（competition/macro_routes.py の docstring）。
+MACRO_DELTA, MACRO_THETA = 4, 3
+
+# K の階級ごとの目標面数（20 面）。大会実迷路 窓内 33 面の実測比率
+# K=1 19% / K=2 41% / K>=3 41% を 20 面に割り当てたもの。
+# **最大化ではなく分布一致**（R について教授が示した方針と同じ）。
+K_TARGETS = {1: 4, 2: 8, 3: 8}
+
 CONTEST_DIR = os.path.join(_REPO_ROOT, "competition", "reference_mazes", "contest")
 
 
 # ==========================================================================
 # 候補の生成（v2 と同一手順。窓の掛け先だけが違う）
 # ==========================================================================
-def generate_candidate(seed, extra_open_target=EXTRA_OPEN_TARGET, d_window=D_WINDOW):
+def generate_candidate(seed, extra_open_target=EXTRA_OPEN_TARGET, d_window=D_WINDOW,
+                       with_k=True):
     """1 つの seed から候補を 1 面作る。受理条件を満たさなければ None。
 
     v2 の `generate_maze` と**同じ手順**だが、
@@ -178,6 +191,10 @@ def generate_candidate(seed, extra_open_target=EXTRA_OPEN_TARGET, d_window=D_WIN
                 gateway=list(gateway), extra_opened=int(opened),
                 R=float(detour_ratio(v, h)),
                 R_compass=float(detour_ratio(v, h, tiebreak="compass")))
+    # K（候補経路の本数）は経路長ぶんの BFS が要る高価な量なので、
+    # 必要なときだけ計算する（選抜側が R の層に空きを見てから求める）
+    if with_k:
+        info["K"] = int(n_macro_routes(v, h, delta=MACRO_DELTA, theta=MACRO_THETA))
     return v, h, info
 
 
@@ -218,41 +235,95 @@ def contest_band_edges(contest_dir=CONTEST_DIR, d_window=D_WINDOW):
     return tuple(float(np.percentile(rs, q)) for q in (0, 25, 50, 75, 100)), len(rs)
 
 
+def k_class(k):
+    """候補経路の本数 K を 3 階級に丸める（n=20 では細かく切りすぎないため）。"""
+    return 1 if k <= 1 else (2 if k == 2 else 3)
+
+
 def select_stratified(seed_from, seed_to, n_per_band, edges=R_BAND_EDGES,
                       extra_open_target=EXTRA_OPEN_TARGET, d_window=D_WINDOW,
-                      progress_every=200):
+                      progress_every=200, k_targets=None):
     """seed を昇順に走査し、各層が n_per_band に達するまで採る（決定的）。
+
+    `k_targets` を与えると、**経路比 $R$ の層別に加えて、候補経路の本数 $K$ の
+    階級ごとの面数も目標に合わせる**（二重の層別）。
+
+      k_targets: {1: n1, 2: n2, 3: n3}（3 は「3 本以上」）。
+        大会実迷路 窓内 33 面の実測比率 K=1 19% / K=2 41% / K>=3 41% を
+        20 面に割り当てると {1: 4, 2: 8, 3: 8}。
+
+    **$K$ を最大化しないのが要点。**最大化は分布一致にならない（$R$ について
+    教授が指摘したのと同じ問題）。実物がそうなっているから合わせる。
+
+    2 巡する:
+      1 巡目 … $R$ の層と $K$ の階級の**両方**に空きがある候補だけを採る
+      2 巡目 … 1 巡目で埋まらなかった $R$ の層を、$K$ の制約を外して埋める
+    2 巡目が必要になった場合は、その旨を log に残す（黙って緩めない）。
 
     返り値: (選ばれた面のリスト, 候補全数の記録)
     **同じ seed 範囲・同じ規則なら常に同じ結果**になる（seed 昇順・先着順）。
     """
     n_bands = len(edges) - 1
     chosen = [[] for _ in range(n_bands)]
+    k_count = {1: 0, 2: 0, 3: 0}
     log = []
-    for seed in range(seed_from, seed_to + 1):
-        if progress_every and (seed - seed_from) % progress_every == 0:
-            done = sum(len(c) for c in chosen)
-            print(f"  [maze_gen_v3] seed={seed} 採用 {done}/{n_bands * n_per_band} "
-                  f"（層ごと {[len(c) for c in chosen]}）", flush=True)
-        if all(len(c) >= n_per_band for c in chosen):
-            break
-        out = generate_candidate(seed, extra_open_target, d_window)
-        if out is None:
-            log.append(dict(seed=int(seed), accepted=False, reason="規定/窓で不合格"))
-            continue
-        v, h, info = out
-        b = band_of(info["R"], edges)
-        rec = dict(seed=int(seed), accepted=False, R=info["R"], d_true=info["d_true"],
-                   band=b, reason=None)
-        if b is None:
-            rec["reason"] = "R が層の範囲外"
-        elif len(chosen[b]) >= n_per_band:
-            rec["reason"] = f"層 {b + 1} は充足済み"
-        else:
-            chosen[b].append((v, h, info))
-            rec["accepted"] = True
-            rec["reason"] = f"層 {b + 1} に採用"
-        log.append(rec)
+    cache = {}
+
+    def scan(pass_no, use_k):
+        for seed in range(seed_from, seed_to + 1):
+            if progress_every and (seed - seed_from) % progress_every == 0:
+                done = sum(len(c) for c in chosen)
+                print(f"  [maze_gen_v3] {pass_no} 巡目 seed={seed} 採用 "
+                      f"{done}/{n_bands * n_per_band}（層ごと {[len(c) for c in chosen]}"
+                      f"／K 階級 {dict(k_count)}）", flush=True)
+            if all(len(c) >= n_per_band for c in chosen):
+                return
+            if seed in cache:
+                out = cache[seed]
+            else:
+                out = generate_candidate(seed, extra_open_target, d_window,
+                                         with_k=False)
+                cache[seed] = out
+            if out is None:
+                if pass_no == 1:
+                    log.append(dict(seed=int(seed), accepted=False, reason="規定/窓で不合格"))
+                continue
+            v, h, info = out
+            b = band_of(info["R"], edges)
+            if any(x[2]["seed"] == seed for c in chosen for x in c):
+                continue                      # 1 巡目で採用済み
+            rec = dict(seed=int(seed), accepted=False, R=info["R"],
+                       d_true=info["d_true"], band=b, pass_no=pass_no, reason=None)
+            if b is None:
+                rec["reason"] = "R が層の範囲外"
+            elif len(chosen[b]) >= n_per_band:
+                rec["reason"] = f"層 {b + 1} は充足済み"
+            else:
+                # ここまで来た候補だけ K を計算する（高価なので遅延）
+                if "K" not in info:
+                    info["K"] = int(n_macro_routes(v, h, delta=MACRO_DELTA,
+                                                   theta=MACRO_THETA))
+                kc = k_class(info["K"])
+                rec["K"] = info["K"]
+                rec["k_class"] = kc
+                if use_k and k_targets and k_count[kc] >= k_targets.get(kc, 0):
+                    rec["reason"] = f"K 階級 {kc} は充足済み"
+                    if pass_no == 1 or rec["accepted"]:
+                        log.append(rec)
+                    continue
+                chosen[b].append((v, h, info))
+                k_count[kc] += 1
+                rec["accepted"] = True
+                rec["reason"] = (f"層 {b + 1} / K 階級 {kc} に採用"
+                                 + ("（2 巡目・K の制約を外して充足）" if pass_no == 2 else ""))
+            if pass_no == 1 or rec["accepted"]:
+                log.append(rec)
+
+    scan(1, use_k=bool(k_targets))
+    if k_targets and not all(len(c) >= n_per_band for c in chosen):
+        print("  [maze_gen_v3] 1 巡目で層が埋まらなかったため、K の制約を外して 2 巡目",
+              flush=True)
+        scan(2, use_k=False)
     return chosen, log
 
 
@@ -267,6 +338,8 @@ def main():
     ap.add_argument("--recompute-bands", action="store_true",
                     help="層の境界を参照迷路から測り直して使う（既定値の検算）")
     ap.add_argument("--dry-run", action="store_true", help="npz/XML を書かずに集計だけ")
+    ap.add_argument("--no-k-strat", action="store_true",
+                    help="候補経路の本数 K の層別を行わない（R だけで層別）")
     args = ap.parse_args()
 
     edges = R_BAND_EDGES
@@ -279,8 +352,12 @@ def main():
 
     print(f"[maze_gen_v3] seed {args.seed_from}〜{args.seed_to}、"
           f"層ごと {args.n_per_band} 面、除去目標 {args.extra_open}")
+    k_targets = None if args.no_k_strat else K_TARGETS
+    if k_targets:
+        print(f"  K の階級ごとの目標面数: {k_targets}"
+              f"（Δ={MACRO_DELTA}, θ={MACRO_THETA}）")
     chosen, log = select_stratified(args.seed_from, args.seed_to, args.n_per_band,
-                                    edges, args.extra_open)
+                                    edges, args.extra_open, k_targets=k_targets)
 
     n_bands = len(edges) - 1
     print(f"\n{'層':<4}{'R の範囲':>18}{'採用':>6}{'候補':>8}{'採用率':>9}")
@@ -303,6 +380,13 @@ def main():
           f"〜{np.percentile(R, 75):.3f}、範囲 {min(R):.3f}〜{max(R):.3f}）")
     print(f"  D_true : 中央値 {np.median(D):.0f}（範囲 {min(D)}〜{max(D)}）")
     print(f"  β      : 中央値 {np.median(B):.0f}（範囲 {min(B)}〜{max(B)}）")
+    K = [x[2]["K"] for x in flat]
+    print(f"  候補経路 K: 中央値 {np.median(K):.1f}（範囲 {min(K)}〜{max(K)}）"
+          f"／K>=2 {np.mean(np.array(K) >= 2) * 100:.0f}%"
+          f"／K>=3 {np.mean(np.array(K) >= 3) * 100:.0f}%"
+          f"／階級ごと {{1: {sum(1 for k in K if k <= 1)}, 2: {sum(1 for k in K if k == 2)}, "
+          f"3: {sum(1 for k in K if k >= 3)}}}")
+    print("  （目標: 大会実迷路 窓内 33 面 → 中央値 2.0／K>=2 82%／K>=3 39%）")
 
     if args.dry_run:
         print("\n（--dry-run のため書き出しは行いません）")
@@ -334,6 +418,8 @@ def main():
                    "NTF 2-4 (every post has >=1 wall except goal center; outer walls complete)"],
             seed_from=args.seed_from, seed_to=args.seed_to,
             n_per_band=args.n_per_band, r_band_edges=list(edges),
+            macro_delta=MACRO_DELTA, macro_theta=MACRO_THETA,
+            k_targets=k_targets,
             d_window=list(D_WINDOW), d_window_applied_to="final",
             extra_open_target=args.extra_open,
             mazes=infos, candidate_log=log), f, indent=2, ensure_ascii=False)
