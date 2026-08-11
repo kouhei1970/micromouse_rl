@@ -528,6 +528,13 @@ class CompetitionEvaluator:
         maze_info = {
             "maze_id": maze_id, "seed": seed, "xml_path": str(xml_path),
             "width": width, "height": height,
+            # 2026-08-11 追加: 持ち時間を方策へ渡す。**挙動は変わらない**（既存の
+            # 方策はこのキーを読まない）。予算を見て探索を打ち切る方策（E2、
+            # competition/baseline_classical_e2.py）が、評価器の設定と
+            # 食い違わない値を得られるようにするため。方策側に定数を
+            # ハードコードさせない（研究計画書 §9）。
+            "time_budget": float(self.time_budget),
+            "max_runs": int(self.max_runs),
         }
         policy.on_maze_start(maze_info)
 
