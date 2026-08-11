@@ -16,6 +16,15 @@
 - [note_004: 物理モデルの検証 — 監査から全 green まで](note_004_model_verification.md)
 - [note_005: M0 総括 — 測る仕組みを先に作る](note_005_m0_summary.md)
 - [note_006: 探索戦略 — 足立法の実際と「最短経路の確定」](note_006_exploration_strategy.md)
+- [note_007: 隠れていたものは、条件を変えると見える — 指標と動作点の教訓](note_007_hidden_by_metrics_and_operating_point.md)
+- [note_008: 走っていない検査と、合っている指標 — 検証の穴の二つの形](note_008_unrun_checks_and_matching_metrics.md)
+- [note_009: 決定は引き継がれるが、根拠は引き継がれない](note_009_decisions_outlive_their_grounds.md)
+- [note_010: ある軸で多様であることは、効く軸で多様であることを意味しない](note_010_diverse_on_one_axis.md)
+- [note_011: 正準な代表を 1 つ選んで描くと、同値な別の解が「誤り」に見える](note_011_canonical_representative_hides_equivalents.md)
+- [note_012: 測れていることと、意味が分かっていることは別](note_012_measured_but_not_understood.md)
+- [note_013: 対象の制約が、指標を退化させることがある](note_013_constraints_can_degenerate_metrics.md)
+- [note_014: 同じ役割を 2 セッションが同時に担うと、指示の出所が失われる](note_014_one_role_two_sessions.md)
+- [note_015: 同じ名前の指標が、実装の副次的な規則によって別の量になる](note_015_same_name_different_quantity.md)
 
 ## 補助資料
 
