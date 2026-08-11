@@ -1,0 +1,9 @@
+{
+ "within_cell_step_moving": -0.0049933,
+ "within_cell_step_stopped": -0.0010009448200000001,
+ "per_step_forward_unvisited": 0.005625366666666664,
+ "per_step_forward_visited": 0.004558699999999999,
+ "m1_equivalent": 0.0045587,
+ "support_prob_if_true_0.20_one_seed": 0.1957922145404496,
+ "support_prob_if_true_0.20_best_of_3": 0.4798784843165559
+}
