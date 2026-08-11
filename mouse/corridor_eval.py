@@ -65,6 +65,10 @@ def _run_one_trial(env: CorridorEnv, policy_fn, trial_seed: int,
       n_turns, hf_ratio, i_rms, i_dc, i_ac, min_wall_clearance_m
     追加の計算は評価ループ内で既に手に入る量だけを使うので、実測で走行あたり
     +3〜5% の時間しかかからない（最小壁余裕の幾何計算が主）。
+
+    2026-08-12 追加（新キーのみ）: total_yaw_rad（|dyaw| の単純積算。リセットなし）。
+    **n_turns は教授裁定 2026-08-11-R4 により方式間比較・対外報告に使用禁止**
+    （§実装コメント参照）。回転量が要る場合は total_yaw_rad を使うこと。
     """
     obs, info = env.reset(seed=trial_seed)
     prev_action = None
@@ -85,8 +89,22 @@ def _run_one_trial(env: CorridorEnv, policy_fn, trial_seed: int,
     acts, currents, omegas, poses, times = [], [], [], [], []
     # 旋回回数: ヨー角の累積変化が 1 区画ぶんの旋回（±45°）を超えるたびに 1 とする。
     # 旋回は時間の主要因（L0-a の回帰で 0.85 s/旋回 対 0.71 s/歩）なのに未記録だった
+    #
+    # ⚠️【教授裁定 2026-08-11-R4】この n_turns（±45° リセットあり定義）は
+    # **方式間比較・対外報告に使用禁止**。正本は学生A の区画列定義（経路の折れ数。
+    # 180° 転回 = 2）。方式内の診断用に残すのは可だが、その場合も n_turns の名を
+    # 使わず別名にするか注記を付けること。
+    # 使用禁止の理由: 直下のリセット規則（`yaw_acc * dyaw < 0` で積算破棄）が、
+    # 超信地旋回で累積ヨー角の 42% を捨てており、同一経路を走る 2 方式に
+    # 1.8 倍の差を報告する（実回転量の差は 1.17 倍）。根拠データ:
+    # `research_notes/data/nturns_defs_{l0a,l0c}.json`・`nturns_reset_loss.json`。
+    # **回転量そのものが必要な場合は total_yaw_rad（リセットなしの総ヨー角）を
+    # 別指標として使うこと。**
+    # （2026-08-12 学生B: 本コメント追加時点では既存キー名・計算式は変更していない。
+    # 改名の是非は参照箇所の洗い出し結果を報告した上で教授の判断を待つ）
     _, _, yaw_prev = sim.privileged_pose()
     yaw_acc, n_turns = 0.0, 0
+    total_yaw_rad = 0.0  # 2026-08-12 追加: |dyaw| の単純積算（リセットなしの総ヨー角）
 
     while True:
         action = np.asarray(policy_fn(obs), dtype=np.float64).reshape(-1)
@@ -113,6 +131,7 @@ def _run_one_trial(env: CorridorEnv, policy_fn, trial_seed: int,
         x, y, yaw = sim.privileged_pose()
         dyaw = math.atan2(math.sin(yaw - yaw_prev), math.cos(yaw - yaw_prev))
         yaw_prev = yaw
+        total_yaw_rad += abs(dyaw)  # 2026-08-12 追加: リセットしない総ヨー角（比較・対外報告用）
         if yaw_acc * dyaw < 0.0:        # 向きが変わったら積算をやり直す
             yaw_acc = 0.0
         yaw_acc += dyaw
@@ -173,7 +192,10 @@ def _run_one_trial(env: CorridorEnv, policy_fn, trial_seed: int,
         lateral_max_m=lat_max,
         lateral_rms_m=math.sqrt(lat_sq_sum / max(lat_count, 1)),
         # --- 以下 2026-08-11 追加（新キーのみ）---------------------------
+        # n_turns は方式間比較・対外報告に使用禁止（教授裁定 2026-08-11-R4。上記コメント参照）
         n_turns=int(n_turns),
+        # 2026-08-12 追加: リセットなしの総ヨー角 [rad]。回転量が要る場合はこちらを使う
+        total_yaw_rad=float(total_yaw_rad),
         hf_ratio=float(hf_energy_ratio(acts)) if acts else None,
         i_rms=float(np.sqrt((cur_arr ** 2).mean())) if len(cur_arr) else None,
         i_dc=float(np.abs(cur_arr.mean(axis=0)).mean()) if len(cur_arr) else None,
