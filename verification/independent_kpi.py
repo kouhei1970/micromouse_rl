@@ -92,6 +92,14 @@ class MazeResult:
     # (e)
     eff_A: float | None = None       # 初回最短走行タイム ÷ 全ゴール走行の最速
     eff_B: float | None = None       # 初回最短走行タイム ÷ 最短走行群の最速
+    # (e) 改訂版（2026-08-11 §2 改訂 b2280dd）:
+    #   分母は「その迷路での最良タイム」＝ 全ゴール走行の最速（＝解釈 A）。
+    #   退化ガード: 探索後に成立した走行が 1 回だけで、かつ最良タイムがその走行なら
+    #   比は定義上必ず 1.00 になり測定にならないので **未定義**とする。
+    #   ただし その 1 回が探索走行より遅ければ最良タイムは探索走行側になり (e)>1 と
+    #   なって情報を持つので、走行回数だけで機械的に落としてはならない。
+    eff_v2: float | None = None
+    eff_v2_degenerate: bool = False   # 退化により未定義に落とした面か
     # 追加量
     explore_over_fast: float | None = None  # 探索走行タイム ÷ 最短走行タイム（連続量）
     # (c) の分解: 時間短縮が「経路が短くなった」ためか「速く走った」ためか
@@ -162,6 +170,15 @@ def analyze_maze(path: Path) -> MazeResult:
         m.eff_A = m.first_fast_time / m.best_time_all       # 最良＝全ゴール走行の最速
         m.eff_B = m.first_fast_time / m.fast_time           # 最良＝最短走行群の最速
 
+        # ---- (e) 改訂版（§2 b2280dd）
+        # 「最良タイムがその走行である」＝ 初回最短走行が全ゴール走行の最速と一致する
+        best_is_that_run = abs(m.first_fast_time - m.best_time_all) <= EPS
+        if len(fast_runs) == 1 and best_is_that_run:
+            m.eff_v2 = None
+            m.eff_v2_degenerate = True
+        else:
+            m.eff_v2 = m.eff_A
+
         # ---- 追加量: 探索走行タイム ÷ 最短走行タイム
         m.explore_over_fast = m.explore_time / m.fast_time
 
@@ -201,6 +218,18 @@ def aggregate(mazes: list[MazeResult]) -> dict[str, Any]:
         "d_best_time": describe([m.best_time_all for m in a_hits if m.best_time_all is not None]),
         "d_explore_time": describe([m.explore_time for m in a_hits if m.explore_time is not None]),
         "d_fast_time": describe([m.fast_time for m in b_hits if m.fast_time is not None]),
+        # --- (e) 改訂版（§2 b2280dd）: 分母＝全ゴール走行の最速、退化面は未定義 ---
+        "e_v2": describe([m.eff_v2 for m in mazes if m.eff_v2 is not None]),
+        "e_v2_undefined_no_fast_run": n - len(b_hits),                       # (b) 不成立で未定義
+        "e_v2_undefined_degenerate": sum(1 for m in mazes if m.eff_v2_degenerate),  # 退化で未定義
+        "e_v2_defined_count": sum(1 for m in mazes if m.eff_v2 is not None),
+        # 退化ガードの内訳: 最短走行 1 回でも「探索走行の方が速い」面は情報を持つので残す
+        "e_v2_single_fast_but_informative": sum(
+            1 for m in b_hits if m.n_fast_runs == 1 and not m.eff_v2_degenerate),
+        # --- (c) 連続量の併記（§2 b2280dd で必須化）: 短縮率 = 1 − t_最短/t_探索 ---
+        #     面ごとに比を取ってから集計している（中央値どうしの比とは一致しない）
+        "c_shrink_rate": describe([m.improvement_ratio for m in b_hits
+                                   if m.improvement_ratio is not None]),
         # (e)
         "e_first_fast_efficiency_A": describe([m.eff_A for m in b_hits if m.eff_A is not None]),
         "e_first_fast_efficiency_B": describe([m.eff_B for m in b_hits if m.eff_B is not None]),
@@ -442,6 +471,24 @@ def main() -> None:
     for r in bad:
         print(f"  [{r['status']}] {r['condition']:<48} {r['field']:>20}  "
               f"mine={r['mine']}  evaluator={r['evaluator']}")
+
+    print("\n=== 改訂 §2（b2280dd）に基づく新定義 ===")
+    for key, c in conditions.items():
+        e, sr = c["e_v2"], c["c_shrink_rate"]
+        print(f"  {key}  (n={c['n_mazes']})")
+        if e["n"]:
+            print(f"    (e) 改訂版: 中央値 {e['median']:.4f}  [Q1 {e['q1']:.4f}, Q3 {e['q3']:.4f}]  "
+                  f"max {e['max']:.4f}  定義された面 {c['e_v2_defined_count']}/{c['n_mazes']}")
+        else:
+            print(f"    (e) 改訂版: 定義される面が 0（全面が未定義）")
+        print(f"        未定義の内訳: 最短走行なし {c['e_v2_undefined_no_fast_run']} 面 / "
+              f"退化（1 回のみ＆最良がその走行） {c['e_v2_undefined_degenerate']} 面 "
+              f"／ 1 回のみだが情報を持つ面 {c['e_v2_single_fast_but_informative']} 面")
+        if sr["n"]:
+            print(f"    (c) 短縮率 1−t_最短/t_探索: 中央値 {sr['median']*100:6.2f}%  "
+                  f"[Q1 {sr['q1']*100:.2f}%, Q3 {sr['q3']*100:.2f}%]  "
+                  f"min {sr['min']*100:.2f}%  max {sr['max']*100:.2f}%  n={sr['n']}"
+                  f"   ／二値化率 {c['c_effective_rate_over_all']*100:.0f}%")
 
     print("\n--- (c) の分解: 時間短縮は「経路が短くなった」からか「速く走った」からか ---")
     print("      t_exp/t_fast = (L_exp/L_fast) × (v_fast/v_exp)")
