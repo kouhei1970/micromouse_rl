@@ -46,9 +46,12 @@ RUNS = [
     ("k=1e-3",  1e-3, 1, "models/exp_006c_k1e-3_seed1.zip"),
     ("k=1e-3",  1e-3, 2, "models/exp_006c_k1e-3_seed2.zip"),
     ("k=1e-2",  1e-2, 0, "models/exp_006_smooth_k1e-2.zip"),
-    # 案 3（highpass 版）。モデルが出来次第ここへ足す
+    # 案 3（highpass 版、α=0.5）
     ("案3 k=2e-3", None, 1, "models/exp_006d_hp_k2e-3_seed1.zip"),
     ("案3 k=2e-3", None, 2, "models/exp_006d_hp_k2e-3_seed2.zip"),
+    ("案3 k=2e-3", None, 3, "models/exp_006d_hp_k2e-3_seed3.zip"),
+    ("案3 k=5e-3", None, 1, "models/exp_006d_hp_k5e-3_seed1.zip"),
+    ("案3 k=5e-3", None, 2, "models/exp_006d_hp_k5e-3_seed2.zip"),
 ]
 
 # 3 基準（exp_006 と同じ）
