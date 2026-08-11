@@ -30,6 +30,7 @@ from pathlib import Path
 
 import numpy as np
 
+from mouse.clearance import HF_WORST, ClearanceMeter, hf_energy_ratio
 from mouse.maze6_env import Maze6Env
 from mouse.params import RobotParams
 
@@ -48,15 +49,25 @@ def _run_one_trial(env, policy_fn, tseed: int) -> dict:
     p = RobotParams()
     prev_sign = np.sign(np.zeros(2))
     flips = np.zeros(2, dtype=int)
-    acts, n_steps = [], 0
+    acts, cur, n_steps = [], [], 0
     outcome = "timeout"
+    # 最小壁余裕（安全余裕そのもの。横偏差では測れない。mouse/clearance.py 参照）
+    meter = ClearanceMeter(env.sim)
+    s_ = env.sim
+    wheel_adr = (s_._left_wheel_qvel_adr, s_._right_wheel_qvel_adr)
     while True:
         a = np.clip(np.asarray(policy_fn(obs), dtype=np.float64), -1.0, 1.0)
         acts.append(a)
-        s = np.sign(a)
-        flips += (s * prev_sign < 0).astype(int)
-        prev_sign = s
+        sg = np.sign(a)
+        flips += (sg * prev_sign < 0).astype(int)
+        prev_sign = sg
+        v = a * p.voltage_limit
+        w0 = np.array([s_.data.qvel[wheel_adr[0]], s_.data.qvel[wheel_adr[1]]])
         obs, _r, term, trunc, info = env.step(a)
+        w1 = np.array([s_.data.qvel[wheel_adr[0]], s_.data.qvel[wheel_adr[1]]])
+        # モータ電流 I = (V − K_e·N·ω_w)/R。ω は制御周期の前後平均で代表
+        cur.append((v - p.motor_Ke * p.gear_ratio * 0.5 * (w0 + w1)) / p.motor_R)
+        meter.update()
         n_steps += 1
         if term or trunc:
             outcome = ("goal" if info.get("goal") else
@@ -65,6 +76,7 @@ def _run_one_trial(env, policy_fn, tseed: int) -> dict:
 
     sim_time = float(info["sim_time"])
     acts = np.array(acts)
+    cur = np.array(cur)
     d = np.diff(acts, axis=0, prepend=np.zeros((1, 2)))
     no_contact_goal = bool(outcome == "goal")
     return dict(
@@ -82,8 +94,14 @@ def _run_one_trial(env, policy_fn, tseed: int) -> dict:
         action_diff_rms=float(np.sqrt((d ** 2).sum(axis=1).mean())),
         sign_flip_rate_left=float(flips[0] / sim_time) if sim_time > 0 else 0.0,
         sign_flip_rate_right=float(flips[1] / sim_time) if sim_time > 0 else 0.0,
+        # --- 駆動系の指標（M1 では後から足して測り直しになったので最初から入れる）---
         # モータ電流の RMS（左右平均）。M1 で一次指標に採用（card.md §3-9）
-        i_rms=float(np.sqrt(((acts * p.voltage_limit / p.motor_R) ** 2).mean())),
+        i_rms=float(np.sqrt((cur ** 2).mean())),
+        i_dc=float(np.abs(cur.mean(axis=0)).mean()),
+        # 車輪が追従できない帯域の指令成分。理論最悪値 HF_WORST=0.762 で正規化して読む
+        hf_ratio=float(hf_energy_ratio(acts)),
+        # 機体外形と最も近い壁との距離の最小値 [m]。0 に近いほど危ない
+        min_wall_clearance_m=float(meter.worst),
     )
 
 
@@ -146,6 +164,12 @@ def evaluate_maze6(policy_fn, maze_dir=EVAL_MAZE_DIR, n_trials=DEFAULT_N_TRIALS,
         sign_flip_rate_mean=_mean([0.5 * (r["sign_flip_rate_left"]
                                           + r["sign_flip_rate_right"]) for r in ok]),
         i_rms_mean=_mean([r["i_rms"] for r in ok]),
+        i_dc_mean=_mean([r["i_dc"] for r in ok]),
+        hf_ratio_mean=_mean([r["hf_ratio"] for r in ok]),
+        hf_ratio_worst_norm=(_mean([r["hf_ratio"] for r in ok]) / HF_WORST) if ok else None,
+        min_wall_clearance_min_m=(min(r["min_wall_clearance_m"] for r in ok)
+                                  if ok else None),
+        min_wall_clearance_mean_m=_mean([r["min_wall_clearance_m"] for r in ok]),
         failed_maze_seeds=[pm["maze_seed"] for pm in per_maze if pm["n_goal"] == 0],
         maze_dir=str(maze_dir), seed=seed, gamma=gamma, maze_mode=maze_mode,
         per_maze=per_maze,
@@ -177,9 +201,17 @@ def main(argv=None):
                             ("訪問区画数", "mean_n_visited", ".1f"),
                             ("オドメトリ誤差 [m]", "mean_odom_error_m", ".4f"),
                             ("符号反転 [回/s]", "sign_flip_rate_mean", ".1f"),
-                            ("RMS 電流 [A]", "i_rms_mean", ".3f")]:
+                            ("HF比", "hf_ratio_mean", ".3f"),
+                            ("　（理論最悪 0.762 比）", "hf_ratio_worst_norm", ".1%"),
+                            ("RMS 電流 [A]", "i_rms_mean", ".3f"),
+                            ("直流成分 [A]", "i_dc_mean", ".3f"),
+                            ("最小壁余裕 最小 [m]", "min_wall_clearance_min_m", ".4f"),
+                            ("　　　　　 平均 [m]", "min_wall_clearance_mean_m", ".4f")]:
         v = s[key]
         print(f"  {label:<20}" + (format(v, fmt) if v is not None else "—"))
+    i_cont = 1.16e-3 / RobotParams().motor_Kt
+    if s["i_rms_mean"]:
+        print(f"  （連続定格 {i_cont:.3f} A の {s['i_rms_mean']/i_cont:.2f} 倍）")
     if s["failed_maze_seeds"]:
         print(f"  全滅した迷路: {s['failed_maze_seeds']}")
 
