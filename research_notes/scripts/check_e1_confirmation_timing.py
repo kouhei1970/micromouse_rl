@@ -69,7 +69,12 @@ class ConfirmProbe:
         if self._sim is not None:
             t = self._sim.sim_time
             mode = getattr(self._inner, "target_mode", None)
-            if self._i % CHECK_EVERY == 0 or self.t_confirm is None:
+            # 2026-08-11 修正: 以前は `or self.t_confirm is None` を付けていたため、
+            # 確定するまで**毎制御周期**（100 Hz）確定判定を呼んでいた。
+            # is_shortest_confirmed は BFS を 2 回回すので、確定が遅い面ほど
+            # 二乗的に重くなり、腕1 の測定が実用にならなかった（20 面で 7 時間超）。
+            # 1 s 刻みで十分（確定時刻の分解能 1 s、持ち時間 420 s に対し 0.24%）。
+            if self._i % CHECK_EVERY == 0:
                 try:
                     conf = bool(self._inner._shortest_confirmed())
                 except Exception:      # 地図が未初期化の期間など
