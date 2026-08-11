@@ -12,6 +12,7 @@ tests/test_explore_e1.py
 """
 import glob
 import os
+import re
 import sys
 from collections import deque
 
@@ -103,9 +104,21 @@ def simulate_e1(vt, ht, max_steps=20000):
     return d_opt, len(visited), is_shortest_confirmed(vk, hk, W, H, START, GOALS)
 
 
+def eval_mazes():
+    """評価帯の npz を **seed 昇順**で返す。
+
+    ⚠️ **面の名前をハードコードしないこと（2026-08-12 是正）。**
+    帯を v4 へ入れ替えたとき、`maze_1000.npz` / `maze_1003.npz` を直接開いていた
+    テスト 2・3 が `FileNotFoundError` で落ちた。**採用 seed は帯ごとに変わる**ので、
+    「何番目の面か」で選ぶ（どの帯でも成立し、かつ決定的）。
+    """
+    fs = glob.glob(os.path.join(REPO_ROOT, "competition/mazes/eval/maze_*.npz"))
+    return sorted(fs, key=lambda p: int(re.search(r"\d+", os.path.basename(p)).group()))
+
+
 def test1_confirmation_theory():
     print("\n=== テスト1: 確定判定の理論（評価迷路 20 面で反証形式に検証） ===")
-    files = sorted(glob.glob(os.path.join(REPO_ROOT, "competition/mazes/eval/maze_*.npz")))
+    files = eval_mazes()
     ok_all = True
     rows = []
     for f in files:
@@ -127,7 +140,9 @@ def test1_confirmation_theory():
 
 def test2_pessimistic_return():
     print("\n=== テスト2: 帰路は悲観的（未知壁を通らない） ===")
-    z = np.load(os.path.join(REPO_ROOT, "competition/mazes/eval/maze_1000.npz"))
+    f = eval_mazes()[0]          # 帯の 1 番目（名前ではなく順番で選ぶ）
+    z = np.load(f)
+    print(f"    使用: {os.path.basename(f)}")
     vt, ht = z["v_walls"], z["h_walls"]
     vk, hk = blank_known()
     # 往路をシミュレートして地図を作る
@@ -162,7 +177,9 @@ def test2_pessimistic_return():
 
 def test3_confirmed_on_full_map():
     print("\n=== テスト3: 地図が完全に既知なら即座に確定 ===")
-    z = np.load(os.path.join(REPO_ROOT, "competition/mazes/eval/maze_1003.npz"))
+    f = eval_mazes()[3]          # 帯の 4 番目（名前ではなく順番で選ぶ）
+    z = np.load(f)
+    print(f"    使用: {os.path.basename(f)}")
     vt, ht = z["v_walls"], z["h_walls"]
     conf = is_shortest_confirmed(vt, ht, W, H, START, GOALS)
     rel = relevant_unknown_walls(vt, ht, W, H, START, GOALS)

@@ -11,9 +11,23 @@ tests/test_maze_gen_v3.py
   2. **選抜の決定性**: 同じ seed 範囲・同じ規則から**常に同じ 20 面**が出る
   3. 凍結物との一致: 保存済み npz が再生成と完全一致
   4. 受け入れ条件（規定 6 項目 + D の窓）が保存済み全 40 面で成立
-  5. seed 帯の分離: eval_v3 は 1000-1999、validation_v3 は 4000-4999 から採られ、
-     迷路が重複しない
+  5. **候補プールの分離**: eval と validation の seed 範囲が重ならず、迷路も重複しない
   6. manifest に候補全数の採否が残っている（なぜこの面が選ばれたかを追える）
+  7. **K の階級ごとの面数**が manifest の目標どおり（v4 で足した軸）
+
+**⚠️ 数値をこのファイルに書かないこと（2026-08-12 是正）**
+
+当初は seed 範囲を `(1000, 1999)` / `(4000, 4999)` とハードコードしていたが、
+**帯を v4 へ入れ替えた 2026-08-12 に 4 件 FAIL した。**現行の候補プールは
+eval [1000, 20999] / validation [21000, 40999] で、**採用 seed は連番ではない**
+（eval 1018〜14037、validation 21003〜25842）。
+
+**したがって受理条件・seed 範囲・K の目標はすべて `manifest.json` から読む。**
+テスト側に値を持つと、帯を入れ替えるたびにテストが正本と食い違う。
+
+**⚠️ テスト2 は遅い（合計 7 分程度）。**候補プール全体（13038 + 4843 seed）を
+走査し直すため。**これは §9-2 が要求する「棄却再試行を含めて決定的」の保証**なので
+短縮しない。急ぐときは `SKIP_SLOW=1` で飛ばせるが、**飛ばしたことは合格数に現れる**。
 
 実行: .venv/bin/python tests/test_maze_gen_v3.py
 """
@@ -32,15 +46,28 @@ from competition.audit_maze_rules import (  # noqa: E402
     bfs_goal_reachable, center_post_attached_walls, goal_gateway_count,
     goal_interior_walls, independent_cycles, isolated_posts, outer_walls_complete,
     start_cell_walls, wall_follow_reaches_goal)
-from competition.explore_cost import detour_ratio, true_shortest  # noqa: E402
+from competition.explore_cost import GOAL_CELLS, detour_ratio, true_shortest  # noqa: E402
 from competition.maze_gen_v2 import all_cells_reachable  # noqa: E402
 from competition.maze_gen_v3 import (  # noqa: E402
     D_WINDOW, R_BAND_EDGES, band_of, generate_candidate, select_stratified)
 
-# v3 帯は 2026-08-11 に凍結され、現行帯（eval / validation）になった。
-BANDS = [("competition/mazes/eval", "eval(v3)", (1000, 1999)),
-         ("competition/mazes/validation", "validation(v3)", (4000, 4999))]
+# 現行帯は v4（2026-08-12 凍結。教授裁定 R3）。
+# **seed 範囲はここに書かない** — manifest から読む（上の注意書きを参照）。
+BANDS = [("competition/mazes/eval", "eval(v4)"),
+         ("competition/mazes/validation", "validation(v4)")]
+SKIP_SLOW = os.environ.get("SKIP_SLOW", "") not in ("", "0")
 RESULTS = []
+
+
+def manifest(d):
+    """帯の受理条件を manifest から読む（テスト側に数値を持たない）。"""
+    return json.load(open(os.path.join(REPO_ROOT, d, "manifest.json"), encoding="utf-8"))
+
+
+def k_targets_of(man):
+    """manifest の k_targets は JSON なので鍵が文字列。int へ直す。"""
+    kt = man.get("k_targets")
+    return {int(k): int(v) for k, v in kt.items()} if kt else None
 
 
 def record(name, expected, actual, ok, note=""):
@@ -72,31 +99,39 @@ def test1_candidate_determinism():
 
 def test2_selection_determinism():
     print("\n=== テスト2: **選抜の決定性**（同じ seed 範囲・規則 → 同じ 20 面） ===")
+    if SKIP_SLOW:
+        record("選抜の決定性", "実行", "SKIP_SLOW=1 で飛ばした", False,
+               "← §9-2 の保証が未確認のまま")
+        return False
     ok_all = True
-    for d, band, (lo, hi) in BANDS:
+    for d, band in BANDS:
         mf = os.path.join(REPO_ROOT, d, "manifest.json")
         if not os.path.exists(mf):
             record(f"{band} の manifest", "存在", "なし", False)
             ok_all = False
             continue
-        man = json.load(open(mf, encoding="utf-8"))
+        man = manifest(d)
+        # **k_targets を渡すのを忘れないこと。**渡さないと K の階級を無視した
+        # 別の 20 面が返り、manifest と食い違う（2026-08-12 に実際に FAIL した）。
+        print(f"  {band}: seed {man['seed_from']}〜{man['seed_to']} を走査中"
+              f"（数分かかる）…", flush=True)
         chosen, _log = select_stratified(man["seed_from"], man["seed_to"],
                                           man["n_per_band"], tuple(man["r_band_edges"]),
                                           man["extra_open_target"], tuple(man["d_window"]),
-                                          progress_every=0)
+                                          progress_every=0, k_targets=k_targets_of(man))
         got = sorted(x[2]["seed"] for b in chosen for x in b)
         want = sorted(m["seed"] for m in man["mazes"])
         ok = got == want
         ok_all = ok_all and ok
         record(f"{band} の選抜が manifest と一致", f"{len(want)} 面", f"{len(got)} 面", ok,
-               "" if ok else f"差: {set(got) ^ set(want)}")
+               "" if ok else f"差: {sorted(set(got) ^ set(want))}")
     return ok_all
 
 
 def test3_frozen_npz_matches():
     print("\n=== テスト3: 凍結 npz と再生成の完全一致 ===")
     ok_all = True
-    for d, band, _ in BANDS:
+    for d, band in BANDS:
         files = npz_files(d)
         n_ok = 0
         for f in files:
@@ -117,7 +152,7 @@ def test4_acceptance_conditions():
     checks = {k: 0 for k in ("gateway1", "wallfollow", "connected", "start3", "goal_inner0",
                              "center_post0", "isolated0", "outer", "cycles>0", "d_window")}
     total = 0
-    for d, _band, _ in BANDS:
+    for d, _band in BANDS:
         for f in npz_files(d):
             z = np.load(f)
             v, h = z["v_walls"], z["h_walls"]
@@ -156,10 +191,13 @@ def test4_acceptance_conditions():
 
 
 def test5_band_separation_and_strata():
-    print("\n=== テスト5: seed 帯の分離と、層が埋まっていること ===")
-    walls = {}
+    print("\n=== テスト5: 候補プールの分離と、層が埋まっていること ===")
+    walls, pools = {}, {}
     ok_all = True
-    for d, band, (lo, hi) in BANDS:
+    for d, band in BANDS:
+        man = manifest(d)
+        lo, hi = man["seed_from"], man["seed_to"]
+        pools[band] = (lo, hi)
         seeds, per_band = [], {}
         for f in npz_files(d):
             z = np.load(f)
@@ -168,23 +206,56 @@ def test5_band_separation_and_strata():
             walls.setdefault(band, set()).add(z["v_walls"].tobytes() + z["h_walls"].tobytes())
             b = band_of(detour_ratio(z["v_walls"], z["h_walls"]), R_BAND_EDGES)
             per_band[b] = per_band.get(b, 0) + 1
+        # 採用 seed は連番ではない。**候補プールの中に収まっていること**だけを見る。
         in_range = all(lo <= s <= hi for s in seeds)
-        record(f"{band} の seed が {lo}-{hi} の範囲内", True, in_range, in_range,
-               f"実際の範囲 {min(seeds)}-{max(seeds)}")
+        record(f"{band} の採用 seed が候補プール {lo}-{hi} の内側", True, in_range, in_range,
+               f"実際の範囲 {min(seeds)}-{max(seeds)}（連番ではない）")
         n_bands = len(R_BAND_EDGES) - 1
         filled = all(per_band.get(i, 0) == 5 for i in range(n_bands))
         record(f"{band} の各層がちょうど 5 面", {i: 5 for i in range(n_bands)},
                {i: per_band.get(i, 0) for i in range(n_bands)}, filled)
         ok_all = ok_all and in_range and filled
-    overlap = walls["eval(v3)"] & walls["validation(v3)"]
+    # **候補プールどうしが重ならないこと**（同じ迷路が両帯に出るのを構造的に防ぐ）
+    (alo, ahi), (blo, bhi) = pools[BANDS[0][1]], pools[BANDS[1][1]]
+    disjoint = (ahi < blo) or (bhi < alo)
+    record("eval と validation の候補プールが重ならない", True, disjoint, disjoint,
+           f"[{alo}, {ahi}] と [{blo}, {bhi}]")
+    overlap = walls[BANDS[0][1]] & walls[BANDS[1][1]]
     record("eval と validation の迷路が重複しない", 0, len(overlap), len(overlap) == 0)
-    return ok_all and not overlap
+    return ok_all and disjoint and not overlap
+
+
+def test7_k_class_targets():
+    """v4 で足した軸: 候補経路の本数 K の階級ごとの面数が manifest の目標どおりか。"""
+    print("\n=== テスト7: K の階級ごとの面数（v4 で足した軸） ===")
+    from competition.macro_routes import macro_routes  # noqa: PLC0415
+    ok_all = True
+    for d, band in BANDS:
+        man = manifest(d)
+        want = k_targets_of(man)
+        if not want:
+            record(f"{band} の k_targets", "manifest に存在", "なし", False)
+            ok_all = False
+            continue
+        got = {1: 0, 2: 0, 3: 0}
+        for f in npz_files(d):
+            z = np.load(f)
+            start = (int(z["start_x"]), int(z["start_y"])) if "start_x" in z.files else (0, 0)
+            goals = tuple((int(a), int(b)) for a, b in zip(z["goals_x"], z["goals_y"])) \
+                if "goals_x" in z.files else GOAL_CELLS
+            k = len(macro_routes(z["v_walls"], z["h_walls"], start, goals,
+                                 delta=man["macro_delta"], theta=man["macro_theta"]))
+            got[min(k, 3)] += 1
+        ok = got == want
+        ok_all = ok_all and ok
+        record(f"{band} の K 階級ごとの面数", want, got, ok)
+    return ok_all
 
 
 def test6_manifest_has_candidate_log():
     print("\n=== テスト6: manifest に候補全数の採否が残っている ===")
     ok_all = True
-    for d, band, _ in BANDS:
+    for d, band in BANDS:
         man = json.load(open(os.path.join(REPO_ROOT, d, "manifest.json"), encoding="utf-8"))
         log = man.get("candidate_log", [])
         n_acc = sum(1 for r in log if r.get("accepted"))
@@ -198,7 +269,8 @@ def test6_manifest_has_candidate_log():
 def main():
     for fn in (test1_candidate_determinism, test2_selection_determinism,
                test3_frozen_npz_matches, test4_acceptance_conditions,
-               test5_band_separation_and_strata, test6_manifest_has_candidate_log):
+               test5_band_separation_and_strata, test6_manifest_has_candidate_log,
+               test7_k_class_targets):
         try:
             fn()
         except Exception as e:  # noqa: BLE001
