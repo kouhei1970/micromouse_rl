@@ -1,0 +1,7381 @@
+{
+  "timestamp": "20260811_202857",
+  "phase": "exp_006d_hp_k8.7e-3_seed3_gate",
+  "n_courses": 20,
+  "n_trials_per_course": 5,
+  "n_total_trials": 100,
+  "no_contact_completion_rate": 0.94,
+  "completion_rate": 0.94,
+  "collision_rate": 0.06,
+  "timeout_rate": 0.0,
+  "mean_forward_speed_mps": 1.1567982004008857,
+  "mean_sec_per_cell": 0.14042503927444902,
+  "action_diff_rms_mean": 0.4346119180352605,
+  "sign_flip_rate_left_mean": 8.484614962535304,
+  "sign_flip_rate_right_mean": 15.06027994480187,
+  "lateral_max_m_max": 0.05331843414276549,
+  "lateral_max_m_mean": 0.037894169033149704,
+  "lateral_rms_m_mean": 0.015195544626747583,
+  "deterministic": true,
+  "seed": 0,
+  "gamma": 0.995,
+  "course_dir": "assets/corridor/eval",
+  "obs_dist_diff": true,
+  "per_course": [
+    {
+      "course_seed": 3000,
+      "n_trials": 5,
+      "n_complete": 5,
+      "n_no_contact_complete": 5,
+      "n_collision": 0,
+      "n_timeout": 0,
+      "trials": [
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 205,
+          "sim_time": 2.049999999999852,
+          "n_cells": 14,
+          "progress_m": 2.2934173566518528,
+          "mean_speed": 1.1187401739765943,
+          "sec_per_cell": 0.14642857142856086,
+          "action_diff_rms": 0.4519087010374466,
+          "sign_flip_rate_left": 4.878048780488157,
+          "sign_flip_rate_right": 15.609756097562103,
+          "lateral_max_m": 0.029396868947438204,
+          "lateral_rms_m": 0.012090529748209384,
+          "n_turns": 4,
+          "hf_ratio": 0.18415950799471364,
+          "i_rms": 0.7656297323489776,
+          "i_dc": 0.14964456761301181,
+          "i_ac": 0.7488312088564151,
+          "min_wall_clearance_m": 0.023494577694617387
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 201,
+          "sim_time": 2.0099999999998386,
+          "n_cells": 14,
+          "progress_m": 2.2986120918356225,
+          "mean_speed": 1.143588105390949,
+          "sec_per_cell": 0.14357142857141705,
+          "action_diff_rms": 0.41735994626982115,
+          "sign_flip_rate_left": 6.965174129353793,
+          "sign_flip_rate_right": 12.935323383085615,
+          "lateral_max_m": 0.029310778898475998,
+          "lateral_rms_m": 0.012311065557997734,
+          "n_turns": 4,
+          "hf_ratio": 0.17672554102855476,
+          "i_rms": 0.7378811925891853,
+          "i_dc": 0.14909434993325893,
+          "i_ac": 0.7222073069036072,
+          "min_wall_clearance_m": 0.02154994587515375
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 200,
+          "sim_time": 1.9999999999998352,
+          "n_cells": 14,
+          "progress_m": 2.301381696674396,
+          "mean_speed": 1.1506908483372928,
+          "sec_per_cell": 0.14285714285713108,
+          "action_diff_rms": 0.39035768992696895,
+          "sign_flip_rate_left": 5.000000000000412,
+          "sign_flip_rate_right": 17.500000000001442,
+          "lateral_max_m": 0.027097738642180014,
+          "lateral_rms_m": 0.014389645003344177,
+          "n_turns": 4,
+          "hf_ratio": 0.16573351883786466,
+          "i_rms": 0.7050556459073686,
+          "i_dc": 0.15217936622194136,
+          "i_ac": 0.6882249933368771,
+          "min_wall_clearance_m": 0.021923846360536133
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 199,
+          "sim_time": 1.9899999999998363,
+          "n_cells": 14,
+          "progress_m": 2.2955806270312653,
+          "mean_speed": 1.1535581040359066,
+          "sec_per_cell": 0.14214285714284544,
+          "action_diff_rms": 0.46088122840437395,
+          "sign_flip_rate_left": 6.03015075376934,
+          "sign_flip_rate_right": 18.09045226130802,
+          "lateral_max_m": 0.027214922077200443,
+          "lateral_rms_m": 0.011681853425325387,
+          "n_turns": 5,
+          "hf_ratio": 0.18123417706753148,
+          "i_rms": 0.7487327557680702,
+          "i_dc": 0.14683656614402146,
+          "i_ac": 0.7334460944684773,
+          "min_wall_clearance_m": 0.018265968405227324
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 201,
+          "sim_time": 2.0099999999998386,
+          "n_cells": 14,
+          "progress_m": 2.2940747830553043,
+          "mean_speed": 1.1413307378385515,
+          "sec_per_cell": 0.14357142857141705,
+          "action_diff_rms": 0.3835064292305181,
+          "sign_flip_rate_left": 4.975124378109852,
+          "sign_flip_rate_right": 14.925373134329558,
+          "lateral_max_m": 0.0298734102930982,
+          "lateral_rms_m": 0.013413070465245643,
+          "n_turns": 4,
+          "hf_ratio": 0.17099343248794338,
+          "i_rms": 0.725629468952304,
+          "i_dc": 0.14789091760779371,
+          "i_ac": 0.7101655121133561,
+          "min_wall_clearance_m": 0.022794545233343573
+        }
+      ]
+    },
+    {
+      "course_seed": 3001,
+      "n_trials": 5,
+      "n_complete": 5,
+      "n_no_contact_complete": 5,
+      "n_collision": 0,
+      "n_timeout": 0,
+      "trials": [
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 172,
+          "sim_time": 1.719999999999866,
+          "n_cells": 11,
+          "progress_m": 1.761656320333871,
+          "mean_speed": 1.0242187908918652,
+          "sec_per_cell": 0.1563636363636242,
+          "action_diff_rms": 0.47705545037946384,
+          "sign_flip_rate_left": 8.139534883721565,
+          "sign_flip_rate_right": 20.930232558141164,
+          "lateral_max_m": 0.045487911651693747,
+          "lateral_rms_m": 0.019376860416645804,
+          "n_turns": 5,
+          "hf_ratio": 0.18910836443052992,
+          "i_rms": 0.7874280970774135,
+          "i_dc": 0.14618667653668418,
+          "i_ac": 0.7710500524338012,
+          "min_wall_clearance_m": 0.014528800831402577
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 166,
+          "sim_time": 1.6599999999998727,
+          "n_cells": 11,
+          "progress_m": 1.7557677673078302,
+          "mean_speed": 1.0576914260891355,
+          "sec_per_cell": 0.15090909090907934,
+          "action_diff_rms": 0.4972061852936748,
+          "sign_flip_rate_left": 7.228915662651157,
+          "sign_flip_rate_right": 19.27710843373642,
+          "lateral_max_m": 0.0455238284105739,
+          "lateral_rms_m": 0.01700339610871965,
+          "n_turns": 5,
+          "hf_ratio": 0.19301602016580285,
+          "i_rms": 0.7900257260161276,
+          "i_dc": 0.15656024404629837,
+          "i_ac": 0.7694515554936436,
+          "min_wall_clearance_m": 0.014397868248041085
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 170,
+          "sim_time": 1.6999999999998683,
+          "n_cells": 11,
+          "progress_m": 1.7567741048360153,
+          "mean_speed": 1.0333965322565597,
+          "sec_per_cell": 0.15454545454544258,
+          "action_diff_rms": 0.5185607030057198,
+          "sign_flip_rate_left": 9.411764705883082,
+          "sign_flip_rate_right": 25.882352941178475,
+          "lateral_max_m": 0.044966975135539045,
+          "lateral_rms_m": 0.01843708006214576,
+          "n_turns": 5,
+          "hf_ratio": 0.19286179488399094,
+          "i_rms": 0.7957555327825308,
+          "i_dc": 0.14601556212406047,
+          "i_ac": 0.7793385642093004,
+          "min_wall_clearance_m": 0.014851337184200354
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 177,
+          "sim_time": 1.7699999999998606,
+          "n_cells": 11,
+          "progress_m": 1.7593502746957321,
+          "mean_speed": 0.9939832060428648,
+          "sec_per_cell": 0.16090909090907823,
+          "action_diff_rms": 0.49824859139929495,
+          "sign_flip_rate_left": 11.299435028249478,
+          "sign_flip_rate_right": 23.728813559323903,
+          "lateral_max_m": 0.043267241960873726,
+          "lateral_rms_m": 0.020097457888654434,
+          "n_turns": 5,
+          "hf_ratio": 0.1995193610301568,
+          "i_rms": 0.8127760817578713,
+          "i_dc": 0.13902032953480647,
+          "i_ac": 0.797900816334209,
+          "min_wall_clearance_m": 0.012914493958811633
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 168,
+          "sim_time": 1.6799999999998705,
+          "n_cells": 11,
+          "progress_m": 1.7594287504059656,
+          "mean_speed": 1.0472790180988698,
+          "sec_per_cell": 0.15272727272726094,
+          "action_diff_rms": 0.44559249039657534,
+          "sign_flip_rate_left": 5.952380952381411,
+          "sign_flip_rate_right": 19.047619047620515,
+          "lateral_max_m": 0.04457419409045915,
+          "lateral_rms_m": 0.019770589432132477,
+          "n_turns": 5,
+          "hf_ratio": 0.1774709155128796,
+          "i_rms": 0.7411003439964081,
+          "i_dc": 0.14151883664731837,
+          "i_ac": 0.7222396586930802,
+          "min_wall_clearance_m": 0.015715905995427895
+        }
+      ]
+    },
+    {
+      "course_seed": 3002,
+      "n_trials": 5,
+      "n_complete": 5,
+      "n_no_contact_complete": 5,
+      "n_collision": 0,
+      "n_timeout": 0,
+      "trials": [
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 192,
+          "sim_time": 1.919999999999844,
+          "n_cells": 14,
+          "progress_m": 2.292860019232643,
+          "mean_speed": 1.1941979266837652,
+          "sec_per_cell": 0.137142857142846,
+          "action_diff_rms": 0.36710216069346063,
+          "sign_flip_rate_left": 5.208333333333757,
+          "sign_flip_rate_right": 13.541666666667767,
+          "lateral_max_m": 0.034501537925814674,
+          "lateral_rms_m": 0.013569631912826223,
+          "n_turns": 3,
+          "hf_ratio": 0.1531452818697808,
+          "i_rms": 0.6592694758614781,
+          "i_dc": 0.13894292471425523,
+          "i_ac": 0.6443660013074974,
+          "min_wall_clearance_m": 0.024410804446078162
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 190,
+          "sim_time": 1.8999999999998463,
+          "n_cells": 14,
+          "progress_m": 2.291408603848961,
+          "mean_speed": 1.206004528341656,
+          "sec_per_cell": 0.13571428571427474,
+          "action_diff_rms": 0.324642626156609,
+          "sign_flip_rate_left": 5.263157894737268,
+          "sign_flip_rate_right": 10.526315789474536,
+          "lateral_max_m": 0.036181712786860776,
+          "lateral_rms_m": 0.014720233451282016,
+          "n_turns": 4,
+          "hf_ratio": 0.1472195791060309,
+          "i_rms": 0.6435835050156579,
+          "i_dc": 0.1468764043395726,
+          "i_ac": 0.6261039388867095,
+          "min_wall_clearance_m": 0.022840205324126985
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 191,
+          "sim_time": 1.9099999999998452,
+          "n_cells": 14,
+          "progress_m": 2.293472359532667,
+          "mean_speed": 1.2007708688653682,
+          "sec_per_cell": 0.13642857142856038,
+          "action_diff_rms": 0.38535339161337273,
+          "sign_flip_rate_left": 6.282722513089515,
+          "sign_flip_rate_right": 12.56544502617903,
+          "lateral_max_m": 0.03348016458527092,
+          "lateral_rms_m": 0.01345431559108015,
+          "n_turns": 3,
+          "hf_ratio": 0.1630673571162213,
+          "i_rms": 0.6999257355168825,
+          "i_dc": 0.1418517069547642,
+          "i_ac": 0.6834034818104218,
+          "min_wall_clearance_m": 0.024923545081689404
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 193,
+          "sim_time": 1.929999999999843,
+          "n_cells": 14,
+          "progress_m": 2.2911618621421264,
+          "mean_speed": 1.187130498519333,
+          "sec_per_cell": 0.13785714285713163,
+          "action_diff_rms": 0.39668581275019127,
+          "sign_flip_rate_left": 7.253886010363285,
+          "sign_flip_rate_right": 11.398963730570875,
+          "lateral_max_m": 0.03526005116705955,
+          "lateral_rms_m": 0.014926236217768578,
+          "n_turns": 4,
+          "hf_ratio": 0.1705921716355522,
+          "i_rms": 0.7108146410660879,
+          "i_dc": 0.144712296235384,
+          "i_ac": 0.6958622838063708,
+          "min_wall_clearance_m": 0.021611374902276305
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 191,
+          "sim_time": 1.9099999999998452,
+          "n_cells": 14,
+          "progress_m": 2.2952239473141636,
+          "mean_speed": 1.201687930531073,
+          "sec_per_cell": 0.13642857142856038,
+          "action_diff_rms": 0.4076893008802163,
+          "sign_flip_rate_left": 4.188481675393009,
+          "sign_flip_rate_right": 9.424083769634272,
+          "lateral_max_m": 0.034782062066951835,
+          "lateral_rms_m": 0.014164768753238063,
+          "n_turns": 4,
+          "hf_ratio": 0.16282282366831483,
+          "i_rms": 0.6970429813264135,
+          "i_dc": 0.13962064821555187,
+          "i_ac": 0.6826886326648376,
+          "min_wall_clearance_m": 0.021937628843148656
+        }
+      ]
+    },
+    {
+      "course_seed": 3003,
+      "n_trials": 5,
+      "n_complete": 5,
+      "n_no_contact_complete": 5,
+      "n_collision": 0,
+      "n_timeout": 0,
+      "trials": [
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 256,
+          "sim_time": 2.5600000000000223,
+          "n_cells": 19,
+          "progress_m": 3.192290820524296,
+          "mean_speed": 1.2469886017672922,
+          "sec_per_cell": 0.13473684210526432,
+          "action_diff_rms": 0.39107760376896317,
+          "sign_flip_rate_left": 5.468749999999952,
+          "sign_flip_rate_right": 11.718749999999899,
+          "lateral_max_m": 0.037070231599642955,
+          "lateral_rms_m": 0.01408392098330999,
+          "n_turns": 3,
+          "hf_ratio": 0.14812019505690058,
+          "i_rms": 0.6193392370893307,
+          "i_dc": 0.1364598627522947,
+          "i_ac": 0.6021483040427833,
+          "min_wall_clearance_m": 0.02219663722135868
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 255,
+          "sim_time": 2.550000000000019,
+          "n_cells": 19,
+          "progress_m": 3.193082837322188,
+          "mean_speed": 1.2521893479694761,
+          "sec_per_cell": 0.13421052631579047,
+          "action_diff_rms": 0.38110249483919706,
+          "sign_flip_rate_left": 7.843137254901903,
+          "sign_flip_rate_right": 10.196078431372474,
+          "lateral_max_m": 0.03799170593675827,
+          "lateral_rms_m": 0.013806361407579008,
+          "n_turns": 3,
+          "hf_ratio": 0.1548688871395262,
+          "i_rms": 0.6387071264821758,
+          "i_dc": 0.13459422433820195,
+          "i_ac": 0.6234692659365031,
+          "min_wall_clearance_m": 0.016852143923207892
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 260,
+          "sim_time": 2.6000000000000356,
+          "n_cells": 19,
+          "progress_m": 3.1962130068895154,
+          "mean_speed": 1.229312694957489,
+          "sec_per_cell": 0.13684210526315976,
+          "action_diff_rms": 0.4399944292306847,
+          "sign_flip_rate_left": 6.923076923076828,
+          "sign_flip_rate_right": 14.615384615384416,
+          "lateral_max_m": 0.03827478590599798,
+          "lateral_rms_m": 0.014890455518963999,
+          "n_turns": 4,
+          "hf_ratio": 0.16522261044578868,
+          "i_rms": 0.6677667477847449,
+          "i_dc": 0.1332133562619914,
+          "i_ac": 0.6512394436428453,
+          "min_wall_clearance_m": 0.02079643523241504
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 258,
+          "sim_time": 2.580000000000029,
+          "n_cells": 19,
+          "progress_m": 3.1949955523893574,
+          "mean_speed": 1.2383703691431478,
+          "sec_per_cell": 0.13578947368421204,
+          "action_diff_rms": 0.41205794293270076,
+          "sign_flip_rate_left": 6.201550387596829,
+          "sign_flip_rate_right": 12.403100775193659,
+          "lateral_max_m": 0.03377023712634353,
+          "lateral_rms_m": 0.014523901882244294,
+          "n_turns": 4,
+          "hf_ratio": 0.1602917953893165,
+          "i_rms": 0.6516069336657875,
+          "i_dc": 0.13140355401272472,
+          "i_ac": 0.6349954796865456,
+          "min_wall_clearance_m": 0.020570411590964406
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 256,
+          "sim_time": 2.5600000000000223,
+          "n_cells": 19,
+          "progress_m": 3.196993180554748,
+          "mean_speed": 1.2488254611541876,
+          "sec_per_cell": 0.13473684210526432,
+          "action_diff_rms": 0.36928684797827244,
+          "sign_flip_rate_left": 4.687499999999959,
+          "sign_flip_rate_right": 14.062499999999877,
+          "lateral_max_m": 0.03793778613721566,
+          "lateral_rms_m": 0.013426265184242479,
+          "n_turns": 3,
+          "hf_ratio": 0.15057534621877916,
+          "i_rms": 0.6258592713972548,
+          "i_dc": 0.13220345073688983,
+          "i_ac": 0.6102902234702328,
+          "min_wall_clearance_m": 0.022821434275490157
+        }
+      ]
+    },
+    {
+      "course_seed": 3004,
+      "n_trials": 5,
+      "n_complete": 5,
+      "n_no_contact_complete": 5,
+      "n_collision": 0,
+      "n_timeout": 0,
+      "trials": [
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 314,
+          "sim_time": 3.140000000000216,
+          "n_cells": 18,
+          "progress_m": 3.0134049665488694,
+          "mean_speed": 0.959683110365816,
+          "sec_per_cell": 0.17444444444445645,
+          "action_diff_rms": 0.6167264926761832,
+          "sign_flip_rate_left": 15.923566878979797,
+          "sign_flip_rate_right": 23.5668789808901,
+          "lateral_max_m": 0.04913269358265604,
+          "lateral_rms_m": 0.01913909899525987,
+          "n_turns": 12,
+          "hf_ratio": 0.2412788285887957,
+          "i_rms": 0.936933190465711,
+          "i_dc": 0.11740499217679143,
+          "i_ac": 0.9277491450781375,
+          "min_wall_clearance_m": 0.009024672639919427
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 306,
+          "sim_time": 3.0600000000001892,
+          "n_cells": 18,
+          "progress_m": 3.0152002047319266,
+          "mean_speed": 0.9853595440299805,
+          "sec_per_cell": 0.1700000000000105,
+          "action_diff_rms": 0.6230201507838798,
+          "sign_flip_rate_left": 13.071895424835793,
+          "sign_flip_rate_right": 25.1633986928089,
+          "lateral_max_m": 0.03982967796129078,
+          "lateral_rms_m": 0.01740800632810501,
+          "n_turns": 12,
+          "hf_ratio": 0.23599996482360958,
+          "i_rms": 0.9224575717741689,
+          "i_dc": 0.11910229143793771,
+          "i_ac": 0.9108288726161118,
+          "min_wall_clearance_m": 0.020910507585277138
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 302,
+          "sim_time": 3.020000000000176,
+          "n_cells": 18,
+          "progress_m": 3.0131231680260173,
+          "mean_speed": 0.9977229033198152,
+          "sec_per_cell": 0.16777777777778755,
+          "action_diff_rms": 0.567351785477855,
+          "sign_flip_rate_left": 14.900662251654762,
+          "sign_flip_rate_right": 21.854304635760318,
+          "lateral_max_m": 0.04125208018082571,
+          "lateral_rms_m": 0.017978963369903615,
+          "n_turns": 12,
+          "hf_ratio": 0.22524563093617042,
+          "i_rms": 0.8836569462108088,
+          "i_dc": 0.12316812814406473,
+          "i_ac": 0.8726431229849996,
+          "min_wall_clearance_m": 0.015862925468763785
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 299,
+          "sim_time": 2.990000000000166,
+          "n_cells": 18,
+          "progress_m": 3.012017551756397,
+          "mean_speed": 1.0073637296843578,
+          "sec_per_cell": 0.1661111111111203,
+          "action_diff_rms": 0.5378403963584684,
+          "sign_flip_rate_left": 16.722408026754927,
+          "sign_flip_rate_right": 18.06020066889532,
+          "lateral_max_m": 0.04517167974188452,
+          "lateral_rms_m": 0.01980858944728866,
+          "n_turns": 13,
+          "hf_ratio": 0.21474958141393405,
+          "i_rms": 0.848601094610108,
+          "i_dc": 0.1202485080988901,
+          "i_ac": 0.8391331207972094,
+          "min_wall_clearance_m": 0.01191634322722034
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 307,
+          "sim_time": 3.0700000000001926,
+          "n_cells": 18,
+          "progress_m": 3.015711982235439,
+          "mean_speed": 0.9823166065912865,
+          "sec_per_cell": 0.17055555555556626,
+          "action_diff_rms": 0.563972252693524,
+          "sign_flip_rate_left": 15.309446254070702,
+          "sign_flip_rate_right": 20.846905537457975,
+          "lateral_max_m": 0.05030906333418583,
+          "lateral_rms_m": 0.018957871808105875,
+          "n_turns": 12,
+          "hf_ratio": 0.22066028899349255,
+          "i_rms": 0.8750994919312869,
+          "i_dc": 0.12029080876766424,
+          "i_ac": 0.8649425170601847,
+          "min_wall_clearance_m": 0.007436191123435334
+        }
+      ]
+    },
+    {
+      "course_seed": 3005,
+      "n_trials": 5,
+      "n_complete": 5,
+      "n_no_contact_complete": 5,
+      "n_collision": 0,
+      "n_timeout": 0,
+      "trials": [
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 127,
+          "sim_time": 1.2699999999999156,
+          "n_cells": 9,
+          "progress_m": 1.3926851464424779,
+          "mean_speed": 1.096602477513835,
+          "sec_per_cell": 0.14111111111110175,
+          "action_diff_rms": 0.45208116168542134,
+          "sign_flip_rate_left": 8.661417322835222,
+          "sign_flip_rate_right": 15.748031496064039,
+          "lateral_max_m": 0.024824687298433235,
+          "lateral_rms_m": 0.014389141164152682,
+          "n_turns": 2,
+          "hf_ratio": 0.19347970646000703,
+          "i_rms": 0.7925429113372449,
+          "i_dc": 0.15064154076907132,
+          "i_ac": 0.7773492740826041,
+          "min_wall_clearance_m": 0.022617060613472913
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 121,
+          "sim_time": 1.2099999999999222,
+          "n_cells": 9,
+          "progress_m": 1.3970690691895888,
+          "mean_speed": 1.1546025365203956,
+          "sec_per_cell": 0.13444444444443582,
+          "action_diff_rms": 0.45660751588668164,
+          "sign_flip_rate_left": 6.611570247934309,
+          "sign_flip_rate_right": 14.876033057852196,
+          "lateral_max_m": 0.020075740516424467,
+          "lateral_rms_m": 0.013245237048503639,
+          "n_turns": 2,
+          "hf_ratio": 0.17554369655767774,
+          "i_rms": 0.7539710467732206,
+          "i_dc": 0.16640991507010822,
+          "i_ac": 0.735064712957473,
+          "min_wall_clearance_m": 0.024583806356604794
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 119,
+          "sim_time": 1.1899999999999245,
+          "n_cells": 9,
+          "progress_m": 1.3943668389861643,
+          "mean_speed": 1.171736839484246,
+          "sec_per_cell": 0.13222222222221383,
+          "action_diff_rms": 0.3773044235719314,
+          "sign_flip_rate_left": 5.04201680672301,
+          "sign_flip_rate_right": 11.764705882353688,
+          "lateral_max_m": 0.028361422757039345,
+          "lateral_rms_m": 0.01105778478091413,
+          "n_turns": 2,
+          "hf_ratio": 0.15519389201428413,
+          "i_rms": 0.688982227267778,
+          "i_dc": 0.161588509889759,
+          "i_ac": 0.6678705968570167,
+          "min_wall_clearance_m": 0.026744016203846706
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 123,
+          "sim_time": 1.22999999999992,
+          "n_cells": 9,
+          "progress_m": 1.3964924618123349,
+          "mean_speed": 1.1353597250507526,
+          "sec_per_cell": 0.13666666666665778,
+          "action_diff_rms": 0.3828071706819581,
+          "sign_flip_rate_left": 1.6260162601627073,
+          "sign_flip_rate_right": 17.88617886178978,
+          "lateral_max_m": 0.022503060620340354,
+          "lateral_rms_m": 0.014163567237013196,
+          "n_turns": 2,
+          "hf_ratio": 0.15320538114681473,
+          "i_rms": 0.6909903103782695,
+          "i_dc": 0.16241780144885698,
+          "i_ac": 0.6713404725579672,
+          "min_wall_clearance_m": 0.02196048756363645
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 121,
+          "sim_time": 1.2099999999999222,
+          "n_cells": 9,
+          "progress_m": 1.3923763028716467,
+          "mean_speed": 1.1507242172493688,
+          "sec_per_cell": 0.13444444444443582,
+          "action_diff_rms": 0.4083900829505194,
+          "sign_flip_rate_left": 11.57024793388504,
+          "sign_flip_rate_right": 11.57024793388504,
+          "lateral_max_m": 0.022871644319609197,
+          "lateral_rms_m": 0.013576875990280549,
+          "n_turns": 2,
+          "hf_ratio": 0.16444353535051798,
+          "i_rms": 0.7215787713545697,
+          "i_dc": 0.16523253240490407,
+          "i_ac": 0.7023964011616419,
+          "min_wall_clearance_m": 0.021589635536166003
+        }
+      ]
+    },
+    {
+      "course_seed": 3006,
+      "n_trials": 5,
+      "n_complete": 4,
+      "n_no_contact_complete": 4,
+      "n_collision": 1,
+      "n_timeout": 0,
+      "trials": [
+        {
+          "outcome": "collision",
+          "complete": false,
+          "no_contact_complete": false,
+          "n_steps": 111,
+          "sim_time": 1.1099999999999333,
+          "n_cells": 12,
+          "progress_m": 1.1667661593617635,
+          "mean_speed": 1.0511406841097601,
+          "sec_per_cell": 0.09249999999999443,
+          "action_diff_rms": 0.5124781906198628,
+          "sign_flip_rate_left": 9.009009009009551,
+          "sign_flip_rate_right": 17.117117117118145,
+          "lateral_max_m": 0.026776129875979604,
+          "lateral_rms_m": 0.012392355421563566,
+          "n_turns": 3,
+          "hf_ratio": 0.2151233766694161,
+          "i_rms": 0.8719128282663193,
+          "i_dc": 0.13790218549537447,
+          "i_ac": 0.8591118912064404,
+          "min_wall_clearance_m": 0.00030496804760988226
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 174,
+          "sim_time": 1.7399999999998639,
+          "n_cells": 12,
+          "progress_m": 1.938007106114342,
+          "mean_speed": 1.1137971874221229,
+          "sec_per_cell": 0.14499999999998867,
+          "action_diff_rms": 0.5860610959956842,
+          "sign_flip_rate_left": 14.942528735633353,
+          "sign_flip_rate_right": 20.68965517241541,
+          "lateral_max_m": 0.04706256826705474,
+          "lateral_rms_m": 0.0157689625807336,
+          "n_turns": 5,
+          "hf_ratio": 0.21088212537447876,
+          "i_rms": 0.8498570124175077,
+          "i_dc": 0.14945287549812034,
+          "i_ac": 0.835584713444327,
+          "min_wall_clearance_m": 0.011417129536153944
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 169,
+          "sim_time": 1.6899999999998694,
+          "n_cells": 12,
+          "progress_m": 1.9348519930551527,
+          "mean_speed": 1.1448828361273977,
+          "sec_per_cell": 0.14083333333332246,
+          "action_diff_rms": 0.44316225469326737,
+          "sign_flip_rate_left": 8.284023668639694,
+          "sign_flip_rate_right": 13.017751479290947,
+          "lateral_max_m": 0.03629837684803272,
+          "lateral_rms_m": 0.013150742062770044,
+          "n_turns": 3,
+          "hf_ratio": 0.17477023955125928,
+          "i_rms": 0.7321428912556968,
+          "i_dc": 0.16524094966681824,
+          "i_ac": 0.713103864133385,
+          "min_wall_clearance_m": 0.0241529897878019
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 168,
+          "sim_time": 1.6799999999998705,
+          "n_cells": 12,
+          "progress_m": 1.9326280175798867,
+          "mean_speed": 1.1503738199881164,
+          "sec_per_cell": 0.13999999999998922,
+          "action_diff_rms": 0.42783338410663607,
+          "sign_flip_rate_left": 13.095238095239106,
+          "sign_flip_rate_right": 10.71428571428654,
+          "lateral_max_m": 0.04123869731274199,
+          "lateral_rms_m": 0.016986213164428776,
+          "n_turns": 4,
+          "hf_ratio": 0.17069508080850515,
+          "i_rms": 0.7159814543585873,
+          "i_dc": 0.1657089675441148,
+          "i_ac": 0.6964676909757883,
+          "min_wall_clearance_m": 0.017762761159171483
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 172,
+          "sim_time": 1.719999999999866,
+          "n_cells": 12,
+          "progress_m": 1.9413654037229016,
+          "mean_speed": 1.1287008161180538,
+          "sec_per_cell": 0.14333333333332218,
+          "action_diff_rms": 0.4582192410735061,
+          "sign_flip_rate_left": 6.976744186047055,
+          "sign_flip_rate_right": 13.95348837209411,
+          "lateral_max_m": 0.03336309168086238,
+          "lateral_rms_m": 0.012949191135961394,
+          "n_turns": 3,
+          "hf_ratio": 0.18796208769678144,
+          "i_rms": 0.7677085661566272,
+          "i_dc": 0.15785825545616894,
+          "i_ac": 0.7508450266657973,
+          "min_wall_clearance_m": 0.022240451578298688
+        }
+      ]
+    },
+    {
+      "course_seed": 3007,
+      "n_trials": 5,
+      "n_complete": 5,
+      "n_no_contact_complete": 5,
+      "n_collision": 0,
+      "n_timeout": 0,
+      "trials": [
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 175,
+          "sim_time": 1.7499999999998628,
+          "n_cells": 12,
+          "progress_m": 1.9353164160693872,
+          "mean_speed": 1.1058950948968793,
+          "sec_per_cell": 0.1458333333333219,
+          "action_diff_rms": 0.40422999501179835,
+          "sign_flip_rate_left": 8.000000000000627,
+          "sign_flip_rate_right": 11.428571428572324,
+          "lateral_max_m": 0.03132785783807335,
+          "lateral_rms_m": 0.012554315434802711,
+          "n_turns": 4,
+          "hf_ratio": 0.16681611728091117,
+          "i_rms": 0.6989770173236028,
+          "i_dc": 0.160685396087058,
+          "i_ac": 0.6779090367329181,
+          "min_wall_clearance_m": 0.018314420246011882
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 176,
+          "sim_time": 1.7599999999998617,
+          "n_cells": 12,
+          "progress_m": 1.934034669990782,
+          "mean_speed": 1.0988833352221217,
+          "sec_per_cell": 0.14666666666665515,
+          "action_diff_rms": 0.44984693361460426,
+          "sign_flip_rate_left": 6.818181818182354,
+          "sign_flip_rate_right": 21.590909090910788,
+          "lateral_max_m": 0.033750419914789886,
+          "lateral_rms_m": 0.01489102356106308,
+          "n_turns": 4,
+          "hf_ratio": 0.182815721207917,
+          "i_rms": 0.7429924356280121,
+          "i_dc": 0.1556958783534666,
+          "i_ac": 0.7216320033206967,
+          "min_wall_clearance_m": 0.016916623850171515
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 178,
+          "sim_time": 1.7799999999998595,
+          "n_cells": 12,
+          "progress_m": 1.9372396084619843,
+          "mean_speed": 1.088336858686594,
+          "sec_per_cell": 0.14833333333332163,
+          "action_diff_rms": 0.4211462097780286,
+          "sign_flip_rate_left": 6.741573033708398,
+          "sign_flip_rate_right": 17.97752808988906,
+          "lateral_max_m": 0.03263285362717355,
+          "lateral_rms_m": 0.014632748144025336,
+          "n_turns": 4,
+          "hf_ratio": 0.17245588146917876,
+          "i_rms": 0.7159542460293429,
+          "i_dc": 0.15505966981144834,
+          "i_ac": 0.6959859249476517,
+          "min_wall_clearance_m": 0.019845756461802068
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 176,
+          "sim_time": 1.7599999999998617,
+          "n_cells": 12,
+          "progress_m": 1.9377075746700467,
+          "mean_speed": 1.100970212880795,
+          "sec_per_cell": 0.14666666666665515,
+          "action_diff_rms": 0.3910825539381362,
+          "sign_flip_rate_left": 6.818181818182354,
+          "sign_flip_rate_right": 14.772727272728433,
+          "lateral_max_m": 0.033771311826371775,
+          "lateral_rms_m": 0.014652586673036176,
+          "n_turns": 3,
+          "hf_ratio": 0.1662106590648877,
+          "i_rms": 0.6934493527692371,
+          "i_dc": 0.15414058122572372,
+          "i_ac": 0.6728510614763392,
+          "min_wall_clearance_m": 0.01888863304576833
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 183,
+          "sim_time": 1.829999999999854,
+          "n_cells": 12,
+          "progress_m": 1.939369370746777,
+          "mean_speed": 1.0597646834682688,
+          "sec_per_cell": 0.15249999999998784,
+          "action_diff_rms": 0.48635193313820607,
+          "sign_flip_rate_left": 9.289617486339539,
+          "sign_flip_rate_right": 15.300546448088653,
+          "lateral_max_m": 0.03792383898937912,
+          "lateral_rms_m": 0.01564000882175675,
+          "n_turns": 4,
+          "hf_ratio": 0.19720199394114826,
+          "i_rms": 0.7782591455571556,
+          "i_dc": 0.14653060104788043,
+          "i_ac": 0.7609335481227519,
+          "min_wall_clearance_m": 0.015776075104506078
+        }
+      ]
+    },
+    {
+      "course_seed": 3008,
+      "n_trials": 5,
+      "n_complete": 5,
+      "n_no_contact_complete": 5,
+      "n_collision": 0,
+      "n_timeout": 0,
+      "trials": [
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 225,
+          "sim_time": 2.2499999999999187,
+          "n_cells": 17,
+          "progress_m": 2.8309847761839158,
+          "mean_speed": 1.2582154560817858,
+          "sec_per_cell": 0.13235294117646582,
+          "action_diff_rms": 0.34852126794604626,
+          "sign_flip_rate_left": 7.111111111111368,
+          "sign_flip_rate_right": 8.00000000000029,
+          "lateral_max_m": 0.027220667890204164,
+          "lateral_rms_m": 0.012815682645627354,
+          "n_turns": 4,
+          "hf_ratio": 0.1388830019343829,
+          "i_rms": 0.6107898231501915,
+          "i_dc": 0.1395318919125676,
+          "i_ac": 0.5946006611454377,
+          "min_wall_clearance_m": 0.024888283038928323
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 226,
+          "sim_time": 2.259999999999922,
+          "n_cells": 17,
+          "progress_m": 2.836311044169123,
+          "mean_speed": 1.2550048868005401,
+          "sec_per_cell": 0.13294117647058365,
+          "action_diff_rms": 0.32119659137960077,
+          "sign_flip_rate_left": 3.5398230088496794,
+          "sign_flip_rate_right": 9.734513274336619,
+          "lateral_max_m": 0.0358342119876186,
+          "lateral_rms_m": 0.012956410649464307,
+          "n_turns": 3,
+          "hf_ratio": 0.13982468943992415,
+          "i_rms": 0.6057794433326186,
+          "i_dc": 0.1395367157976008,
+          "i_ac": 0.589373234303169,
+          "min_wall_clearance_m": 0.023053698783920253
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 226,
+          "sim_time": 2.259999999999922,
+          "n_cells": 17,
+          "progress_m": 2.8310328713230644,
+          "mean_speed": 1.2526694120898947,
+          "sec_per_cell": 0.13294117647058365,
+          "action_diff_rms": 0.4183332348401276,
+          "sign_flip_rate_left": 7.079646017699359,
+          "sign_flip_rate_right": 12.38938053097388,
+          "lateral_max_m": 0.035667948249125114,
+          "lateral_rms_m": 0.013668541167101216,
+          "n_turns": 2,
+          "hf_ratio": 0.15911785988991617,
+          "i_rms": 0.6736268083315482,
+          "i_dc": 0.13556662557049015,
+          "i_ac": 0.6596636863742718,
+          "min_wall_clearance_m": 0.02143596511486307
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 226,
+          "sim_time": 2.259999999999922,
+          "n_cells": 17,
+          "progress_m": 2.8320529318379553,
+          "mean_speed": 1.2531207663000234,
+          "sec_per_cell": 0.13294117647058365,
+          "action_diff_rms": 0.3476909196768033,
+          "sign_flip_rate_left": 6.19469026548694,
+          "sign_flip_rate_right": 12.38938053097388,
+          "lateral_max_m": 0.03575799261098639,
+          "lateral_rms_m": 0.014765356167214602,
+          "n_turns": 4,
+          "hf_ratio": 0.14123431320300947,
+          "i_rms": 0.6126578968906962,
+          "i_dc": 0.13790591721674023,
+          "i_ac": 0.5969260752818126,
+          "min_wall_clearance_m": 0.019924446752349785
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 226,
+          "sim_time": 2.259999999999922,
+          "n_cells": 17,
+          "progress_m": 2.830306729988757,
+          "mean_speed": 1.2523481106145375,
+          "sec_per_cell": 0.13294117647058365,
+          "action_diff_rms": 0.40211960066200747,
+          "sign_flip_rate_left": 5.3097345132745195,
+          "sign_flip_rate_right": 8.849557522124199,
+          "lateral_max_m": 0.030700335135827483,
+          "lateral_rms_m": 0.012422872374574834,
+          "n_turns": 2,
+          "hf_ratio": 0.15743126302327104,
+          "i_rms": 0.6666338014038278,
+          "i_dc": 0.1451717562963588,
+          "i_ac": 0.6504966386800004,
+          "min_wall_clearance_m": 0.024355048303136763
+        }
+      ]
+    },
+    {
+      "course_seed": 3009,
+      "n_trials": 5,
+      "n_complete": 3,
+      "n_no_contact_complete": 3,
+      "n_collision": 2,
+      "n_timeout": 0,
+      "trials": [
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 262,
+          "sim_time": 2.6200000000000423,
+          "n_cells": 18,
+          "progress_m": 3.014049037990081,
+          "mean_speed": 1.1504003961794016,
+          "sec_per_cell": 0.1455555555555579,
+          "action_diff_rms": 0.5571010890710144,
+          "sign_flip_rate_left": 10.305343511450216,
+          "sign_flip_rate_right": 16.793893129770723,
+          "lateral_max_m": 0.042499209669608184,
+          "lateral_rms_m": 0.015904234451788915,
+          "n_turns": 8,
+          "hf_ratio": 0.21777490990051965,
+          "i_rms": 0.8476541762454182,
+          "i_dc": 0.1345593539611355,
+          "i_ac": 0.8352588022653213,
+          "min_wall_clearance_m": 0.015923011534869864
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 257,
+          "sim_time": 2.5700000000000256,
+          "n_cells": 18,
+          "progress_m": 3.0162577053097483,
+          "mean_speed": 1.1736411304707075,
+          "sec_per_cell": 0.1427777777777792,
+          "action_diff_rms": 0.475052600379118,
+          "sign_flip_rate_left": 9.727626459143872,
+          "sign_flip_rate_right": 13.229571984435665,
+          "lateral_max_m": 0.04020687059941985,
+          "lateral_rms_m": 0.01556871786613998,
+          "n_turns": 7,
+          "hf_ratio": 0.19603016633344647,
+          "i_rms": 0.7815852130711782,
+          "i_dc": 0.14041999624519946,
+          "i_ac": 0.7685033966842973,
+          "min_wall_clearance_m": 0.021028896179502255
+        },
+        {
+          "outcome": "collision",
+          "complete": false,
+          "no_contact_complete": false,
+          "n_steps": 244,
+          "sim_time": 2.439999999999982,
+          "n_cells": 18,
+          "progress_m": 2.805507494494833,
+          "mean_speed": 1.1497981534814974,
+          "sec_per_cell": 0.13555555555555457,
+          "action_diff_rms": 0.4958922828662479,
+          "sign_flip_rate_left": 9.016393442623016,
+          "sign_flip_rate_right": 14.344262295082071,
+          "lateral_max_m": 0.042218097579187486,
+          "lateral_rms_m": 0.013695144092089615,
+          "n_turns": 8,
+          "hf_ratio": 0.20268344105721464,
+          "i_rms": 0.8081413439969182,
+          "i_dc": 0.13221663479602874,
+          "i_ac": 0.7969115844647368,
+          "min_wall_clearance_m": 0.003252002896960341
+        },
+        {
+          "outcome": "collision",
+          "complete": false,
+          "no_contact_complete": false,
+          "n_steps": 245,
+          "sim_time": 2.4499999999999855,
+          "n_cells": 18,
+          "progress_m": 2.7844333532799803,
+          "mean_speed": 1.1365034095020394,
+          "sec_per_cell": 0.1361111111111103,
+          "action_diff_rms": 0.4725469937216985,
+          "sign_flip_rate_left": 9.795918367346996,
+          "sign_flip_rate_right": 13.877551020408244,
+          "lateral_max_m": 0.0399220391295656,
+          "lateral_rms_m": 0.015716785496722153,
+          "n_turns": 8,
+          "hf_ratio": 0.20390382919924588,
+          "i_rms": 0.8016940424568118,
+          "i_dc": 0.1354464149192726,
+          "i_ac": 0.7900653074683166,
+          "min_wall_clearance_m": 0.0
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 277,
+          "sim_time": 2.7700000000000924,
+          "n_cells": 18,
+          "progress_m": 3.0156750890821193,
+          "mean_speed": 1.0886913678996457,
+          "sec_per_cell": 0.15388888888889402,
+          "action_diff_rms": 0.5638810738868286,
+          "sign_flip_rate_left": 15.162454873645704,
+          "sign_flip_rate_right": 20.21660649819427,
+          "lateral_max_m": 0.05163819086245325,
+          "lateral_rms_m": 0.01857031803619076,
+          "n_turns": 8,
+          "hf_ratio": 0.21750542318272828,
+          "i_rms": 0.8396119785832369,
+          "i_dc": 0.14252258640678633,
+          "i_ac": 0.8270116865755944,
+          "min_wall_clearance_m": 0.003117594329160665
+        }
+      ]
+    },
+    {
+      "course_seed": 3010,
+      "n_trials": 5,
+      "n_complete": 4,
+      "n_no_contact_complete": 4,
+      "n_collision": 1,
+      "n_timeout": 0,
+      "trials": [
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 231,
+          "sim_time": 2.3099999999999388,
+          "n_cells": 15,
+          "progress_m": 2.473845520524997,
+          "mean_speed": 1.0709287967640964,
+          "sec_per_cell": 0.15399999999999592,
+          "action_diff_rms": 0.5212887703729282,
+          "sign_flip_rate_left": 11.255411255411554,
+          "sign_flip_rate_right": 18.181818181818663,
+          "lateral_max_m": 0.05246089497686357,
+          "lateral_rms_m": 0.018749452296253858,
+          "n_turns": 5,
+          "hf_ratio": 0.20478427548806685,
+          "i_rms": 0.8031019949101507,
+          "i_dc": 0.1350344684825851,
+          "i_ac": 0.787226328184021,
+          "min_wall_clearance_m": 0.004361338500253436
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 226,
+          "sim_time": 2.259999999999922,
+          "n_cells": 15,
+          "progress_m": 2.47192498746619,
+          "mean_speed": 1.0937721183479094,
+          "sec_per_cell": 0.15066666666666148,
+          "action_diff_rms": 0.47860375328279886,
+          "sign_flip_rate_left": 8.849557522124199,
+          "sign_flip_rate_right": 16.814159292035978,
+          "lateral_max_m": 0.04869759625735476,
+          "lateral_rms_m": 0.019803825735505712,
+          "n_turns": 6,
+          "hf_ratio": 0.1898983940662475,
+          "i_rms": 0.764682083756139,
+          "i_dc": 0.13022136014942184,
+          "i_ac": 0.751602657490158,
+          "min_wall_clearance_m": 0.009435229862235458
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 222,
+          "sim_time": 2.2199999999999087,
+          "n_cells": 15,
+          "progress_m": 2.474332398005865,
+          "mean_speed": 1.114564143245931,
+          "sec_per_cell": 0.14799999999999391,
+          "action_diff_rms": 0.45716019439443417,
+          "sign_flip_rate_left": 9.909909909910317,
+          "sign_flip_rate_right": 22.52252252252345,
+          "lateral_max_m": 0.052775489044952606,
+          "lateral_rms_m": 0.021674177989989555,
+          "n_turns": 5,
+          "hf_ratio": 0.18009799125890308,
+          "i_rms": 0.7368584455716967,
+          "i_dc": 0.12990665916508826,
+          "i_ac": 0.7232652870983026,
+          "min_wall_clearance_m": 0.0024776154203305974
+        },
+        {
+          "outcome": "collision",
+          "complete": false,
+          "no_contact_complete": false,
+          "n_steps": 180,
+          "sim_time": 1.7999999999998573,
+          "n_cells": 15,
+          "progress_m": 1.9085456183735923,
+          "mean_speed": 1.0603031213187464,
+          "sec_per_cell": 0.11999999999999049,
+          "action_diff_rms": 0.5385833421651619,
+          "sign_flip_rate_left": 10.000000000000792,
+          "sign_flip_rate_right": 17.77777777777919,
+          "lateral_max_m": 0.042720101740130134,
+          "lateral_rms_m": 0.018238696487413653,
+          "n_turns": 4,
+          "hf_ratio": 0.20849484459090944,
+          "i_rms": 0.8203088216880602,
+          "i_dc": 0.1549795278058998,
+          "i_ac": 0.8026055217438182,
+          "min_wall_clearance_m": 0.007811939094264149
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 220,
+          "sim_time": 2.199999999999902,
+          "n_cells": 15,
+          "progress_m": 2.4725685382667333,
+          "mean_speed": 1.1238947901212923,
+          "sec_per_cell": 0.14666666666666014,
+          "action_diff_rms": 0.42422761876688164,
+          "sign_flip_rate_left": 10.909090909091395,
+          "sign_flip_rate_right": 14.545454545455193,
+          "lateral_max_m": 0.05149958077706207,
+          "lateral_rms_m": 0.020857024452795817,
+          "n_turns": 5,
+          "hf_ratio": 0.17202064264650413,
+          "i_rms": 0.7118416324211803,
+          "i_dc": 0.13241138146240972,
+          "i_ac": 0.6967815565469726,
+          "min_wall_clearance_m": 0.003387558560598694
+        }
+      ]
+    },
+    {
+      "course_seed": 3011,
+      "n_trials": 5,
+      "n_complete": 5,
+      "n_no_contact_complete": 5,
+      "n_collision": 0,
+      "n_timeout": 0,
+      "trials": [
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 179,
+          "sim_time": 1.7899999999998584,
+          "n_cells": 13,
+          "progress_m": 2.11344389630355,
+          "mean_speed": 1.1806949141361547,
+          "sec_per_cell": 0.1376923076922968,
+          "action_diff_rms": 0.37250170825152734,
+          "sign_flip_rate_left": 8.938547486034226,
+          "sign_flip_rate_right": 12.290502793297062,
+          "lateral_max_m": 0.046423841962900614,
+          "lateral_rms_m": 0.016883531913236847,
+          "n_turns": 3,
+          "hf_ratio": 0.1422023047791684,
+          "i_rms": 0.6081865359810883,
+          "i_dc": 0.1537718520898395,
+          "i_ac": 0.5850875854863617,
+          "min_wall_clearance_m": 0.013066094603651325
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 183,
+          "sim_time": 1.829999999999854,
+          "n_cells": 13,
+          "progress_m": 2.1204806390731075,
+          "mean_speed": 1.1587325896575282,
+          "sec_per_cell": 0.14076923076921954,
+          "action_diff_rms": 0.4780100955246052,
+          "sign_flip_rate_left": 13.114754098361702,
+          "sign_flip_rate_right": 13.114754098361702,
+          "lateral_max_m": 0.042708367993143426,
+          "lateral_rms_m": 0.01620051861139976,
+          "n_turns": 3,
+          "hf_ratio": 0.17133146822344328,
+          "i_rms": 0.7033273396818638,
+          "i_dc": 0.14852402304194273,
+          "i_ac": 0.6863025449001695,
+          "min_wall_clearance_m": 0.015638521805579175
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 182,
+          "sim_time": 1.819999999999855,
+          "n_cells": 13,
+          "progress_m": 2.117323195873239,
+          "mean_speed": 1.163364393337037,
+          "sec_per_cell": 0.13999999999998886,
+          "action_diff_rms": 0.37682358898222285,
+          "sign_flip_rate_left": 8.791208791209492,
+          "sign_flip_rate_right": 13.186813186814238,
+          "lateral_max_m": 0.043846196617023936,
+          "lateral_rms_m": 0.015596017017725219,
+          "n_turns": 3,
+          "hf_ratio": 0.153647089148876,
+          "i_rms": 0.6400799705332982,
+          "i_dc": 0.14953670933172808,
+          "i_ac": 0.6211212528816177,
+          "min_wall_clearance_m": 0.014148232631210761
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 180,
+          "sim_time": 1.7999999999998573,
+          "n_cells": 13,
+          "progress_m": 2.1195337415095308,
+          "mean_speed": 1.1775187452831661,
+          "sec_per_cell": 0.13846153846152748,
+          "action_diff_rms": 0.4550429384278217,
+          "sign_flip_rate_left": 11.111111111111992,
+          "sign_flip_rate_right": 16.66666666666799,
+          "lateral_max_m": 0.04989503337053741,
+          "lateral_rms_m": 0.017508035029801267,
+          "n_turns": 3,
+          "hf_ratio": 0.16320555348374483,
+          "i_rms": 0.6769703437875907,
+          "i_dc": 0.1510921926419722,
+          "i_ac": 0.6537514389919845,
+          "min_wall_clearance_m": 0.00868832298545017
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 182,
+          "sim_time": 1.819999999999855,
+          "n_cells": 13,
+          "progress_m": 2.1123435216998017,
+          "mean_speed": 1.1606283086263571,
+          "sec_per_cell": 0.13999999999998886,
+          "action_diff_rms": 0.44588860700186955,
+          "sign_flip_rate_left": 8.791208791209492,
+          "sign_flip_rate_right": 10.989010989011865,
+          "lateral_max_m": 0.0431761347292855,
+          "lateral_rms_m": 0.015382923895447655,
+          "n_turns": 3,
+          "hf_ratio": 0.16816052475129717,
+          "i_rms": 0.6825441314560509,
+          "i_dc": 0.14765302722795498,
+          "i_ac": 0.6651848223055395,
+          "min_wall_clearance_m": 0.01771071347021036
+        }
+      ]
+    },
+    {
+      "course_seed": 3012,
+      "n_trials": 5,
+      "n_complete": 5,
+      "n_no_contact_complete": 5,
+      "n_collision": 0,
+      "n_timeout": 0,
+      "trials": [
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 259,
+          "sim_time": 2.5900000000000323,
+          "n_cells": 21,
+          "progress_m": 3.555401089548418,
+          "mean_speed": 1.3727417334163605,
+          "sec_per_cell": 0.12333333333333488,
+          "action_diff_rms": 0.24378750776189814,
+          "sign_flip_rate_left": 3.861003861003813,
+          "sign_flip_rate_right": 5.405405405405338,
+          "lateral_max_m": 0.025129322504085394,
+          "lateral_rms_m": 0.011700215235007423,
+          "n_turns": 2,
+          "hf_ratio": 0.10998066929049133,
+          "i_rms": 0.49636523830884466,
+          "i_dc": 0.13961139799271377,
+          "i_ac": 0.47607427943776603,
+          "min_wall_clearance_m": 0.022959465869496383
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 268,
+          "sim_time": 2.6800000000000623,
+          "n_cells": 21,
+          "progress_m": 3.551234710062232,
+          "mean_speed": 1.3250875783813991,
+          "sec_per_cell": 0.12761904761905057,
+          "action_diff_rms": 0.32228764563503054,
+          "sign_flip_rate_left": 4.850746268656604,
+          "sign_flip_rate_right": 5.223880597014804,
+          "lateral_max_m": 0.026856541803716993,
+          "lateral_rms_m": 0.011528921947947317,
+          "n_turns": 2,
+          "hf_ratio": 0.1349832033731396,
+          "i_rms": 0.5596875117107442,
+          "i_dc": 0.14226598222839948,
+          "i_ac": 0.5411903712129591,
+          "min_wall_clearance_m": 0.022001480837994143
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 261,
+          "sim_time": 2.610000000000039,
+          "n_cells": 21,
+          "progress_m": 3.551538075940434,
+          "mean_speed": 1.3607425578315635,
+          "sec_per_cell": 0.12428571428571614,
+          "action_diff_rms": 0.33811194488257174,
+          "sign_flip_rate_left": 5.747126436781524,
+          "sign_flip_rate_right": 6.130268199233625,
+          "lateral_max_m": 0.0234936244229918,
+          "lateral_rms_m": 0.011771883780889657,
+          "n_turns": 2,
+          "hf_ratio": 0.12849583759760919,
+          "i_rms": 0.5456104946955482,
+          "i_dc": 0.13933877958360008,
+          "i_ac": 0.5274512887479876,
+          "min_wall_clearance_m": 0.02120616921073227
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 259,
+          "sim_time": 2.5900000000000323,
+          "n_cells": 21,
+          "progress_m": 3.551648177774811,
+          "mean_speed": 1.3712927327315703,
+          "sec_per_cell": 0.12333333333333488,
+          "action_diff_rms": 0.28099506590640694,
+          "sign_flip_rate_left": 3.08880308880305,
+          "sign_flip_rate_right": 6.1776061776061,
+          "lateral_max_m": 0.027160598761041488,
+          "lateral_rms_m": 0.010325042880463056,
+          "n_turns": 2,
+          "hf_ratio": 0.11627148904738693,
+          "i_rms": 0.5194261894456337,
+          "i_dc": 0.1401265099876733,
+          "i_ac": 0.4986928421891098,
+          "min_wall_clearance_m": 0.02961240792743803
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 260,
+          "sim_time": 2.6000000000000356,
+          "n_cells": 21,
+          "progress_m": 3.5504679507391392,
+          "mean_speed": 1.3655645964381118,
+          "sec_per_cell": 0.1238095238095255,
+          "action_diff_rms": 0.2997976321773472,
+          "sign_flip_rate_left": 2.307692307692276,
+          "sign_flip_rate_right": 6.15384615384607,
+          "lateral_max_m": 0.027016880547988398,
+          "lateral_rms_m": 0.01065410845259236,
+          "n_turns": 2,
+          "hf_ratio": 0.11136117739595792,
+          "i_rms": 0.5035374904001804,
+          "i_dc": 0.1377252155615699,
+          "i_ac": 0.4839072890430141,
+          "min_wall_clearance_m": 0.02827020321959984
+        }
+      ]
+    },
+    {
+      "course_seed": 3013,
+      "n_trials": 5,
+      "n_complete": 4,
+      "n_no_contact_complete": 4,
+      "n_collision": 1,
+      "n_timeout": 0,
+      "trials": [
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 321,
+          "sim_time": 3.2100000000002393,
+          "n_cells": 20,
+          "progress_m": 3.373307103908748,
+          "mean_speed": 1.0508744871989086,
+          "sec_per_cell": 0.16050000000001197,
+          "action_diff_rms": 0.5329757822977266,
+          "sign_flip_rate_left": 10.59190031152569,
+          "sign_flip_rate_right": 18.068535825543822,
+          "lateral_max_m": 0.04110984438494669,
+          "lateral_rms_m": 0.0175800743476169,
+          "n_turns": 10,
+          "hf_ratio": 0.20608810494780608,
+          "i_rms": 0.8276048802592986,
+          "i_dc": 0.1206653559081868,
+          "i_ac": 0.818325349616043,
+          "min_wall_clearance_m": 0.01906232167744391
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 322,
+          "sim_time": 3.2200000000002427,
+          "n_cells": 20,
+          "progress_m": 3.373056204559261,
+          "mean_speed": 1.0475329827823003,
+          "sec_per_cell": 0.16100000000001213,
+          "action_diff_rms": 0.48677540646055084,
+          "sign_flip_rate_left": 9.937888198757015,
+          "sign_flip_rate_right": 24.223602484470224,
+          "lateral_max_m": 0.041467969388158776,
+          "lateral_rms_m": 0.017551597039347295,
+          "n_turns": 10,
+          "hf_ratio": 0.19072137216818608,
+          "i_rms": 0.783853438833881,
+          "i_dc": 0.11929107621771601,
+          "i_ac": 0.7740890191543901,
+          "min_wall_clearance_m": 0.0161146658880356
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 327,
+          "sim_time": 3.2700000000002594,
+          "n_cells": 20,
+          "progress_m": 3.3749604660191874,
+          "mean_speed": 1.0320980018406483,
+          "sec_per_cell": 0.16350000000001297,
+          "action_diff_rms": 0.5791250289245873,
+          "sign_flip_rate_left": 12.844036697246688,
+          "sign_flip_rate_right": 24.464831804279406,
+          "lateral_max_m": 0.037772055070909416,
+          "lateral_rms_m": 0.016730404280198386,
+          "n_turns": 10,
+          "hf_ratio": 0.22277958649122614,
+          "i_rms": 0.8830392672416971,
+          "i_dc": 0.11611859858197665,
+          "i_ac": 0.8732705513491996,
+          "min_wall_clearance_m": 0.022513732728871527
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 327,
+          "sim_time": 3.2700000000002594,
+          "n_cells": 20,
+          "progress_m": 3.373951251461477,
+          "mean_speed": 1.031789373535538,
+          "sec_per_cell": 0.16350000000001297,
+          "action_diff_rms": 0.5262080900783194,
+          "sign_flip_rate_left": 13.455657492353673,
+          "sign_flip_rate_right": 20.795107033637493,
+          "lateral_max_m": 0.03889583682037512,
+          "lateral_rms_m": 0.0162272715795408,
+          "n_turns": 10,
+          "hf_ratio": 0.20497544145404806,
+          "i_rms": 0.8271514491853198,
+          "i_dc": 0.11290587386925115,
+          "i_ac": 0.8175463147247947,
+          "min_wall_clearance_m": 0.021173214811479386
+        },
+        {
+          "outcome": "collision",
+          "complete": false,
+          "no_contact_complete": false,
+          "n_steps": 191,
+          "sim_time": 1.9099999999998452,
+          "n_cells": 20,
+          "progress_m": 2.086071043800678,
+          "mean_speed": 1.0921837925658886,
+          "sec_per_cell": 0.09549999999999226,
+          "action_diff_rms": 0.6182290530282686,
+          "sign_flip_rate_left": 13.61256544502728,
+          "sign_flip_rate_right": 18.848167539268545,
+          "lateral_max_m": 0.05331843414276549,
+          "lateral_rms_m": 0.019384582083811778,
+          "n_turns": 6,
+          "hf_ratio": 0.2490704552552277,
+          "i_rms": 0.9803673078807023,
+          "i_dc": 0.14787651965587825,
+          "i_ac": 0.9684537143405365,
+          "min_wall_clearance_m": 0.0007463303573807031
+        }
+      ]
+    },
+    {
+      "course_seed": 3014,
+      "n_trials": 5,
+      "n_complete": 5,
+      "n_no_contact_complete": 5,
+      "n_collision": 0,
+      "n_timeout": 0,
+      "trials": [
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 70,
+          "sim_time": 0.6999999999999783,
+          "n_cells": 5,
+          "progress_m": 0.6765110956111161,
+          "mean_speed": 0.9664444223016244,
+          "sec_per_cell": 0.13999999999999566,
+          "action_diff_rms": 0.5394213244208218,
+          "sign_flip_rate_left": 21.42857142857209,
+          "sign_flip_rate_right": 22.857142857143565,
+          "lateral_max_m": 0.041659723213321564,
+          "lateral_rms_m": 0.015235697571297694,
+          "n_turns": 2,
+          "hf_ratio": 0.20368359940898503,
+          "i_rms": 0.8491790948841356,
+          "i_dc": 0.18772072557187655,
+          "i_ac": 0.8245475399203631,
+          "min_wall_clearance_m": 0.01748066557555271
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 70,
+          "sim_time": 0.6999999999999783,
+          "n_cells": 5,
+          "progress_m": 0.6735529302475439,
+          "mean_speed": 0.9622184717822354,
+          "sec_per_cell": 0.13999999999999566,
+          "action_diff_rms": 0.5175467852756545,
+          "sign_flip_rate_left": 20.000000000000618,
+          "sign_flip_rate_right": 20.000000000000618,
+          "lateral_max_m": 0.04200237079653102,
+          "lateral_rms_m": 0.01700048926006413,
+          "n_turns": 2,
+          "hf_ratio": 0.20367909226371525,
+          "i_rms": 0.8412340478978511,
+          "i_dc": 0.19758817587853753,
+          "i_ac": 0.8159712246928519,
+          "min_wall_clearance_m": 0.01710019309024783
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 72,
+          "sim_time": 0.7199999999999761,
+          "n_cells": 5,
+          "progress_m": 0.6739734962196202,
+          "mean_speed": 0.9360743003050591,
+          "sec_per_cell": 0.14399999999999522,
+          "action_diff_rms": 0.46298177999571327,
+          "sign_flip_rate_left": 18.055555555556154,
+          "sign_flip_rate_right": 16.66666666666722,
+          "lateral_max_m": 0.04045413391356911,
+          "lateral_rms_m": 0.01896676607008584,
+          "n_turns": 2,
+          "hf_ratio": 0.19660617297775565,
+          "i_rms": 0.798446398885201,
+          "i_dc": 0.18508711657178173,
+          "i_ac": 0.7755357695162841,
+          "min_wall_clearance_m": 0.019172739184530895
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 71,
+          "sim_time": 0.7099999999999772,
+          "n_cells": 5,
+          "progress_m": 0.6732813931559064,
+          "mean_speed": 0.948283652332293,
+          "sec_per_cell": 0.14199999999999544,
+          "action_diff_rms": 0.6567233648351661,
+          "sign_flip_rate_left": 25.352112676057153,
+          "sign_flip_rate_right": 19.718309859155564,
+          "lateral_max_m": 0.043607763596334004,
+          "lateral_rms_m": 0.01759036385501341,
+          "n_turns": 2,
+          "hf_ratio": 0.23358988507218054,
+          "i_rms": 0.937950894423498,
+          "i_dc": 0.18584139246567566,
+          "i_ac": 0.9126090819309867,
+          "min_wall_clearance_m": 0.015432837802484105
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 73,
+          "sim_time": 0.729999999999975,
+          "n_cells": 5,
+          "progress_m": 0.6730741281768321,
+          "mean_speed": 0.9220193536669249,
+          "sec_per_cell": 0.145999999999995,
+          "action_diff_rms": 0.5027500088465405,
+          "sign_flip_rate_left": 13.69863013698677,
+          "sign_flip_rate_right": 24.657534246576187,
+          "lateral_max_m": 0.0428312311074015,
+          "lateral_rms_m": 0.015854506433175604,
+          "n_turns": 2,
+          "hf_ratio": 0.20272592465153114,
+          "i_rms": 0.8182511908762391,
+          "i_dc": 0.1911517161002286,
+          "i_ac": 0.7933966093027803,
+          "min_wall_clearance_m": 0.016209639410223846
+        }
+      ]
+    },
+    {
+      "course_seed": 3015,
+      "n_trials": 5,
+      "n_complete": 5,
+      "n_no_contact_complete": 5,
+      "n_collision": 0,
+      "n_timeout": 0,
+      "trials": [
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 260,
+          "sim_time": 2.6000000000000356,
+          "n_cells": 19,
+          "progress_m": 3.1918819697844305,
+          "mean_speed": 1.2276469114555333,
+          "sec_per_cell": 0.13684210526315976,
+          "action_diff_rms": 0.37573115844451,
+          "sign_flip_rate_left": 7.692307692307587,
+          "sign_flip_rate_right": 13.076923076922897,
+          "lateral_max_m": 0.03824488689409966,
+          "lateral_rms_m": 0.014973206862599208,
+          "n_turns": 4,
+          "hf_ratio": 0.1606583291775962,
+          "i_rms": 0.6774541200686319,
+          "i_dc": 0.131077478224759,
+          "i_ac": 0.6635110537019951,
+          "min_wall_clearance_m": 0.019889144965851334
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 261,
+          "sim_time": 2.610000000000039,
+          "n_cells": 19,
+          "progress_m": 3.1942608139034623,
+          "mean_speed": 1.223854717970657,
+          "sec_per_cell": 0.13736842105263364,
+          "action_diff_rms": 0.4091912898823759,
+          "sign_flip_rate_left": 6.130268199233625,
+          "sign_flip_rate_right": 13.793103448275657,
+          "lateral_max_m": 0.037610685782816566,
+          "lateral_rms_m": 0.014131632962396666,
+          "n_turns": 4,
+          "hf_ratio": 0.16149796420098184,
+          "i_rms": 0.6787153193201424,
+          "i_dc": 0.1358025693684034,
+          "i_ac": 0.6626548155725618,
+          "min_wall_clearance_m": 0.022983990620341573
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 259,
+          "sim_time": 2.5900000000000323,
+          "n_cells": 19,
+          "progress_m": 3.1969941680670613,
+          "mean_speed": 1.2343606826513596,
+          "sec_per_cell": 0.13631578947368592,
+          "action_diff_rms": 0.3300672184103584,
+          "sign_flip_rate_left": 3.861003861003813,
+          "sign_flip_rate_right": 10.810810810810676,
+          "lateral_max_m": 0.03916502804448785,
+          "lateral_rms_m": 0.013852785040760872,
+          "n_turns": 4,
+          "hf_ratio": 0.14727653291494366,
+          "i_rms": 0.6341913940457856,
+          "i_dc": 0.13458054163883518,
+          "i_ac": 0.6193388024488191,
+          "min_wall_clearance_m": 0.021966858204723615
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 260,
+          "sim_time": 2.6000000000000356,
+          "n_cells": 19,
+          "progress_m": 3.1936499548271433,
+          "mean_speed": 1.2283269057027306,
+          "sec_per_cell": 0.13684210526315976,
+          "action_diff_rms": 0.33253216856912815,
+          "sign_flip_rate_left": 4.615384615384552,
+          "sign_flip_rate_right": 10.76923076923062,
+          "lateral_max_m": 0.037174822706159016,
+          "lateral_rms_m": 0.014032098243508387,
+          "n_turns": 5,
+          "hf_ratio": 0.14904266864257218,
+          "i_rms": 0.6419370035786202,
+          "i_dc": 0.13632131476942896,
+          "i_ac": 0.6257294468560919,
+          "min_wall_clearance_m": 0.02218864415036457
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 259,
+          "sim_time": 2.5900000000000323,
+          "n_cells": 19,
+          "progress_m": 3.190543071164539,
+          "mean_speed": 1.2318699116465248,
+          "sec_per_cell": 0.13631578947368592,
+          "action_diff_rms": 0.3677526644832766,
+          "sign_flip_rate_left": 4.633204633204575,
+          "sign_flip_rate_right": 13.899613899613726,
+          "lateral_max_m": 0.03871818303299446,
+          "lateral_rms_m": 0.01299653488608438,
+          "n_turns": 3,
+          "hf_ratio": 0.1540028018131317,
+          "i_rms": 0.6606400427785989,
+          "i_dc": 0.13271484433971925,
+          "i_ac": 0.6460550115842477,
+          "min_wall_clearance_m": 0.023477329547559274
+        }
+      ]
+    },
+    {
+      "course_seed": 3016,
+      "n_trials": 5,
+      "n_complete": 5,
+      "n_no_contact_complete": 5,
+      "n_collision": 0,
+      "n_timeout": 0,
+      "trials": [
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 273,
+          "sim_time": 2.730000000000079,
+          "n_cells": 20,
+          "progress_m": 3.3729087571873895,
+          "mean_speed": 1.2354977132554184,
+          "sec_per_cell": 0.13650000000000395,
+          "action_diff_rms": 0.3545600224192636,
+          "sign_flip_rate_left": 4.395604395604268,
+          "sign_flip_rate_right": 13.186813186812804,
+          "lateral_max_m": 0.04202936785479705,
+          "lateral_rms_m": 0.014516674162311527,
+          "n_turns": 4,
+          "hf_ratio": 0.15408325275274765,
+          "i_rms": 0.6469332936526908,
+          "i_dc": 0.13671416605958892,
+          "i_ac": 0.6322037088091892,
+          "min_wall_clearance_m": 0.01959787220164643
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 280,
+          "sim_time": 2.8000000000001024,
+          "n_cells": 20,
+          "progress_m": 3.3719602872874557,
+          "mean_speed": 1.2042715311740473,
+          "sec_per_cell": 0.14000000000000512,
+          "action_diff_rms": 0.4041194924991523,
+          "sign_flip_rate_left": 7.142857142856881,
+          "sign_flip_rate_right": 12.857142857142387,
+          "lateral_max_m": 0.04797990576872735,
+          "lateral_rms_m": 0.01548428942516435,
+          "n_turns": 4,
+          "hf_ratio": 0.15764737393461334,
+          "i_rms": 0.6573995921996516,
+          "i_dc": 0.1359322730935985,
+          "i_ac": 0.6430101695349097,
+          "min_wall_clearance_m": 0.010489611009649725
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 278,
+          "sim_time": 2.7800000000000957,
+          "n_cells": 20,
+          "progress_m": 3.372982808462913,
+          "mean_speed": 1.2133031685117974,
+          "sec_per_cell": 0.1390000000000048,
+          "action_diff_rms": 0.41476136213912485,
+          "sign_flip_rate_left": 3.5971223021581493,
+          "sign_flip_rate_right": 14.388489208632597,
+          "lateral_max_m": 0.0407569653837343,
+          "lateral_rms_m": 0.013511271116026088,
+          "n_turns": 5,
+          "hf_ratio": 0.15897496304497816,
+          "i_rms": 0.6561371974558142,
+          "i_dc": 0.13268563451613907,
+          "i_ac": 0.6419549482818475,
+          "min_wall_clearance_m": 0.01974968341614471
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 275,
+          "sim_time": 2.7500000000000857,
+          "n_cells": 20,
+          "progress_m": 3.3719413987538385,
+          "mean_speed": 1.2261605086377212,
+          "sec_per_cell": 0.13750000000000429,
+          "action_diff_rms": 0.3892701207366187,
+          "sign_flip_rate_left": 6.545454545454342,
+          "sign_flip_rate_right": 12.363636363635978,
+          "lateral_max_m": 0.04760489959573988,
+          "lateral_rms_m": 0.01582950419819569,
+          "n_turns": 5,
+          "hf_ratio": 0.15957074350473494,
+          "i_rms": 0.6656066227027402,
+          "i_dc": 0.13895832757237994,
+          "i_ac": 0.6508803790207603,
+          "min_wall_clearance_m": 0.0106963735344703
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 276,
+          "sim_time": 2.760000000000089,
+          "n_cells": 20,
+          "progress_m": 3.371891057962035,
+          "mean_speed": 1.2216996586818574,
+          "sec_per_cell": 0.13800000000000445,
+          "action_diff_rms": 0.3841258925889483,
+          "sign_flip_rate_left": 4.71014492753608,
+          "sign_flip_rate_right": 13.043478260869144,
+          "lateral_max_m": 0.0418637646974917,
+          "lateral_rms_m": 0.014797672710609161,
+          "n_turns": 5,
+          "hf_ratio": 0.15836615526305448,
+          "i_rms": 0.6567126306008961,
+          "i_dc": 0.13509685966644974,
+          "i_ac": 0.6417689476762214,
+          "min_wall_clearance_m": 0.019042413005399536
+        }
+      ]
+    },
+    {
+      "course_seed": 3017,
+      "n_trials": 5,
+      "n_complete": 4,
+      "n_no_contact_complete": 4,
+      "n_collision": 1,
+      "n_timeout": 0,
+      "trials": [
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 319,
+          "sim_time": 3.1900000000002326,
+          "n_cells": 22,
+          "progress_m": 3.731568291278937,
+          "mean_speed": 1.1697706242252868,
+          "sec_per_cell": 0.14500000000001056,
+          "action_diff_rms": 0.43953522182396954,
+          "sign_flip_rate_left": 11.285266457679429,
+          "sign_flip_rate_right": 16.92789968651914,
+          "lateral_max_m": 0.04527436034050081,
+          "lateral_rms_m": 0.016838457523998315,
+          "n_turns": 8,
+          "hf_ratio": 0.17645705009196308,
+          "i_rms": 0.7266531413875577,
+          "i_dc": 0.1352154142073841,
+          "i_ac": 0.7138172387016096,
+          "min_wall_clearance_m": 0.011708757033954098
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 315,
+          "sim_time": 3.1500000000002193,
+          "n_cells": 22,
+          "progress_m": 3.737094390620102,
+          "mean_speed": 1.1863791716253467,
+          "sec_per_cell": 0.14318181818182815,
+          "action_diff_rms": 0.4196537371268218,
+          "sign_flip_rate_left": 8.88888888888827,
+          "sign_flip_rate_right": 17.14285714285595,
+          "lateral_max_m": 0.049296371760198576,
+          "lateral_rms_m": 0.016687305497981243,
+          "n_turns": 8,
+          "hf_ratio": 0.1700563511137217,
+          "i_rms": 0.6996123307963947,
+          "i_dc": 0.13429996558272012,
+          "i_ac": 0.6860710678055045,
+          "min_wall_clearance_m": 0.006722771716571457
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 308,
+          "sim_time": 3.080000000000196,
+          "n_cells": 22,
+          "progress_m": 3.73337028121117,
+          "mean_speed": 1.2121332081853677,
+          "sec_per_cell": 0.1400000000000089,
+          "action_diff_rms": 0.4079956120390415,
+          "sign_flip_rate_left": 8.441558441557905,
+          "sign_flip_rate_right": 17.532467532466416,
+          "lateral_max_m": 0.047190461620893354,
+          "lateral_rms_m": 0.01688250502039592,
+          "n_turns": 7,
+          "hf_ratio": 0.1635950565098236,
+          "i_rms": 0.686357449734093,
+          "i_dc": 0.13951776831863688,
+          "i_ac": 0.6714827589846721,
+          "min_wall_clearance_m": 0.00947179856886701
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 306,
+          "sim_time": 3.0600000000001892,
+          "n_cells": 22,
+          "progress_m": 3.7309872729590365,
+          "mean_speed": 1.219276886587845,
+          "sec_per_cell": 0.1390909090909177,
+          "action_diff_rms": 0.4116324256081635,
+          "sign_flip_rate_left": 7.8431372549014755,
+          "sign_flip_rate_right": 17.64705882352832,
+          "lateral_max_m": 0.05178763836686917,
+          "lateral_rms_m": 0.018832061030210154,
+          "n_turns": 8,
+          "hf_ratio": 0.16268158653725856,
+          "i_rms": 0.6939551848777749,
+          "i_dc": 0.1335924771167607,
+          "i_ac": 0.680371412378095,
+          "min_wall_clearance_m": 0.003295968384003345
+        },
+        {
+          "outcome": "collision",
+          "complete": false,
+          "no_contact_complete": false,
+          "n_steps": 235,
+          "sim_time": 2.349999999999952,
+          "n_cells": 22,
+          "progress_m": 2.639885124782525,
+          "mean_speed": 1.1233553722479057,
+          "sec_per_cell": 0.10681818181817965,
+          "action_diff_rms": 0.4904014152767555,
+          "sign_flip_rate_left": 13.617021276596022,
+          "sign_flip_rate_right": 21.276595744681284,
+          "lateral_max_m": 0.04991504111992551,
+          "lateral_rms_m": 0.017374633692925006,
+          "n_turns": 6,
+          "hf_ratio": 0.18990830928688238,
+          "i_rms": 0.7813630818700086,
+          "i_dc": 0.15765579611156877,
+          "i_ac": 0.7635043074140418,
+          "min_wall_clearance_m": 0.002504184237183839
+        }
+      ]
+    },
+    {
+      "course_seed": 3018,
+      "n_trials": 5,
+      "n_complete": 5,
+      "n_no_contact_complete": 5,
+      "n_collision": 0,
+      "n_timeout": 0,
+      "trials": [
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 282,
+          "sim_time": 2.820000000000109,
+          "n_cells": 22,
+          "progress_m": 3.732429955333883,
+          "mean_speed": 1.3235567217495527,
+          "sec_per_cell": 0.12818181818182314,
+          "action_diff_rms": 0.3715679476630924,
+          "sign_flip_rate_left": 4.964539007092006,
+          "sign_flip_rate_right": 11.347517730496016,
+          "lateral_max_m": 0.03763068639753464,
+          "lateral_rms_m": 0.013077064459052792,
+          "n_turns": 3,
+          "hf_ratio": 0.14860406243188554,
+          "i_rms": 0.6101816424663208,
+          "i_dc": 0.13432023047515285,
+          "i_ac": 0.5941493578921755,
+          "min_wall_clearance_m": 0.02272059084493018
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 283,
+          "sim_time": 2.8300000000001124,
+          "n_cells": 22,
+          "progress_m": 3.735006215678468,
+          "mean_speed": 1.3197901822184874,
+          "sec_per_cell": 0.12863636363636874,
+          "action_diff_rms": 0.31878245229181507,
+          "sign_flip_rate_left": 4.240282685512199,
+          "sign_flip_rate_right": 8.480565371024397,
+          "lateral_max_m": 0.03731989883275477,
+          "lateral_rms_m": 0.01313310036608978,
+          "n_turns": 3,
+          "hf_ratio": 0.13323461758920163,
+          "i_rms": 0.5582898217995891,
+          "i_dc": 0.1352440151142026,
+          "i_ac": 0.5415505079083148,
+          "min_wall_clearance_m": 0.0215198734293034
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 283,
+          "sim_time": 2.8300000000001124,
+          "n_cells": 22,
+          "progress_m": 3.73164246463543,
+          "mean_speed": 1.3186015776096403,
+          "sec_per_cell": 0.12863636363636874,
+          "action_diff_rms": 0.35711271939821687,
+          "sign_flip_rate_left": 7.067137809186998,
+          "sign_flip_rate_right": 7.773851590105698,
+          "lateral_max_m": 0.0318489406769874,
+          "lateral_rms_m": 0.012565750812460412,
+          "n_turns": 4,
+          "hf_ratio": 0.14428227980933533,
+          "i_rms": 0.5880885335288816,
+          "i_dc": 0.13977476303710354,
+          "i_ac": 0.5693176708885286,
+          "min_wall_clearance_m": 0.021608203717211512
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 286,
+          "sim_time": 2.8600000000001224,
+          "n_cells": 22,
+          "progress_m": 3.7363649753795523,
+          "mean_speed": 1.3064213200627246,
+          "sec_per_cell": 0.13000000000000556,
+          "action_diff_rms": 0.36718632885326674,
+          "sign_flip_rate_left": 2.7972027972026776,
+          "sign_flip_rate_right": 7.692307692307363,
+          "lateral_max_m": 0.03273233477446913,
+          "lateral_rms_m": 0.010882315243521866,
+          "n_turns": 4,
+          "hf_ratio": 0.14510193773546978,
+          "i_rms": 0.5931977751834236,
+          "i_dc": 0.13919114310376082,
+          "i_ac": 0.5753787608882454,
+          "min_wall_clearance_m": 0.024025929437384137
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 283,
+          "sim_time": 2.8300000000001124,
+          "n_cells": 22,
+          "progress_m": 3.736188333078774,
+          "mean_speed": 1.3202078915472175,
+          "sec_per_cell": 0.12863636363636874,
+          "action_diff_rms": 0.29202331427703737,
+          "sign_flip_rate_left": 2.8268551236747994,
+          "sign_flip_rate_right": 6.360424028268299,
+          "lateral_max_m": 0.03685062346352924,
+          "lateral_rms_m": 0.012280170573996987,
+          "n_turns": 3,
+          "hf_ratio": 0.1265874743840828,
+          "i_rms": 0.5373272658367357,
+          "i_dc": 0.13579730967021453,
+          "i_ac": 0.5198598201295137,
+          "min_wall_clearance_m": 0.02248242283135213
+        }
+      ]
+    },
+    {
+      "course_seed": 3019,
+      "n_trials": 5,
+      "n_complete": 5,
+      "n_no_contact_complete": 5,
+      "n_collision": 0,
+      "n_timeout": 0,
+      "trials": [
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 304,
+          "sim_time": 3.0400000000001826,
+          "n_cells": 22,
+          "progress_m": 3.7348127581184167,
+          "mean_speed": 1.2285568283283528,
+          "sec_per_cell": 0.13818181818182648,
+          "action_diff_rms": 0.3970505626756743,
+          "sign_flip_rate_left": 7.236842105262723,
+          "sign_flip_rate_right": 18.42105263157784,
+          "lateral_max_m": 0.024896188056038326,
+          "lateral_rms_m": 0.013595892291055523,
+          "n_turns": 6,
+          "hf_ratio": 0.1617637556201788,
+          "i_rms": 0.6847058476716021,
+          "i_dc": 0.12805257924367242,
+          "i_ac": 0.6725610243062585,
+          "min_wall_clearance_m": 0.023468011799968165
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 305,
+          "sim_time": 3.050000000000186,
+          "n_cells": 22,
+          "progress_m": 3.738352373185983,
+          "mean_speed": 1.225689302683854,
+          "sec_per_cell": 0.13863636363637208,
+          "action_diff_rms": 0.3928524469892464,
+          "sign_flip_rate_left": 7.213114754097921,
+          "sign_flip_rate_right": 13.77049180327785,
+          "lateral_max_m": 0.025771060104749666,
+          "lateral_rms_m": 0.013895657675262359,
+          "n_turns": 6,
+          "hf_ratio": 0.16042769754837355,
+          "i_rms": 0.677017680824891,
+          "i_dc": 0.12919796620427293,
+          "i_ac": 0.6645168555317688,
+          "min_wall_clearance_m": 0.016131474393285918
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 307,
+          "sim_time": 3.0700000000001926,
+          "n_cells": 22,
+          "progress_m": 3.7333097857677195,
+          "mean_speed": 1.2160618194682362,
+          "sec_per_cell": 0.1395454545454633,
+          "action_diff_rms": 0.4086043829737652,
+          "sign_flip_rate_left": 5.863192182410056,
+          "sign_flip_rate_right": 13.029315960911235,
+          "lateral_max_m": 0.02556051345507193,
+          "lateral_rms_m": 0.013122355235011532,
+          "n_turns": 6,
+          "hf_ratio": 0.16412268088425347,
+          "i_rms": 0.6930683022774007,
+          "i_dc": 0.12964699283560935,
+          "i_ac": 0.6801611151735336,
+          "min_wall_clearance_m": 0.01132579843080978
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 305,
+          "sim_time": 3.050000000000186,
+          "n_cells": 22,
+          "progress_m": 3.7339205207090598,
+          "mean_speed": 1.2242362362979777,
+          "sec_per_cell": 0.13863636363637208,
+          "action_diff_rms": 0.39965960565165237,
+          "sign_flip_rate_left": 3.934426229507957,
+          "sign_flip_rate_right": 15.081967213113835,
+          "lateral_max_m": 0.023361559777679564,
+          "lateral_rms_m": 0.01429612566163278,
+          "n_turns": 6,
+          "hf_ratio": 0.1594407205737339,
+          "i_rms": 0.6837930438211075,
+          "i_dc": 0.12794257575918466,
+          "i_ac": 0.671386443579721,
+          "min_wall_clearance_m": 0.021411152153727082
+        },
+        {
+          "outcome": "goal",
+          "complete": true,
+          "no_contact_complete": true,
+          "n_steps": 305,
+          "sim_time": 3.050000000000186,
+          "n_cells": 22,
+          "progress_m": 3.735871039248085,
+          "mean_speed": 1.224875750573068,
+          "sec_per_cell": 0.13863636363637208,
+          "action_diff_rms": 0.3846562976547501,
+          "sign_flip_rate_left": 6.557377049179928,
+          "sign_flip_rate_right": 13.77049180327785,
+          "lateral_max_m": 0.02574654131073617,
+          "lateral_rms_m": 0.013404284609348763,
+          "n_turns": 7,
+          "hf_ratio": 0.1586511024492313,
+          "i_rms": 0.6742499569638264,
+          "i_dc": 0.13174712539277011,
+          "i_ac": 0.6611257782253703,
+          "min_wall_clearance_m": 0.01294666306124193
+        }
+      ]
+    }
+  ],
+  "git_rev": "95ceed5adf6442ec8a5c11e46d06af5da029c448-dirty",
+  "model_sha256": "d6afe18e64f2899a",
+  "eval_schema_version": 2,
+  "traces": {
+    "median_flip": {
+      "course_seed": 3006,
+      "trial_index": 2,
+      "t": [
+        0.01,
+        0.02,
+        0.03,
+        0.04,
+        0.05,
+        0.06,
+        0.07,
+        0.08,
+        0.09,
+        0.1,
+        0.11,
+        0.12,
+        0.13,
+        0.14,
+        0.15,
+        0.16,
+        0.17,
+        0.18,
+        0.19,
+        0.2,
+        0.21,
+        0.22,
+        0.23,
+        0.24,
+        0.25,
+        0.26,
+        0.27,
+        0.28,
+        0.29,
+        0.3,
+        0.31,
+        0.32,
+        0.33,
+        0.34,
+        0.35,
+        0.36,
+        0.37,
+        0.38,
+        0.39,
+        0.4,
+        0.41,
+        0.42,
+        0.43,
+        0.44,
+        0.45,
+        0.46,
+        0.47,
+        0.48,
+        0.49,
+        0.5,
+        0.51,
+        0.52,
+        0.53,
+        0.54,
+        0.55,
+        0.56,
+        0.57,
+        0.58,
+        0.59,
+        0.6,
+        0.61,
+        0.62,
+        0.63,
+        0.64,
+        0.65,
+        0.66,
+        0.67,
+        0.68,
+        0.69,
+        0.7,
+        0.71,
+        0.72,
+        0.73,
+        0.74,
+        0.75,
+        0.76,
+        0.77,
+        0.78,
+        0.79,
+        0.8,
+        0.81,
+        0.82,
+        0.83,
+        0.84,
+        0.85,
+        0.86,
+        0.87,
+        0.88,
+        0.89,
+        0.9,
+        0.91,
+        0.92,
+        0.93,
+        0.94,
+        0.95,
+        0.96,
+        0.97,
+        0.98,
+        0.99,
+        1.0,
+        1.01,
+        1.02,
+        1.03,
+        1.04,
+        1.05,
+        1.06,
+        1.07,
+        1.08,
+        1.09,
+        1.1,
+        1.11,
+        1.12,
+        1.13,
+        1.14,
+        1.15,
+        1.16,
+        1.17,
+        1.18,
+        1.19,
+        1.2,
+        1.21,
+        1.22,
+        1.23,
+        1.24,
+        1.25,
+        1.26,
+        1.27,
+        1.28,
+        1.29,
+        1.3,
+        1.31,
+        1.32,
+        1.33,
+        1.34,
+        1.35,
+        1.36,
+        1.37,
+        1.38,
+        1.39,
+        1.4,
+        1.41,
+        1.42,
+        1.43,
+        1.44,
+        1.45,
+        1.46,
+        1.47,
+        1.48,
+        1.49,
+        1.5,
+        1.51,
+        1.52,
+        1.53,
+        1.54,
+        1.55,
+        1.56,
+        1.57,
+        1.58,
+        1.59,
+        1.6,
+        1.61,
+        1.62,
+        1.63,
+        1.64,
+        1.65,
+        1.66,
+        1.67,
+        1.68,
+        1.69
+      ],
+      "action": [
+        [
+          0.77271,
+          1.0
+        ],
+        [
+          0.7218,
+          0.42945
+        ],
+        [
+          0.49523,
+          0.29273
+        ],
+        [
+          0.5357,
+          0.79625
+        ],
+        [
+          0.32681,
+          0.73254
+        ],
+        [
+          0.73349,
+          0.46457
+        ],
+        [
+          0.4036,
+          1.0
+        ],
+        [
+          0.59562,
+          0.25312
+        ],
+        [
+          0.3529,
+          0.55668
+        ],
+        [
+          0.62541,
+          0.6539
+        ],
+        [
+          0.61132,
+          0.57526
+        ],
+        [
+          0.44634,
+          1.0
+        ],
+        [
+          0.67977,
+          0.27383
+        ],
+        [
+          0.43745,
+          0.56587
+        ],
+        [
+          0.64694,
+          0.60564
+        ],
+        [
+          0.56685,
+          0.59712
+        ],
+        [
+          0.55724,
+          0.58014
+        ],
+        [
+          0.56462,
+          0.51536
+        ],
+        [
+          0.47079,
+          0.5099
+        ],
+        [
+          0.4968,
+          0.46948
+        ],
+        [
+          0.44319,
+          0.4702
+        ],
+        [
+          0.4585,
+          0.44417
+        ],
+        [
+          0.42589,
+          0.44717
+        ],
+        [
+          0.43559,
+          0.43172
+        ],
+        [
+          0.41644,
+          0.43629
+        ],
+        [
+          0.42576,
+          0.43758
+        ],
+        [
+          0.41932,
+          0.43126
+        ],
+        [
+          0.41517,
+          0.43993
+        ],
+        [
+          0.42007,
+          0.42705
+        ],
+        [
+          0.40641,
+          0.43928
+        ],
+        [
+          0.41944,
+          0.42537
+        ],
+        [
+          0.39919,
+          0.42839
+        ],
+        [
+          0.4118,
+          0.43287
+        ],
+        [
+          0.40833,
+          0.42833
+        ],
+        [
+          0.40372,
+          0.42689
+        ],
+        [
+          0.40352,
+          0.4248
+        ],
+        [
+          0.40547,
+          0.43862
+        ],
+        [
+          0.41433,
+          0.42685
+        ],
+        [
+          0.39922,
+          0.4289
+        ],
+        [
+          0.40719,
+          0.42442
+        ],
+        [
+          0.40015,
+          0.42617
+        ],
+        [
+          0.40536,
+          0.42443
+        ],
+        [
+          0.40287,
+          0.42728
+        ],
+        [
+          0.40665,
+          0.42515
+        ],
+        [
+          0.40426,
+          0.42666
+        ],
+        [
+          0.40808,
+          0.42694
+        ],
+        [
+          0.41068,
+          0.43849
+        ],
+        [
+          0.4181,
+          0.42614
+        ],
+        [
+          0.40451,
+          0.42761
+        ],
+        [
+          0.41216,
+          0.42208
+        ],
+        [
+          0.40897,
+          0.43539
+        ],
+        [
+          0.4207,
+          0.42141
+        ],
+        [
+          0.40401,
+          0.42386
+        ],
+        [
+          0.4155,
+          0.42042
+        ],
+        [
+          0.41283,
+          0.43568
+        ],
+        [
+          0.4252,
+          0.41936
+        ],
+        [
+          0.40681,
+          0.42322
+        ],
+        [
+          0.41964,
+          0.418
+        ],
+        [
+          0.41156,
+          0.42119
+        ],
+        [
+          0.41925,
+          0.41882
+        ],
+        [
+          0.41586,
+          0.42123
+        ],
+        [
+          0.42074,
+          0.41989
+        ],
+        [
+          0.41858,
+          0.42012
+        ],
+        [
+          0.4085,
+          0.41141
+        ],
+        [
+          0.18408,
+          -0.14108
+        ],
+        [
+          0.09445,
+          0.08516
+        ],
+        [
+          0.12486,
+          -0.09409
+        ],
+        [
+          0.27847,
+          -0.26015
+        ],
+        [
+          0.00183,
+          0.24973
+        ],
+        [
+          0.23609,
+          0.18183
+        ],
+        [
+          0.04899,
+          0.08913
+        ],
+        [
+          -1.0,
+          0.8958
+        ],
+        [
+          -0.86568,
+          0.04819
+        ],
+        [
+          -1.0,
+          0.18812
+        ],
+        [
+          -0.704,
+          -0.00384
+        ],
+        [
+          -0.73006,
+          0.21019
+        ],
+        [
+          -0.70486,
+          0.23802
+        ],
+        [
+          -0.17698,
+          -0.77647
+        ],
+        [
+          -0.51653,
+          0.71311
+        ],
+        [
+          -0.10029,
+          0.17268
+        ],
+        [
+          0.12274,
+          0.1223
+        ],
+        [
+          0.27577,
+          0.25349
+        ],
+        [
+          -0.63366,
+          1.0
+        ],
+        [
+          -0.39402,
+          0.56847
+        ],
+        [
+          -0.30899,
+          0.85117
+        ],
+        [
+          -0.01965,
+          1.0
+        ],
+        [
+          0.05834,
+          1.0
+        ],
+        [
+          0.1433,
+          0.18307
+        ],
+        [
+          1.0,
+          -0.12998
+        ],
+        [
+          -0.12839,
+          -0.16653
+        ],
+        [
+          1.0,
+          -0.85963
+        ],
+        [
+          1.0,
+          0.47009
+        ],
+        [
+          1.0,
+          0.2223
+        ],
+        [
+          1.0,
+          0.18525
+        ],
+        [
+          0.46101,
+          -0.13876
+        ],
+        [
+          0.97615,
+          0.47574
+        ],
+        [
+          0.8144,
+          0.38814
+        ],
+        [
+          0.28511,
+          0.67392
+        ],
+        [
+          0.19232,
+          0.40884
+        ],
+        [
+          0.03395,
+          0.37711
+        ],
+        [
+          -0.08928,
+          0.72983
+        ],
+        [
+          -0.32135,
+          0.55352
+        ],
+        [
+          -0.5857,
+          0.57013
+        ],
+        [
+          0.55516,
+          0.32801
+        ],
+        [
+          -0.01334,
+          0.4609
+        ],
+        [
+          0.70782,
+          0.17624
+        ],
+        [
+          0.64363,
+          1.0
+        ],
+        [
+          0.78598,
+          0.74459
+        ],
+        [
+          0.52548,
+          0.87954
+        ],
+        [
+          0.62942,
+          1.0
+        ],
+        [
+          0.47187,
+          0.71734
+        ],
+        [
+          0.74001,
+          0.18099
+        ],
+        [
+          -0.23744,
+          0.69871
+        ],
+        [
+          1.0,
+          0.45746
+        ],
+        [
+          0.99514,
+          0.44769
+        ],
+        [
+          0.37771,
+          0.44274
+        ],
+        [
+          0.4012,
+          0.45137
+        ],
+        [
+          0.14616,
+          0.38971
+        ],
+        [
+          0.3984,
+          0.56288
+        ],
+        [
+          0.50831,
+          0.4338
+        ],
+        [
+          0.40548,
+          0.47718
+        ],
+        [
+          0.44314,
+          0.48924
+        ],
+        [
+          0.43593,
+          0.45523
+        ],
+        [
+          0.38682,
+          0.47217
+        ],
+        [
+          0.42876,
+          0.44628
+        ],
+        [
+          0.39179,
+          0.45476
+        ],
+        [
+          0.41297,
+          0.43164
+        ],
+        [
+          0.38076,
+          0.44003
+        ],
+        [
+          0.31371,
+          0.33698
+        ],
+        [
+          0.1071,
+          -0.10257
+        ],
+        [
+          0.01888,
+          0.02365
+        ],
+        [
+          0.22465,
+          -0.30625
+        ],
+        [
+          0.06846,
+          0.36567
+        ],
+        [
+          0.24923,
+          0.10203
+        ],
+        [
+          0.0137,
+          0.03482
+        ],
+        [
+          0.09566,
+          -0.21552
+        ],
+        [
+          1.0,
+          -0.65807
+        ],
+        [
+          0.19326,
+          -0.25852
+        ],
+        [
+          0.24667,
+          -0.02175
+        ],
+        [
+          0.10439,
+          -0.24591
+        ],
+        [
+          0.05492,
+          -0.1147
+        ],
+        [
+          0.06912,
+          -0.06881
+        ],
+        [
+          0.1176,
+          0.04696
+        ],
+        [
+          -0.14457,
+          0.23499
+        ],
+        [
+          -0.31863,
+          0.43345
+        ],
+        [
+          -0.06121,
+          0.47365
+        ],
+        [
+          0.4112,
+          0.1898
+        ],
+        [
+          0.74746,
+          0.03039
+        ],
+        [
+          0.5404,
+          -0.39854
+        ],
+        [
+          0.11072,
+          -0.25416
+        ],
+        [
+          0.02944,
+          0.0013
+        ],
+        [
+          0.17006,
+          0.06896
+        ],
+        [
+          0.25122,
+          -0.05848
+        ],
+        [
+          0.21722,
+          -0.06042
+        ],
+        [
+          0.2016,
+          0.08825
+        ],
+        [
+          0.29468,
+          0.31267
+        ],
+        [
+          0.46289,
+          0.42242
+        ],
+        [
+          0.28538,
+          0.58343
+        ],
+        [
+          0.35019,
+          0.18166
+        ],
+        [
+          0.39113,
+          0.36766
+        ],
+        [
+          0.45349,
+          0.46782
+        ],
+        [
+          0.52348,
+          0.27225
+        ],
+        [
+          0.31595,
+          0.3225
+        ],
+        [
+          0.42341,
+          0.26893
+        ],
+        [
+          0.31404,
+          0.29716
+        ],
+        [
+          0.34742,
+          0.22479
+        ],
+        [
+          0.25944,
+          0.2506
+        ],
+        [
+          0.31285,
+          0.26224
+        ],
+        [
+          0.29342,
+          0.20865
+        ]
+      ],
+      "wheel_omega": [
+        [
+          42.6862,
+          55.7523
+        ],
+        [
+          82.1674,
+          89.3154
+        ],
+        [
+          77.3762,
+          56.398
+        ],
+        [
+          64.0034,
+          58.9025
+        ],
+        [
+          57.4997,
+          89.9774
+        ],
+        [
+          72.7331,
+          90.6068
+        ],
+        [
+          80.4413,
+          110.7091
+        ],
+        [
+          84.6346,
+          121.9274
+        ],
+        [
+          77.1843,
+          90.308
+        ],
+        [
+          71.0103,
+          87.2736
+        ],
+        [
+          87.8036,
+          92.3522
+        ],
+        [
+          88.7583,
+          121.588
+        ],
+        [
+          90.0842,
+          119.798
+        ],
+        [
+          94.1755,
+          91.4704
+        ],
+        [
+          92.6677,
+          94.2796
+        ],
+        [
+          98.4394,
+          99.7392
+        ],
+        [
+          102.5177,
+          104.2466
+        ],
+        [
+          107.0696,
+          107.5181
+        ],
+        [
+          110.0848,
+          110.1876
+        ],
+        [
+          111.6589,
+          111.8256
+        ],
+        [
+          113.1662,
+          113.2257
+        ],
+        [
+          114.046,
+          114.1917
+        ],
+        [
+          114.6824,
+          114.804
+        ],
+        [
+          114.9816,
+          115.1966
+        ],
+        [
+          115.1243,
+          115.3619
+        ],
+        [
+          115.1949,
+          115.5955
+        ],
+        [
+          115.2096,
+          115.5974
+        ],
+        [
+          115.2212,
+          115.7309
+        ],
+        [
+          115.2605,
+          115.7693
+        ],
+        [
+          115.1206,
+          115.7095
+        ],
+        [
+          115.0218,
+          115.6328
+        ],
+        [
+          115.0823,
+          115.6753
+        ],
+        [
+          114.7486,
+          115.4838
+        ],
+        [
+          114.5676,
+          115.2611
+        ],
+        [
+          114.6073,
+          115.3115
+        ],
+        [
+          114.4277,
+          115.1507
+        ],
+        [
+          114.1063,
+          114.9399
+        ],
+        [
+          114.0784,
+          114.8707
+        ],
+        [
+          114.1025,
+          114.8417
+        ],
+        [
+          114.0404,
+          114.803
+        ],
+        [
+          113.9604,
+          114.6979
+        ],
+        [
+          113.7266,
+          114.4702
+        ],
+        [
+          113.6259,
+          114.3543
+        ],
+        [
+          113.5924,
+          114.3096
+        ],
+        [
+          113.3974,
+          114.0846
+        ],
+        [
+          113.3114,
+          113.9917
+        ],
+        [
+          113.3113,
+          114.0424
+        ],
+        [
+          113.3849,
+          114.0284
+        ],
+        [
+          113.5318,
+          114.0942
+        ],
+        [
+          113.5839,
+          114.131
+        ],
+        [
+          113.5568,
+          114.1306
+        ],
+        [
+          113.6748,
+          114.1689
+        ],
+        [
+          113.6435,
+          114.0407
+        ],
+        [
+          113.4833,
+          113.8838
+        ],
+        [
+          113.5867,
+          114.0181
+        ],
+        [
+          113.7547,
+          114.0924
+        ],
+        [
+          113.7513,
+          113.989
+        ],
+        [
+          113.7036,
+          113.9434
+        ],
+        [
+          113.7125,
+          113.8864
+        ],
+        [
+          113.6507,
+          113.8105
+        ],
+        [
+          113.6356,
+          113.7479
+        ],
+        [
+          113.7156,
+          113.8055
+        ],
+        [
+          113.8688,
+          113.9125
+        ],
+        [
+          113.8574,
+          113.9202
+        ],
+        [
+          107.8717,
+          91.5644
+        ],
+        [
+          99.1768,
+          71.5347
+        ],
+        [
+          88.2257,
+          67.2796
+        ],
+        [
+          87.4088,
+          47.5802
+        ],
+        [
+          85.8414,
+          47.2973
+        ],
+        [
+          79.8589,
+          69.1498
+        ],
+        [
+          77.4068,
+          75.8108
+        ],
+        [
+          19.6226,
+          91.6668
+        ],
+        [
+          -74.1515,
+          89.5667
+        ],
+        [
+          -122.2257,
+          72.8223
+        ],
+        [
+          -142.3845,
+          65.1993
+        ],
+        [
+          -165.6177,
+          57.0829
+        ],
+        [
+          -141.0838,
+          63.8117
+        ],
+        [
+          -94.3447,
+          15.6427
+        ],
+        [
+          -93.6226,
+          16.5738
+        ],
+        [
+          -66.8118,
+          64.4703
+        ],
+        [
+          -17.4106,
+          53.2325
+        ],
+        [
+          9.4389,
+          52.9186
+        ],
+        [
+          -6.2895,
+          97.916
+        ],
+        [
+          -42.5957,
+          134.2262
+        ],
+        [
+          -47.0224,
+          146.3649
+        ],
+        [
+          -30.7783,
+          175.5293
+        ],
+        [
+          -8.3227,
+          197.7188
+        ],
+        [
+          3.196,
+          156.651
+        ],
+        [
+          45.0849,
+          81.6699
+        ],
+        [
+          57.0408,
+          45.1513
+        ],
+        [
+          77.5308,
+          -19.4713
+        ],
+        [
+          136.4061,
+          -20.4208
+        ],
+        [
+          176.5161,
+          38.9525
+        ],
+        [
+          189.7615,
+          44.6307
+        ],
+        [
+          166.8088,
+          30.7676
+        ],
+        [
+          181.1661,
+          39.7264
+        ],
+        [
+          186.4784,
+          59.0109
+        ],
+        [
+          149.7602,
+          81.9664
+        ],
+        [
+          115.1127,
+          108.4003
+        ],
+        [
+          71.5329,
+          91.43
+        ],
+        [
+          33.5475,
+          100.0578
+        ],
+        [
+          6.2216,
+          115.0252
+        ],
+        [
+          -30.7117,
+          110.1738
+        ],
+        [
+          -9.1603,
+          97.9143
+        ],
+        [
+          30.2572,
+          79.5927
+        ],
+        [
+          54.1937,
+          74.9204
+        ],
+        [
+          94.2709,
+          99.7017
+        ],
+        [
+          123.9251,
+          137.0349
+        ],
+        [
+          128.4699,
+          149.806
+        ],
+        [
+          109.3132,
+          166.2006
+        ],
+        [
+          107.4358,
+          172.4006
+        ],
+        [
+          114.9366,
+          139.5572
+        ],
+        [
+          75.0113,
+          124.4342
+        ],
+        [
+          74.6845,
+          127.7347
+        ],
+        [
+          134.1601,
+          114.6038
+        ],
+        [
+          135.1525,
+          112.81
+        ],
+        [
+          110.049,
+          112.4987
+        ],
+        [
+          90.8888,
+          106.876
+        ],
+        [
+          86.8005,
+          107.8347
+        ],
+        [
+          96.6713,
+          108.244
+        ],
+        [
+          98.9942,
+          104.8516
+        ],
+        [
+          99.7031,
+          106.5247
+        ],
+        [
+          101.9578,
+          107.6561
+        ],
+        [
+          102.9433,
+          107.9303
+        ],
+        [
+          104.2026,
+          108.8493
+        ],
+        [
+          105.5413,
+          109.5693
+        ],
+        [
+          106.1431,
+          109.5787
+        ],
+        [
+          106.8277,
+          109.7691
+        ],
+        [
+          106.3173,
+          108.9822
+        ],
+        [
+          100.9805,
+          91.7516
+        ],
+        [
+          84.0043,
+          73.225
+        ],
+        [
+          80.5702,
+          48.3616
+        ],
+        [
+          85.3911,
+          52.5297
+        ],
+        [
+          81.9458,
+          79.1661
+        ],
+        [
+          76.1526,
+          74.3099
+        ],
+        [
+          69.3004,
+          53.2279
+        ],
+        [
+          99.6154,
+          15.112
+        ],
+        [
+          108.237,
+          -18.3879
+        ],
+        [
+          81.9828,
+          -9.044
+        ],
+        [
+          69.9565,
+          4.8362
+        ],
+        [
+          59.4541,
+          3.7999
+        ],
+        [
+          56.422,
+          8.5439
+        ],
+        [
+          56.6739,
+          10.5978
+        ],
+        [
+          38.2263,
+          22.8007
+        ],
+        [
+          10.2523,
+          44.0372
+        ],
+        [
+          14.4184,
+          66.3872
+        ],
+        [
+          37.4025,
+          64.325
+        ],
+        [
+          67.7173,
+          46.9125
+        ],
+        [
+          95.1038,
+          23.0841
+        ],
+        [
+          81.1557,
+          -4.0293
+        ],
+        [
+          54.0003,
+          -3.1692
+        ],
+        [
+          50.3501,
+          15.1996
+        ],
+        [
+          53.5976,
+          21.5627
+        ],
+        [
+          53.6642,
+          18.3373
+        ],
+        [
+          52.4526,
+          18.3604
+        ],
+        [
+          52.5055,
+          24.7013
+        ],
+        [
+          56.2401,
+          36.1683
+        ],
+        [
+          59.6148,
+          60.1752
+        ],
+        [
+          60.318,
+          60.9005
+        ],
+        [
+          61.6349,
+          46.3394
+        ],
+        [
+          64.9293,
+          55.2198
+        ],
+        [
+          70.7781,
+          59.2363
+        ],
+        [
+          72.8786,
+          58.4555
+        ],
+        [
+          73.2952,
+          60.4689
+        ],
+        [
+          74.917,
+          62.6306
+        ],
+        [
+          75.0007,
+          63.4268
+        ],
+        [
+          74.4051,
+          63.5317
+        ],
+        [
+          73.8003,
+          64.7573
+        ],
+        [
+          73.636,
+          64.8578
+        ]
+      ],
+      "pose": [
+        [
+          0.28703,
+          1.34993,
+          -1.56155
+        ],
+        [
+          0.28703,
+          1.34974,
+          -1.56169
+        ],
+        [
+          0.28704,
+          1.34747,
+          -1.56609
+        ],
+        [
+          0.28707,
+          1.34474,
+          -1.57219
+        ],
+        [
+          0.28709,
+          1.34061,
+          -1.5773
+        ],
+        [
+          0.28716,
+          1.33568,
+          -1.58508
+        ],
+        [
+          0.2872,
+          1.32964,
+          -1.59136
+        ],
+        [
+          0.28721,
+          1.32315,
+          -1.59634
+        ],
+        [
+          0.28723,
+          1.31567,
+          -1.6015
+        ],
+        [
+          0.28715,
+          1.30716,
+          -1.60435
+        ],
+        [
+          0.28707,
+          1.29781,
+          -1.60705
+        ],
+        [
+          0.28695,
+          1.28786,
+          -1.60784
+        ],
+        [
+          0.28679,
+          1.27705,
+          -1.60814
+        ],
+        [
+          0.2865,
+          1.26533,
+          -1.6066
+        ],
+        [
+          0.28607,
+          1.25274,
+          -1.60405
+        ],
+        [
+          0.28564,
+          1.23951,
+          -1.60296
+        ],
+        [
+          0.28521,
+          1.22559,
+          -1.60047
+        ],
+        [
+          0.28479,
+          1.21108,
+          -1.59986
+        ],
+        [
+          0.28435,
+          1.19622,
+          -1.59949
+        ],
+        [
+          0.28392,
+          1.18114,
+          -1.59935
+        ],
+        [
+          0.28349,
+          1.16583,
+          -1.59912
+        ],
+        [
+          0.28305,
+          1.15044,
+          -1.59894
+        ],
+        [
+          0.28262,
+          1.13497,
+          -1.59863
+        ],
+        [
+          0.28219,
+          1.11944,
+          -1.59828
+        ],
+        [
+          0.28176,
+          1.10392,
+          -1.59778
+        ],
+        [
+          0.28135,
+          1.08835,
+          -1.59704
+        ],
+        [
+          0.28095,
+          1.0728,
+          -1.59631
+        ],
+        [
+          0.28055,
+          1.0572,
+          -1.59533
+        ],
+        [
+          0.28018,
+          1.04164,
+          -1.59443
+        ],
+        [
+          0.27982,
+          1.02606,
+          -1.59326
+        ],
+        [
+          0.27947,
+          1.01048,
+          -1.59219
+        ],
+        [
+          0.27915,
+          0.99494,
+          -1.59105
+        ],
+        [
+          0.27884,
+          0.9794,
+          -1.5897
+        ],
+        [
+          0.27856,
+          0.96387,
+          -1.58841
+        ],
+        [
+          0.27829,
+          0.94837,
+          -1.5871
+        ],
+        [
+          0.27805,
+          0.93289,
+          -1.58577
+        ],
+        [
+          0.27783,
+          0.91742,
+          -1.58419
+        ],
+        [
+          0.27763,
+          0.90194,
+          -1.58277
+        ],
+        [
+          0.27745,
+          0.88649,
+          -1.58136
+        ],
+        [
+          0.2773,
+          0.87105,
+          -1.57998
+        ],
+        [
+          0.27717,
+          0.85564,
+          -1.5786
+        ],
+        [
+          0.27705,
+          0.84025,
+          -1.57724
+        ],
+        [
+          0.27696,
+          0.82486,
+          -1.57589
+        ],
+        [
+          0.27689,
+          0.8095,
+          -1.57458
+        ],
+        [
+          0.27684,
+          0.79414,
+          -1.57329
+        ],
+        [
+          0.27681,
+          0.77879,
+          -1.57204
+        ],
+        [
+          0.2768,
+          0.76343,
+          -1.57066
+        ],
+        [
+          0.27681,
+          0.74806,
+          -1.56952
+        ],
+        [
+          0.27684,
+          0.73268,
+          -1.56844
+        ],
+        [
+          0.27688,
+          0.71732,
+          -1.56746
+        ],
+        [
+          0.27694,
+          0.70196,
+          -1.56636
+        ],
+        [
+          0.27702,
+          0.68658,
+          -1.56551
+        ],
+        [
+          0.2771,
+          0.67121,
+          -1.56474
+        ],
+        [
+          0.2772,
+          0.65586,
+          -1.56403
+        ],
+        [
+          0.27731,
+          0.64049,
+          -1.56318
+        ],
+        [
+          0.27743,
+          0.62511,
+          -1.56264
+        ],
+        [
+          0.27756,
+          0.60974,
+          -1.56215
+        ],
+        [
+          0.27769,
+          0.59437,
+          -1.56175
+        ],
+        [
+          0.27783,
+          0.579,
+          -1.5614
+        ],
+        [
+          0.27798,
+          0.56365,
+          -1.56113
+        ],
+        [
+          0.27813,
+          0.54828,
+          -1.56091
+        ],
+        [
+          0.27828,
+          0.53292,
+          -1.56076
+        ],
+        [
+          0.27844,
+          0.51756,
+          -1.56068
+        ],
+        [
+          0.27859,
+          0.50222,
+          -1.56056
+        ],
+        [
+          0.27875,
+          0.48728,
+          -1.56232
+        ],
+        [
+          0.27893,
+          0.473,
+          -1.56492
+        ],
+        [
+          0.27911,
+          0.45949,
+          -1.56783
+        ],
+        [
+          0.27924,
+          0.44666,
+          -1.57342
+        ],
+        [
+          0.2793,
+          0.4344,
+          -1.5804
+        ],
+        [
+          0.27931,
+          0.42292,
+          -1.58936
+        ],
+        [
+          0.27918,
+          0.41208,
+          -1.59754
+        ],
+        [
+          0.27893,
+          0.40163,
+          -1.58319
+        ],
+        [
+          0.27855,
+          0.39115,
+          -1.54757
+        ],
+        [
+          0.27844,
+          0.38161,
+          -1.49943
+        ],
+        [
+          0.27849,
+          0.37255,
+          -1.44525
+        ],
+        [
+          0.2785,
+          0.36357,
+          -1.3989
+        ],
+        [
+          0.27859,
+          0.3547,
+          -1.35296
+        ],
+        [
+          0.27912,
+          0.34742,
+          -1.28664
+        ],
+        [
+          0.27964,
+          0.34009,
+          -1.22523
+        ],
+        [
+          0.28055,
+          0.33377,
+          -1.14995
+        ],
+        [
+          0.28165,
+          0.3278,
+          -1.06904
+        ],
+        [
+          0.28306,
+          0.32189,
+          -0.99132
+        ],
+        [
+          0.28529,
+          0.31652,
+          -0.9143
+        ],
+        [
+          0.2879,
+          0.31153,
+          -0.81513
+        ],
+        [
+          0.2909,
+          0.30679,
+          -0.69591
+        ],
+        [
+          0.29456,
+          0.3022,
+          -0.554
+        ],
+        [
+          0.29884,
+          0.29772,
+          -0.38876
+        ],
+        [
+          0.30384,
+          0.29355,
+          -0.2114
+        ],
+        [
+          0.30939,
+          0.28974,
+          -0.03624
+        ],
+        [
+          0.31537,
+          0.28651,
+          0.11382
+        ],
+        [
+          0.32136,
+          0.28395,
+          0.24442
+        ],
+        [
+          0.32714,
+          0.28168,
+          0.33773
+        ],
+        [
+          0.33301,
+          0.27987,
+          0.41079
+        ],
+        [
+          0.33897,
+          0.27844,
+          0.47366
+        ],
+        [
+          0.34506,
+          0.27794,
+          0.50636
+        ],
+        [
+          0.35115,
+          0.27748,
+          0.53719
+        ],
+        [
+          0.3575,
+          0.27778,
+          0.55985
+        ],
+        [
+          0.36405,
+          0.27909,
+          0.5703
+        ],
+        [
+          0.37051,
+          0.28035,
+          0.58053
+        ],
+        [
+          0.37674,
+          0.28246,
+          0.58998
+        ],
+        [
+          0.38291,
+          0.28533,
+          0.60275
+        ],
+        [
+          0.38908,
+          0.28859,
+          0.63297
+        ],
+        [
+          0.39484,
+          0.29232,
+          0.69162
+        ],
+        [
+          0.40062,
+          0.29623,
+          0.75536
+        ],
+        [
+          0.40602,
+          0.301,
+          0.83329
+        ],
+        [
+          0.41099,
+          0.3063,
+          0.90981
+        ],
+        [
+          0.4159,
+          0.31246,
+          0.97838
+        ],
+        [
+          0.42077,
+          0.31951,
+          1.04427
+        ],
+        [
+          0.4256,
+          0.32685,
+          1.11267
+        ],
+        [
+          0.43045,
+          0.3353,
+          1.1824
+        ],
+        [
+          0.43534,
+          0.34493,
+          1.2521
+        ],
+        [
+          0.44029,
+          0.35474,
+          1.3259
+        ],
+        [
+          0.44453,
+          0.36561,
+          1.37561
+        ],
+        [
+          0.4483,
+          0.37676,
+          1.42814
+        ],
+        [
+          0.45164,
+          0.38854,
+          1.46966
+        ],
+        [
+          0.45446,
+          0.40087,
+          1.49525
+        ],
+        [
+          0.45671,
+          0.41355,
+          1.51037
+        ],
+        [
+          0.45827,
+          0.4264,
+          1.52162
+        ],
+        [
+          0.45936,
+          0.43948,
+          1.53696
+        ],
+        [
+          0.45994,
+          0.45277,
+          1.55432
+        ],
+        [
+          0.46015,
+          0.46631,
+          1.56728
+        ],
+        [
+          0.46015,
+          0.48021,
+          1.57962
+        ],
+        [
+          0.45997,
+          0.49433,
+          1.58974
+        ],
+        [
+          0.45966,
+          0.50855,
+          1.5991
+        ],
+        [
+          0.45921,
+          0.5229,
+          1.6076
+        ],
+        [
+          0.45864,
+          0.53742,
+          1.61516
+        ],
+        [
+          0.45795,
+          0.55196,
+          1.62151
+        ],
+        [
+          0.45718,
+          0.56658,
+          1.62704
+        ],
+        [
+          0.45633,
+          0.58106,
+          1.63186
+        ],
+        [
+          0.45546,
+          0.59507,
+          1.63544
+        ],
+        [
+          0.45458,
+          0.60838,
+          1.63879
+        ],
+        [
+          0.45372,
+          0.62087,
+          1.63966
+        ],
+        [
+          0.45285,
+          0.63278,
+          1.64161
+        ],
+        [
+          0.45204,
+          0.64398,
+          1.63905
+        ],
+        [
+          0.45129,
+          0.65455,
+          1.6331
+        ],
+        [
+          0.45057,
+          0.66439,
+          1.62711
+        ],
+        [
+          0.44979,
+          0.67388,
+          1.60155
+        ],
+        [
+          0.44882,
+          0.68333,
+          1.54418
+        ],
+        [
+          0.44813,
+          0.69252,
+          1.47394
+        ],
+        [
+          0.44776,
+          0.70125,
+          1.39464
+        ],
+        [
+          0.44761,
+          0.70949,
+          1.31157
+        ],
+        [
+          0.44773,
+          0.71723,
+          1.23003
+        ],
+        [
+          0.44829,
+          0.72437,
+          1.15322
+        ],
+        [
+          0.44917,
+          0.73122,
+          1.08541
+        ],
+        [
+          0.45053,
+          0.7375,
+          1.03984
+        ],
+        [
+          0.45229,
+          0.7433,
+          1.01834
+        ],
+        [
+          0.45473,
+          0.74865,
+          1.01939
+        ],
+        [
+          0.45785,
+          0.75397,
+          1.01348
+        ],
+        [
+          0.46111,
+          0.75922,
+          0.98537
+        ],
+        [
+          0.46447,
+          0.76447,
+          0.93441
+        ],
+        [
+          0.46791,
+          0.76922,
+          0.88182
+        ],
+        [
+          0.47136,
+          0.77339,
+          0.83028
+        ],
+        [
+          0.47489,
+          0.77715,
+          0.77516
+        ],
+        [
+          0.47849,
+          0.78057,
+          0.71329
+        ],
+        [
+          0.4822,
+          0.78366,
+          0.64985
+        ],
+        [
+          0.48628,
+          0.78663,
+          0.59279
+        ],
+        [
+          0.49104,
+          0.78969,
+          0.54242
+        ],
+        [
+          0.49643,
+          0.79282,
+          0.4992
+        ],
+        [
+          0.5023,
+          0.79594,
+          0.46557
+        ],
+        [
+          0.50875,
+          0.79909,
+          0.43768
+        ],
+        [
+          0.51591,
+          0.80233,
+          0.4143
+        ],
+        [
+          0.52369,
+          0.80567,
+          0.39042
+        ],
+        [
+          0.5318,
+          0.80893,
+          0.36511
+        ],
+        [
+          0.54022,
+          0.81209,
+          0.34124
+        ],
+        [
+          0.54898,
+          0.81514,
+          0.31809
+        ],
+        [
+          0.55786,
+          0.81801,
+          0.29644
+        ],
+        [
+          0.56677,
+          0.82068,
+          0.2763
+        ],
+        [
+          0.57581,
+          0.82319,
+          0.25917
+        ],
+        [
+          0.58485,
+          0.82555,
+          0.24283
+        ]
+      ]
+    },
+    "max_flip": {
+      "course_seed": 3014,
+      "trial_index": 3,
+      "t": [
+        0.01,
+        0.02,
+        0.03,
+        0.04,
+        0.05,
+        0.06,
+        0.07,
+        0.08,
+        0.09,
+        0.1,
+        0.11,
+        0.12,
+        0.13,
+        0.14,
+        0.15,
+        0.16,
+        0.17,
+        0.18,
+        0.19,
+        0.2,
+        0.21,
+        0.22,
+        0.23,
+        0.24,
+        0.25,
+        0.26,
+        0.27,
+        0.28,
+        0.29,
+        0.3,
+        0.31,
+        0.32,
+        0.33,
+        0.34,
+        0.35,
+        0.36,
+        0.37,
+        0.38,
+        0.39,
+        0.4,
+        0.41,
+        0.42,
+        0.43,
+        0.44,
+        0.45,
+        0.46,
+        0.47,
+        0.48,
+        0.49,
+        0.5,
+        0.51,
+        0.52,
+        0.53,
+        0.54,
+        0.55,
+        0.56,
+        0.57,
+        0.58,
+        0.59,
+        0.6,
+        0.61,
+        0.62,
+        0.63,
+        0.64,
+        0.65,
+        0.66,
+        0.67,
+        0.68,
+        0.69,
+        0.7,
+        0.71
+      ],
+      "action": [
+        [
+          0.72319,
+          1.0
+        ],
+        [
+          0.69205,
+          0.44321
+        ],
+        [
+          0.32792,
+          0.23214
+        ],
+        [
+          0.58187,
+          0.83585
+        ],
+        [
+          0.64244,
+          0.69809
+        ],
+        [
+          0.51234,
+          0.50377
+        ],
+        [
+          0.47517,
+          0.61249
+        ],
+        [
+          0.46601,
+          0.52275
+        ],
+        [
+          0.41907,
+          0.53928
+        ],
+        [
+          0.68385,
+          0.55904
+        ],
+        [
+          0.55617,
+          0.55542
+        ],
+        [
+          0.51468,
+          0.4806
+        ],
+        [
+          0.5776,
+          0.56638
+        ],
+        [
+          0.52619,
+          0.72389
+        ],
+        [
+          0.70136,
+          0.51681
+        ],
+        [
+          0.50974,
+          0.47993
+        ],
+        [
+          0.4625,
+          0.59929
+        ],
+        [
+          0.48218,
+          0.17089
+        ],
+        [
+          0.01376,
+          0.00268
+        ],
+        [
+          0.07014,
+          0.21573
+        ],
+        [
+          0.20348,
+          0.02005
+        ],
+        [
+          0.07567,
+          0.13462
+        ],
+        [
+          0.12277,
+          0.09634
+        ],
+        [
+          0.09894,
+          0.12881
+        ],
+        [
+          0.14703,
+          0.15219
+        ],
+        [
+          0.15248,
+          0.19247
+        ],
+        [
+          0.18172,
+          0.23755
+        ],
+        [
+          1.0,
+          -0.7466
+        ],
+        [
+          -0.33563,
+          0.7124
+        ],
+        [
+          0.78156,
+          0.06172
+        ],
+        [
+          0.31041,
+          -0.35841
+        ],
+        [
+          0.13846,
+          -0.09464
+        ],
+        [
+          0.12455,
+          -0.05611
+        ],
+        [
+          0.77784,
+          -0.40996
+        ],
+        [
+          0.25163,
+          -0.40379
+        ],
+        [
+          -0.2453,
+          0.92553
+        ],
+        [
+          0.18235,
+          -0.26963
+        ],
+        [
+          0.29379,
+          -0.25149
+        ],
+        [
+          0.2467,
+          -0.07427
+        ],
+        [
+          -0.49827,
+          1.0
+        ],
+        [
+          -0.07725,
+          0.61619
+        ],
+        [
+          0.20668,
+          0.01689
+        ],
+        [
+          0.28533,
+          0.55543
+        ],
+        [
+          0.67606,
+          0.4532
+        ],
+        [
+          0.67932,
+          0.36481
+        ],
+        [
+          0.79165,
+          0.23431
+        ],
+        [
+          0.53761,
+          0.15615
+        ],
+        [
+          0.31686,
+          0.04507
+        ],
+        [
+          0.11917,
+          -0.22163
+        ],
+        [
+          -0.02099,
+          -0.06266
+        ],
+        [
+          0.0759,
+          0.08428
+        ],
+        [
+          0.02549,
+          0.08814
+        ],
+        [
+          -0.48763,
+          0.85106
+        ],
+        [
+          -0.07334,
+          0.93551
+        ],
+        [
+          0.58345,
+          0.16082
+        ],
+        [
+          0.05843,
+          0.55713
+        ],
+        [
+          -0.04072,
+          0.62712
+        ],
+        [
+          0.49415,
+          0.40379
+        ],
+        [
+          0.13382,
+          0.56467
+        ],
+        [
+          0.59944,
+          0.58317
+        ],
+        [
+          0.37463,
+          0.69222
+        ],
+        [
+          0.17428,
+          0.45445
+        ],
+        [
+          0.44464,
+          -0.27364
+        ],
+        [
+          -0.2766,
+          0.24417
+        ],
+        [
+          0.16424,
+          0.20765
+        ],
+        [
+          -0.09878,
+          -0.7646
+        ],
+        [
+          -0.23943,
+          0.68279
+        ],
+        [
+          0.42087,
+          0.26727
+        ],
+        [
+          -0.18358,
+          -0.72793
+        ],
+        [
+          -0.11143,
+          0.77209
+        ],
+        [
+          0.44854,
+          0.32609
+        ]
+      ],
+      "wheel_omega": [
+        [
+          39.835,
+          55.7479
+        ],
+        [
+          77.0865,
+          89.7985
+        ],
+        [
+          65.0898,
+          53.5654
+        ],
+        [
+          55.1633,
+          57.2595
+        ],
+        [
+          71.081,
+          90.818
+        ],
+        [
+          81.8174,
+          97.1185
+        ],
+        [
+          73.251,
+          96.1864
+        ],
+        [
+          72.4035,
+          104.5854
+        ],
+        [
+          75.6907,
+          96.178
+        ],
+        [
+          85.9312,
+          88.7176
+        ],
+        [
+          98.7515,
+          95.8097
+        ],
+        [
+          99.1792,
+          93.9388
+        ],
+        [
+          94.8423,
+          86.2621
+        ],
+        [
+          92.0713,
+          94.8735
+        ],
+        [
+          101.8183,
+          101.3685
+        ],
+        [
+          105.9526,
+          98.2395
+        ],
+        [
+          99.6029,
+          100.3566
+        ],
+        [
+          102.0771,
+          100.2909
+        ],
+        [
+          91.3165,
+          84.8222
+        ],
+        [
+          79.1786,
+          79.3237
+        ],
+        [
+          82.2315,
+          78.1267
+        ],
+        [
+          81.1497,
+          73.6322
+        ],
+        [
+          76.4504,
+          75.4134
+        ],
+        [
+          73.4499,
+          72.0992
+        ],
+        [
+          69.569,
+          69.1863
+        ],
+        [
+          66.7563,
+          67.0198
+        ],
+        [
+          64.6056,
+          65.7589
+        ],
+        [
+          88.6091,
+          28.8433
+        ],
+        [
+          73.1285,
+          28.0241
+        ],
+        [
+          66.0102,
+          57.496
+        ],
+        [
+          90.1596,
+          29.2124
+        ],
+        [
+          75.6664,
+          12.5342
+        ],
+        [
+          68.7037,
+          23.9891
+        ],
+        [
+          93.7002,
+          15.1688
+        ],
+        [
+          102.8213,
+          -21.1315
+        ],
+        [
+          59.1575,
+          24.2143
+        ],
+        [
+          43.2033,
+          53.2937
+        ],
+        [
+          59.9762,
+          6.6533
+        ],
+        [
+          65.4903,
+          2.2369
+        ],
+        [
+          40.8749,
+          51.846
+        ],
+        [
+          20.5217,
+          104.1378
+        ],
+        [
+          29.3854,
+          81.1585
+        ],
+        [
+          39.607,
+          57.8667
+        ],
+        [
+          67.5085,
+          67.9609
+        ],
+        [
+          97.6159,
+          66.4511
+        ],
+        [
+          117.2605,
+          60.4722
+        ],
+        [
+          123.2434,
+          57.8172
+        ],
+        [
+          101.2539,
+          52.7551
+        ],
+        [
+          75.5671,
+          33.8602
+        ],
+        [
+          54.9949,
+          17.5698
+        ],
+        [
+          45.6445,
+          26.0371
+        ],
+        [
+          44.9972,
+          37.1639
+        ],
+        [
+          21.4765,
+          64.163
+        ],
+        [
+          7.2031,
+          112.6941
+        ],
+        [
+          33.7883,
+          107.1463
+        ],
+        [
+          45.9876,
+          83.3827
+        ],
+        [
+          34.2503,
+          93.3136
+        ],
+        [
+          46.1804,
+          91.6261
+        ],
+        [
+          53.8588,
+          87.2998
+        ],
+        [
+          59.4271,
+          96.234
+        ],
+        [
+          69.9193,
+          103.4028
+        ],
+        [
+          60.3833,
+          101.4308
+        ],
+        [
+          61.0313,
+          73.2068
+        ],
+        [
+          48.1485,
+          57.6321
+        ],
+        [
+          35.7907,
+          66.5894
+        ],
+        [
+          31.3164,
+          29.212
+        ],
+        [
+          11.9864,
+          31.6087
+        ],
+        [
+          26.3796,
+          71.2476
+        ],
+        [
+          35.5545,
+          25.5459
+        ],
+        [
+          22.8631,
+          25.0973
+        ],
+        [
+          39.7716,
+          69.0733
+        ]
+      ],
+      "pose": [
+        [
+          0.27007,
+          0.46689,
+          -0.05158
+        ],
+        [
+          0.27026,
+          0.46689,
+          -0.05167
+        ],
+        [
+          0.27236,
+          0.46688,
+          -0.05366
+        ],
+        [
+          0.27503,
+          0.46694,
+          -0.05886
+        ],
+        [
+          0.27898,
+          0.46694,
+          -0.06165
+        ],
+        [
+          0.2841,
+          0.46698,
+          -0.06602
+        ],
+        [
+          0.28978,
+          0.46698,
+          -0.06852
+        ],
+        [
+          0.29611,
+          0.46702,
+          -0.07275
+        ],
+        [
+          0.30341,
+          0.46694,
+          -0.07219
+        ],
+        [
+          0.31168,
+          0.46677,
+          -0.07017
+        ],
+        [
+          0.32074,
+          0.46655,
+          -0.06937
+        ],
+        [
+          0.33031,
+          0.46629,
+          -0.06857
+        ],
+        [
+          0.34082,
+          0.4659,
+          -0.06736
+        ],
+        [
+          0.35225,
+          0.46536,
+          -0.06391
+        ],
+        [
+          0.36453,
+          0.46474,
+          -0.05845
+        ],
+        [
+          0.37734,
+          0.46405,
+          -0.05574
+        ],
+        [
+          0.3908,
+          0.4633,
+          -0.05335
+        ],
+        [
+          0.40443,
+          0.46257,
+          -0.05721
+        ],
+        [
+          0.41762,
+          0.46183,
+          -0.06776
+        ],
+        [
+          0.43011,
+          0.46106,
+          -0.07654
+        ],
+        [
+          0.44193,
+          0.46022,
+          -0.08269
+        ],
+        [
+          0.45301,
+          0.45933,
+          -0.08913
+        ],
+        [
+          0.46338,
+          0.4584,
+          -0.09353
+        ],
+        [
+          0.47317,
+          0.45747,
+          -0.09594
+        ],
+        [
+          0.48249,
+          0.45657,
+          -0.09663
+        ],
+        [
+          0.49147,
+          0.4557,
+          -0.096
+        ],
+        [
+          0.50024,
+          0.45486,
+          -0.09378
+        ],
+        [
+          0.50888,
+          0.45413,
+          -0.11093
+        ],
+        [
+          0.51764,
+          0.45355,
+          -0.15313
+        ],
+        [
+          0.52632,
+          0.4525,
+          -0.18525
+        ],
+        [
+          0.53493,
+          0.45119,
+          -0.23512
+        ],
+        [
+          0.5432,
+          0.44959,
+          -0.2959
+        ],
+        [
+          0.5509,
+          0.44783,
+          -0.35963
+        ],
+        [
+          0.55806,
+          0.44584,
+          -0.43068
+        ],
+        [
+          0.56505,
+          0.44365,
+          -0.52026
+        ],
+        [
+          0.57158,
+          0.44104,
+          -0.61155
+        ],
+        [
+          0.57769,
+          0.43805,
+          -0.68727
+        ],
+        [
+          0.58323,
+          0.43473,
+          -0.75423
+        ],
+        [
+          0.58821,
+          0.43118,
+          -0.82642
+        ],
+        [
+          0.59256,
+          0.42721,
+          -0.8783
+        ],
+        [
+          0.59638,
+          0.42284,
+          -0.90092
+        ],
+        [
+          0.6001,
+          0.41847,
+          -0.90621
+        ],
+        [
+          0.60392,
+          0.4136,
+          -0.8969
+        ],
+        [
+          0.60811,
+          0.40829,
+          -0.88352
+        ],
+        [
+          0.61266,
+          0.4026,
+          -0.8725
+        ],
+        [
+          0.61768,
+          0.39657,
+          -0.86718
+        ],
+        [
+          0.62291,
+          0.39037,
+          -0.87543
+        ],
+        [
+          0.62824,
+          0.38393,
+          -0.90038
+        ],
+        [
+          0.63335,
+          0.37745,
+          -0.93999
+        ],
+        [
+          0.63807,
+          0.3712,
+          -0.9799
+        ],
+        [
+          0.6423,
+          0.36524,
+          -1.01782
+        ],
+        [
+          0.64593,
+          0.35949,
+          -1.0511
+        ],
+        [
+          0.64919,
+          0.3538,
+          -1.06335
+        ],
+        [
+          0.65233,
+          0.34799,
+          -1.04579
+        ],
+        [
+          0.65563,
+          0.34208,
+          -1.01337
+        ],
+        [
+          0.65942,
+          0.33576,
+          -0.97784
+        ],
+        [
+          0.66354,
+          0.32948,
+          -0.92361
+        ],
+        [
+          0.66812,
+          0.32316,
+          -0.86053
+        ],
+        [
+          0.67361,
+          0.31674,
+          -0.79569
+        ],
+        [
+          0.67989,
+          0.31036,
+          -0.72763
+        ],
+        [
+          0.68692,
+          0.30394,
+          -0.658
+        ],
+        [
+          0.69484,
+          0.29761,
+          -0.58778
+        ],
+        [
+          0.70319,
+          0.29168,
+          -0.52691
+        ],
+        [
+          0.71162,
+          0.28632,
+          -0.48172
+        ],
+        [
+          0.71991,
+          0.28136,
+          -0.43975
+        ],
+        [
+          0.7278,
+          0.27709,
+          -0.40377
+        ],
+        [
+          0.7351,
+          0.2732,
+          -0.37
+        ],
+        [
+          0.74252,
+          0.26935,
+          -0.33759
+        ],
+        [
+          0.74966,
+          0.26647,
+          -0.3136
+        ],
+        [
+          0.75643,
+          0.26377,
+          -0.28826
+        ],
+        [
+          0.76328,
+          0.26141,
+          -0.25354
+        ]
+      ]
+    },
+    "first_failure": {
+      "course_seed": 3006,
+      "trial_index": 0,
+      "t": [
+        0.01,
+        0.02,
+        0.03,
+        0.04,
+        0.05,
+        0.06,
+        0.07,
+        0.08,
+        0.09,
+        0.1,
+        0.11,
+        0.12,
+        0.13,
+        0.14,
+        0.15,
+        0.16,
+        0.17,
+        0.18,
+        0.19,
+        0.2,
+        0.21,
+        0.22,
+        0.23,
+        0.24,
+        0.25,
+        0.26,
+        0.27,
+        0.28,
+        0.29,
+        0.3,
+        0.31,
+        0.32,
+        0.33,
+        0.34,
+        0.35,
+        0.36,
+        0.37,
+        0.38,
+        0.39,
+        0.4,
+        0.41,
+        0.42,
+        0.43,
+        0.44,
+        0.45,
+        0.46,
+        0.47,
+        0.48,
+        0.49,
+        0.5,
+        0.51,
+        0.52,
+        0.53,
+        0.54,
+        0.55,
+        0.56,
+        0.57,
+        0.58,
+        0.59,
+        0.6,
+        0.61,
+        0.62,
+        0.63,
+        0.64,
+        0.65,
+        0.66,
+        0.67,
+        0.68,
+        0.69,
+        0.7,
+        0.71,
+        0.72,
+        0.73,
+        0.74,
+        0.75,
+        0.76,
+        0.77,
+        0.78,
+        0.79,
+        0.8,
+        0.81,
+        0.82,
+        0.83,
+        0.84,
+        0.85,
+        0.86,
+        0.87,
+        0.88,
+        0.89,
+        0.9,
+        0.91,
+        0.92,
+        0.93,
+        0.94,
+        0.95,
+        0.96,
+        0.97,
+        0.98,
+        0.99,
+        1.0,
+        1.01,
+        1.02,
+        1.03,
+        1.04,
+        1.05,
+        1.06,
+        1.07,
+        1.08,
+        1.09,
+        1.1,
+        1.11
+      ],
+      "action": [
+        [
+          0.3359,
+          1.0
+        ],
+        [
+          0.44243,
+          0.55713
+        ],
+        [
+          0.37656,
+          0.30381
+        ],
+        [
+          0.50884,
+          0.83004
+        ],
+        [
+          0.35569,
+          0.29454
+        ],
+        [
+          0.48522,
+          0.83496
+        ],
+        [
+          0.59204,
+          0.63161
+        ],
+        [
+          0.37289,
+          0.48819
+        ],
+        [
+          0.40004,
+          0.50269
+        ],
+        [
+          0.6461,
+          0.64716
+        ],
+        [
+          0.47762,
+          0.63081
+        ],
+        [
+          0.6257,
+          0.55149
+        ],
+        [
+          0.48714,
+          0.80776
+        ],
+        [
+          0.708,
+          0.35005
+        ],
+        [
+          0.35159,
+          0.52437
+        ],
+        [
+          0.484,
+          0.51911
+        ],
+        [
+          0.47507,
+          0.52083
+        ],
+        [
+          0.47,
+          0.49889
+        ],
+        [
+          0.44638,
+          0.48434
+        ],
+        [
+          0.44533,
+          0.47481
+        ],
+        [
+          0.4393,
+          0.44731
+        ],
+        [
+          0.41821,
+          0.44271
+        ],
+        [
+          0.43213,
+          0.43591
+        ],
+        [
+          0.42488,
+          0.42529
+        ],
+        [
+          0.42974,
+          0.42771
+        ],
+        [
+          0.43661,
+          0.41316
+        ],
+        [
+          0.43169,
+          0.42062
+        ],
+        [
+          0.44722,
+          0.4054
+        ],
+        [
+          0.43319,
+          0.40582
+        ],
+        [
+          0.44919,
+          0.41057
+        ],
+        [
+          0.45085,
+          0.40311
+        ],
+        [
+          0.44497,
+          0.40241
+        ],
+        [
+          0.44928,
+          0.39954
+        ],
+        [
+          0.44711,
+          0.4
+        ],
+        [
+          0.45463,
+          0.41498
+        ],
+        [
+          0.46584,
+          0.40156
+        ],
+        [
+          0.44803,
+          0.40483
+        ],
+        [
+          0.45832,
+          0.4002
+        ],
+        [
+          0.45387,
+          0.41727
+        ],
+        [
+          0.46835,
+          0.40049
+        ],
+        [
+          0.44649,
+          0.4064
+        ],
+        [
+          0.4614,
+          0.41454
+        ],
+        [
+          0.46167,
+          0.40473
+        ],
+        [
+          0.45069,
+          0.40717
+        ],
+        [
+          0.45501,
+          0.40567
+        ],
+        [
+          0.44952,
+          0.40762
+        ],
+        [
+          0.45287,
+          0.40801
+        ],
+        [
+          0.45209,
+          0.42443
+        ],
+        [
+          0.46406,
+          0.40894
+        ],
+        [
+          0.44184,
+          0.41453
+        ],
+        [
+          0.45436,
+          0.42324
+        ],
+        [
+          0.45636,
+          0.42492
+        ],
+        [
+          0.45133,
+          0.41162
+        ],
+        [
+          0.4371,
+          0.4125
+        ],
+        [
+          0.44119,
+          0.4114
+        ],
+        [
+          0.4362,
+          0.4143
+        ],
+        [
+          0.43809,
+          0.41454
+        ],
+        [
+          0.43465,
+          0.41651
+        ],
+        [
+          0.43427,
+          0.41711
+        ],
+        [
+          0.43102,
+          0.41855
+        ],
+        [
+          0.42956,
+          0.41932
+        ],
+        [
+          0.42644,
+          0.41986
+        ],
+        [
+          0.42779,
+          0.43468
+        ],
+        [
+          0.4339,
+          0.42261
+        ],
+        [
+          0.32379,
+          0.13268
+        ],
+        [
+          0.02143,
+          -0.13296
+        ],
+        [
+          0.10573,
+          0.15642
+        ],
+        [
+          0.05744,
+          0.06198
+        ],
+        [
+          0.3088,
+          -0.40235
+        ],
+        [
+          0.34536,
+          -0.10283
+        ],
+        [
+          -0.02384,
+          0.45299
+        ],
+        [
+          -1.0,
+          1.0
+        ],
+        [
+          -1.0,
+          -0.00468
+        ],
+        [
+          -1.0,
+          0.05866
+        ],
+        [
+          -1.0,
+          0.18823
+        ],
+        [
+          -1.0,
+          0.25144
+        ],
+        [
+          -0.5288,
+          -0.09134
+        ],
+        [
+          -0.49651,
+          0.17663
+        ],
+        [
+          -0.48165,
+          0.20129
+        ],
+        [
+          -0.54384,
+          0.23868
+        ],
+        [
+          -0.16088,
+          0.05266
+        ],
+        [
+          0.0753,
+          0.15122
+        ],
+        [
+          -0.01556,
+          0.49533
+        ],
+        [
+          -0.60424,
+          1.0
+        ],
+        [
+          -0.18025,
+          0.66495
+        ],
+        [
+          -0.3933,
+          1.0
+        ],
+        [
+          -0.54713,
+          0.7377
+        ],
+        [
+          0.08384,
+          0.71157
+        ],
+        [
+          0.20361,
+          -0.98063
+        ],
+        [
+          1.0,
+          -0.89363
+        ],
+        [
+          0.9896,
+          1.0
+        ],
+        [
+          -0.352,
+          1.0
+        ],
+        [
+          0.26044,
+          -0.05559
+        ],
+        [
+          0.34843,
+          0.42287
+        ],
+        [
+          0.69756,
+          0.54828
+        ],
+        [
+          1.0,
+          -1.0
+        ],
+        [
+          0.10419,
+          -1.0
+        ],
+        [
+          0.31136,
+          0.29171
+        ],
+        [
+          0.77561,
+          0.2282
+        ],
+        [
+          0.23343,
+          -0.03787
+        ],
+        [
+          -0.20051,
+          -0.1327
+        ],
+        [
+          -0.37348,
+          0.08597
+        ],
+        [
+          -0.47478,
+          0.27476
+        ],
+        [
+          -0.3221,
+          0.28673
+        ],
+        [
+          0.10438,
+          0.16637
+        ],
+        [
+          0.54719,
+          -0.09519
+        ],
+        [
+          0.35914,
+          -0.20304
+        ],
+        [
+          -0.0366,
+          -0.14999
+        ],
+        [
+          -0.38157,
+          0.00084
+        ],
+        [
+          1.0,
+          -1.0
+        ],
+        [
+          0.9909,
+          -0.1657
+        ]
+      ],
+      "wheel_omega": [
+        [
+          17.537,
+          55.7138
+        ],
+        [
+          36.8946,
+          94.6102
+        ],
+        [
+          38.7454,
+          60.9329
+        ],
+        [
+          40.7414,
+          58.6062
+        ],
+        [
+          39.5107,
+          61.7326
+        ],
+        [
+          40.1807,
+          71.1573
+        ],
+        [
+          56.9212,
+          100.7044
+        ],
+        [
+          68.0333,
+          108.0251
+        ],
+        [
+          61.4342,
+          91.0254
+        ],
+        [
+          63.7159,
+          83.3309
+        ],
+        [
+          71.2622,
+          92.2865
+        ],
+        [
+          82.6797,
+          92.0335
+        ],
+        [
+          90.3709,
+          101.6429
+        ],
+        [
+          98.8918,
+          103.502
+        ],
+        [
+          100.6621,
+          95.5325
+        ],
+        [
+          92.5739,
+          97.624
+        ],
+        [
+          96.1871,
+          100.0355
+        ],
+        [
+          99.2865,
+          102.4393
+        ],
+        [
+          101.7524,
+          104.2745
+        ],
+        [
+          103.9726,
+          106.1011
+        ],
+        [
+          105.8057,
+          107.3027
+        ],
+        [
+          106.9908,
+          108.0349
+        ],
+        [
+          108.0022,
+          108.7562
+        ],
+        [
+          108.8417,
+          109.195
+        ],
+        [
+          109.5122,
+          109.6456
+        ],
+        [
+          110.2251,
+          110.0377
+        ],
+        [
+          110.7327,
+          110.329
+        ],
+        [
+          111.2883,
+          110.5974
+        ],
+        [
+          111.8818,
+          110.8931
+        ],
+        [
+          112.1302,
+          111.0236
+        ],
+        [
+          112.5868,
+          111.1536
+        ],
+        [
+          113.1257,
+          111.4328
+        ],
+        [
+          113.579,
+          111.6905
+        ],
+        [
+          113.8278,
+          111.7605
+        ],
+        [
+          113.9958,
+          111.9479
+        ],
+        [
+          114.5138,
+          112.254
+        ],
+        [
+          114.9312,
+          112.484
+        ],
+        [
+          115.1968,
+          112.7013
+        ],
+        [
+          115.5552,
+          113.1092
+        ],
+        [
+          115.9338,
+          113.3965
+        ],
+        [
+          116.1763,
+          113.5292
+        ],
+        [
+          116.3419,
+          113.893
+        ],
+        [
+          116.574,
+          114.0495
+        ],
+        [
+          116.6768,
+          114.1429
+        ],
+        [
+          116.8261,
+          114.372
+        ],
+        [
+          116.9171,
+          114.5394
+        ],
+        [
+          116.9373,
+          114.6726
+        ],
+        [
+          117.0505,
+          115.0376
+        ],
+        [
+          117.2343,
+          115.2578
+        ],
+        [
+          117.3221,
+          115.3718
+        ],
+        [
+          117.3838,
+          115.7482
+        ],
+        [
+          117.6222,
+          116.1358
+        ],
+        [
+          117.7766,
+          116.2794
+        ],
+        [
+          117.6231,
+          116.21
+        ],
+        [
+          117.4048,
+          116.1698
+        ],
+        [
+          117.2704,
+          116.1789
+        ],
+        [
+          117.1344,
+          116.2071
+        ],
+        [
+          117.0235,
+          116.2262
+        ],
+        [
+          116.9128,
+          116.2432
+        ],
+        [
+          116.804,
+          116.2448
+        ],
+        [
+          116.7285,
+          116.2816
+        ],
+        [
+          116.5613,
+          116.2165
+        ],
+        [
+          116.3252,
+          116.1902
+        ],
+        [
+          116.4241,
+          116.324
+        ],
+        [
+          115.256,
+          111.0346
+        ],
+        [
+          102.7861,
+          85.3959
+        ],
+        [
+          85.2341,
+          73.5178
+        ],
+        [
+          79.6358,
+          78.5772
+        ],
+        [
+          85.3044,
+          56.2483
+        ],
+        [
+          91.698,
+          24.7703
+        ],
+        [
+          85.8483,
+          45.9717
+        ],
+        [
+          16.0074,
+          108.3507
+        ],
+        [
+          -74.43,
+          108.7201
+        ],
+        [
+          -138.0793,
+          71.5241
+        ],
+        [
+          -195.5242,
+          63.2007
+        ],
+        [
+          -190.9153,
+          70.0975
+        ],
+        [
+          -161.0652,
+          54.5455
+        ],
+        [
+          -153.486,
+          40.6909
+        ],
+        [
+          -146.1975,
+          52.3179
+        ],
+        [
+          -121.2685,
+          59.8526
+        ],
+        [
+          -75.6584,
+          58.6954
+        ],
+        [
+          -35.7934,
+          50.1986
+        ],
+        [
+          -7.6045,
+          61.0488
+        ],
+        [
+          -17.4602,
+          102.0654
+        ],
+        [
+          -40.237,
+          140.2585
+        ],
+        [
+          -43.3861,
+          147.7224
+        ],
+        [
+          -59.2328,
+          156.3341
+        ],
+        [
+          -48.8381,
+          157.4373
+        ],
+        [
+          -9.2995,
+          76.608
+        ],
+        [
+          44.0833,
+          -43.4918
+        ],
+        [
+          120.978,
+          -10.1197
+        ],
+        [
+          95.7374,
+          115.2235
+        ],
+        [
+          38.2547,
+          113.9143
+        ],
+        [
+          43.8821,
+          66.7065
+        ],
+        [
+          72.6095,
+          79.7296
+        ],
+        [
+          125.8477,
+          48.352
+        ],
+        [
+          124.4934,
+          -55.9381
+        ],
+        [
+          86.0855,
+          -73.1761
+        ],
+        [
+          100.9112,
+          -5.337
+        ],
+        [
+          100.1724,
+          18.5167
+        ],
+        [
+          46.1078,
+          8.7914
+        ],
+        [
+          11.7556,
+          9.9862
+        ],
+        [
+          -14.489,
+          18.7831
+        ],
+        [
+          -32.7728,
+          25.8202
+        ],
+        [
+          -14.2728,
+          28.7011
+        ],
+        [
+          24.9921,
+          23.2039
+        ],
+        [
+          46.0051,
+          13.7832
+        ],
+        [
+          33.5389,
+          8.1581
+        ],
+        [
+          1.0158,
+          7.8849
+        ],
+        [
+          32.0588,
+          -29.872
+        ],
+        [
+          109.6119,
+          -63.0825
+        ]
+      ],
+      "pose": [
+        [
+          0.26174,
+          1.34994,
+          -1.68766
+        ],
+        [
+          0.26172,
+          1.34979,
+          -1.68718
+        ],
+        [
+          0.26161,
+          1.34769,
+          -1.67736
+        ],
+        [
+          0.26148,
+          1.34502,
+          -1.66626
+        ],
+        [
+          0.26135,
+          1.34129,
+          -1.6553
+        ],
+        [
+          0.26119,
+          1.33649,
+          -1.64322
+        ],
+        [
+          0.26107,
+          1.33067,
+          -1.63285
+        ],
+        [
+          0.2609,
+          1.32432,
+          -1.61919
+        ],
+        [
+          0.26073,
+          1.31729,
+          -1.60622
+        ],
+        [
+          0.26053,
+          1.30908,
+          -1.59222
+        ],
+        [
+          0.26032,
+          1.29982,
+          -1.57733
+        ],
+        [
+          0.26015,
+          1.28961,
+          -1.56132
+        ],
+        [
+          0.25998,
+          1.27878,
+          -1.54507
+        ],
+        [
+          0.25996,
+          1.2671,
+          -1.53073
+        ],
+        [
+          0.26034,
+          1.25481,
+          -1.52409
+        ],
+        [
+          0.26098,
+          1.24203,
+          -1.51571
+        ],
+        [
+          0.26174,
+          1.22881,
+          -1.50857
+        ],
+        [
+          0.26263,
+          1.21522,
+          -1.50275
+        ],
+        [
+          0.2636,
+          1.20135,
+          -1.49811
+        ],
+        [
+          0.26466,
+          1.18718,
+          -1.49416
+        ],
+        [
+          0.26578,
+          1.17284,
+          -1.49149
+        ],
+        [
+          0.26694,
+          1.1584,
+          -1.48959
+        ],
+        [
+          0.26813,
+          1.14381,
+          -1.48826
+        ],
+        [
+          0.26935,
+          1.12916,
+          -1.48767
+        ],
+        [
+          0.27058,
+          1.1144,
+          -1.48744
+        ],
+        [
+          0.27181,
+          1.09961,
+          -1.48788
+        ],
+        [
+          0.27305,
+          1.08473,
+          -1.48862
+        ],
+        [
+          0.27427,
+          1.06981,
+          -1.48999
+        ],
+        [
+          0.27547,
+          1.05484,
+          -1.4918
+        ],
+        [
+          0.27664,
+          1.03982,
+          -1.49387
+        ],
+        [
+          0.27779,
+          1.02474,
+          -1.49657
+        ],
+        [
+          0.2789,
+          1.00962,
+          -1.4997
+        ],
+        [
+          0.27995,
+          0.99447,
+          -1.50321
+        ],
+        [
+          0.28096,
+          0.97929,
+          -1.50703
+        ],
+        [
+          0.28191,
+          0.96405,
+          -1.51082
+        ],
+        [
+          0.2828,
+          0.94876,
+          -1.51506
+        ],
+        [
+          0.28362,
+          0.93343,
+          -1.51958
+        ],
+        [
+          0.28438,
+          0.91806,
+          -1.52422
+        ],
+        [
+          0.28507,
+          0.90265,
+          -1.52871
+        ],
+        [
+          0.28569,
+          0.88719,
+          -1.53346
+        ],
+        [
+          0.28624,
+          0.8717,
+          -1.53832
+        ],
+        [
+          0.28672,
+          0.85617,
+          -1.54284
+        ],
+        [
+          0.28712,
+          0.84061,
+          -1.54754
+        ],
+        [
+          0.28745,
+          0.82502,
+          -1.55223
+        ],
+        [
+          0.28771,
+          0.80942,
+          -1.55678
+        ],
+        [
+          0.2879,
+          0.7938,
+          -1.56117
+        ],
+        [
+          0.28803,
+          0.77817,
+          -1.56535
+        ],
+        [
+          0.28809,
+          0.7625,
+          -1.56903
+        ],
+        [
+          0.28809,
+          0.74681,
+          -1.57273
+        ],
+        [
+          0.28804,
+          0.7311,
+          -1.5763
+        ],
+        [
+          0.28793,
+          0.71537,
+          -1.5793
+        ],
+        [
+          0.28778,
+          0.6996,
+          -1.58203
+        ],
+        [
+          0.28758,
+          0.68381,
+          -1.5848
+        ],
+        [
+          0.28734,
+          0.66803,
+          -1.58738
+        ],
+        [
+          0.28707,
+          0.65226,
+          -1.58966
+        ],
+        [
+          0.28676,
+          0.6365,
+          -1.59165
+        ],
+        [
+          0.28642,
+          0.62075,
+          -1.59336
+        ],
+        [
+          0.28605,
+          0.60502,
+          -1.59481
+        ],
+        [
+          0.28566,
+          0.58929,
+          -1.59604
+        ],
+        [
+          0.28526,
+          0.57357,
+          -1.59705
+        ],
+        [
+          0.28484,
+          0.55786,
+          -1.59786
+        ],
+        [
+          0.28441,
+          0.54218,
+          -1.59848
+        ],
+        [
+          0.28398,
+          0.52647,
+          -1.59868
+        ],
+        [
+          0.28354,
+          0.51077,
+          -1.59891
+        ],
+        [
+          0.28309,
+          0.49538,
+          -1.60337
+        ],
+        [
+          0.28262,
+          0.48066,
+          -1.61022
+        ],
+        [
+          0.28214,
+          0.46663,
+          -1.61741
+        ],
+        [
+          0.28168,
+          0.45331,
+          -1.62278
+        ],
+        [
+          0.28118,
+          0.44072,
+          -1.62943
+        ],
+        [
+          0.2805,
+          0.42865,
+          -1.6436
+        ],
+        [
+          0.27966,
+          0.41719,
+          -1.66045
+        ],
+        [
+          0.2786,
+          0.40611,
+          -1.65192
+        ],
+        [
+          0.27763,
+          0.39555,
+          -1.6122
+        ],
+        [
+          0.27675,
+          0.38519,
+          -1.5688
+        ],
+        [
+          0.27583,
+          0.3749,
+          -1.53261
+        ],
+        [
+          0.27525,
+          0.36553,
+          -1.48041
+        ],
+        [
+          0.27506,
+          0.35715,
+          -1.41096
+        ],
+        [
+          0.27486,
+          0.3487,
+          -1.34603
+        ],
+        [
+          0.27467,
+          0.34026,
+          -1.28741
+        ],
+        [
+          0.27484,
+          0.33278,
+          -1.2155
+        ],
+        [
+          0.27539,
+          0.32633,
+          -1.12434
+        ],
+        [
+          0.27601,
+          0.32004,
+          -1.03707
+        ],
+        [
+          0.27703,
+          0.31395,
+          -0.94763
+        ],
+        [
+          0.27867,
+          0.30844,
+          -0.85048
+        ],
+        [
+          0.28076,
+          0.30323,
+          -0.73421
+        ],
+        [
+          0.28347,
+          0.29832,
+          -0.59469
+        ],
+        [
+          0.28679,
+          0.29346,
+          -0.4324
+        ],
+        [
+          0.29058,
+          0.28868,
+          -0.24742
+        ],
+        [
+          0.2948,
+          0.28456,
+          -0.05285
+        ],
+        [
+          0.299,
+          0.28058,
+          0.12046
+        ],
+        [
+          0.3036,
+          0.27714,
+          0.26918
+        ],
+        [
+          0.30845,
+          0.27459,
+          0.38244
+        ],
+        [
+          0.31345,
+          0.27236,
+          0.50126
+        ],
+        [
+          0.31827,
+          0.27118,
+          0.61009
+        ],
+        [
+          0.32308,
+          0.27086,
+          0.71824
+        ],
+        [
+          0.32757,
+          0.27136,
+          0.80727
+        ],
+        [
+          0.33124,
+          0.27195,
+          0.85612
+        ],
+        [
+          0.33493,
+          0.27293,
+          0.89895
+        ],
+        [
+          0.33839,
+          0.27446,
+          0.92795
+        ],
+        [
+          0.34071,
+          0.27713,
+          0.90959
+        ],
+        [
+          0.34286,
+          0.27966,
+          0.88466
+        ],
+        [
+          0.34459,
+          0.28169,
+          0.86651
+        ],
+        [
+          0.34624,
+          0.28361,
+          0.86245
+        ],
+        [
+          0.34796,
+          0.28556,
+          0.87988
+        ],
+        [
+          0.34962,
+          0.28748,
+          0.91264
+        ],
+        [
+          0.35108,
+          0.28942,
+          0.93974
+        ],
+        [
+          0.3525,
+          0.29139,
+          0.94259
+        ],
+        [
+          0.35383,
+          0.29322,
+          0.9259
+        ],
+        [
+          0.35497,
+          0.29469,
+          0.9092
+        ],
+        [
+          0.35598,
+          0.29603,
+          0.88396
+        ],
+        [
+          0.35677,
+          0.29678,
+          0.83316
+        ]
+      ]
+    }
+  }
+}

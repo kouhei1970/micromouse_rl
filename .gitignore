@@ -6,8 +6,16 @@ MUJOCO_LOG.TXT
 
 # Generated artifacts
 logs/
-outputs/
 models/*.zip
+
+# outputs/ は原則として版管理しない（動画・図・中間生成物は再生成できる）。
+# ただし各実験の latest/metrics.json だけは追跡する。
+# 理由: 結論の根拠となる「走行ごとの指標」がここにしか無く、版管理外だと
+# この機械が変わった時点で全実験の検算可能性が失われる（研究計画書 §9-3）。
+# git は無視されたディレクトリの中を走査しないので、ディレクトリは再包含する必要がある。
+outputs/**
+!outputs/**/
+!outputs/**/latest/metrics.json
 
 # legacy/models/ の学習済みチェックポイントは凍結成果物として追跡する
 # Checkpoints under legacy/models/ are frozen artifacts and must remain tracked
