@@ -52,6 +52,12 @@ RUNS = [
     ("案3 k=2e-3", None, 3, "models/exp_006d_hp_k2e-3_seed3.zip"),
     ("案3 k=5e-3", None, 1, "models/exp_006d_hp_k5e-3_seed1.zip"),
     ("案3 k=5e-3", None, 2, "models/exp_006d_hp_k5e-3_seed2.zip"),
+    ("案3 k=8.7e-3", None, 1, "models/exp_006d_hp_k8.7e-3_seed1.zip"),
+    ("案3 k=8.7e-3", None, 2, "models/exp_006d_hp_k8.7e-3_seed2.zip"),
+    ("案3 k=8.7e-3", None, 3, "models/exp_006d_hp_k8.7e-3_seed3.zip"),
+    # exp_008: 並列環境数のみ 1 → 6（罰なし）。比較の基準は k=0 の行
+    ("並列6 k=0", 0.0, 0, "models/exp_008_nenvs6_seed0.zip"),
+    ("並列6 k=0", 0.0, 1, "models/exp_008_nenvs6_seed1.zip"),
 ]
 
 # 3 基準（exp_006 と同じ）

@@ -71,6 +71,11 @@ MODELS = [
     ("案3 k=2e-3", 3, "models/exp_006d_hp_k2e-3_seed3.zip"),
     ("案3 k=5e-3", 1, "models/exp_006d_hp_k5e-3_seed1.zip"),
     ("案3 k=5e-3", 2, "models/exp_006d_hp_k5e-3_seed2.zip"),
+    ("案3 k=8.7e-3", 1, "models/exp_006d_hp_k8.7e-3_seed1.zip"),
+    ("案3 k=8.7e-3", 2, "models/exp_006d_hp_k8.7e-3_seed2.zip"),
+    ("案3 k=8.7e-3", 3, "models/exp_006d_hp_k8.7e-3_seed3.zip"),
+    ("並列6 k=0", 0, "models/exp_008_nenvs6_seed0.zip"),
+    ("並列6 k=0", 1, "models/exp_008_nenvs6_seed1.zip"),
 ]
 
 PREFILTER_M = 0.30    # この距離より遠い壁は最小値を与えない（機体の外接半径 << 0.3 m）

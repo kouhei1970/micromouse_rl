@@ -272,6 +272,9 @@ def main(argv=None):
     parser.add_argument("--seed", type=int, default=0, help="PPO本体の乱数seed")
     parser.add_argument("--gamma", type=float, default=GAMMA)
     parser.add_argument("--n-envs", type=int, default=6)
+    parser.add_argument("--vec-env", choices=["auto", "dummy", "subproc"], default="auto",
+                        help="ベクトル化環境の実装。auto は従来どおり "
+                             "（1 なら Dummy、それ以上は Subproc）")
     parser.add_argument("--log-dir", type=str, default="logs/exp_003_sensor_history")
     parser.add_argument("--model-out", type=str,
                         default="models/exp_003_sensor_history.zip")
@@ -302,7 +305,17 @@ def main(argv=None):
                         args.collision_penalty, args.action_smooth_penalty,
                         args.action_highpass_penalty, args.action_highpass_alpha)
                for i in range(n_envs)]
-    vec_env = DummyVecEnv(env_fns) if n_envs == 1 else SubprocVecEnv(env_fns)
+    # ベクトル化環境の実装。既定は「1 なら Dummy、それ以上は Subproc」で従来どおり。
+    # exp_008 の速度測定（2026-08-11）で、SubprocVecEnv はプロセス間通信のぶん
+    # **並列 6 の方が 1.9 倍遅い**ことが分かったため、切り分け用に明示指定できるようにした。
+    # DummyVecEnv は環境を同一プロセス内で逐次に進めるので通信が無い。
+    if args.vec_env == "dummy":
+        vec_env = DummyVecEnv(env_fns)
+    elif args.vec_env == "subproc":
+        vec_env = SubprocVecEnv(env_fns)
+    else:  # "auto"（従来の挙動）
+        vec_env = DummyVecEnv(env_fns) if n_envs == 1 else SubprocVecEnv(env_fns)
+    print(f"[train] ベクトル化環境 = {type(vec_env).__name__}（n_envs={n_envs}）")
     print(f"[train] 観測空間 = {vec_env.observation_space}（距離4 + 差分4 + 7）")
     print(f"[train] ポテンシャル = {'Φ=D₀−D（オフセットあり）' if args.potential_offset else 'Φ=−D（現行）'}")
     print(f"[train] 衝突罰 = {args.collision_penalty}")
