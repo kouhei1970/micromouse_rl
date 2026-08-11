@@ -106,6 +106,9 @@ class MazeResult:
     #   t = L / v  なので  t_exp/t_fast = (L_exp/L_fast) · (v_fast/v_exp)
     path_ratio: float | None = None   # L_exp / L_fast  … 地図による経路短縮の寄与
     speed_ratio: float | None = None  # v_fast / v_exp  … 走行方式（速度）の寄与
+    # 正本 §2（7bb7f3c）の定義そのもの
+    c1: float | None = None   # (c1) 経路短縮率 = 1 − (L_最短 / L_探索)
+    c2: float | None = None   # (c2) 速度向上率 = (v_最短 / v_探索) − 1
     time_used: float | None = None          # 最終走行の t_end [s]
     hit_run_cap: bool = False               # 走行回数が上限に達したか
     last_outcome: str | None = None
@@ -190,6 +193,9 @@ def analyze_maze(path: Path) -> MazeResult:
             v_fast = l_fast / m.fast_time
             m.path_ratio = l_exp / l_fast      # >1 なら地図で経路が短くなった
             m.speed_ratio = v_fast / v_exp     # >1 なら最短走行の方が速く走っている
+            # --- 正本 §2（7bb7f3c）の (c1) (c2) ---
+            m.c1 = 1.0 - (l_fast / l_exp)      # 経路短縮率
+            m.c2 = (v_fast / v_exp) - 1.0      # 速度向上率
 
     return m
 
@@ -230,6 +236,11 @@ def aggregate(mazes: list[MazeResult]) -> dict[str, Any]:
         #     面ごとに比を取ってから集計している（中央値どうしの比とは一致しない）
         "c_shrink_rate": describe([m.improvement_ratio for m in b_hits
                                    if m.improvement_ratio is not None]),
+        # --- 正本 §2（7bb7f3c）の (c1)(c2) ---
+        # (c1) 経路短縮率 = 1 − L_最短/L_探索 ／ (c2) 速度向上率 = v_最短/v_探索 − 1
+        # 分解の恒等式: 1 − t_最短/t_探索 = 1 − (1−c1)/(1+c2)
+        "c1_path_shrink": describe([m.c1 for m in b_hits if m.c1 is not None]),
+        "c2_speed_gain": describe([m.c2 for m in b_hits if m.c2 is not None]),
         # (e)
         "e_first_fast_efficiency_A": describe([m.eff_A for m in b_hits if m.eff_A is not None]),
         "e_first_fast_efficiency_B": describe([m.eff_B for m in b_hits if m.eff_B is not None]),
@@ -407,6 +418,7 @@ def main() -> None:
                     "improvement_ratio": m.improvement_ratio,
                     "eff_A": m.eff_A, "eff_B": m.eff_B,
                     "explore_over_fast": m.explore_over_fast,
+                    "c1": m.c1, "c2": m.c2,
                     "time_used": m.time_used, "hit_run_cap": m.hit_run_cap,
                 }
                 for m in mazes
@@ -485,10 +497,18 @@ def main() -> None:
               f"退化（1 回のみ＆最良がその走行） {c['e_v2_undefined_degenerate']} 面 "
               f"／ 1 回のみだが情報を持つ面 {c['e_v2_single_fast_but_informative']} 面")
         if sr["n"]:
-            print(f"    (c) 短縮率 1−t_最短/t_探索: 中央値 {sr['median']*100:6.2f}%  "
+            print(f"    (c) 時間短縮率 1−t_最短/t_探索: 中央値 {sr['median']*100:6.2f}%  "
                   f"[Q1 {sr['q1']*100:.2f}%, Q3 {sr['q3']*100:.2f}%]  "
                   f"min {sr['min']*100:.2f}%  max {sr['max']*100:.2f}%  n={sr['n']}"
                   f"   ／二値化率 {c['c_effective_rate_over_all']*100:.0f}%")
+        c1, c2 = c["c1_path_shrink"], c["c2_speed_gain"]
+        if c1["n"]:
+            print(f"    **(c1) 経路短縮率** : 中央値 {c1['median']*100:6.2f}%  "
+                  f"[Q1 {c1['q1']*100:.2f}%, Q3 {c1['q3']*100:.2f}%]  "
+                  f"min {c1['min']*100:.2f}%  max {c1['max']*100:.2f}%")
+            print(f"    **(c2) 速度向上率** : 中央値 {c2['median']*100:6.2f}%  "
+                  f"[Q1 {c2['q1']*100:.2f}%, Q3 {c2['q3']*100:.2f}%]  "
+                  f"min {c2['min']*100:.2f}%  max {c2['max']*100:.2f}%")
 
     print("\n--- (c) の分解: 時間短縮は「経路が短くなった」からか「速く走った」からか ---")
     print("      t_exp/t_fast = (L_exp/L_fast) × (v_fast/v_exp)")
