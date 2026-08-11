@@ -182,11 +182,15 @@ def _run_one_trial(env: CorridorEnv, policy_fn, trial_seed: int,
         if len(cur_arr) else None,
         min_wall_clearance_m=(float(meter.worst)
                               if math.isfinite(meter.worst) else None),
-        trace=(dict(t=[round(v, 4) for v in times],
-                    action=[[round(float(a[0]), 5), round(float(a[1]), 5)] for a in acts],
-                    wheel_omega=[[round(float(w[0]), 4), round(float(w[1]), 4)]
-                                 for w in omegas],
-                    pose=[[round(v, 5) for v in q] for q in poses])
+        # **行動は丸めない。**1e-5 の丸めで軌跡が 2.77 m ずれることを実測した
+        # （2026-08-11。完全精度なら差 0、7 桁なら 5.7e-8）。系は行動の摂動に対して
+        # カオス的で、362 歩で 1e-5 → 2.77 m まで増幅する。**軌跡の再現には完全精度が要る。**
+        # 指標（反転・HF比・電流）は行動列から直接計算するので丸めても影響は無いが、
+        # **再生による忠実性の確認ができなくなる**ので丸めない。
+        trace=(dict(t=[round(v, 6) for v in times],
+                    action=[[float(a[0]), float(a[1])] for a in acts],
+                    wheel_omega=[[float(w[0]), float(w[1])] for w in omegas],
+                    pose=[[round(v, 7) for v in q] for q in poses])
                if keep_trace else None),
     )
 
