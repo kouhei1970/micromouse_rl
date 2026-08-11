@@ -53,7 +53,8 @@ WALL = "#3b3a37"
 
 BANDS = [
     ("是正前の評価迷路", "competition/mazes/eval_v2_short", "maze_*.npz", False),
-    ("是正後の評価迷路（現行）", "competition/mazes/eval", "maze_*.npz", False),
+    ("1 回目の是正（現行）", "competition/mazes/eval", "maze_*.npz", False),
+    ("2 回目の是正（v3 候補）", "competition/mazes/eval_v3", "maze_*.npz", False),
     ("大会実迷路（本物）", "competition/reference_mazes/contest", "contest_*.npz", True),
 ]
 
@@ -164,7 +165,7 @@ def main():
     plt = _setup_mpl()
     bands = [collect(b) for b in BANDS]
 
-    fig, axes = plt.subplots(2, 3, figsize=(13.6, 11.2))
+    fig, axes = plt.subplots(2, len(BANDS), figsize=(4.5 * len(BANDS), 11.2))
     for col, (label, rows) in enumerate(bands):
         for row, (key, what) in enumerate((("D", "最短距離が中央値の面"),
                                            ("R", "経路比が中央値の面"))):
@@ -195,7 +196,7 @@ def main():
         Patch(facecolor=C_AQUA, alpha=0.28, label="スタート"),
         Patch(facecolor=C_YELLOW, alpha=0.22, label="ゴール 2x2"),
     ]
-    fig.legend(handles=handles, loc="lower center", ncol=3, frameon=False,
+    fig.legend(handles=handles, loc="lower center", ncol=4, frameon=False,
                fontsize=10.5, bbox_to_anchor=(0.5, 0.080))
 
     # 帯ごとの中央値（キャプション。3 行に分けて切れないように）
@@ -212,8 +213,8 @@ def main():
                  f"{lab}（n={n}）\n$D_{{true}}$ {d:.0f} 区画　/　経路比 {rr:.3f}"
                  f"　/　$N_2/D_0$ {n2:.2f}",
                  ha="center", va="top", fontsize=9.5, color=TEXT_SECONDARY)
-    fig.suptitle("経路長は直った。探索の遠回りは直っていない。\n"
-                 "— 2 本の線が重なるほど「探索しても何も分からない迷路」",
+    fig.suptitle("2 回目の是正で、探索の遠回りも大会実迷路の水準になった\n"
+                 "— 橙が網（最短になりうる区画）から出るほど「探索が試される迷路」",
                  fontsize=14, color=TEXT_PRIMARY, y=0.985)
 
     out = REPO_ROOT / "outputs" / "figures" / "maze_before_after_contest.png"
