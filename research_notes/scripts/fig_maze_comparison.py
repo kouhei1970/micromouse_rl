@@ -39,7 +39,8 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from competition.explore_cost import (  # noqa: E402
-    detour_ratio, first_run_path, n_delta, true_shortest, true_shortest_path)
+    detour_ratio, first_run_path, n_delta, shortest_cells, true_shortest,
+    true_shortest_path)
 
 CELL = 1.0
 GOAL_CENTER = ((7, 7), (7, 8), (8, 7), (8, 8))
@@ -118,6 +119,13 @@ def draw(ax, r, plt, title, subtitle):
     # --- スタート区画の塗り
     ax.add_patch(plt.Rectangle((start[0] * CELL, start[1] * CELL), CELL, CELL,
                                facecolor=C_AQUA, alpha=0.28, edgecolor="none", zorder=0))
+    # --- 「最短経路になりうる」区画の網掛け
+    #     最短経路は複数あることが多い。1 本だけ描くと、探索が別の等長ルートを
+    #     通っただけでも図の上では外れて見えるので、その範囲を薄く示す。
+    for (cx, cy) in shortest_cells(v, h, start, goals):
+        ax.add_patch(plt.Rectangle((cx * CELL, cy * CELL), CELL, CELL,
+                                   facecolor=C_BLUE, alpha=0.13, edgecolor="none",
+                                   zorder=1))
     # --- 壁
     for x in range(17):
         for y in range(16):
@@ -161,7 +169,7 @@ def main():
         for row, (key, what) in enumerate((("D", "最短距離が中央値の面"),
                                            ("R", "経路比が中央値の面"))):
             r = pick(rows, key)
-            sub = (f"$D_{{true}}$ = {r['D']} 区画　／　経路比 = {r['R']:.2f}"
+            sub = (f"$D_{{true}}$ = {r['D']} 区画　／　経路比 = {r['R']:.3f}"
                    f"　／　β = {r['beta']}")
             draw(axes[row][col], r, plt, f"{r['name']}（{what}）", sub)
 
@@ -182,11 +190,13 @@ def main():
                label="真の最短経路（壁が全部分かっていれば通る道）"),
         Line2D([], [], color=C_ORANGE, lw=1.8,
                label="足立法の初回探索が実際に通った道"),
+        Patch(facecolor=C_BLUE, alpha=0.13,
+              label="最短経路になりうる区画（等長の別ルートを含む）"),
         Patch(facecolor=C_AQUA, alpha=0.28, label="スタート"),
         Patch(facecolor=C_YELLOW, alpha=0.22, label="ゴール 2x2"),
     ]
-    fig.legend(handles=handles, loc="lower center", ncol=4, frameon=False,
-               fontsize=10.5, bbox_to_anchor=(0.5, 0.088))
+    fig.legend(handles=handles, loc="lower center", ncol=3, frameon=False,
+               fontsize=10.5, bbox_to_anchor=(0.5, 0.080))
 
     # 帯ごとの中央値（キャプション。3 行に分けて切れないように）
     cells = []

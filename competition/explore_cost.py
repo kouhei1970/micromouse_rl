@@ -208,6 +208,42 @@ def true_shortest_path(v_walls, h_walls, start=(0, 0), goals=GOAL_CELLS):
     return path[::-1]
 
 
+def shortest_cells(v_walls, h_walls, start=(0, 0), goals=GOAL_CELLS):
+    """**少なくとも 1 本の最短経路に含まれる**区画の集合。
+
+    最短経路は複数あることが多い（生成迷路の中央値 2 本、大会実迷路 5 本）。
+    「最短経路」を 1 本だけ描くと、探索が**別の等長ルート**を通っただけでも
+    図の上では外れて見える。どこまでが「最短のうち」かを示すために使う。
+
+    判定式: $d_S(c) + d_G(c) = D_0$
+    """
+    d0 = true_shortest(v_walls, h_walls, start, goals)
+    if d0 <= 0:
+        return set()
+
+    def bfs(sources):
+        dist = {}
+        dq = deque()
+        for c in sources:
+            dist[tuple(c)] = 0
+            dq.append(tuple(c))
+        while dq:
+            x, y = dq.popleft()
+            for d, (dx, dy) in enumerate(DIRS):
+                n = (x + dx, y + dy)
+                if not (0 <= n[0] < W and 0 <= n[1] < H) or n in dist:
+                    continue
+                if true_wall(v_walls, h_walls, x, y, d):
+                    continue
+                dist[n] = dist[(x, y)] + 1
+                dq.append(n)
+        return dist
+
+    ds = bfs([tuple(start)])
+    dg = bfs([tuple(g) for g in goals])
+    return {c for c in ds if c in dg and ds[c] + dg[c] == d0}
+
+
 def detour_ratio(v_walls, h_walls, start=(0, 0), goals=GOAL_CELLS, tiebreak="straight"):
     """経路比 R = 初回探索の移動区画数 / D_0。測れない場合は NaN。"""
     d0 = true_shortest(v_walls, h_walls, start, goals)
