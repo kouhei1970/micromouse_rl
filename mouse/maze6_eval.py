@@ -19,6 +19,19 @@ M2-0（6x6 迷路の単走）の評価器。`mouse/corridor_eval.py` と同じ�
 - 完走できなかった方策の指標を、完走できた方策の指標と混ぜない
 - 結論は「x / N seed」の形で書き、条件間の比較は同じ seed 数で揃える
 
+## 旋回量の指標（裁定 R4・2026-08-14 の R11 バッチで整理）
+
+| キー | 定義 | 使ってよい場面 |
+|---|---|---|
+| `n_turns_reset45` | ヨー角の累積が ±45° を超えるたびに 1（**符号が反転すると積算を捨てる**） | **方式内の診断のみ。方式間比較・対外報告には使用禁止**（裁定 R4） |
+| `total_yaw_rad` | 1 歩ごとのヨー角変化の**絶対値**の単純積算（**リセットなし**）。集計は `total_yaw_rad_mean` | **回転量が要るときはこちら** |
+
+- **`n_turns_reset45` は 2026-08-14 まで `n_turns` という名前だった。計算式は変えていないので、
+  旧記録の `n_turns` はこの `n_turns_reset45` と同じ量である。**
+- 改名の理由: **同じ `n_turns` という名前が、学生A の実験では裁定 R4 の正本定義
+  （区画列の進行方向変化・180° 転回 = 2）を指しており、同じ名前で別の量になっていた**
+  （`research_notes/note_015_same_name_different_quantity.md`）。
+
 使い方:
     .venv/bin/python -m mouse.maze6_eval --model models/exp_010_m2_0.zip
     .venv/bin/python -m mouse.maze6_eval --model ... --split validation
@@ -63,8 +76,23 @@ def _run_one_trial(env, policy_fn, tseed: int, keep_trace: bool = False) -> dict
     s_ = env.sim
     wheel_adr = (s_._left_wheel_qvel_adr, s_._right_wheel_qvel_adr)
     # 旋回回数（時間の主要因。迷路では分岐ごとに出る）
+    #
+    # ⚠️【教授裁定 2026-08-11-R4】この n_turns（±45° リセットあり定義）は
+    # **方式間比較・対外報告に使用禁止**。正本は学生A の区画列定義（経路の折れ数。
+    # 180° 転回 = 2）。方式内の診断用に残すのは可だが、その場合も n_turns の名を
+    # 使わず別名にするか注記を付けること。
+    # 使用禁止の理由: 下のリセット規則（`yaw_acc * dyaw < 0` で積算破棄）が、
+    # 超信地旋回で累積ヨー角の 42% を捨てており、同一経路を走る 2 方式に
+    # 1.8 倍の差を報告する（実回転量の差は 1.17 倍）。根拠データ:
+    # `research_notes/data/nturns_defs_{l0a,l0c}.json`・`nturns_reset_loss.json`。
+    # **回転量そのものが必要な場合は total_yaw_rad（リセットなしの総ヨー角）を
+    # 別指標として使うこと。**
+    # （2026-08-14 学生B・R11 バッチ項目 1: `mouse/corridor_eval.py` には 2026-08-12 に
+    #  入れた同じ注意書きと total_yaw_rad が、こちらには入っていなかった。
+    #  **計算式は変更していない**。新しいキーを 1 つ増やしただけである）
     _, _, yaw_prev = s_.privileged_pose()
     yaw_acc, n_turns = 0.0, 0
+    total_yaw_rad = 0.0  # |dyaw| の単純積算（リセットなし。R4 が指定した代替指標）
     while True:
         a = np.clip(np.asarray(policy_fn(obs), dtype=np.float64), -1.0, 1.0)
         acts.append(a)
@@ -83,6 +111,7 @@ def _run_one_trial(env, policy_fn, tseed: int, keep_trace: bool = False) -> dict
         x, y, yaw = s_.privileged_pose()
         dyaw = math.atan2(math.sin(yaw - yaw_prev), math.cos(yaw - yaw_prev))
         yaw_prev = yaw
+        total_yaw_rad += abs(dyaw)      # リセットなしの総ヨー角（R4 の代替指標）
         if yaw_acc * dyaw < 0.0:
             yaw_acc = 0.0
         yaw_acc += dyaw
@@ -126,7 +155,16 @@ def _run_one_trial(env, policy_fn, tseed: int, keep_trace: bool = False) -> dict
         i_dc=float(np.abs(cur.mean(axis=0)).mean()),
         i_ac=float(np.sqrt(np.maximum(
             (cur ** 2).mean(axis=0) - cur.mean(axis=0) ** 2, 0.0)).mean()),
-        n_turns=int(n_turns),
+        # 🔴 2026-08-14（R11 バッチ項目 2）: `n_turns` → `n_turns_reset45` へ改名した。
+        # **計算式は 1 文字も変えていない**ので、**旧記録の `n_turns` はこの
+        # `n_turns_reset45` と同じ量**である（±45° リセットあり定義）。
+        # 改名の理由: 同じ `n_turns` という名前が、学生A の実験（exp_013/014/015）では
+        # **裁定 R4 の正本定義（区画列の進行方向変化・180° 転回 = 2）**を指しており、
+        # **同じ名前で別の量**になっていた（`research_notes/note_015_same_name_different_quantity.md`）。
+        n_turns_reset45=int(n_turns),
+        # 🔴 方式間比較・対外報告には上の値ではなく **total_yaw_rad** を使う（裁定 R4。
+        # 上の旋回回数のコメント参照）。リセットなしの総ヨー角 [rad]
+        total_yaw_rad=float(total_yaw_rad),
         # **行動は丸めない。**1e-5 の丸めで軌跡が 2.77 m ずれることを実測した
         # （2026-08-11。完全精度なら差 0、7 桁なら 5.7e-8）。系は行動の摂動に対して
         # カオス的で、362 歩で 1e-5 → 2.77 m まで増幅する。**軌跡の再現には完全精度が要る。**
@@ -230,6 +268,8 @@ def evaluate_maze6(policy_fn, maze_dir=EVAL_MAZE_DIR, n_trials=DEFAULT_N_TRIALS,
                                           + r["sign_flip_rate_right"]) for r in ok]),
         i_rms_mean=_mean([r["i_rms"] for r in ok]),
         i_dc_mean=_mean([r["i_dc"] for r in ok]),
+        # 🔴 方式間比較・対外報告に使う回転量はこちら（裁定 R4。n_turns は使わない）
+        total_yaw_rad_mean=_mean([r["total_yaw_rad"] for r in ok]),
         hf_ratio_mean=_mean([r["hf_ratio"] for r in ok]),
         hf_ratio_worst_norm=(_mean([r["hf_ratio"] for r in ok]) / HF_WORST) if ok else None,
         min_wall_clearance_min_m=(min(r["min_wall_clearance_m"] for r in ok)
