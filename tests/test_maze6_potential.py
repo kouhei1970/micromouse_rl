@@ -13,14 +13,17 @@ pytest は使わない plain Python スクリプト（tests/test_corridor.py と
 
 検査項目（design.md §4 末尾の (a)〜(e) ＋ (b-2) ＋ (b-3)。裁定 R8・R12 を反映）:
   (a)   区画中心で Φ が旧実装（階段版）と一致する（検証帯 20 面 × 全区画。ゴール区画は除く）
-  (b)   跳びが無いこと。閾値は式で定義する（裁定 R7-6）:
-            |ΔΦ_t| ≤ max(|v_t|, |v_(t−1)|)·Δt·1.25 + 0.001 m
-        かつ絶対上限 v_max·Δt = 0.0409 m。直進・90°旋回・S 字の 3 種で全ステップを検査。
-        同じ走行を階段版でも検査し、そちらでは 0.18 に近い跳びが出ることを確認する
-        （＝この検査が連続化を検出できることの証拠）
-  (b-2) 降下方向が曲がる区画での境界一致（裁定 R8。当初案の欠陥の回帰検査）
+  (b)   跳びが無いこと。閾値は式で定義する（裁定 R7-6・R18-2）:
+            |ΔΦ_t| ≤ √2 · 1.10 · |Δp_t| + 1e-9 m
+        |Δp| は真の位置から求めた機体中心の 1 ステップ変位。直進・90°旋回・S 字・急停止の
+        4 種で全ステップを検査。同じ走行を階段版でも検査し、そちらでは 0.18 に近い跳びが
+        出ることを確認する（＝この検査が連続化を検出できることの証拠）
+  (L)   刻み不変性（裁定 R18-4 で新設）。区画内を 3 水準の格子で走査し、最大
+        |ΔΦ|/|Δp| が √2 近傍で一定であること。真の不連続なら刻み数に比例して発散する
+  (b-2) **全**降下開口部での境界一致（裁定 R8・R13 条件 3。D1/D2 の回帰検査）
   (b-3) step() 経路と直接呼び出しの全ステップ一致（裁定 R12 の確認事項）
-  (c)   Φ が横方向のずれに不感（折れ線が一直線の区画に限る。飛ばした区画数を報告）
+  (c)   Φ が横方向のずれに不感（**降下隣接がちょうど 1 つ、かつ折れ線が一直線**の構成に
+        限る。裁定 R18-3。飛ばした構成の数を報告）
   (d)   Φ₀ = 0（reset 直後、横 ±20 mm・方位 ±10° の擾乱あり）
   (e)   予約 seed の読み飛ばしと、廊下側（tests/test_corridor.py）の全項目 PASS
   (f)   【追加】既定 continuous_potential=False で既存挙動が変わらないこと
@@ -62,10 +65,23 @@ WHEEL_R = _P.wheel_radius                 # 車輪半径 [m]
 # 無負荷速度 v_max = r·V/(K_e·G_r)（design.md §4 (b)。3.0 V・G_r=5 で 4.09 m/s）
 VMAX = WHEEL_R * _P.voltage_limit / (_P.motor_Ke * _P.gear_ratio)
 
-# (b) の閾値の係数（design.md §4 (b) の式。**緩めてはならない**）
-JUMP_SLOPE = 1.25                         # 離散化・滑り・旋回ぶんの余裕
-JUMP_OFFSET = 0.001                       # [m]
-JUMP_ABS_CAP = VMAX * DT                  # [m] 絶対上限
+# (b) の閾値（design.md §4 (b) の式。**緩めてはならない**）
+#   |ΔΦ_t| ≤ √2 · κ · |Δp_t| + ε
+# √2 は新しい Φ の Lipschitz 定数（厳密値）。(a)（中心で階段版と一致）と境界一致を
+# 課すと、曲がる区画では w_in と w_out の間で Φ が cs = 0.18 m 変化しなければならない
+# のに直線距離は cs/√2 = 0.127279 m しかないので、|∇Φ| ≤ 1 は数学的に達成できない。
+# κ は「区画をまたぐ歩で境界の交点を経由して評価する」ぶんの余裕で、1 歩の弧長／弦長
+# (θ/2)/sin(θ/2) を押さえる。物理的な最大は両輪を逆向きに全電圧で回した
+# ω_max = 2·v_max/tread で θ_max = ω_max·Δt = 1.136 rad → 1.0553。κ=1.10 は 4% の余裕。
+# ε は数値誤差ぶん（Φ は O(1 m) の倍精度和なので実際の誤差は 1e-15 程度）。
+LIPSCHITZ = math.sqrt(2.0)
+JUMP_KAPPA = 1.10
+JUMP_EPS = 1e-9                           # [m]
+DISP_ABS_CAP = VMAX * DT                  # [m] |Δp| 自体の物理的な上限（照合用）
+
+# (L) 刻み不変性検査の刻み数（区画一辺 0.18 m を N 分割）と、許容する最大比
+GRID_LEVELS = (30, 120, 480)              # → 6.0 / 1.5 / 0.375 mm
+GRID_TOL = 1e-6                           # 最大比が √2 を超えてよい幅
 
 TOL_EXACT = 1e-12                         # (a)(b-3)(c)(f) の一致判定。(b-3) のみ design.md
                                           # が「絶対誤差 1e-12 未満」と明示。他は厳密一致が
@@ -120,9 +136,14 @@ def classify_step(cell_prev, cell_now, d_prev, d_now, goal_flag) -> str:
     return KIND_OTHER
 
 
-def jump_threshold(v_now: float, v_prev: float) -> float:
-    """design.md §4 (b) の閾値 [m]。速度依存の式と絶対上限の**厳しい方**を採る。"""
-    return min(max(abs(v_now), abs(v_prev)) * DT * JUMP_SLOPE + JUMP_OFFSET, JUMP_ABS_CAP)
+def jump_threshold(disp: float) -> float:
+    """design.md §4 (b) の閾値 [m]。**機体中心の実変位 |Δp| から直接決める。**
+
+    旧式は車輪角速度から求めた前進速度 v を使っていたが、v は惰行・制動時に実変位を
+    最大 2.414 倍まで過小評価する（実測。10311 歩）。v 基準を保つには余裕係数 2.5 が
+    必要で検査が 2.4 倍甘くなるため、真の位置から |Δp| を直接測る形へ改めた。
+    """
+    return LIPSCHITZ * JUMP_KAPPA * disp + JUMP_EPS
 
 
 # ======================================================================
@@ -177,7 +198,19 @@ def script_scurve(t: int) -> np.ndarray:
     return np.array([0.5 + d, 0.5 - d], dtype=np.float64)
 
 
-SCRIPTS = [("直進", script_straight), ("90°旋回", script_turn90), ("S字", script_scurve)]
+def script_brake(t: int) -> np.ndarray:
+    """40 歩走ってから指令を 0 にして惰行・停止する（低速域を通す台本）。
+
+    exp_010 が落ち込んだ停止層（|v| < 0.05 m/s）は上の 3 台本ではほとんど通らない
+    （実測 2286 歩中 1 歩）。惰行中は車輪角速度が実変位を過小評価するので、
+    閾値を |Δp| 基準へ改めたことの妥当性もここで効く。
+    """
+    return (np.array([0.6, 0.6], dtype=np.float64) if t < 40
+            else np.array([0.0, 0.0], dtype=np.float64))
+
+
+SCRIPTS = [("直進", script_straight), ("90°旋回", script_turn90),
+           ("S字", script_scurve), ("急停止", script_brake)]
 
 
 def rollout(maze_seed: int, script, continuous: bool, reset_seed: int = 0,
@@ -214,6 +247,17 @@ def is_bend(w_in, center, w_out) -> bool:
 def prev_cell_candidates(env: Maze6Env, cell):
     """c_(−1) として起こりうるもの: None（reset 直後）と、開通した全隣接区画。"""
     return [None] + list(env._open_neighbors(cell))
+
+
+def descending_neighbors(env: Maze6Env, cell):
+    """降下隣接の**全一覧**（d が cell よりちょうど 1 小さい開通隣接）。
+
+    環境側の実装に依存せずテスト側で独立に列挙する（実装の tie-break の有無に
+    関わらず、すべての降下開口部を検査対象にするため。裁定 R13 条件 3）。
+    """
+    d0 = env._dist_map[cell]
+    return [nb for nb in env._open_neighbors(cell)
+            if env._dist_map.get(nb, -1) == d0 - 1]
 
 
 # ======================================================================
@@ -263,6 +307,8 @@ def _scan_jumps(continuous: bool):
     n_steps = 0
     n_transitions = 0
     violations = []
+    n_disp_over_cap = 0     # |Δp| が物理上限 v_max·Δt を超えた歩（超えたら物理側の異常）
+    max_disp = 0.0
     for seed in VALID_SEEDS:
         for sname, script in SCRIPTS:
             recs, env = rollout(seed, script, continuous)
@@ -271,7 +317,11 @@ def _scan_jumps(continuous: bool):
                 a, b = recs[t - 1], recs[t]
                 kind = classify_step(a["cell"], b["cell"], a["d"], b["d"], b["goal"])
                 dphi = abs(b["phi"] - a["phi"])
-                thr = jump_threshold(b["v"], a["v"])
+                disp = math.hypot(b["x"] - a["x"], b["y"] - a["y"])
+                max_disp = max(max_disp, disp)
+                if disp > DISP_ABS_CAP:
+                    n_disp_over_cap += 1
+                thr = jump_threshold(disp)
                 st = stats.setdefault(kind, dict(n=0, max_jump=0.0, n_over=0, worst=None))
                 st["n"] += 1
                 n_steps += 1
@@ -284,24 +334,25 @@ def _scan_jumps(continuous: bool):
                     st["n_over"] += 1
                     if kind not in _EXCLUDED_KINDS and len(violations) < 20:
                         violations.append(dict(seed=seed, script=sname, step=t, kind=kind,
-                                               dphi=dphi, thr=thr,
+                                               dphi=dphi, thr=thr, disp=disp,
                                                cell_from=a["cell"], cell_to=b["cell"],
-                                               v_prev=a["v"], v_now=b["v"],
+                                               ratio=dphi / disp if disp > 0 else float("inf"),
                                                xy_from=(a["x"], a["y"]),
                                                xy_to=(b["x"], b["y"])))
-    return stats, n_steps, n_transitions, violations
+    return stats, n_steps, n_transitions, violations, n_disp_over_cap, max_disp
 
 
 def test_b_no_jump():
-    stats, n_steps, n_trans, violations = _scan_jumps(continuous=True)
+    stats, n_steps, n_trans, violations, n_cap, max_disp = _scan_jumps(continuous=True)
     n_over_judged = sum(v["n_over"] for k, v in stats.items() if k not in _EXCLUDED_KINDS)
-    ok = (n_over_judged == 0) and (n_trans > 0)
+    ok = (n_over_judged == 0) and (n_trans > 0) and (n_cap == 0)
 
     detail = [
         f"走行: {len(VALID_SEEDS)} 面 × 台本 {len(SCRIPTS)} 種、判定したステップ {n_steps}、"
         f"区画遷移 {n_trans} 回",
-        f"閾値: min(max(|v_t|,|v_(t−1)|)·{DT}·{JUMP_SLOPE} + {JUMP_OFFSET}, "
-        f"v_max·Δt={JUMP_ABS_CAP:.4f}) m　（v_max = {VMAX:.3f} m/s）",
+        f"閾値: √2 · {JUMP_KAPPA} · |Δp| + {JUMP_EPS:.0e} m",
+        f"|Δp| の最大 = {max_disp:.5f} m（物理上限 v_max·Δt = {DISP_ABS_CAP:.4f} m、"
+        f"超過 {n_cap} 歩。v_max = {VMAX:.3f} m/s）",
         "",
         f"{'種別':<28}{'判定':<6}{'件数':>7}{'最大|ΔΦ|[m]':>14}{'閾値超過':>10}",
     ]
@@ -316,14 +367,17 @@ def test_b_no_jump():
     detail.append("")
     if n_trans == 0:
         detail.append("🔴 区画遷移が 1 度も起きていない。検査が空振りしている（台本を見直すこと）")
+    if n_cap:
+        detail.append(f"🔴 |Δp| が物理上限 {DISP_ABS_CAP:.4f} m を超えた歩が {n_cap} 件ある"
+                      f"（Φ ではなく物理側の異常）")
     if violations:
         detail.append(f"🔴 除外対象外での閾値超過 {n_over_judged} 件（先頭 {len(violations)} 件）:")
         for v in violations:
             detail.append(
                 f"   面{v['seed']} {v['script']} step{v['step']} [{v['kind']}] "
                 f"|ΔΦ|={v['dphi']:.5f} > 閾値 {v['thr']:.5f} "
-                f"区画 {v['cell_from']}→{v['cell_to']} "
-                f"v=({v['v_prev']:.3f},{v['v_now']:.3f}) "
+                f"（|Δp|={v['disp']:.5f}、比 {v['ratio']:.3f}／許容 "
+                f"{LIPSCHITZ * JUMP_KAPPA:.3f}）区画 {v['cell_from']}→{v['cell_to']} "
                 f"xy=({v['xy_from'][0]:.4f},{v['xy_from'][1]:.4f})→"
                 f"({v['xy_to'][0]:.4f},{v['xy_to'][1]:.4f})")
     return ok, detail
@@ -334,7 +388,7 @@ def test_b_stair_detects_jump():
 
     これが出なければ (b) の検査自体が連続化を検出できていない証拠になる。
     """
-    stats, n_steps, n_trans, _ = _scan_jumps(continuous=False)
+    stats, n_steps, n_trans, _v, _c, _m = _scan_jumps(continuous=False)
     trans_max = max((st["max_jump"] for k, st in stats.items() if k != KIND_IN_CELL),
                     default=0.0)
     in_cell_max = stats.get(KIND_IN_CELL, dict(max_jump=0.0))["max_jump"]
@@ -354,11 +408,21 @@ def test_b_stair_detects_jump():
 # (b-2) 降下方向が曲がる区画での境界一致（裁定 R8 の回帰検査）
 # ======================================================================
 def test_b2_bend_boundary():
+    """**すべての**降下開口部で境界の値が一致するか（裁定 R13 条件 3 で拡張）。
+
+    旧版は tie-break が選んだ n との境界だけを見ていたため、D2（tie-break が選ばな
+    かった開口部を通ると Φ が跳ぶ）を検出できなかった。全降下隣接を対象にする。
+
+    【条文】除外は 1 種のみ（裁定 R18-3 で明文化）:
+      n がゴール区画（d(n)=0）である c₀ は対象外。remaining=0 と特別扱いするため、
+      (b) の条文 1 と同じ理由で境界は一致しない。**件数を必ず報告する。**
+    """
     max_diff = 0.0
     max_at = None
     n_conf = 0
     n_bend = 0
     n_skip_goal_side = 0
+    n_multi_desc = 0
     bend_cells = set()
     for seed in VALID_SEEDS:
         env = geom_env(seed)
@@ -367,39 +431,130 @@ def test_b2_bend_boundary():
                 c0 = (cx, cy)
                 if c0 in GOAL_CELLS:
                     continue
-                n = env._descending_neighbor(c0)
-                w_out = env._edge_midpoint(c0, n)
-                if env._dist_map[n] == 0:
-                    # n がゴール区画だと remaining=0 の特別扱い（条文 1 と同じ理由）で
-                    # 境界は一致しない。これは仕様であり検査対象外。件数を報告する。
-                    n_skip_goal_side += 1
-                    continue
-                for prev in prev_cell_candidates(env, c0):
-                    w_in = w_out if prev is None else env._edge_midpoint(prev, c0)
-                    bend_c0 = is_bend(w_in, env._cell_center(c0), w_out)
-                    # n 側の折れ線は [w_out(c0), center(n), w_out(n)]
-                    n2 = env._descending_neighbor(n)
-                    bend_n = is_bend(w_out, env._cell_center(n), env._edge_midpoint(n, n2))
-                    if bend_c0 or bend_n:
-                        n_bend += 1
-                        bend_cells.add((seed, c0 if bend_c0 else n))
-                    n_conf += 1
-                    phi_from_c0 = env._potential_continuous(c0, prev, *w_out)
-                    phi_from_n = env._potential_continuous(n, c0, *w_out)
-                    diff = abs(phi_from_c0 - phi_from_n)
-                    if diff > max_diff:
-                        max_diff, max_at = diff, (seed, c0, n, prev, bend_c0, bend_n)
+                desc = descending_neighbors(env, c0)
+                if len(desc) >= 2:
+                    n_multi_desc += 1
+                for n in desc:                       # ← tie-break 分だけでなく全部
+                    w_out = env._edge_midpoint(c0, n)
+                    if env._dist_map[n] == 0:
+                        n_skip_goal_side += 1        # 条文（上記）による唯一の除外
+                        continue
+                    for prev in prev_cell_candidates(env, c0):
+                        w_in = w_out if prev is None else env._edge_midpoint(prev, c0)
+                        bend_c0 = is_bend(w_in, env._cell_center(c0), w_out)
+                        # n 側の折れ線は [w_out(c0), center(n), w_out(n)]。n の降下隣接も
+                        # 複数ありうるので、どれか 1 つでも曲がれば「曲がる構成」と数える
+                        bend_n = any(
+                            is_bend(w_out, env._cell_center(n), env._edge_midpoint(n, m))
+                            for m in descending_neighbors(env, n))
+                        if bend_c0 or bend_n:
+                            n_bend += 1
+                            bend_cells.add((seed, c0 if bend_c0 else n))
+                        n_conf += 1
+                        phi_from_c0 = env._potential_continuous(c0, prev, *w_out)
+                        phi_from_n = env._potential_continuous(n, c0, *w_out)
+                        diff = abs(phi_from_c0 - phi_from_n)
+                        if diff > max_diff:
+                            max_diff, max_at = diff, (seed, c0, n, prev, bend_c0, bend_n)
     ok = (max_diff < TOL_BOUNDARY) and (n_bend > 0)
     detail = [
-        f"検査した境界の組 (面, c₀, c_prev): {n_conf} 通り / {len(VALID_SEEDS)} 面",
+        f"検査した境界の組 (面, c₀, n, c_prev): {n_conf} 通り / {len(VALID_SEEDS)} 面"
+        f"（**全降下開口部**。tie-break 選択分だけではない）",
         f"うち**降下方向が曲がる**構成: {n_bend} 通り（曲がる区画 {len(bend_cells)} 個）",
+        f"降下隣接が 2 つ以上ある区画: {n_multi_desc} 個"
+        f"（D2 が起きうる区画。0 なら D2 の回帰検査として空振り）",
         f"最大 |Φ(c₀ 側) − Φ(n 側)| = {max_diff:.3e} m（許容 {TOL_BOUNDARY:.0e}）",
         f"最大値の位置 (面, c₀, n, c_prev, bend_c₀, bend_n): {max_at}",
-        f"n がゴール区画のため対象外にした c₀: {n_skip_goal_side} 個"
-        f"（remaining=0 の特別扱い。条文 1 と同じ理由）",
+        f"【条文による除外】n がゴール区画のため対象外にした (c₀, n): {n_skip_goal_side} 組"
+        f"（remaining=0 の特別扱い。(b) の条文 1 と同じ理由）",
     ]
     if n_bend == 0:
         detail.append("🔴 曲がる区画が 0 個 = 検査が空振りしている（回帰検査として無意味）")
+    if n_multi_desc == 0:
+        detail.append("🔴 降下隣接が 2 つ以上ある区画が 0 個 = D2 の回帰検査が空振り")
+    return ok, detail
+
+
+# ======================================================================
+# (L) 刻み不変性検査（裁定 R18-4 で新設。D1 型＝真の不連続の回帰検査）
+# ======================================================================
+def test_L_grid_invariance():
+    """区画内を格子走査し、刻みを変えても最大 |ΔΦ|/|Δp| が √2 近傍で一定かを見る。
+
+    真の不連続があれば最大比は刻み数に比例して発散する（旧実装では刻み 30/120/480 に
+    対し比 30/120/480 だった）。走行台本に依存しないのが (b) に対する利点。
+
+    ⚠️ **軸方向だけを見ると折れ区画の最大を取り逃がす**（実際に取り逃がした）。
+       斜め 2 方向を必ず含めること。
+    """
+    # 最も細かい刻みは 481×481 点になるので、全区画を舐めると単体テストとして重すぎる。
+    # **決定的に選んだ標本**に限り、代わりに 3 つの型（折れ／直線／退化）を必ず含める。
+    # 型が 1 つでも欠けたら検査が空振りなので FAIL にする。
+    configs = []            # (seed, cell, prev, 型)
+    per_kind = {"折れ": [], "直線": [], "退化": []}
+    for seed in VALID_SEEDS[:5]:
+        env = geom_env(seed)
+        for cx in range(SIZE):
+            for cy in range(SIZE):
+                cell = (cx, cy)
+                if cell in GOAL_CELLS:
+                    continue
+                C = env._cell_center(cell)
+                for prev in prev_cell_candidates(env, cell):
+                    for n in descending_neighbors(env, cell):
+                        w_out = env._edge_midpoint(cell, n)
+                        w_in = w_out if prev is None else env._edge_midpoint(prev, cell)
+                        kind = ("退化" if w_in == w_out
+                                else "折れ" if is_bend(w_in, C, w_out) else "直線")
+                        if len(per_kind[kind]) < 8:
+                            per_kind[kind].append((seed, cell, prev, kind))
+                        break
+    for kind in ("折れ", "直線", "退化"):
+        configs += per_kind[kind]
+
+    envs = {s: geom_env(s) for s in {c[0] for c in configs}}
+    rows = []
+    ok = all(len(per_kind[k]) > 0 for k in per_kind)
+    for N in GRID_LEVELS:
+        worst, worst_at = 0.0, None
+        step = CS / N
+        diag = step * math.sqrt(2.0)
+        for (seed, cell, prev, kind) in configs:
+            env = envs[seed]
+            C = env._cell_center(cell)
+            x0, y0 = C[0] - CS / 2, C[1] - CS / 2
+            g = [[env._potential_continuous(cell, prev, x0 + i * step, y0 + j * step)
+                  for j in range(N + 1)] for i in range(N + 1)]
+            for i in range(N + 1):
+                for j in range(N + 1):
+                    cand = []
+                    if i < N:
+                        cand.append((abs(g[i + 1][j] - g[i][j]) / step, "軸"))
+                    if j < N:
+                        cand.append((abs(g[i][j + 1] - g[i][j]) / step, "軸"))
+                    if i < N and j < N:
+                        cand.append((abs(g[i + 1][j + 1] - g[i][j]) / diag, "斜め"))
+                        cand.append((abs(g[i + 1][j] - g[i][j + 1]) / diag, "斜め"))
+                    for r, d in cand:
+                        if r > worst:
+                            worst, worst_at = r, (seed, cell, prev, kind, d)
+        rows.append((N, step * 1000, worst, worst_at))
+        if worst > LIPSCHITZ + GRID_TOL:
+            ok = False
+    detail = [
+        f"標本 {len(configs)} 構成（折れ {len(per_kind['折れ'])} / 直線 "
+        f"{len(per_kind['直線'])} / 退化 {len(per_kind['退化'])}）× 刻み 3 水準。"
+        f"許容 √2 = {LIPSCHITZ:.6f} + {GRID_TOL:.0e}",
+        f"{'刻み':>6}{'1 刻み[mm]':>12}{'最大 |ΔΦ|/|Δp|':>18}   最大値の位置",
+    ]
+    for N, mm, worst, at in rows:
+        detail.append(f"{N:>6}{mm:>12.3f}{worst:>18.6f}   {at}")
+    spread = max(r[2] for r in rows) - min(r[2] for r in rows)
+    detail.append(f"3 水準の最大比のばらつき = {spread:.3e}"
+                  f"（刻みに比例して増えていれば真の不連続。旧実装では 30 → 120 → 480 だった）")
+    for kind in ("折れ", "直線", "退化"):
+        if not per_kind[kind]:
+            detail.append(f"🔴 型「{kind}」の標本が 0 件 = 検査が空振りしている")
     return ok, detail
 
 
@@ -482,8 +637,15 @@ def test_c_lateral_invariance():
                 if cell in GOAL_CELLS:
                     continue
                 center = env._cell_center(cell)
-                n = env._descending_neighbor(cell)
-                w_out = env._edge_midpoint(cell, n)
+                desc = descending_neighbors(env, cell)
+                # 🔴 対象の限定（裁定 R18-3）: 降下隣接が直角に 2 つある区画では、
+                #    横へずれることが本当にゴールへ近づくことなので Φ が動くのが正しい
+                #    挙動である（全降下隣接の min を採るため）。よって「降下隣接が
+                #    ちょうど 1 つ、かつ折れ線が一直線」の構成に限る。
+                if len(desc) != 1:
+                    n_skipped_bend += len(prev_cell_candidates(env, cell))
+                    continue
+                w_out = env._edge_midpoint(cell, desc[0])
                 for prev in prev_cell_candidates(env, cell):
                     w_in = w_out if prev is None else env._edge_midpoint(prev, cell)
                     if is_bend(w_in, center, w_out):
@@ -502,8 +664,9 @@ def test_c_lateral_invariance():
                             max_diff, max_at = diff, (seed, cell, prev, off)
     ok = (max_diff < TOL_EXACT) and (n_checked > 0)
     detail = [
-        f"横ずれ {offsets} m を与えた検査: {n_checked} 通り",
-        f"折れ線が一直線でないため飛ばした構成: {n_skipped_bend} 通り",
+        f"横ずれ {offsets} m を与えた検査: {n_checked} 通り"
+        f"（対象は「降下隣接がちょうど 1 つ、かつ折れ線が一直線」の構成に限る）",
+        f"降下隣接が 2 つ以上／折れ線が一直線でないため飛ばした構成: {n_skipped_bend} 通り",
         f"最大 |ΔΦ| = {max_diff:.3e} m（許容 {TOL_EXACT:.0e}）",
         f"最大値の位置 (面, 区画, c_prev, 横ずれ[m]): {max_at}",
     ]
@@ -679,7 +842,8 @@ TESTS = [
     ("(a) 区画中心で階段版と一致", test_a_center_matches_stair),
     ("(b) 跳びが無い（連続版）", test_b_no_jump),
     ("(b) 階段版では跳びが出る（検査の有効性）", test_b_stair_detects_jump),
-    ("(b-2) 曲がる区画での境界一致", test_b2_bend_boundary),
+    ("(L) 刻み不変性（真の不連続の回帰検査）", test_L_grid_invariance),
+    ("(b-2) 全降下開口部での境界一致", test_b2_bend_boundary),
     ("(b-3) step() 経路と直接呼び出しの一致", test_b3_step_path_consistency),
     ("(c) 横方向のずれに不感", test_c_lateral_invariance),
     ("(d) Φ₀ = 0（擾乱あり）", test_d_phi_zero_at_reset),

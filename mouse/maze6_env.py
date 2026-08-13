@@ -70,7 +70,6 @@ from gymnasium import spaces
 import mujoco
 import numpy as np
 
-from mouse.corridor_gen import path_cumulative_lengths, remaining_path_length
 from mouse.maze6_gen import (
     GOAL_CELLS, SIZE, cells_open, generate_maze, initial_heading_deg, shortest_distances,
 )
@@ -247,62 +246,121 @@ class Maze6Env(gym.Env):
                 out.append(nb)
         return out
 
-    def _descending_neighbor(self, cell):
-        """cell の**降下隣接**: 開通した隣接区画のうち d が cell よりちょうど 1 小さいもの。
+    def _descending_neighbors(self, cell):
+        """cell の**降下隣接**一覧: 開通した隣接区画のうち d が cell よりちょうど 1 小さいもの。
 
-        複数あれば (x, y) の辞書順で最小のものを決定的に選ぶ（迷路グラフは格子の部分
-        グラフで二部グラフなので、開通した隣接の d は必ず ±1 だけ違う。d(cell) が 0
-        でなければ降下隣接は必ず 1 つ以上存在する）。
+        複数ありうる（迷路グラフは格子の部分グラフで二部グラフなので、開通した隣接の
+        d は必ず ±1 だけ違う。d(cell) が 0 でなければ降下隣接は必ず 1 つ以上存在する）。
         """
         d0 = self._dist_map[cell]
-        cands = [nb for nb in self._open_neighbors(cell)
-                 if self._dist_map.get(nb, -1) == d0 - 1]
+        return [nb for nb in self._open_neighbors(cell)
+                if self._dist_map.get(nb, -1) == d0 - 1]
+
+    def _descending_neighbor(self, cell):
+        """cell の降下隣接を 1 つだけ、(x, y) の辞書順最小で決定的に選ぶ。
+
+        **`_potential_continuous` はもう本メソッドを使わない**（2026-08-13 改訂で
+        tie-break そのものを廃止し、`_descending_neighbors` の全件について min を
+        取る形へ置き換えたため）。削除はせず残す。単体テスト（(b-2) の「降下方向が
+        曲がる構成」列挙）が引き続き参照する。
+        """
+        cands = self._descending_neighbors(cell)
         if not cands:
-            raise AssertionError(f"降下隣接が見つからない: cell={cell} d={d0}")
+            raise AssertionError(f"降下隣接が見つからない: cell={cell} d={self._dist_map[cell]}")
         return min(cands)
 
     def _potential_continuous(self, cell, prev_cell, x: float, y: float) -> float:
-        """Φ の連続版（exp_012。continuous_potential=True）。
+        """Φ の連続版（exp_012。continuous_potential=True）。区画ごとの明示式 ＋ 全降下隣接の min。
 
-        区画単位の階段を、開口部の中点を経由する折れ線への射影に置き換える。
         真の位置 (x, y) は**報酬計算にのみ使う**（方策へは渡さない）。cs = 区画寸法
-        (params.cell_size = 0.18 m)。
+        (params.cell_size = 0.18 m)、h = cs/2、C = cell の中心。降下隣接 n ごとに
+        w_out = w(cell, n)（cell から n への開口部の中点）、
+        w_in  = w(prev_cell, cell)（prev_cell が None のときは n ごとに w_out と同じ扱い）、
+        a = (w_in−C)/|w_in−C|、b = (w_out−C)/|w_out−C|、
+        s = (P−C)·a、t = (P−C)·b（P = (x, y)）として、区画内の残り弧長 ℓ_n を
 
-          n     = cell の降下隣接（_descending_neighbor）
-          w_out = w(cell, n)
-          w_in  = w(prev_cell, cell)（prev_cell が None なら w_out と同じ扱い）
-          折れ線 = [w_in, center(cell), w_out]（w_in == w_out なら [center(cell), w_out]）
-          ℓ     = 折れ線上への射影点から w_out までの弧長
-                  （corridor_gen.remaining_path_length をそのまま再利用）
-          残り距離 = ℓ + d(n)·cs + cs/2
-          Φ = d_start·cs − 残り距離
+          直線 (a = −b)      : ℓ_n = clamp(h − t, 0, 2h)
+          折れ (a ⊥ b)       : ℓ_n = clamp(s, 0, h) + (h − clamp(t, −h, h))
+          w_in == w_out      : ℓ_n = clamp(h − t, 0, h)    ← 後戻り・reset 直後
 
-        検算（設計書 `experiments/exp_012_continuous_potential/design.md` §4 と同一）:
-          - cell の中心では ℓ=cs/2 なので 残り距離 = cs/2 + d(n)·cs + cs/2
-            = (d(n)+1)·cs = d(cell)·cs  → 階段版 `_potential_stair` と一致
-          - w_out 上では ℓ=0 なので 残り距離 = d(n)·cs + cs/2
-          - n に入った直後、同じ点を n 側から計算すると w_in(n) = w_out(cell) なので
-            ℓ=cs（折れ線全長）、残り距離 = cs + (d(n)−1)·cs + cs/2 = d(n)·cs + cs/2
-            → cell 側の値と一致（連続）。**この一致は n への進入方向が曲がっていても
-            成立する**（開口部を経由するため）。区画中心だけを結ぶ折れ線だと、
-            ここで cs/2 = 0.09 m 跳ぶ。
+        残り距離は**全降下隣接についての最小値**（tie-break は廃止）:
+
+          残り距離 = min_n [ ℓ_n(P) + d(n)·cs + cs/2 ] ,   Φ = d_start·cs − 残り距離
+
+        d(n) = d(cell) − 1 は全降下隣接で等しいので、min は実質 ℓ_n だけに効く。
+        d(cell) = 0（ゴール区画）のとき残り距離 = 0（従来どおり）。
+        `self._dist_map.get(cell, -1) < 0`（到達不能・起きない想定）のときは d0 を
+        d_start に据え置く（従来どおり）。
+
+        --------------------------------------------------------------------
+        検算（`experiments/exp_012_continuous_potential/design.md` §4「新しい定義
+        （本改訂で採用する）」と同一）
+        --------------------------------------------------------------------
+        - **区画中心 P=C**: s=t=0 なので、直線・折れ・w_in==w_out のどの場合分けでも
+          ℓ_n(C)=h。よって 残り距離 = min_n[h + d(n)·cs + h] = d(n)·cs + cs = d(cell)·cs
+          → **階段版 `_potential_stair` と一致**（テスト (a)）
+        - **全降下開口部 w(cell, n)**: cell 側では ℓ_n=0 かつ他の降下隣接は ℓ≥0 なので
+          min = d(n)·cs + cs/2。n 側では進入点なので w_in(n)=w_out(cell) となり全ての
+          ℓ=2h=cs、min = cs + (d(n)−1)·cs + cs/2 = d(n)·cs + cs/2 → **両側で一致**。
+          tie-break が無いので**どの降下隣接の開口部を通っても**この一致が成立する
+          （テスト (b-2)。旧実装は tie-break が選んだ 1 開口部でしか一致しなかった）
+        - **Lipschitz 定数は厳密に √2**: 折れの内側（両方の clamp が効かない領域）で
+          ∇ℓ_n = a−b、a⊥b かつ単位ベクトルなので |a−b|=√2。境界一致（区画をまたぐと
+          Φ がちょうど cs 増える一方、境界間の直線距離は cs/√2 しかない）だけから
+          L ≥ cs/(cs/√2) = √2 が導かれるので、これは**この制約下での最良値**。
+          √2-Lipschitz な ℓ_n の min はやはり √2-Lipschitz（min を取っても定数は
+          増えない）なので、Φ 全体も √2-Lipschitz。**|∇Φ|≤1 は境界一致と両立できない
+          （下限 √2）ので要求しない**
+        - **旧実装（最近接点射影・`corridor_gen.remaining_path_length` の再利用）が
+          持っていた 2 つの欠陥は、この定義では構成上起きない**:
+            D1（折れ区画の内側・角の二等分線での真の不連続）: 旧実装は「垂線距離が
+              最小の線分」を位置ごとに選んでいたため、二等分線をまたぐ瞬間に選択が
+              切り替わり弧長が飛んだ。本定義は**位置に依らず a・b の幾何関係だけで
+              場合分けが決まる**明示式なので、線分の選択自体が無く消える
+            D2（tie-break が選ばなかった降下開口部を通ると跳ぶ）: 旧実装は降下隣接が
+              同点で複数あるとき 1 つを辞書順で選んでいたため、選ばれなかった開口部
+              から出ると Φ が別経路の残り距離へ切り替わって跳んだ。本定義は
+              **全降下隣接についての min** を毎回取るので tie-break そのものが無く、
+              どの開口部を通っても連続に一致する
+        --------------------------------------------------------------------
         """
         cs = self.params.cell_size
+        h = cs / 2.0
         d0 = self._dist_map.get(cell, -1)
         if d0 < 0:
             d0 = self._d_start          # 到達不能（起きない想定）は基準値で据え置く
         if d0 == 0:
-            remaining = 0.0             # (i) ゴール区画: 残り距離は 0
+            remaining = 0.0             # ゴール区画: 残り距離は 0
         else:
-            n = self._descending_neighbor(cell)
-            w_out = self._edge_midpoint(cell, n)
-            w_in = w_out if prev_cell is None else self._edge_midpoint(prev_cell, cell)
-            centers = ([self._cell_center(cell), w_out] if w_in == w_out
-                       else [w_in, self._cell_center(cell), w_out])
-            cum = path_cumulative_lengths(centers)
-            ell = remaining_path_length(centers, cum, x, y)
-            d_n = self._dist_map[n]
-            remaining = ell + d_n * cs + cs / 2.0
+            neighbors = self._descending_neighbors(cell)
+            if not neighbors:
+                raise AssertionError(f"降下隣接が見つからない: cell={cell} d={d0}")
+            cx, cy = self._cell_center(cell)
+            px, py = x - cx, y - cy
+            remaining = None
+            for n in neighbors:
+                w_out = self._edge_midpoint(cell, n)
+                w_in = w_out if prev_cell is None else self._edge_midpoint(prev_cell, cell)
+                bx, by = w_out[0] - cx, w_out[1] - cy
+                nrm_b = math.hypot(bx, by)
+                bx, by = bx / nrm_b, by / nrm_b
+                if w_in == w_out:
+                    # 後戻り・reset 直後: w_in = w_out として扱う
+                    t = px * bx + py * by
+                    ell = min(max(h - t, 0.0), h)
+                else:
+                    ax, ay = w_in[0] - cx, w_in[1] - cy
+                    nrm_a = math.hypot(ax, ay)
+                    ax, ay = ax / nrm_a, ay / nrm_a
+                    s = px * ax + py * ay
+                    t = px * bx + py * by
+                    if ax * bx + ay * by < 0.0:
+                        ell = min(max(h - t, 0.0), 2.0 * h)              # 直線 (a = −b)
+                    else:
+                        ell = min(max(s, 0.0), h) + (h - min(max(t, -h), h))  # 折れ (a ⊥ b)
+                d_n = d0 - 1                       # 全降下隣接で共通（= self._dist_map[n]）
+                cand = ell + d_n * cs + cs / 2.0
+                remaining = cand if remaining is None else min(remaining, cand)
         return self._d_start * cs - remaining
 
     def _potential(self, cell, prev_cell=None, x: float = None, y: float = None) -> float:
