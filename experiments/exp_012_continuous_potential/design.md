@@ -583,7 +583,21 @@ $$L \;\ge\; \frac{s}{\sqrt2\,(t_w/2+w_\text{lat})} \;=\; \mathbf{2.7669}$$
 #### 条件 E: (b) の判定定数を導出値へ改める（裁定 R21-E）
 
 $$\boxed{\;\lvert\Delta\Phi_t\rvert \;\le\; \sqrt2\cdot\kappa\cdot\lvert\Delta p_t\rvert
-\;+\; \mu_\max,\qquad \kappa=1.10,\quad \mu_\max=\frac{s-t_w}{2}-w_\text{lat}=0.0440\ \text{m}\;}$$
+\;+\; \mu_\max\cdot m_t,\qquad \kappa=1.10,\quad \mu_\max=\frac{s-t_w}{2}-w_\text{lat}=0.0440\ \text{m}\;}$$
+
+**$m_t$ = その 1 歩で跨いだ区画境界の枚数**（区画添字のマンハッタン距離。
+**区画内に留まる歩では $m_t=0$**、隅を斜めに通過した歩は $m_t=2$）。
+
+> **🔴 加法項を「区画をまたぐ歩」に限定した**（2026-08-14。R11 バッチ項目 4。
+> 准教授 AUDIT_010 指摘 2）。**区画内に留まる歩では $\lvert\Delta\Phi\rvert\le\sqrt2\lvert\Delta p\rvert$ が
+> 厳密に成立する**ので加法余裕は要らない。**同じ文書の $\kappa$ の導出が既にこの区別をしている**
+> （区画内に留まる歩では $\kappa=1$ で足りる）ので、$\mu_\max$ にも同じ区別を適用して
+> **非対称を消した**。**1 歩で 2 つの境界を跨ぐ場合（隅の通過）は $2\mu_\max$ が要る**ので、
+> **枚数で数える**（AUDIT_010 の注意）。
+> **⚠️ この変更は検査を厳しくする向きである**（区画内の歩の許容が $\mu_\max$ = 0.0440 m ぶん減る）。
+> **【時系列】限定前の形は $\lvert\Delta\Phi_t\rvert \le \sqrt2\kappa\lvert\Delta p_t\rvert + \mu_\max$
+> （全ての歩に加法項）であった。**条件 E の 3 seed の投入・判定はこの旧形で行われている
+> （判定への影響は無い。旧形の方が緩いので、新形で通るなら旧形でも通る）。
 
 ##### 🔴 判定形の是正の経緯（時系列。**遡及合格ではないことの記録**。裁定 R31-1）
 

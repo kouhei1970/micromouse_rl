@@ -236,10 +236,18 @@ def classify_step(cell_prev, cell_now, d_prev, d_now, goal_flag) -> str:
 MU_MAX = (CS - WALL_THICKNESS) / 2 - W_LAT          # ≈ 0.0440 m
 
 
-def jump_threshold(disp: float) -> float:
+def jump_threshold(disp: float, n_boundaries: int = 0) -> float:
     """design.md §4 (b) の閾値 [m]。**乗法項 ＋ 加法項**の形（裁定 R30・D3-8）。
 
-        |ΔΦ| ≤ √2 · κ · |Δp| + μ_max
+        |ΔΦ| ≤ √2 · κ · |Δp| + μ_max · (跨いだ区画境界の枚数)
+
+    🔴 **加法項は「区画をまたぐ歩」にだけ与える**（2026-08-14・R11 バッチ項目 4。
+    准教授 AUDIT_010 指摘 2）。区画内に留まる歩では |ΔΦ| ≤ √2·|Δp| が厳密に成立するので
+    加法余裕は要らない。**同じ文書の κ の導出が既にこの区別をしている**
+    （区画内に留まる歩では κ=1 で足りる）ので、μ_max にも同じ区別を適用して非対称を消す。
+    **1 歩で 2 つの境界を跨ぐ場合（隅の通過）は 2·μ_max が要る**ので、
+    **跨いだ枚数**（区画添字のマンハッタン距離）で数える。
+    **この変更は検査を厳しくする向き**である（区画内の歩の許容が μ_max ぶん減る）。
 
     - √2   : 区画内での Φ の Lipschitz 定数（折れの内側で ∇ℓ = a − b、a ⊥ b・単位）
     - κ    : 区画をまたぐ歩で境界の交点を経由して評価するぶんの余裕（弧長／弦長）
@@ -257,7 +265,7 @@ def jump_threshold(disp: float) -> float:
     必要な Lipschitz 定数の下限」であり、本設計は辺全体一致を課さないので
     **判定には使わない**（§4 の交換条件のとおり。導出は記録として残す）。
     """
-    return LIPSCHITZ_DEF * JUMP_KAPPA * disp + MU_MAX
+    return LIPSCHITZ_DEF * JUMP_KAPPA * disp + MU_MAX * int(n_boundaries)
 
 
 # ======================================================================
@@ -435,7 +443,10 @@ def _scan_jumps(continuous: bool):
                 max_disp = max(max_disp, disp)
                 if disp > DISP_ABS_CAP:
                     n_disp_over_cap += 1
-                thr = jump_threshold(disp)
+                # 跨いだ区画境界の枚数（区画添字のマンハッタン距離）。隅を斜めに
+                # 通過した歩は 2 枚になる（AUDIT_010 指摘 2 の注意）。
+                n_bnd = abs(b["cell"][0] - a["cell"][0]) + abs(b["cell"][1] - a["cell"][1])
+                thr = jump_threshold(disp, n_bnd)
                 st = stats.setdefault(kind, dict(n=0, max_jump=0.0, n_over=0, worst=None))
                 st["n"] += 1
                 n_steps += 1
@@ -464,7 +475,7 @@ def test_b_no_jump():
     detail = [
         f"走行: {len(VALID_SEEDS)} 面 × 台本 {len(SCRIPTS)} 種、判定したステップ {n_steps}、"
         f"区画遷移 {n_trans} 回",
-        f"閾値: √2 · {JUMP_KAPPA} · |Δp| + μ_max"
+        f"閾値: √2 · {JUMP_KAPPA} · |Δp| + μ_max · (跨いだ境界の枚数)"
         f"（√2 = 区画内の Lipschitz 定数、μ_max = (s−t_w)/2 − w_lat = "
         f"{MU_MAX:.4f} m = 中点一致の破れ。裁定 R30・D3-8）",
         f"|Δp| の最大 = {max_disp:.5f} m（物理上限 v_max·Δt = {DISP_ABS_CAP:.4f} m、"
