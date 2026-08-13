@@ -92,6 +92,15 @@ MODELS = [
     dict(name="exp_010_m2_0_seed2", path="models/exp_010_m2_0_seed2.zip", k=8.7e-3),
     dict(name="exp_011_m2_0_k0_seed1", path="models/exp_011_m2_0_k0_seed1.zip", k=0.0),
     dict(name="exp_011_m2_0_k0_seed2", path="models/exp_011_m2_0_k0_seed2.zip", k=0.0),
+    # exp_012 条件 E（連続 Φ。裁定 R41-① の機構分析。2026-08-13 追加）。
+    # **continuous=True を渡さないと reward の分解が学習時と一致しない**（Φ の定義が違う
+    # ので shaping が別物になる）。毎ステップの assert がそれを検出する。
+    dict(name="exp_012_condE_seed1", path="models/exp_012_condE_seed1.zip",
+         k=8.7e-3, continuous=True),
+    dict(name="exp_012_condE_seed2", path="models/exp_012_condE_seed2.zip",
+         k=8.7e-3, continuous=True),
+    dict(name="exp_012_condE_seed3", path="models/exp_012_condE_seed3.zip",
+         k=8.7e-3, continuous=True),
 ]
 
 VALIDATION_SEEDS = list(range(7000, 7020))  # 検証帯（研究計画書 §9-7）
@@ -105,14 +114,21 @@ ASSERT_TOL = 1e-9
 REPO_MAZE_DIR = str(REPO_ROOT / VALIDATION_MAZE_DIR)
 
 
-def run_episode(model, maze_seed: int, k: float, err_tracker: dict) -> dict:
-    """1 面 ×1 試行を決定的に再生し、ステップごとの報酬内訳を分解して返す。"""
+def run_episode(model, maze_seed: int, k: float, err_tracker: dict,
+                continuous: bool = False) -> dict:
+    """1 面 ×1 試行を決定的に再生し、ステップごとの報酬内訳を分解して返す。
+
+    `continuous` は Φ の定義（False = 区画単位の階段版 / True = exp_012 条件 E の
+    連続版）。**学習時と同じ値を渡すこと**。違うと shaping が別物になり、
+    毎ステップの reward 分解 assert が落ちる（＝取り違えは必ず検出される）。
+    """
     env = Maze6Env(
         maze_dir=REPO_MAZE_DIR, maze_seeds=[maze_seed], max_cache=2,
         gamma=GAMMA, mode="fixed", maze_mode=MAZE_MODE,
         visit_bonus=VISIT_BONUS, collision_penalty=COLLISION_PENALTY,
         action_smooth_penalty=ACTION_SMOOTH_PENALTY,
         action_highpass_penalty=k, action_highpass_alpha=ACTION_HIGHPASS_ALPHA,
+        continuous_potential=continuous,
     )
     tseed = _trial_seed(0, maze_seed, 0)   # mouse.maze6_eval と同じ試行 seed の規約
     obs, info = env.reset(seed=tseed)
@@ -203,6 +219,9 @@ def run_episode(model, maze_seed: int, k: float, err_tracker: dict) -> dict:
             n_visited = int(info["n_visited"])
             break
 
+    # 終端の Φ を env から**実測**で読む。連続 Φ では
+    # phi_T = (d_start − d_end)·cell_size（階段版の式）が成り立たないため。
+    phi_T_measured = float(env._prev_potential)
     env.close()
     v_arr = np.array(v_arr)
     distance_m = float(np.sum(np.abs(v_arr) * dt))
@@ -216,8 +235,16 @@ def run_episode(model, maze_seed: int, k: float, err_tracker: dict) -> dict:
     path_efficiency = (distance_m / (d_start * cell_size)) if d_start > 0 else float("nan")
     phi_T = (d_start - d_end) * cell_size   # = Φ(終端区画)
 
+    # 🔴 走行ごとの層別割合。**プールした割合は長いエピソード（時間切れ 6000 歩）に
+    # 支配される**ので、「方策が停止解か」を語るには走行ごとに測って outcome 別に
+    # まとめる必要がある（2026-08-13 追加。集計と対応の取り違えを防ぐ）。
+    va = np.abs(v_arr)
+    ep_stop_frac = float(np.mean(va < STOP_V))
+    ep_drive_frac = float(np.mean(va >= DRIVE_V))
+
     return dict(
         maze_seed=maze_seed, outcome=outcome, n_steps=n_steps, n_visited=n_visited,
+        stop_frac=ep_stop_frac, drive_frac=ep_drive_frac,
         distance_m=distance_m, avg_speed_mps=distance_m / max(n_steps * dt, 1e-9),
         shaping=np.array(shaping_arr), dPhi=np.array(dphi_arr), drift=np.array(drift_arr),
         hp2=np.array(hp2_arr), hp_term=np.array(hpterm_arr), d2=np.array(d2_arr),
@@ -227,6 +254,7 @@ def run_episode(model, maze_seed: int, k: float, err_tracker: dict) -> dict:
         d_start=d_start, d_end=d_end, d_min=d_min,
         progress_cells=progress_cells, best_progress_cells=best_progress_cells,
         path_efficiency=path_efficiency, phi_T=phi_T,
+        phi_T_measured=phi_T_measured,
     )
 
 
@@ -286,8 +314,28 @@ def summarize_model(name: str, episodes: list) -> dict:
             mean_shaping=float(np.mean(pool_shaping[mask])) if cnt else None,
         )
 
+    by_outcome = {}
+    for oc in ("goal", "collision", "timeout"):
+        sel = [e for e in episodes if e["outcome"] == oc]
+        if not sel:
+            continue
+        by_outcome[oc] = dict(
+            n=len(sel),
+            stop_frac_median=float(np.median([e["stop_frac"] for e in sel])),
+            drive_frac_median=float(np.median([e["drive_frac"] for e in sel])),
+            T_median=float(np.median([e["n_steps"] for e in sel])),
+            progress_median=float(np.median([e["progress_cells"] for e in sel])),
+        )
+    ep_stop = np.array([e["stop_frac"] for e in episodes], dtype=float)
+    ep_drive = np.array([e["drive_frac"] for e in episodes], dtype=float)
+
     return dict(
         name=name, n_episodes=n,
+        stop_frac_per_episode=dict(median=float(np.median(ep_stop)),
+                                   min=float(np.min(ep_stop)), max=float(np.max(ep_stop))),
+        drive_frac_per_episode=dict(median=float(np.median(ep_drive)),
+                                    min=float(np.min(ep_drive)), max=float(np.max(ep_drive))),
+        by_outcome=by_outcome,
         n_goal=n_goal, n_collision=n_coll, n_timeout=n_timeout,
         T=dict(min=float(np.min(Ts)), median=float(np.median(Ts)), max=float(np.max(Ts))),
         n_visited=dict(min=float(np.min(nvis)), median=float(np.median(nvis)),
@@ -304,6 +352,8 @@ def summarize_model(name: str, episodes: list) -> dict:
                              max=float(np.max(path_eff))),
         n_worse_than_start=n_worse_than_start,
         phi_T_median=float(np.median(phi_T_arr)),
+        phi_T_measured_median=float(np.median(
+            np.array([e["phi_T_measured"] for e in episodes], dtype=float))),
         hp2_pooled=five(pool_hp2),
         hp2_episode_mean=five(ep_mean_hp2),
         d2_pooled_median=float(np.median(pool_d2)),
@@ -317,12 +367,14 @@ def summarize_model(name: str, episodes: list) -> dict:
         n_steps_pooled=int(len(pool_v)),
         episodes=[dict(maze_seed=e["maze_seed"], outcome=e["outcome"],
                        n_steps=e["n_steps"], n_visited=e["n_visited"],
+                       stop_frac=e["stop_frac"], drive_frac=e["drive_frac"],
                        distance_m=e["distance_m"], avg_speed_mps=e["avg_speed_mps"],
                        mean_hp2=float(np.mean(e["hp2"])), mean_d2=float(np.mean(e["d2"])),
                        d_start=e["d_start"], d_end=e["d_end"], d_min=e["d_min"],
                        progress_cells=e["progress_cells"],
                        best_progress_cells=e["best_progress_cells"],
-                       path_efficiency=e["path_efficiency"], phi_T=e["phi_T"])
+                       path_efficiency=e["path_efficiency"], phi_T=e["phi_T"],
+                       phi_T_measured=e["phi_T_measured"])
                   for e in episodes],
     )
 
@@ -355,7 +407,8 @@ def print_report(summaries: list, err_tracker_by_model: dict):
               f"  median={pe['median']:.3f}  max={pe['max']:.3f}")
         print(f"  始点より遠くで終わった走行数 (progress_cells<0): "
               f"{s['n_worse_than_start']} / {s['n_episodes']}")
-        print(f"  Phi_T = (d_start-d_end)*cell_size [m] の中央値: {s['phi_T_median']:.4f}")
+        print(f"  Phi_T = (d_start-d_end)*cell_size [m] の中央値: {s['phi_T_median']:.4f}"
+              f"  ／ env から実測した Phi_T の中央値: {s['phi_T_measured_median']:.4f}")
         h = s["hp2_pooled"]
         print(f"  E|a-abar|^2（全ステップ pool）min={h['min']:.4e} q1={h['q1']:.4e}"
               f" median={h['median']:.4e} q3={h['q3']:.4e} max={h['max']:.4e}")
@@ -366,7 +419,15 @@ def print_report(summaries: list, err_tracker_by_model: dict):
         rb = s["reward_breakdown_mean"]
         print(f"  1 ステップ平均: shaping={rb['shaping']:.4e}  time={rb['time_penalty']:.4e}"
               f"  hp罰(k適用後)={rb['hp_term']:.4e}  visit={rb['visit']:.4e}")
-        print(f"  挙動層別集計（プールした全 {s['n_steps_pooled']} ステップ中の割合）:")
+        sf, df = s["stop_frac_per_episode"], s["drive_frac_per_episode"]
+        print(f"  🔴 走行ごとの停止層の割合   median={sf['median']:.1%}"
+              f"  [{sf['min']:.1%}, {sf['max']:.1%}]   走行層 median={df['median']:.1%}")
+        for oc, b in s["by_outcome"].items():
+            print(f"     {oc:<10} n={b['n']:<3} 停止層中央値={b['stop_frac_median']:.1%}"
+                  f"  走行層={b['drive_frac_median']:.1%}  T中央値={b['T_median']:.0f}"
+                  f"  progress中央値={b['progress_median']:.0f}")
+        print(f"  挙動層別集計（プールした全 {s['n_steps_pooled']} ステップ中の割合。"
+              f"⚠️ 長いエピソードに支配されるので方策の性質の判断には使わない）:")
         for label in ("停止", "低速", "走行"):
             ly = s["layers"][label]
             hp2s = f"{ly['mean_hp2']:.4e}" if ly["mean_hp2"] is not None else "—"
@@ -381,9 +442,15 @@ def main(argv=None):
     ap.add_argument("--smoke", action="store_true",
                     help="疎通確認: 先頭 1 モデル ×3 面のみ")
     ap.add_argument("--out", type=str, default="outputs/m2_step_economy/step_economy.json")
+    ap.add_argument("--only", type=str, default=None,
+                    help="モデル名にこの文字列を含むものだけを回す（例 exp_012）")
     args = ap.parse_args(argv)
 
     models = MODELS[:1] if args.smoke else MODELS
+    if args.only:
+        models = [m for m in models if args.only in m["name"]]
+        if not models:
+            raise SystemExit(f"--only {args.only!r} に一致するモデルが無い")
     seeds = VALIDATION_SEEDS[:3] if args.smoke else VALIDATION_SEEDS
 
     summaries = []
@@ -397,7 +464,8 @@ def main(argv=None):
         episodes = []
         for ms in seeds:
             te0 = time.time()
-            ep = run_episode(model, ms, mcfg["k"], err_tracker)
+            ep = run_episode(model, ms, mcfg["k"], err_tracker,
+                             continuous=bool(mcfg.get("continuous", False)))
             print(f"  [{mcfg['name']}] maze_seed={ms} outcome={ep['outcome']:<10}"
                   f" T={ep['n_steps']:<5} n_visited={ep['n_visited']:<3}"
                   f" ({time.time()-te0:.1f}s)", flush=True)
@@ -421,6 +489,9 @@ def main(argv=None):
             assert_tolerance=ASSERT_TOL,
             max_abs_reward_error_by_model={k: v["max"] for k, v in err_tracker_by_model.items()},
             n_steps_checked_by_model={k: v["n"] for k, v in err_tracker_by_model.items()},
+            models_config=[dict(name=m["name"], path=m["path"], k=m["k"],
+                                continuous_potential=bool(m.get("continuous", False)))
+                           for m in models],
             models=summaries,
         ), f, indent=2, ensure_ascii=False)
     print(f"[saved] {out}")
