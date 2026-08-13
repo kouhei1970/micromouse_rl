@@ -17,6 +17,17 @@ outputs/**
 !outputs/**/
 !outputs/**/latest/metrics.json
 
+# exp_013 の走行ごと記録は **M4/M5 gate の基準値そのものの出所** なので追跡する
+# （指示 2026-08-13-P6。准教授 AUDIT_008 続報 A-3 の指摘を採用）。
+# 理由: §5 の凍結表の値はこの JSON からしか復元できない。版管理外のままだと、
+# 2026-08-13 に 3 条件を削除・再実行したのと同じことが l0c に起きた時点で、
+# 基準値の追跡可能性が消える。**再実行で同じ値が出ること（決定性）は確認済みだが、
+# 「同じ値が出る」ことと「当時の値が残っている」ことは別である。**
+# traj/*.npz は除外のまま（1 面あたり数 MB。決定的に再生成できる）。
+# l0c_determinism_check も含める: l0c だけ別日・別プロセスの産物であり、これを他 3 条件と
+# 混ぜて 1 つの基準値にしてよい根拠が、この照合そのものだから（100 走行・全フィールド一致）。
+!outputs/exp_013_band_v4_reeval/*/runs_detail.json
+
 # legacy/models/ の学習済みチェックポイントは凍結成果物として追跡する
 # Checkpoints under legacy/models/ are frozen artifacts and must remain tracked
 !legacy/models/*.zip
