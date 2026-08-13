@@ -7,6 +7,10 @@
 学生B のコミット（06:59:39）と 15 秒違いで**偶然**存在した。**本スクリプトはそれを仕組みにする。**
 
 記録するのは「**その時刻に何が観測可能だったか**」だけである（判定はしない）。
+
+⚠️ **作法 20（2026-08-14。C' の照合で判明）**: **観測の間隔は、括りたい事象の時間尺度より
+細かくする。**5 分間隔では C' の認定（10 点目の 25 秒後）を括れず、**決め手は
+`validation_history.json` の mtime**（機械が自動で刻む信号）だった。**mtime も記録する。**
 打ち切り基準は 100 万歩までの 10 点なので、**10 点が揃った時刻**が本記録の要点になる。
 """
 import json
@@ -37,6 +41,10 @@ def snapshot():
             "latest_steps": rows[-1]["total_timesteps"] if rows else None,
             "abort_decidable": len(pts) >= 10,          # 10 点が揃ったか
             "all_below_005": all(r["goal_rate"] < 0.05 for r in pts) if pts else None,
+            # 🔴 作法 20（2026-08-14）: **機械が自動で刻み、当事者が触れない信号**を含める。
+            # 観測の間隔（5 分）は括りたい事象（数十秒）より粗いので、
+            # **mtime が実際の決め手になった**（C' の認定照合。AUDIT_020）。
+            "mtime": datetime.fromtimestamp(os.path.getmtime(p)).isoformat(timespec="seconds"),
         }
     return rec
 
