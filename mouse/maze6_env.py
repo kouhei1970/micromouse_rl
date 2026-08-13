@@ -59,7 +59,15 @@ continuous_potential=True（exp_012 で追加。既定 False）にすると、Φ
 （M1 `mouse/corridor_env.py` の Φ と同じ考え方）。動機・数式の導出・検算は
 `experiments/exp_012_continuous_potential/design.md` を参照。既定 False では
 挙動は変わらない（`Maze6Env._potential_stair()` が既存の階段版そのもの）。
+
+geodesic_potential=True（exp_012 の条件 C。既定 False）にすると、Φ を自由空間の
+測地距離場（reset 時に前計算した格子 Dijkstra）で決める。区画やその前後関係
+（cell・prev_cell）を一切見ない位置だけの関数になる。優先順位は
+geodesic > continuous > stair（`_potential()` の分岐）。動機・数式・検証項目は
+`experiments/exp_012_continuous_potential/design.md`「条件 C: 自由空間の測地距離場」
+を参照。既定 False では挙動は変わらない。
 """
+import heapq
 import math
 import os
 import tempfile
@@ -98,6 +106,124 @@ _RESERVED_MAZE_SEEDS = frozenset(range(6000, 6020)) | frozenset(range(7000, 7020
 _LATERAL_PERTURB_M = 0.02
 _HEADING_PERTURB_DEG = 10.0
 
+# ==========================================================================
+# 測地距離場（条件 C。exp_012 design.md「実装内容」節）
+# ==========================================================================
+# 格子解像度 h_g。区画寸法 cs = 0.18 m（RobotParams.cell_size の既定値。他の定数
+# （_REL_SCALE 等）と同じくここでは直値で持つ）を _GEO_STEPS_PER_CELL 分割して
+# 決める。181×181 = 32761 点（design.md の指定どおり）。
+_GEO_STEPS_PER_CELL = 30
+_GEO_GRID_N = SIZE * _GEO_STEPS_PER_CELL + 1       # 181
+_GEO_GRID_H = 0.18 / _GEO_STEPS_PER_CELL           # 0.006 m
+
+_GEO_TOPOLOGY = None    # プロセス内で 1 度だけ計算する位相キャッシュ（迷路によらない）
+
+
+def _geo_topology():
+    """測地距離場グラフの位相（迷路によらない部分）を遅延計算してキャッシュする。"""
+    global _GEO_TOPOLOGY
+    if _GEO_TOPOLOGY is None:
+        _GEO_TOPOLOGY = _build_geo_topology()
+    return _GEO_TOPOLOGY
+
+
+def _build_geo_topology():
+    """測地距離場の格子グラフの位相（迷路に依存しない部分）を作る。
+
+    [0, SIZE·cs] 四方を h_g 刻みの (N, N) 格子に区切り、8 近傍（軸 4・斜め 4）の
+    辺を各格子点から方向 (1,0)・(0,1)・(1,1)・(1,-1) の 4 通りだけ張ることで
+    重複なく列挙する（逆向きは迷路ごとの組み立て時に複製する）。
+
+    区画境界は「floor(座標/cs) は区画の高い側に属す」という規約（浮動小数点を
+    経由せず、格子インデックスの整数除算 i // _GEO_STEPS_PER_CELL だけで厳密に
+    決まる）で判定し、各辺を 3 種に分類する:
+      free   … 両端が同じ区画に属する → 壁の有無に関わらず常に開通
+      axis   … ちょうど 1 つの座標だけ区画が変わる → その区画境界
+               （v_walls か h_walls の該当 1 マス）の開通状況で決まる
+      corner … 斜め辺の両端で x も y も区画が変わる。格子点が区画 4 隅の交点
+               （区画境界を h_g 単位で割り切れる _GEO_STEPS_PER_CELL の倍数）に
+               ちょうど一致する退化ケースで、壁の厚みを持たない前提の下では
+               どちらの区画に属すとも一意に決まらない特異点である。標準的な
+               格子探索の corner-cutting 対策にならい、2 本の迂回路（L 字）の
+               どちらかが両方開通しているときに限り通す（迷路ごとに
+               `mouse.maze6_gen.cells_open()` で判定。件数は自ずと少ない）
+
+    戻り値は迷路に依存しない静的データ（座標・重み・分類・区画対・ゴール格子点）
+    の辞書。`_compute_geodesic_field()` が迷路ごとの壁配列と組み合わせて使う。
+    """
+    N = _GEO_GRID_N
+    ar = np.arange(N)
+    cellx = np.minimum(ar // _GEO_STEPS_PER_CELL, SIZE - 1)     # 格子インデックス→区画インデックス
+    II, JJ = np.meshgrid(ar, ar, indexing="ij")                 # II[i,j]=i, JJ[i,j]=j
+
+    coords = np.empty((N * N, 2), dtype=np.float64)
+    coords[:, 0] = (II * _GEO_GRID_H).ravel()
+    coords[:, 1] = (JJ * _GEO_GRID_H).ravel()
+
+    free_parts, axis_parts, corner_parts = [], [], []
+    directions = ((1, 0, _GEO_GRID_H), (0, 1, _GEO_GRID_H),
+                  (1, 1, _GEO_GRID_H * math.sqrt(2.0)), (1, -1, _GEO_GRID_H * math.sqrt(2.0)))
+    for di, dj, w in directions:
+        bi, bj = II + di, JJ + dj
+        valid = (bi >= 0) & (bi < N) & (bj >= 0) & (bj < N)
+        ai, aj, bi, bj = II[valid], JJ[valid], bi[valid], bj[valid]
+        a_id = (ai * N + aj).astype(np.int64)
+        b_id = (bi * N + bj).astype(np.int64)
+        cax, cay = cellx[ai], cellx[aj]
+        cbx, cby = cellx[bi], cellx[bj]
+        same = (cax == cbx) & (cay == cby)
+        axis_v = (~same) & (cay == cby)       # x だけ変わる（same=False で確定的に x!=cbx）
+        axis_h = (~same) & (cax == cbx)       # y だけ変わる
+        corner = (~same) & (~axis_v) & (~axis_h)
+
+        free_parts.append((a_id[same], b_id[same], np.full(int(same.sum()), w)))
+
+        m = axis_v
+        axis_parts.append((a_id[m], b_id[m], np.full(int(m.sum()), w),
+                            np.maximum(cax[m], cbx[m]), cay[m],
+                            np.zeros(int(m.sum()), dtype=np.int8)))     # 0 = v_walls
+        m = axis_h
+        axis_parts.append((a_id[m], b_id[m], np.full(int(m.sum()), w),
+                            cax[m], np.maximum(cay[m], cby[m]),
+                            np.ones(int(m.sum()), dtype=np.int8)))      # 1 = h_walls
+
+        m = corner
+        corner_parts.append((a_id[m], b_id[m], np.full(int(m.sum()), w),
+                              np.stack([cax[m], cay[m]], axis=1),
+                              np.stack([cbx[m], cby[m]], axis=1)))
+
+    free_src = np.concatenate([p[0] for p in free_parts])
+    free_dst = np.concatenate([p[1] for p in free_parts])
+    free_w = np.concatenate([p[2] for p in free_parts])
+
+    axis_src = np.concatenate([p[0] for p in axis_parts])
+    axis_dst = np.concatenate([p[1] for p in axis_parts])
+    axis_w = np.concatenate([p[2] for p in axis_parts])
+    axis_wx = np.concatenate([p[3] for p in axis_parts])
+    axis_wy = np.concatenate([p[4] for p in axis_parts])
+    axis_kind = np.concatenate([p[5] for p in axis_parts])
+
+    corner_src = np.concatenate([p[0] for p in corner_parts])
+    corner_dst = np.concatenate([p[1] for p in corner_parts])
+    corner_w = np.concatenate([p[2] for p in corner_parts])
+    corner_cellA = np.concatenate([p[3] for p in corner_parts], axis=0)
+    corner_cellB = np.concatenate([p[4] for p in corner_parts], axis=0)
+
+    goal_xs = sorted({c[0] for c in GOAL_CELLS})
+    goal_ys = sorted({c[1] for c in GOAL_CELLS})
+    goal_mask = np.isin(cellx[II], goal_xs) & np.isin(cellx[JJ], goal_ys)
+    goal_nodes = (II * N + JJ)[goal_mask].astype(np.int64).ravel()
+
+    return dict(
+        N=N, coords=coords,
+        free_src=free_src, free_dst=free_dst, free_w=free_w,
+        axis_src=axis_src, axis_dst=axis_dst, axis_w=axis_w,
+        axis_wx=axis_wx, axis_wy=axis_wy, axis_kind=axis_kind,
+        corner_src=corner_src, corner_dst=corner_dst, corner_w=corner_w,
+        corner_cellA=corner_cellA, corner_cellB=corner_cellB,
+        goal_nodes=goal_nodes,
+    )
+
 
 class Maze6Env(gym.Env):
     """6x6 迷路の単走環境。mode='loop'（M2-0）/ 'full'（M2-1）。"""
@@ -111,7 +237,8 @@ class Maze6Env(gym.Env):
                  action_smooth_penalty: float = 0.0,
                  action_highpass_penalty: float = 0.0,
                  action_highpass_alpha: float = 0.5,
-                 continuous_potential: bool = False):
+                 continuous_potential: bool = False,
+                 geodesic_potential: bool = False):
         super().__init__()
         if mode not in ("fixed", "generate"):
             raise ValueError(f"mode は 'fixed' か 'generate': {mode!r}")
@@ -142,6 +269,9 @@ class Maze6Env(gym.Env):
         # Φ を連続化するか（exp_012）。既定 False では _potential_stair() のみを通り、
         # 挙動は本変更の前と bit 単位で同一。
         self.continuous_potential = bool(continuous_potential)
+        # Φ を自由空間の測地距離場にするか（exp_012 条件 C）。geodesic > continuous
+        # > stair の優先順位で _potential() が分岐する。既定 False では無関係。
+        self.geodesic_potential = bool(geodesic_potential)
         self._n_dist = len(self.params.sensors)
 
         # 距離 n + 差分 n + ジャイロ1 + 加速度2 + 車輪2 + 前回行動2 + ゴール相対2
@@ -162,6 +292,8 @@ class Maze6Env(gym.Env):
         self._prev_potential = None
         self._cell = None              # 直近の区画（区画遷移の検出に使う）
         self._prev_cell = None         # c_prev: 直前に居た区画（連続 Φ 専用。reset で None）
+        self._geo_field = None         # (N, N) 測地距離場（測地版 Φ 専用。reset で前計算）
+        self._geo_start = None         # g(reset 直後の真の位置)（測地版 Φ のエピソード定数）
         self._prev_action = np.zeros(2, dtype=np.float32)
         self._action_lowpass = np.zeros(2, dtype=np.float64)   # ā_(−1) = 0（案 3）
         self._prev_dist_raw = None
@@ -363,12 +495,161 @@ class Maze6Env(gym.Env):
                 remaining = cand if remaining is None else min(remaining, cand)
         return self._d_start * cs - remaining
 
-    def _potential(self, cell, prev_cell=None, x: float = None, y: float = None) -> float:
-        """Φ [m]。continuous_potential に応じて階段版／連続版を切り替える。
+    # ------------------------------------------------------------------
+    # 測地距離版 Φ のヘルパ（exp_012 条件 C）
+    # ------------------------------------------------------------------
+    def _compute_geodesic_field(self) -> np.ndarray:
+        """自由空間の測地距離場を格子 Dijkstra で前計算する（条件 C。reset で 1 度だけ呼ぶ）。
 
-        continuous_potential=False（既定）では x, y, prev_cell は無視され、
-        _potential_stair(cell) のみで決まる（既存挙動を bit 単位で保つ）。
+        位相（迷路によらない格子グラフの形）は `_geo_topology()` がプロセス内で
+        1 度だけ計算してキャッシュしたものを使い回し、本メソッドは**今の迷路**の
+        壁配列（`self.maze["v_walls"]` / `["h_walls"]`）と組み合わせて開通判定を
+        行う（vectorized。壁の開閉は迷路ごとに違うのでここでしか決まらない）。
+
+        始点集合は**ゴール 2×2 区画の内部にある全格子点**（距離 0）。scipy が
+        使えれば `scipy.sparse.csgraph.dijkstra` の方が速いが、本環境（.venv）には
+        scipy が入っていないため確認の上 heapq で自前実装した
+        （`experiments/exp_012_continuous_potential/design.md`「実装内容」節 1）。
+
+        戻り値: (N, N) の float64 配列。[i, j] は座標 (i·h_g, j·h_g) [m] における
+        測地距離 [m]（ゴールまで到達不能なら inf だが、迷路生成の不変条件
+        「全区画へ到達可能」により実際には起きない）。
         """
+        topo = _geo_topology()
+        N = topo["N"]
+        v_walls, h_walls = self.maze["v_walls"], self.maze["h_walls"]
+
+        # axis 辺: 迷路ごとの開通状況を壁配列から引く（vectorized）。
+        # v_walls/h_walls どちらの配列に対しても添字の範囲内に収まることを
+        # _build_geo_topology() のコメントのとおり確認済みなので、両方引いてから
+        # axis_kind で選ぶだけでよい。
+        v_val = v_walls[topo["axis_wx"], topo["axis_wy"]]
+        h_val = h_walls[topo["axis_wx"], topo["axis_wy"]]
+        axis_open = np.where(topo["axis_kind"] == 0, v_val, h_val) == 0
+
+        # corner 辺（退化ケース。件数は少ない）: 迂回路のどちらかが両方開通して
+        # いれば通す。cells_open() をそのまま使い、本体の壁判定と規約を合わせる。
+        n_corner = len(topo["corner_src"])
+        corner_open = np.zeros(n_corner, dtype=bool)
+        for k in range(n_corner):
+            c0 = (int(topo["corner_cellA"][k, 0]), int(topo["corner_cellA"][k, 1]))
+            c1 = (int(topo["corner_cellB"][k, 0]), int(topo["corner_cellB"][k, 1]))
+            via1 = (c1[0], c0[1])
+            via2 = (c0[0], c1[1])
+            corner_open[k] = (
+                (cells_open(v_walls, h_walls, c0, via1) and cells_open(v_walls, h_walls, via1, c1))
+                or (cells_open(v_walls, h_walls, c0, via2) and cells_open(v_walls, h_walls, via2, c1)))
+
+        src = np.concatenate([topo["free_src"], topo["axis_src"][axis_open],
+                              topo["corner_src"][corner_open]])
+        dst = np.concatenate([topo["free_dst"], topo["axis_dst"][axis_open],
+                              topo["corner_dst"][corner_open]])
+        w = np.concatenate([topo["free_w"], topo["axis_w"][axis_open],
+                            topo["corner_w"][corner_open]])
+        # 無向グラフなので逆向きを複製する（辺は方向 4 通りだけで重複なく列挙したため）。
+        all_src = np.concatenate([src, dst])
+        all_dst = np.concatenate([dst, src])
+        all_w = np.concatenate([w, w])
+
+        # CSR 風の隣接構造（送り元でソートして開始位置の累積を作る）。
+        order = np.argsort(all_src, kind="stable")
+        s_sorted = all_src[order]
+        d_list = all_dst[order].tolist()          # heapq ループでは list 添字の方が速い
+        w_list = all_w[order].tolist()
+        n_nodes = N * N
+        counts = np.bincount(s_sorted, minlength=n_nodes)
+        offsets = np.zeros(n_nodes + 1, dtype=np.int64)
+        np.cumsum(counts, out=offsets[1:])
+        offsets_list = offsets.tolist()
+
+        dist = np.full(n_nodes, np.inf, dtype=np.float64)
+        visited = bytearray(n_nodes)
+        heap = []
+        for node in topo["goal_nodes"].tolist():
+            if dist[node] != 0.0:
+                dist[node] = 0.0
+                heapq.heappush(heap, (0.0, node))
+        while heap:
+            du, u = heapq.heappop(heap)
+            if visited[u]:
+                continue
+            visited[u] = 1
+            for k in range(offsets_list[u], offsets_list[u + 1]):
+                v = d_list[k]
+                if visited[v]:
+                    continue
+                nd = du + w_list[k]
+                if nd < dist[v]:
+                    dist[v] = nd
+                    heapq.heappush(heap, (nd, v))
+
+        if not np.all(np.isfinite(dist)):
+            n_bad = int(np.sum(~np.isfinite(dist)))
+            raise AssertionError(
+                f"測地距離場に到達不能な格子点が {n_bad} 個ある（迷路生成の不変条件"
+                "「全区画へ到達可能」と矛盾する。実装の欠陥の可能性）")
+        return dist.reshape(N, N)
+
+    def _geodesic_value(self, x: float, y: float) -> float:
+        """測地距離場の値 g(P) を**双線形補間**で取り出す（条件 C。裁定 R30）。
+
+        P を囲む格子セルの 4 隅の値を双線形に混ぜる。**候補集合を持たない**ので
+        P について構成上連続であり、これが本方式を選んだ理由である。
+
+        --------------------------------------------------------------
+        なぜ「下側包絡」をやめたか（欠陥 D3。design.md §4 の D3 節が経緯を持つ）
+        --------------------------------------------------------------
+        当初は下側包絡 g(P) = min_q ( field[q] + |P − q| ) を使っていた。この形は
+        「1-Lipschitz 関数の min はやはり 1-Lipschitz」という論法で正当化していたが、
+        **この論法は誤りである**: min を取る**候補集合が P に依存する**とき、
+        候補が抜ける瞬間に値が跳ぶ。実測でも、機体が到達しうる領域に限り壁を跨ぐ
+        点対を除いてもなお、刻み 6.0 / 1.5 / 0.375 mm に対し最大比が
+        1.1781 → 2.3944 → 7.6289 と**発散**した（超過は 0.0011 → 0.0021 → 0.0025 m で
+        有界 ＝ 加法的な跳び）。候補窓を 3×3 → 7×7 と広げても消えなかった。
+
+        双線形補間に置き換えると同じ走査で
+
+            刻み 6.000 mm → 最大比 1.0000（超過 0.000000 m）
+            刻み 1.500 mm → 最大比 1.3107（超過 0.000659 m）
+            刻み 0.375 mm → 最大比 1.3883（超過 0.000206 m）
+
+        となり、**比は √2 = 1.4142 以下へ収束し超過は刻みとともに縮む**
+        ＝ 真の不連続なし。√2 は**双線形補間の理論上界**（格子方向に
+        1-Lipschitz な場を補間するときの勾配上界）であって実測当てはめではない。
+
+        壁越しの参照も構造的に解消する: 双線形は P を囲む 4 点しか使わず、
+        壁をまたぐ格子セルは**機体中心が到達できない領域**（閉じた壁面から
+        t_w/2 + w_lat = 0.0455 m 以内）にしか現れないためである。
+        """
+        h = _GEO_GRID_H
+        u, v = x / h, y / h
+        i0 = min(max(int(math.floor(u)), 0), _GEO_GRID_N - 2)
+        j0 = min(max(int(math.floor(v)), 0), _GEO_GRID_N - 2)
+        a, b = u - i0, v - j0
+        f = self._geo_field
+        return float((1.0 - a) * (1.0 - b) * f[i0, j0]
+                     + a * (1.0 - b) * f[i0 + 1, j0]
+                     + (1.0 - a) * b * f[i0, j0 + 1]
+                     + a * b * f[i0 + 1, j0 + 1])
+
+    def _potential_geodesic(self, x: float, y: float) -> float:
+        """Φ の測地距離版（exp_012 条件 C）。cell・prev_cell は使わない位置だけの関数。
+
+        Φ(P) = g(reset 直後の真の位置) − g(P)。g(reset 直後の真の位置) は
+        `self._geo_start` として reset() がエピソード定数として保存する
+        （擾乱後の真の位置で決めるので Φ₀ = 0 が構成上成立する）。
+        """
+        return self._geo_start - self._geodesic_value(x, y)
+
+    def _potential(self, cell, prev_cell=None, x: float = None, y: float = None) -> float:
+        """Φ [m]。優先順位は geodesic > continuous > stair（この順に分岐する）。
+
+        geodesic_potential も continuous_potential も False（既定）では x, y,
+        prev_cell は無視され、_potential_stair(cell) のみで決まる
+        （既存挙動を bit 単位で保つ）。
+        """
+        if self.geodesic_potential:
+            return self._potential_geodesic(x, y)
         if not self.continuous_potential:
             return self._potential_stair(cell)
         return self._potential_continuous(cell, prev_cell, x, y)
@@ -445,6 +726,8 @@ class Maze6Env(gym.Env):
         self._dist_map = shortest_distances(self.maze["v_walls"], self.maze["h_walls"])
         start = tuple(self.maze["start"])
         self._d_start = self._dist_map[start]
+        if self.geodesic_potential:
+            self._geo_field = self._compute_geodesic_field()
 
         self.sim.full_reset(cell=start, heading_deg=heading)
         cs = self.params.cell_size
@@ -475,6 +758,10 @@ class Maze6Env(gym.Env):
         # 状況ではなく、単に初期条件を知らせていないだけの人工的な誤差である。
         tx, ty, tyaw = self.sim.privileged_pose()
         self._odo_x, self._odo_y, self._odo_yaw = tx, ty, tyaw
+        if self.geodesic_potential:
+            # g(reset 直後の真の位置) をエピソード定数として保存する（擾乱後の
+            # 真の位置で決めるので Φ₀ = 0 が構成上成立する。design.md §「Φ の定義」）。
+            self._geo_start = self._geodesic_value(tx, ty)
 
         self._visited = {start}
         self._step_count = 0
