@@ -1,0 +1,56 @@
+{
+ "goal_maze": 7017,
+ "positive_points": [
+  700000,
+  900000,
+  1300000
+ ],
+ "positive_with_checkpoint": [],
+ "reproducible_points": [
+  {
+   "failed_match": true,
+   "recorded_goal_rate": 0.0,
+   "recorded_visited": null,
+   "rerun_goal_rate": 0.0,
+   "rerun_visited": null,
+   "steps": 400000,
+   "visited_match": true
+  },
+  {
+   "failed_match": true,
+   "recorded_goal_rate": 0.0,
+   "recorded_visited": null,
+   "rerun_goal_rate": 0.0,
+   "rerun_visited": null,
+   "steps": 800000,
+   "visited_match": true
+  },
+  {
+   "failed_match": true,
+   "recorded_goal_rate": 0.0,
+   "recorded_visited": null,
+   "rerun_goal_rate": 0.0,
+   "rerun_visited": null,
+   "steps": 1200000,
+   "visited_match": true
+  },
+  {
+   "failed_match": true,
+   "recorded_goal_rate": 0.0,
+   "recorded_visited": null,
+   "rerun_goal_rate": 0.0,
+   "rerun_visited": null,
+   "steps": 1600000,
+   "visited_match": true
+  },
+  {
+   "failed_match": true,
+   "recorded_goal_rate": 0.0,
+   "recorded_visited": null,
+   "rerun_goal_rate": 0.0,
+   "rerun_visited": null,
+   "steps": 2000000,
+   "visited_match": true
+  }
+ ]
+}
