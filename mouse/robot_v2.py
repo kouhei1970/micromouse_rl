@@ -49,10 +49,17 @@ def add_micromouse_v2(worldbody, actuator, sensor, contact,
     # mein_body1: シャーシ + PCB の集約質量（電池は rev.B で下記 battery ボディに分離）
     # friction は機体外殻-壁の μ_wall=0.4 を明示（U4 是正。暗黙の MuJoCo 既定値 [1, 0.005, 1e-4]
     # 依存を排除しないと、壁の摩擦と結合則(要素ごとmax)で意図せず μ=1.0 になる）
+    # シャーシ外形は `RobotParams` を正とする（裁定 R16 ②・R11 バッチ項目 3。
+    # 仕様の正の定義元は `docs/ROBOT_SPEC.md` §2.1）。**MJCF の box の size は半長**なので
+    # 外形（全長）を 1/2 にして書く。**値は従来のリテラル '0.05 0.03 0.0008' と一致する**
+    # （改修の合格条件は生成 XML のバイト一致）。
+    _chassis_half = ' '.join(f'{v / 2:g}' for v in (params.chassis_length,
+                                                    params.chassis_width,
+                                                    params.chassis_thickness))
     ET.SubElement(mouse_body, 'geom', {
         'name': 'mein_body1',
         'type': 'box',
-        'size': '0.05 0.03 0.0008',
+        'size': _chassis_half,
         'rgba': '0.05 0.4 0.15 1',
         'pos': '0 0 0.002',
         'friction': params.wall_body_friction,
