@@ -66,6 +66,18 @@ geodesic_potential=True（exp_012 の条件 C。既定 False）にすると、Φ
 geodesic > continuous > stair（`_potential()` の分岐）。動機・数式・検証項目は
 `experiments/exp_012_continuous_potential/design.md`「条件 C: 自由空間の測地距離場」
 を参照。既定 False では挙動は変わらない。
+
+geodesic_rho_scale=True（exp_012 の条件 C'。既定 False。geodesic_potential=True の
+ときだけ効く）にすると、条件 C の Φ を**面ごとの定数** ρ 倍して、1 エピソードの
+総整形量を条件 E（= cs·D₀）に揃える。
+
+    ρ = cs·D₀ / g(start)          （D₀ = スタート区画の d [区画数]、
+    Φ_C'(P) = ρ·(g(start) − g(P))   g(start) = reset 直後の真の位置の測地距離 [m]）
+
+動機（裁定 R24-1・准教授の投入前指摘）: 測地距離場は角を切るぶん総整形量が条件 E より
+小さいので、C が悪い結果になったとき「連続性のせいか報酬量が小さいせいか」を分離
+できない。C 対 C' が報酬量の効果、C' 対 E が連続性・錨の効果を切り分ける。
+既定 False では ρ = 1 で条件 C と bit 単位で同じ。
 """
 import heapq
 import math
@@ -118,14 +130,22 @@ _GEO_GRID_H = 0.18 / _GEO_STEPS_PER_CELL           # 0.006 m
 
 # 条件 C の測地距離場は「**配置空間**の測地距離」である（裁定 R32）。
 # 点の測地（機体を点とみなす）は**実機の中心が辿れない経路**の距離を返すので、
-# 用途に合わない代理量になる。機体中心は閉じた壁面から w_lat 以上離れる必要があり、
-# 壁は境界の中心線を軸に厚み t_w を持つので、**壁の中心線からの離隔**は t_w/2 + w_lat。
-#   ⚠️ ラベルに注意: 壁**面**からの離隔 = w_lat = 0.0400 m
-#                    壁**中心線**からの離隔 = t_w/2 + w_lat = 0.0460 m ← 格子の判定に使うのはこちら
+# 用途に合わない代理量になる。
+#
+# 🔴 マスクの定義は**障害物表面からの距離**である（裁定 R34。2026-08-13 是正）。
+#   許可 = 「物理モデルに**実際に生成されている**障害物（壁・柱）の**表面**から
+#           w_lat 以上離れている」。機体は半径 w_lat の**円板**とみなす。
+#   ⚠️ ラベルに注意: 壁**面**からの離隔 = w_lat = 0.0400 m ← 一次の書き方（表面距離）
+#                    壁**中心線**からの離隔 = t_w/2 + w_lat = 0.0460 m
+#                    **両者が等価なのは壁の直線部だけ**であり、**柱・壁の端では等価に
+#                    ならない**（そこでは表面までの最短距離が斜めに測られるため）。
+#   旧実装は中心線基準の軸ごと判定で、**柱を描かず・壁の端も丸めていなかった**ため、
+#   許可点の 9.17% が実際には壁・柱から 0.0400 未満だった（准教授の指摘。最悪は柱の角で 0）。
 # w_lat はモデルのメッシュ頂点から導出した機体の真の最外側半幅（コーナー片 mein_body2..5。
 # 車輪 0.0395 でも AABB 0.04141 でもない。ROBOT_SPEC §2.1・裁定 R25/R26）。
 # tests/test_maze6_potential.py が実行時導出値との一致を検査する。
 _ROBOT_LAT_HALF_WIDTH = 0.0400
+# 壁の**直線部**での等価な中心線基準の離隔（記録・照合用。判定には使わない）。
 _GEO_CLEARANCE = WALL_THICKNESS / 2 + _ROBOT_LAT_HALF_WIDTH      # 0.0460 m（壁中心線から）
 
 _GEO_TOPOLOGY = None    # プロセス内で 1 度だけ計算する位相キャッシュ（迷路によらない）
@@ -250,7 +270,8 @@ class Maze6Env(gym.Env):
                  action_highpass_penalty: float = 0.0,
                  action_highpass_alpha: float = 0.5,
                  continuous_potential: bool = False,
-                 geodesic_potential: bool = False):
+                 geodesic_potential: bool = False,
+                 geodesic_rho_scale: bool = False):
         super().__init__()
         if mode not in ("fixed", "generate"):
             raise ValueError(f"mode は 'fixed' か 'generate': {mode!r}")
@@ -284,6 +305,14 @@ class Maze6Env(gym.Env):
         # Φ を自由空間の測地距離場にするか（exp_012 条件 C）。geodesic > continuous
         # > stair の優先順位で _potential() が分岐する。既定 False では無関係。
         self.geodesic_potential = bool(geodesic_potential)
+        # 条件 C'（裁定 R24-1）: 条件 C の Φ を面ごとの定数 ρ 倍して総整形量を条件 E に
+        # 揃える。geodesic_potential=True のときだけ効く（単独指定は設計の取り違えなので
+        # 弾く）。既定 False では ρ = 1 ＝ 条件 C と bit 単位で同じ。
+        self.geodesic_rho_scale = bool(geodesic_rho_scale)
+        if self.geodesic_rho_scale and not self.geodesic_potential:
+            raise ValueError(
+                "geodesic_rho_scale=True は geodesic_potential=True のときだけ有効です"
+                "（条件 C' は条件 C の Φ を ρ 倍したもの。design.md「条件 C'」）")
         self._n_dist = len(self.params.sensors)
 
         # 距離 n + 差分 n + ジャイロ1 + 加速度2 + 車輪2 + 前回行動2 + ゴール相対2
@@ -306,6 +335,7 @@ class Maze6Env(gym.Env):
         self._prev_cell = None         # c_prev: 直前に居た区画（連続 Φ 専用。reset で None）
         self._geo_field = None         # (N, N) 測地距離場（測地版 Φ 専用。reset で前計算）
         self._geo_start = None         # g(reset 直後の真の位置)（測地版 Φ のエピソード定数）
+        self._geo_rho = 1.0            # 条件 C' の面ごとの定数 ρ（条件 C では 1.0 のまま）
         self._prev_action = np.zeros(2, dtype=np.float32)
         self._action_lowpass = np.zeros(2, dtype=np.float64)   # ā_(−1) = 0（案 3）
         self._prev_dist_raw = None
@@ -574,10 +604,14 @@ class Maze6Env(gym.Env):
         np.cumsum(counts, out=offsets[1:])
         offsets_list = offsets.tolist()
 
-        # --- 配置空間の自由空間マスク（裁定 R32）--------------------------
-        # 機体中心が閉じた区画境界（＝壁の中心線）から _GEO_CLEARANCE 以上
-        # 離れている格子点だけを「機体が到達しうる」とみなす。
-        allowed = self._geo_allowed_mask()
+        # --- 配置空間の自由空間マスク（裁定 R32・R34）----------------------
+        # 機体中心が障害物（壁・柱）の**表面**から w_lat 以上離れている格子点が
+        # 「機体が居られる位置」である。
+        # 🔴 **距離場を解く領域はそれを 1 格子セルぶん広げたもの**にする
+        # （離隔 w_lat − h_g·√2）。理由は下の第 2 段のコメント（帯の値を双線形に
+        # 掴ませないため。実測で最大比 60.8 → 1.39 の差になる）。
+        allowed = self._geo_allowed_mask(
+            clearance=_ROBOT_LAT_HALF_WIDTH - _GEO_GRID_H * math.sqrt(2.0))
         allowed_list = allowed.ravel().tolist()
 
         dist = np.full(n_nodes, np.inf, dtype=np.float64)
@@ -609,10 +643,24 @@ class Maze6Env(gym.Env):
                 f"配置空間の測地距離場に到達不能な格子点が {int(bad.sum())} 個ある"
                 "（迷路生成の不変条件「全区画へ到達可能」と矛盾する。実装の欠陥の可能性）")
 
-        # 第 2 段: 到達不能側（壁際の帯）へ値を延長する。**到達可能な点の値は
-        # 変えない**（第 1 段で確定済み）ので、壁際の帯を通る近道は生じない。
-        # 延長が要るのは、機体が到達しうる位置を囲む格子セルの隅が帯に入りうる
-        # ためで、双線形補間が inf を掴まないようにするためだけの措置である。
+        # 第 2 段: 禁止帯（機体中心が居られない格子点）へ値を書き込む。**到達可能な点の
+        # 値は変えない**（第 1 段で確定済み）ので、帯を通る近道は生じない。
+        # 帯の値が要るのは、機体が居られる位置を囲む格子セルの隅が帯に入りうるためで、
+        # 双線形補間が inf を掴まないようにするための措置である。
+        #
+        # 🔴 **帯の値は「機体が居られる位置」の取り出しには一切使われない**
+        # （裁定 R38 → 2026-08-13 の是正）。第 1 段を解く領域を **1 格子セルぶん広げた
+        # マスク**（離隔 w_lat − h_g·√2）にしてあるので、機体が居られる点 P（離隔 ≥ w_lat）を
+        # 囲む 4 隅は**必ず第 1 段で解けている**（|P − 隅| ≤ h_g·√2 なので隅の離隔 ≥
+        # w_lat − h_g·√2）。したがってここの延長は「格子全体を有限にするための後始末」で
+        # あり、双線形が掴むことはない。
+        #
+        # ⚠️ **McShane 型（壁を無視した格子距離での 1-Lipschitz 拡張）は実測で棄却した**:
+        # 比が 60.8 → 409.8 へ**悪化**した。理由は、**場 g そのものが直線距離について
+        # 1-Lipschitz ではない**こと（壁を挟む 2 点は空間的に近くても測地的に遠い）。
+        # McShane の構成は台の上で 1-Lipschitz な関数にしか使えない。**「1-Lipschitz 関数の
+        # min は 1-Lipschitz」を、前提を確かめずに適用したのが誤りだった**（min の候補集合が
+        # P に依存する罠と同じ型 ＝ 前提の未確認）。
         heap = [(float(dist[i]), int(i)) for i in np.flatnonzero(np.isfinite(dist))]
         heapq.heapify(heap)
         visited2 = bytearray(n_nodes)
@@ -624,7 +672,7 @@ class Maze6Env(gym.Env):
             for k in range(offsets_list[u], offsets_list[u + 1]):
                 v = d_list[k]
                 if visited2[v] or allowed_list[v]:
-                    continue                      # 到達可能な点は第 1 段の値を守る
+                    continue                      # 第 1 段で解けた点の値は守る
                 nd = du + w_list[k]
                 if nd < dist[v]:
                     dist[v] = nd
@@ -635,46 +683,71 @@ class Maze6Env(gym.Env):
                 f"延長後も値の付かない格子点が {n_bad} 個ある（実装の欠陥の可能性）")
         return dist.reshape(N, N)
 
-    def _geo_allowed_mask(self) -> np.ndarray:
-        """機体中心が到達しうる格子点の真偽マスク (N, N)（配置空間。裁定 R32）。
+    def _geo_obstacle_boxes(self) -> np.ndarray:
+        """障害物（壁・柱）の平面上の軸並行箱を**モデルの実体から**読み出す（裁定 R34）。
 
-        格子点 (i, j) は、その属する区画の 4 つの境界のうち**閉じているもの**
-        （壁があるか迷路の外周）すべてから `_GEO_CLEARANCE` 以上離れているときに
-        到達可能とする。`_GEO_CLEARANCE` は**壁の中心線**からの離隔である
-        （壁面からの離隔 w_lat = 0.0400 m ＋ 壁の半厚 t_w/2 = 0.006 m）。
+        戻り値: (M, 4) の配列。各行 (cx, cy, hx, hy) ＝ 中心 [m] と半幅 [m]。
+
+        **独立の再記述を作らない**（R34 の明示条件）。`mouse/mjcf.py` が
+        `build_maze_robot_xml()` で実際に生成した geom（`post_*` / `v_wall_*` /
+        `h_wall_*`）を MuJoCo モデルから読む。文書の記述（例: maze6_gen.py 冒頭の
+        「ゴール中央は柱もない広場」）は**入力に使わない** — 実際にはゴール 2x2 の
+        中心に `post_3_3` が立っており、文書とモデルが食い違っている
+        （design.md「既知の環境特性」。是正は R11 バッチ）。
+
+        壁上端の赤い geom（`*_wall_top_*`）は平面上の占有が本体と同一なので、
+        名前で除外せずそのまま含める（min を取るので重複は無害。**除外条件を
+        書かない＝取りこぼしの余地を作らない**）。
         """
-        N, S, H = _GEO_GRID_N, _GEO_STEPS_PER_CELL, _GEO_GRID_H
-        cs = self.params.cell_size
-        v_walls, h_walls = self.maze["v_walls"], self.maze["h_walls"]
-        idx = np.arange(N)
-        cell = np.minimum(idx // S, SIZE - 1)
-        pos = idx * H
-        lo = pos - cell * cs                 # 区画の低い側の境界からの距離
-        hi = (cell + 1) * cs - pos           # 高い側の境界からの距離
-        allowed = np.ones((N, N), dtype=bool)
-        for cx in range(SIZE):
-            xs = np.flatnonzero(cell == cx)
-            for cy in range(SIZE):
-                ys = np.flatnonzero(cell == cy)
-                if len(xs) == 0 or len(ys) == 0:
-                    continue
-                c = (cx, cy)
-                blk_x_lo = not (cx > 0 and cells_open(v_walls, h_walls, c, (cx - 1, cy)))
-                blk_x_hi = not (cx < SIZE - 1 and cells_open(v_walls, h_walls, c, (cx + 1, cy)))
-                blk_y_lo = not (cy > 0 and cells_open(v_walls, h_walls, c, (cx, cy - 1)))
-                blk_y_hi = not (cy < SIZE - 1 and cells_open(v_walls, h_walls, c, (cx, cy + 1)))
-                ok_x = np.ones(len(xs), dtype=bool)
-                ok_y = np.ones(len(ys), dtype=bool)
-                if blk_x_lo:
-                    ok_x &= lo[xs] >= _GEO_CLEARANCE
-                if blk_x_hi:
-                    ok_x &= hi[xs] >= _GEO_CLEARANCE
-                if blk_y_lo:
-                    ok_y &= lo[ys] >= _GEO_CLEARANCE
-                if blk_y_hi:
-                    ok_y &= hi[ys] >= _GEO_CLEARANCE
-                allowed[np.ix_(xs, ys)] = ok_x[:, None] & ok_y[None, :]
-        return allowed
+        model = self.sim.model
+        boxes = []
+        for g in range(model.ngeom):
+            name = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_GEOM, g)
+            if not name or not (name.startswith("post_") or name.startswith("v_wall_")
+                                or name.startswith("h_wall_")):
+                continue
+            if model.geom_type[g] != mujoco.mjtGeom.mjGEOM_BOX:
+                raise AssertionError(f"障害物 geom {name} が箱ではない: {model.geom_type[g]}")
+            if model.geom_bodyid[g] != 0:
+                raise AssertionError(f"障害物 geom {name} が worldbody 直下にない"
+                                     "（geom_pos を世界座標として読めない）")
+            q = model.geom_quat[g]
+            if not (abs(q[0] - 1.0) < 1e-12 and abs(q[1]) < 1e-12
+                    and abs(q[2]) < 1e-12 and abs(q[3]) < 1e-12):
+                raise AssertionError(f"障害物 geom {name} が回転している: quat={q}"
+                                     "（軸並行の前提が崩れる）")
+            boxes.append((float(model.geom_pos[g][0]), float(model.geom_pos[g][1]),
+                          float(model.geom_size[g][0]), float(model.geom_size[g][1])))
+        if not boxes:
+            raise AssertionError("障害物 geom が 1 つも見つからない（実装の欠陥）")
+        return np.asarray(boxes, dtype=np.float64)
+
+    def _geo_allowed_mask(self, clearance: float = None) -> np.ndarray:
+        """機体中心が到達しうる格子点の真偽マスク (N, N)（配置空間。裁定 R32・R34）。
+
+        **判定は「障害物表面からの距離 ≥ w_lat」**（機体は半径 w_lat の円板）。
+        `clearance` を渡すとその離隔で判定する（距離場を解く領域を 1 格子セルぶん
+        広げるために使う。既定 None は w_lat ＝ 機体が実際に居られる集合）。
+        軸並行な箱への平面距離は
+            d = |( max(|x−cx|−hx, 0), max(|y−cy|−hy, 0) )|
+        で、箱の外側では正確な最短距離になる（角では斜めに測られる ＝ **丸めが自動で従う**）。
+
+        ⚠️ **機体モデルの限界**（design.md「マスクの是正」に条文として登録）:
+        半径 w_lat の円板は**向きに依存しない近似**である。実機は向きによって張り出しが
+        変わり前端は 0.0500 m あるが、これは含めない（(x, y, θ) の 3 次元配置空間は
+        整形ポテンシャルの用途には過剰、という判断ごと登録した）。
+        """
+        N, H = _GEO_GRID_N, _GEO_GRID_H
+        pos = np.arange(N) * H
+        X = pos[:, None] * np.ones((1, N))
+        Y = np.ones((N, 1)) * pos[None, :]
+        dmin = np.full((N, N), np.inf)
+        for cx, cy, hx, hy in self._geo_obstacle_boxes():
+            dx = np.maximum(np.abs(X - cx) - hx, 0.0)
+            dy = np.maximum(np.abs(Y - cy) - hy, 0.0)
+            np.minimum(dmin, np.hypot(dx, dy), out=dmin)
+        c = _ROBOT_LAT_HALF_WIDTH if clearance is None else float(clearance)
+        return dmin >= c
 
     def _geodesic_value(self, x: float, y: float) -> float:
         """測地距離場の値 g(P) を**双線形補間**で取り出す（条件 C。裁定 R30）。
@@ -725,11 +798,15 @@ class Maze6Env(gym.Env):
     def _potential_geodesic(self, x: float, y: float) -> float:
         """Φ の測地距離版（exp_012 条件 C）。cell・prev_cell は使わない位置だけの関数。
 
-        Φ(P) = g(reset 直後の真の位置) − g(P)。g(reset 直後の真の位置) は
+        Φ(P) = ρ·( g(reset 直後の真の位置) − g(P) )。g(reset 直後の真の位置) は
         `self._geo_start` として reset() がエピソード定数として保存する
         （擾乱後の真の位置で決めるので Φ₀ = 0 が構成上成立する）。
+
+        ρ は条件 C' の面ごとの定数（`self._geo_rho`。条件 C では 1.0）。
+        定数倍なので Φ₀ = 0・位置だけの関数・c_prev 非依存はいずれも保たれ、
+        Lipschitz 定数と 1 歩の跳びだけが ρ 倍される。
         """
-        return self._geo_start - self._geodesic_value(x, y)
+        return self._geo_rho * (self._geo_start - self._geodesic_value(x, y))
 
     def _potential(self, cell, prev_cell=None, x: float = None, y: float = None) -> float:
         """Φ [m]。優先順位は geodesic > continuous > stair（この順に分岐する）。
@@ -793,7 +870,18 @@ class Maze6Env(gym.Env):
 
     def _make_info(self, cell, collision, goal, sim_time) -> dict:
         x, y, _ = self.sim.privileged_pose()
+        extra = {}
+        if self.geodesic_potential:
+            # 条件 C・C' の記録の義務（裁定 R24-1）: 学習迷路ごとの
+            # 1/ρ = g(start)/(cs·D₀) を残す。分布が予想と食い違うこと自体が
+            # 結果の解釈に効くため、C（ρ=1）でも C'（ρ≠1）でも同じ量を記録する。
+            denom = self.params.cell_size * self._d_start
+            extra["geo_rho"] = float(self._geo_rho)
+            extra["geo_inv_rho"] = (float(self._geo_start / denom) if denom > 0
+                                    else float("nan"))
+            extra["geo_g_start_m"] = float(self._geo_start)
         return {
+            **extra,
             "maze_seed": self.maze["seed"],
             "cell": cell,
             "dist_to_goal": int(self._dist_map.get(cell, -1)),
@@ -852,6 +940,17 @@ class Maze6Env(gym.Env):
             # g(reset 直後の真の位置) をエピソード定数として保存する（擾乱後の
             # 真の位置で決めるので Φ₀ = 0 が構成上成立する。design.md §「Φ の定義」）。
             self._geo_start = self._geodesic_value(tx, ty)
+            # 条件 C' の ρ（面ごと・エピソードごとの定数。裁定 R24-1）。
+            #     ρ = cs·D₀ / g(start)
+            # 分子は条件 E での総整形量（Φ の全変化量 = D₀ 区画 × cs）、分母は条件 C
+            # でのそれ。**ρ 倍は Φ 全体に掛かる定数倍なので Φ₀ = 0 は保たれる。**
+            self._geo_rho = 1.0
+            if self.geodesic_rho_scale:
+                if not self._geo_start > 0.0:
+                    raise AssertionError(
+                        f"g(start) = {self._geo_start!r} が正でないので ρ を決められない"
+                        "（スタート区画がゴール 2x2 に一致している可能性。実装の欠陥）")
+                self._geo_rho = (cs * self._d_start) / self._geo_start
 
         self._visited = {start}
         self._step_count = 0
