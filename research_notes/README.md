@@ -25,6 +25,7 @@
 - [note_013: 対象の制約が、指標を退化させることがある](note_013_constraints_can_degenerate_metrics.md)
 - [note_014: 同じ役割を 2 セッションが同時に担うと、指示の出所が失われる](note_014_one_role_two_sessions.md)
 - [note_015: 同じ名前の指標が、実装の副次的な規則によって別の量になる](note_015_same_name_different_quantity.md)
+- [note_016: 中央値は悪化を過大に見せ、裾の効果をゼロに見せる](note_016_median_hides_the_tail.md)
 
 ## 補助資料
 
