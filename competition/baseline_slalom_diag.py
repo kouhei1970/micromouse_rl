@@ -152,7 +152,10 @@ class SlalomDiagPolicy(SlalomE1TTRPolicy):
         try:
             path, kinds, _idx = build_diagonal_path(
                 nodes, dirs, self.cell_size, self.arc_radius,
-                stop_at_end=not truncated)
+                stop_at_end=not truncated,
+                # 直進 ↔ 直進の 90° は**親と同じ半径**にする（教授裁定 2026-08-14:
+                # 適用範囲の是正。差を「斜めの導入だけ」に保つため）
+                r_straight=self.R)
         except ValueError:
             # 接続が張れない配置（半歩 + 90°）。**黙って落とさず親へ委ねる**
             return super()._replan(x, y, yaw)

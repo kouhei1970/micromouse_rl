@@ -46,30 +46,57 @@ def _yaw(d):
     return math.atan2(DELTA8[d][1], DELTA8[d][0])
 
 
-def build_diagonal_path(nodes, dirs, cell_size, R, stop_at_end=True, ds=0.005):
+def build_diagonal_path(nodes, dirs, cell_size, R, stop_at_end=True, ds=0.005,
+                        r_straight=None):
     """節点列・方位列から、直線 → 円弧 → 斜めの参照経路を作る。
+
+    Args:
+        R: **斜めが絡む接続**（45° の遷移・斜め ↔ 斜めの 90°）の円弧半径 [m]
+        r_straight: **直進 ↔ 直進の 90° コーナー**の円弧半径 [m]。
+            既定 None は R と同じ。**016-D では親の `select_arc_radius`（90 mm）**を
+            渡す — 対照と同じ曲がり方にして、差を「斜めの導入だけ」に保つため
+            （教授裁定 2026-08-14: 適用範囲の是正）
+
+    ⚠️ **接線の余地は「隣の節点まで」ではなく「隣の方位変化まで」で測る。**
+    半区画格子では直進が半歩の連なりに分かれるが、**同じ方位が続く区間は
+    幾何的には 1 本の直線**であり、途中の節点はコーナーではない。
+    節点ごとに測ると余地を半分に見誤り、**大きな半径が張れなくなる**。
 
     Returns:
         (ReferencePath, seg_kind, seg_index)
-        seg_kind: 各標本の種別（'straight' / 'diagonal' / 'arc'）
-        seg_index: 各標本が属する区間の番号（`dirs` の添字。円弧は直後の区間の番号）
     """
     pts = [np.array(node_xy(n, cell_size), dtype=float) for n in nodes]
     m = len(dirs)
     seg_len = [float(np.linalg.norm(pts[k + 1] - pts[k])) for k in range(m)]
+    r_str = float(r_straight) if r_straight is not None else float(R)
+
+    # 同じ方位が続く区間（脚）の長さ。接線の余地はこの長さで測る
+    leg_of = [0] * m
+    leg_len = []
+    cur = 0.0
+    for k in range(m):
+        cur += seg_len[k]
+        leg_of[k] = len(leg_len)
+        if k + 1 == m or turn_deg(dirs[k], dirs[k + 1]) > 0:
+            leg_len.append(cur)
+            cur = 0.0
+
     tan_len = [0.0] * len(nodes)
+    r_at = {}                     # 節点ごとの実際の円弧半径
     for k in range(1, m):
         th = math.radians(turn_deg(dirs[k - 1], dirs[k]))
         if th <= 0:
             continue
-        t = R * math.tan(th / 2.0)
-        room = min(seg_len[k - 1], seg_len[k]) / 2.0
+        diagonal_involved = (dirs[k - 1] in DIAGONALS) or (dirs[k] in DIAGONALS)
+        r_c = float(R) if diagonal_involved else r_str
+        room = min(leg_len[leg_of[k - 1]], leg_len[leg_of[k]]) / 2.0
+        t = r_c * math.tan(th / 2.0)
         if t > room + 1e-12:
-            raise ValueError(
-                f"節点 {k} で接線長 {t*1000:.1f} mm が余地 {room*1000:.1f} mm を超える"
-                f"（旋回 {math.degrees(th):.0f}°・R={R*1000:.0f} mm）。"
-                "016-B の前提（R=60 mm でその場回頭に落ちない）が崩れている")
+            # 親の `fit_corner_radii` と同じく、収まる最大の半径まで縮める
+            r_c = room / math.tan(th / 2.0)
+            t = room
         tan_len[k] = t
+        r_at[k] = r_c
 
     xs, ys, hs, ks, kinds, idxs = [], [], [], [], [], []
 
@@ -95,16 +122,17 @@ def build_diagonal_path(nodes, dirs, cell_size, R, stop_at_end=True, ds=0.005):
                 continue
             y0, y1 = _yaw(d), _yaw(d2)
             dy = math.atan2(math.sin(y1 - y0), math.cos(y1 - y0))
+            r_c = r_at.get(k + 1, float(R))
             nrm = np.array([-u[1], u[0]]) * (1.0 if dy > 0 else -1.0)
             s0 = pts[k + 1] - u * tan_len[k + 1]
-            ctr = s0 + nrm * R
+            ctr = s0 + nrm * r_c
             ang0 = math.atan2(s0[1] - ctr[1], s0[0] - ctr[0])
-            arc_len = abs(dy) * R
+            arc_len = abs(dy) * r_c
             n_a = max(3, int(round(arc_len / ds)) + 1)
-            curv = (1.0 / R) * (1.0 if dy > 0 else -1.0)
+            curv = (1.0 / r_c) * (1.0 if dy > 0 else -1.0)
             for t in np.linspace(0.0, 1.0, n_a)[:-1]:
                 ang = ang0 + dy * t
-                q = ctr + R * np.array([math.cos(ang), math.sin(ang)])
+                q = ctr + r_c * np.array([math.cos(ang), math.sin(ang)])
                 push(q[0], q[1], y0 + dy * t, curv, "arc", k + 1)
 
     x = np.asarray(xs, float)
