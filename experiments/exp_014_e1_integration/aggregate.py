@@ -41,6 +41,10 @@ OUT_NEW = REPO_ROOT / "outputs" / "exp_014_e1_integration"
 OUT_OLD = REPO_ROOT / "outputs" / "exp_013_band_v4_reeval"
 PAIRS = [("l0b_e1", "l0b", "L0-b"), ("l0c_e1", "l0c", "L0-c")]
 
+# 本実験の条件名を読み込み側で登録する。**exp_013 の aggregate.py は変更しない**
+# （完了した実験の記録なので、後の実験の都合で書き換えない）
+E13.ARM_LABEL.update({"l0b_e1": "L0-b+E1", "l0c_e1": "L0-c+E1"})
+
 
 def load(root, arm):
     """exp_013 の loader を、出力ルートを差し替えて使う。"""
