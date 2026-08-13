@@ -92,15 +92,29 @@ MODELS = [
     dict(name="exp_010_m2_0_seed2", path="models/exp_010_m2_0_seed2.zip", k=8.7e-3),
     dict(name="exp_011_m2_0_k0_seed1", path="models/exp_011_m2_0_k0_seed1.zip", k=0.0),
     dict(name="exp_011_m2_0_k0_seed2", path="models/exp_011_m2_0_k0_seed2.zip", k=0.0),
-    # exp_012 条件 E（連続 Φ。裁定 R41-① の機構分析。2026-08-13 追加）。
-    # **continuous=True を渡さないと reward の分解が学習時と一致しない**（Φ の定義が違う
-    # ので shaping が別物になる）。毎ステップの assert がそれを検出する。
+    # exp_012 の 3 条件（裁定 R41-① の機構分析。2026-08-13 追加）。
+    # **flags は学習時と同じものを渡すこと**。違うと Φ の定義が変わって shaping が
+    # 別物になり、毎ステップの reward 分解 assert が落ちる（＝取り違えは必ず検出される）。
+    # flags の中身は experiments/exp_012_continuous_potential/train.py の
+    # CONDITION_FLAGS と同じ（E / C / Cp）。
     dict(name="exp_012_condE_seed1", path="models/exp_012_condE_seed1.zip",
-         k=8.7e-3, continuous=True),
+         k=8.7e-3, flags=dict(continuous_potential=True)),
     dict(name="exp_012_condE_seed2", path="models/exp_012_condE_seed2.zip",
-         k=8.7e-3, continuous=True),
+         k=8.7e-3, flags=dict(continuous_potential=True)),
     dict(name="exp_012_condE_seed3", path="models/exp_012_condE_seed3.zip",
-         k=8.7e-3, continuous=True),
+         k=8.7e-3, flags=dict(continuous_potential=True)),
+    dict(name="exp_012_condC_seed1", path="models/exp_012_condC_seed1.zip",
+         k=8.7e-3, flags=dict(geodesic_potential=True)),
+    dict(name="exp_012_condC_seed2", path="models/exp_012_condC_seed2.zip",
+         k=8.7e-3, flags=dict(geodesic_potential=True)),
+    dict(name="exp_012_condC_seed3", path="models/exp_012_condC_seed3.zip",
+         k=8.7e-3, flags=dict(geodesic_potential=True)),
+    dict(name="exp_012_condCp_seed1", path="models/exp_012_condCp_seed1.zip",
+         k=8.7e-3, flags=dict(geodesic_potential=True, geodesic_rho_scale=True)),
+    dict(name="exp_012_condCp_seed2", path="models/exp_012_condCp_seed2.zip",
+         k=8.7e-3, flags=dict(geodesic_potential=True, geodesic_rho_scale=True)),
+    dict(name="exp_012_condCp_seed3", path="models/exp_012_condCp_seed3.zip",
+         k=8.7e-3, flags=dict(geodesic_potential=True, geodesic_rho_scale=True)),
 ]
 
 VALIDATION_SEEDS = list(range(7000, 7020))  # 検証帯（研究計画書 §9-7）
@@ -115,12 +129,12 @@ REPO_MAZE_DIR = str(REPO_ROOT / VALIDATION_MAZE_DIR)
 
 
 def run_episode(model, maze_seed: int, k: float, err_tracker: dict,
-                continuous: bool = False) -> dict:
+                flags: dict = None) -> dict:
     """1 面 ×1 試行を決定的に再生し、ステップごとの報酬内訳を分解して返す。
 
-    `continuous` は Φ の定義（False = 区画単位の階段版 / True = exp_012 条件 E の
-    連続版）。**学習時と同じ値を渡すこと**。違うと shaping が別物になり、
-    毎ステップの reward 分解 assert が落ちる（＝取り違えは必ず検出される）。
+    `flags` は Φ の実現方法（train.py の CONDITION_FLAGS と同じもの。None = 階段版）。
+    **学習時と同じものを渡すこと**。違うと shaping が別物になり、毎ステップの
+    reward 分解 assert が落ちる（＝取り違えは必ず検出される）。
     """
     env = Maze6Env(
         maze_dir=REPO_MAZE_DIR, maze_seeds=[maze_seed], max_cache=2,
@@ -128,7 +142,7 @@ def run_episode(model, maze_seed: int, k: float, err_tracker: dict,
         visit_bonus=VISIT_BONUS, collision_penalty=COLLISION_PENALTY,
         action_smooth_penalty=ACTION_SMOOTH_PENALTY,
         action_highpass_penalty=k, action_highpass_alpha=ACTION_HIGHPASS_ALPHA,
-        continuous_potential=continuous,
+        **(flags or {}),
     )
     tseed = _trial_seed(0, maze_seed, 0)   # mouse.maze6_eval と同じ試行 seed の規約
     obs, info = env.reset(seed=tseed)
@@ -458,6 +472,9 @@ def main(argv=None):
     t0 = time.time()
     for mcfg in models:
         model_path = REPO_ROOT / mcfg["path"]
+        if not model_path.exists():
+            print(f"[skip] {mcfg['name']}: {model_path} が無い（未完走）", flush=True)
+            continue
         print(f"[load] {mcfg['name']} <- {model_path}", flush=True)
         model = PPO.load(str(model_path), device="cpu")
         err_tracker = dict(max=0.0, n=0)
@@ -465,7 +482,7 @@ def main(argv=None):
         for ms in seeds:
             te0 = time.time()
             ep = run_episode(model, ms, mcfg["k"], err_tracker,
-                             continuous=bool(mcfg.get("continuous", False)))
+                             flags=mcfg.get("flags"))
             print(f"  [{mcfg['name']}] maze_seed={ms} outcome={ep['outcome']:<10}"
                   f" T={ep['n_steps']:<5} n_visited={ep['n_visited']:<3}"
                   f" ({time.time()-te0:.1f}s)", flush=True)
@@ -490,7 +507,7 @@ def main(argv=None):
             max_abs_reward_error_by_model={k: v["max"] for k, v in err_tracker_by_model.items()},
             n_steps_checked_by_model={k: v["n"] for k, v in err_tracker_by_model.items()},
             models_config=[dict(name=m["name"], path=m["path"], k=m["k"],
-                                continuous_potential=bool(m.get("continuous", False)))
+                                flags=m.get("flags") or {})
                            for m in models],
             models=summaries,
         ), f, indent=2, ensure_ascii=False)
