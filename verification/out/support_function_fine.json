@@ -1,0 +1,1813 @@
+{
+ "definition": "h(phi) = max_{p in body} p·(cos phi, sin phi)、機体座標系",
+ "main_column": "lateral_half_width_m = h(theta+90deg)",
+ "n_geoms": 20,
+ "resolution_deg": 0.25,
+ "rows": [
+  {
+   "h_theta_m": 0.049999999999999996,
+   "lateral_half_width_m": 0.03999999973748278,
+   "theta_deg": 0.0
+  },
+  {
+   "h_theta_m": 0.05013042331457912,
+   "lateral_half_width_m": 0.04017415133844679,
+   "theta_deg": 0.25
+  },
+  {
+   "h_theta_m": 0.05025989221815979,
+   "lateral_half_width_m": 0.04034753808147911,
+   "theta_deg": 0.5
+  },
+  {
+   "h_theta_m": 0.05038840424584068,
+   "lateral_half_width_m": 0.0405201566655461,
+   "theta_deg": 0.75
+  },
+  {
+   "h_theta_m": 0.050515956950938065,
+   "lateral_half_width_m": 0.0406920038042387,
+   "theta_deg": 1.0
+  },
+  {
+   "h_theta_m": 0.05064254790503229,
+   "lateral_half_width_m": 0.04086307622583514,
+   "theta_deg": 1.25
+  },
+  {
+   "h_theta_m": 0.050768174698014056,
+   "lateral_half_width_m": 0.041033370673363094,
+   "theta_deg": 1.5
+  },
+  {
+   "h_theta_m": 0.050892834938130335,
+   "lateral_half_width_m": 0.04120288390466177,
+   "theta_deg": 1.75
+  },
+  {
+   "h_theta_m": 0.05101652625202982,
+   "lateral_half_width_m": 0.04137161269244357,
+   "theta_deg": 2.0
+  },
+  {
+   "h_theta_m": 0.051139246284808204,
+   "lateral_half_width_m": 0.041539553824355605,
+   "theta_deg": 2.25
+  },
+  {
+   "h_theta_m": 0.051260992700052965,
+   "lateral_half_width_m": 0.04170670410304081,
+   "theta_deg": 2.5
+  },
+  {
+   "h_theta_m": 0.05138176317988785,
+   "lateral_half_width_m": 0.041873060346198795,
+   "theta_deg": 2.75
+  },
+  {
+   "h_theta_m": 0.051501555425017005,
+   "lateral_half_width_m": 0.04203861938664652,
+   "theta_deg": 3.0
+  },
+  {
+   "h_theta_m": 0.05162036715476876,
+   "lateral_half_width_m": 0.04220337807237849,
+   "theta_deg": 3.25
+  },
+  {
+   "h_theta_m": 0.051738196107139055,
+   "lateral_half_width_m": 0.042367333266626804,
+   "theta_deg": 3.5
+  },
+  {
+   "h_theta_m": 0.05185504003883446,
+   "lateral_half_width_m": 0.04253048184792092,
+   "theta_deg": 3.75
+  },
+  {
+   "h_theta_m": 0.05197089672531498,
+   "lateral_half_width_m": 0.042692820710147045,
+   "theta_deg": 4.0
+  },
+  {
+   "h_theta_m": 0.052085763960836265,
+   "lateral_half_width_m": 0.04285434676260721,
+   "theta_deg": 4.25
+  },
+  {
+   "h_theta_m": 0.05219963955849175,
+   "lateral_half_width_m": 0.043015056930078205,
+   "theta_deg": 4.5
+  },
+  {
+   "h_theta_m": 0.052312521350254194,
+   "lateral_half_width_m": 0.04317494815287014,
+   "theta_deg": 4.75
+  },
+  {
+   "h_theta_m": 0.05242440718701702,
+   "lateral_half_width_m": 0.0433340173868846,
+   "theta_deg": 5.0
+  },
+  {
+   "h_theta_m": 0.05253529493863516,
+   "lateral_half_width_m": 0.043492261603672644,
+   "theta_deg": 5.25
+  },
+  {
+   "h_theta_m": 0.05264518249396566,
+   "lateral_half_width_m": 0.04364967779049251,
+   "theta_deg": 5.5
+  },
+  {
+   "h_theta_m": 0.052754067760907866,
+   "lateral_half_width_m": 0.0438062629503669,
+   "theta_deg": 5.75
+  },
+  {
+   "h_theta_m": 0.05286194866644327,
+   "lateral_half_width_m": 0.04396201410214007,
+   "theta_deg": 6.0
+  },
+  {
+   "h_theta_m": 0.052968823156674914,
+   "lateral_half_width_m": 0.04411692828053462,
+   "theta_deg": 6.25
+  },
+  {
+   "h_theta_m": 0.05307468919686657,
+   "lateral_half_width_m": 0.0442710025362079,
+   "theta_deg": 6.5
+  },
+  {
+   "h_theta_m": 0.05317954477148144,
+   "lateral_half_width_m": 0.044424233935808154,
+   "theta_deg": 6.75
+  },
+  {
+   "h_theta_m": 0.053283387884220525,
+   "lateral_half_width_m": 0.04457661956203042,
+   "theta_deg": 7.0
+  },
+  {
+   "h_theta_m": 0.05338621655806064,
+   "lateral_half_width_m": 0.04472815651367208,
+   "theta_deg": 7.25
+  },
+  {
+   "h_theta_m": 0.053488028835292065,
+   "lateral_half_width_m": 0.04487884190568793,
+   "theta_deg": 7.5
+  },
+  {
+   "h_theta_m": 0.053588822777555806,
+   "lateral_half_width_m": 0.04502867286924535,
+   "theta_deg": 7.75
+  },
+  {
+   "h_theta_m": 0.05368859646588048,
+   "lateral_half_width_m": 0.0451776465517788,
+   "theta_deg": 8.0
+  },
+  {
+   "h_theta_m": 0.05378734800071889,
+   "lateral_half_width_m": 0.04532576011704406,
+   "theta_deg": 8.25
+  },
+  {
+   "h_theta_m": 0.05388507550198416,
+   "lateral_half_width_m": 0.04547301074517237,
+   "theta_deg": 8.5
+  },
+  {
+   "h_theta_m": 0.053981777109085534,
+   "lateral_half_width_m": 0.04561939563272404,
+   "theta_deg": 8.75
+  },
+  {
+   "h_theta_m": 0.05407745098096381,
+   "lateral_half_width_m": 0.045764911992741804,
+   "theta_deg": 9.0
+  },
+  {
+   "h_theta_m": 0.05417209529612638,
+   "lateral_half_width_m": 0.04590955705480391,
+   "theta_deg": 9.25
+  },
+  {
+   "h_theta_m": 0.0542657082526819,
+   "lateral_half_width_m": 0.04605332806507691,
+   "theta_deg": 9.5
+  },
+  {
+   "h_theta_m": 0.054358288068374616,
+   "lateral_half_width_m": 0.046196222286367994,
+   "theta_deg": 9.75
+  },
+  {
+   "h_theta_m": 0.054449832980618305,
+   "lateral_half_width_m": 0.04633823699817715,
+   "theta_deg": 10.0
+  },
+  {
+   "h_theta_m": 0.054540341246529796,
+   "lateral_half_width_m": 0.04647936949674899,
+   "theta_deg": 10.25
+  },
+  {
+   "h_theta_m": 0.054629811142962156,
+   "lateral_half_width_m": 0.0466196170951242,
+   "theta_deg": 10.5
+  },
+  {
+   "h_theta_m": 0.05471824096653753,
+   "lateral_half_width_m": 0.046758977123190645,
+   "theta_deg": 10.75
+  },
+  {
+   "h_theta_m": 0.05480562903367954,
+   "lateral_half_width_m": 0.046897446927734274,
+   "theta_deg": 11.0
+  },
+  {
+   "h_theta_m": 0.05489197368064537,
+   "lateral_half_width_m": 0.04703502387248962,
+   "theta_deg": 11.25
+  },
+  {
+   "h_theta_m": 0.05497727326355739,
+   "lateral_half_width_m": 0.04717170533818995,
+   "theta_deg": 11.5
+  },
+  {
+   "h_theta_m": 0.055061526158434515,
+   "lateral_half_width_m": 0.04730748872261719,
+   "theta_deg": 11.75
+  },
+  {
+   "h_theta_m": 0.05514473076122306,
+   "lateral_half_width_m": 0.04744237144065144,
+   "theta_deg": 12.0
+  },
+  {
+   "h_theta_m": 0.05522688548782734,
+   "lateral_half_width_m": 0.04757635092432017,
+   "theta_deg": 12.25
+  },
+  {
+   "h_theta_m": 0.055307988774139755,
+   "lateral_half_width_m": 0.047709424622847114,
+   "theta_deg": 12.5
+  },
+  {
+   "h_theta_m": 0.055388039076070664,
+   "lateral_half_width_m": 0.04784159000270091,
+   "theta_deg": 12.75
+  },
+  {
+   "h_theta_m": 0.055467034869577714,
+   "lateral_half_width_m": 0.04797284454764322,
+   "theta_deg": 13.0
+  },
+  {
+   "h_theta_m": 0.05554497465069485,
+   "lateral_half_width_m": 0.04810318575877671,
+   "theta_deg": 13.25
+  },
+  {
+   "h_theta_m": 0.055621856935560994,
+   "lateral_half_width_m": 0.04823261115459258,
+   "theta_deg": 13.5
+  },
+  {
+   "h_theta_m": 0.05569768026044826,
+   "lateral_half_width_m": 0.04836111827101791,
+   "theta_deg": 13.75
+  },
+  {
+   "h_theta_m": 0.05577244318178985,
+   "lateral_half_width_m": 0.04848870466146239,
+   "theta_deg": 14.0
+  },
+  {
+   "h_theta_m": 0.05584614427620751,
+   "lateral_half_width_m": 0.04861536789686509,
+   "theta_deg": 14.25
+  },
+  {
+   "h_theta_m": 0.055918782140538636,
+   "lateral_half_width_m": 0.048741105565740586,
+   "theta_deg": 14.5
+  },
+  {
+   "h_theta_m": 0.05599035539186298,
+   "lateral_half_width_m": 0.04886591527422489,
+   "theta_deg": 14.75
+  },
+  {
+   "h_theta_m": 0.056060862667529035,
+   "lateral_half_width_m": 0.048989794646121076,
+   "theta_deg": 15.0
+  },
+  {
+   "h_theta_m": 0.056130302625179894,
+   "lateral_half_width_m": 0.049112741322944464,
+   "theta_deg": 15.25
+  },
+  {
+   "h_theta_m": 0.05619867394277886,
+   "lateral_half_width_m": 0.04923475296396756,
+   "theta_deg": 15.5
+  },
+  {
+   "h_theta_m": 0.05626597531863458,
+   "lateral_half_width_m": 0.049355827246264576,
+   "theta_deg": 15.75
+  },
+  {
+   "h_theta_m": 0.056332205471425915,
+   "lateral_half_width_m": 0.049475961864755724,
+   "theta_deg": 16.0
+  },
+  {
+   "h_theta_m": 0.0563973631402262,
+   "lateral_half_width_m": 0.04959515453225105,
+   "theta_deg": 16.25
+  },
+  {
+   "h_theta_m": 0.05646144708452733,
+   "lateral_half_width_m": 0.049713402979493934,
+   "theta_deg": 16.5
+  },
+  {
+   "h_theta_m": 0.056524456084263396,
+   "lateral_half_width_m": 0.049830704955204426,
+   "theta_deg": 16.75
+  },
+  {
+   "h_theta_m": 0.05658638893983388,
+   "lateral_half_width_m": 0.049947058226121985,
+   "theta_deg": 17.0
+  },
+  {
+   "h_theta_m": 0.05664724447212646,
+   "lateral_half_width_m": 0.050062460577048065,
+   "theta_deg": 17.25
+  },
+  {
+   "h_theta_m": 0.05670702152253953,
+   "lateral_half_width_m": 0.05017690981088822,
+   "theta_deg": 17.5
+  },
+  {
+   "h_theta_m": 0.05676571895300424,
+   "lateral_half_width_m": 0.05029040374869405,
+   "theta_deg": 17.75
+  },
+  {
+   "h_theta_m": 0.0568233356460061,
+   "lateral_half_width_m": 0.050402940229704554,
+   "theta_deg": 18.0
+  },
+  {
+   "h_theta_m": 0.056879870504606335,
+   "lateral_half_width_m": 0.05051451711138735,
+   "theta_deg": 18.25
+  },
+  {
+   "h_theta_m": 0.05693532245246273,
+   "lateral_half_width_m": 0.05062513226947948,
+   "theta_deg": 18.5
+  },
+  {
+   "h_theta_m": 0.05698969043385013,
+   "lateral_half_width_m": 0.05073478359802774,
+   "theta_deg": 18.75
+  },
+  {
+   "h_theta_m": 0.05704297341368054,
+   "lateral_half_width_m": 0.0508434690094289,
+   "theta_deg": 19.0
+  },
+  {
+   "h_theta_m": 0.057095170377522826,
+   "lateral_half_width_m": 0.05095118643446941,
+   "theta_deg": 19.25
+  },
+  {
+   "h_theta_m": 0.05714628033162204,
+   "lateral_half_width_m": 0.05105793382236477,
+   "theta_deg": 19.5
+  },
+  {
+   "h_theta_m": 0.057196302302918334,
+   "lateral_half_width_m": 0.05116370914079857,
+   "theta_deg": 19.75
+  },
+  {
+   "h_theta_m": 0.05724523533906548,
+   "lateral_half_width_m": 0.051268510375961224,
+   "theta_deg": 20.0
+  },
+  {
+   "h_theta_m": 0.05729307850844899,
+   "lateral_half_width_m": 0.0513723355325883,
+   "theta_deg": 20.25
+  },
+  {
+   "h_theta_m": 0.0573398309002039,
+   "lateral_half_width_m": 0.05147518263399846,
+   "theta_deg": 20.5
+  },
+  {
+   "h_theta_m": 0.05738549162423205,
+   "lateral_half_width_m": 0.05157704972213114,
+   "theta_deg": 20.75
+  },
+  {
+   "h_theta_m": 0.0574300598112191,
+   "lateral_half_width_m": 0.05167793485758383,
+   "theta_deg": 21.0
+  },
+  {
+   "h_theta_m": 0.057473534612650964,
+   "lateral_half_width_m": 0.05177783611964898,
+   "theta_deg": 21.25
+  },
+  {
+   "h_theta_m": 0.05751591520083014,
+   "lateral_half_width_m": 0.05187675160635054,
+   "theta_deg": 21.5
+  },
+  {
+   "h_theta_m": 0.05755720076889129,
+   "lateral_half_width_m": 0.05197467943448025,
+   "theta_deg": 21.75
+  },
+  {
+   "h_theta_m": 0.05759739053081672,
+   "lateral_half_width_m": 0.052071617739633425,
+   "theta_deg": 22.0
+  },
+  {
+   "h_theta_m": 0.057636483721451304,
+   "lateral_half_width_m": 0.05216756467624445,
+   "theta_deg": 22.25
+  },
+  {
+   "h_theta_m": 0.05767447959651703,
+   "lateral_half_width_m": 0.052262518417621945,
+   "theta_deg": 22.5
+  },
+  {
+   "h_theta_m": 0.0577113774326272,
+   "lateral_half_width_m": 0.0523564771559836,
+   "theta_deg": 22.75
+  },
+  {
+   "h_theta_m": 0.05774717652730023,
+   "lateral_half_width_m": 0.052449439102490426,
+   "theta_deg": 23.0
+  },
+  {
+   "h_theta_m": 0.05778187619897293,
+   "lateral_half_width_m": 0.05254140248728098,
+   "theta_deg": 23.25
+  },
+  {
+   "h_theta_m": 0.057815475787013584,
+   "lateral_half_width_m": 0.052632365559504984,
+   "theta_deg": 23.5
+  },
+  {
+   "h_theta_m": 0.057847974651734475,
+   "lateral_half_width_m": 0.05272232658735665,
+   "theta_deg": 23.75
+  },
+  {
+   "h_theta_m": 0.057879372174404045,
+   "lateral_half_width_m": 0.05281128385810768,
+   "theta_deg": 24.0
+  },
+  {
+   "h_theta_m": 0.05790966775725874,
+   "lateral_half_width_m": 0.05289923567813991,
+   "theta_deg": 24.25
+  },
+  {
+   "h_theta_m": 0.05793886082351433,
+   "lateral_half_width_m": 0.05298618037297741,
+   "theta_deg": 24.5
+  },
+  {
+   "h_theta_m": 0.0579669508173769,
+   "lateral_half_width_m": 0.05307211628731853,
+   "theta_deg": 24.75
+  },
+  {
+   "h_theta_m": 0.05799393720405348,
+   "lateral_half_width_m": 0.053157041785067374,
+   "theta_deg": 25.0
+  },
+  {
+   "h_theta_m": 0.05801981946976215,
+   "lateral_half_width_m": 0.053240955249364855,
+   "theta_deg": 25.25
+  },
+  {
+   "h_theta_m": 0.058044597121741884,
+   "lateral_half_width_m": 0.05332385508261957,
+   "theta_deg": 25.5
+  },
+  {
+   "h_theta_m": 0.05806826968826191,
+   "lateral_half_width_m": 0.05340573970653817,
+   "theta_deg": 25.75
+  },
+  {
+   "h_theta_m": 0.05809083671863066,
+   "lateral_half_width_m": 0.05348660756215551,
+   "theta_deg": 26.0
+  },
+  {
+   "h_theta_m": 0.05811229778320445,
+   "lateral_half_width_m": 0.05356645710986413,
+   "theta_deg": 26.25
+  },
+  {
+   "h_theta_m": 0.05813265247339552,
+   "lateral_half_width_m": 0.053645286829443764,
+   "theta_deg": 26.5
+  },
+  {
+   "h_theta_m": 0.0581519004016799,
+   "lateral_half_width_m": 0.05372309522009019,
+   "theta_deg": 26.75
+  },
+  {
+   "h_theta_m": 0.058170041201604794,
+   "lateral_half_width_m": 0.0537998808004438,
+   "theta_deg": 27.0
+  },
+  {
+   "h_theta_m": 0.058187074527795514,
+   "lateral_half_width_m": 0.053875642108617824,
+   "theta_deg": 27.25
+  },
+  {
+   "h_theta_m": 0.05820300005596211,
+   "lateral_half_width_m": 0.05395037770222617,
+   "theta_deg": 27.5
+  },
+  {
+   "h_theta_m": 0.05821781748290543,
+   "lateral_half_width_m": 0.05402408615841087,
+   "theta_deg": 27.75
+  },
+  {
+   "h_theta_m": 0.058231526526523074,
+   "lateral_half_width_m": 0.05409676607386914,
+   "theta_deg": 28.0
+  },
+  {
+   "h_theta_m": 0.05824412692581457,
+   "lateral_half_width_m": 0.05416841606488017,
+   "theta_deg": 28.25
+  },
+  {
+   "h_theta_m": 0.05825561844088652,
+   "lateral_half_width_m": 0.05423903476733143,
+   "theta_deg": 28.5
+  },
+  {
+   "h_theta_m": 0.058266000852957016,
+   "lateral_half_width_m": 0.05430862083674459,
+   "theta_deg": 28.75
+  },
+  {
+   "h_theta_m": 0.0582752739643599,
+   "lateral_half_width_m": 0.05437717294830122,
+   "theta_deg": 29.0
+  },
+  {
+   "h_theta_m": 0.05828343759854851,
+   "lateral_half_width_m": 0.05444468979686793,
+   "theta_deg": 29.25
+  },
+  {
+   "h_theta_m": 0.05829049160009899,
+   "lateral_half_width_m": 0.05451117009702123,
+   "theta_deg": 29.5
+  },
+  {
+   "h_theta_m": 0.058296435834713355,
+   "lateral_half_width_m": 0.05457661258307203,
+   "theta_deg": 29.75
+  },
+  {
+   "h_theta_m": 0.05830127018922192,
+   "lateral_half_width_m": 0.05464101600908976,
+   "theta_deg": 30.0
+  },
+  {
+   "h_theta_m": 0.05830499457158557,
+   "lateral_half_width_m": 0.054704379148926,
+   "theta_deg": 30.25
+  },
+  {
+   "h_theta_m": 0.05830760891089741,
+   "lateral_half_width_m": 0.05476670079623791,
+   "theta_deg": 30.5
+  },
+  {
+   "h_theta_m": 0.05830911315738419,
+   "lateral_half_width_m": 0.054827979764511155,
+   "theta_deg": 30.75
+  },
+  {
+   "h_theta_m": 0.05830950728240723,
+   "lateral_half_width_m": 0.05488821488708252,
+   "theta_deg": 31.0
+  },
+  {
+   "h_theta_m": 0.058308791278462974,
+   "lateral_half_width_m": 0.054947405017162096,
+   "theta_deg": 31.25
+  },
+  {
+   "h_theta_m": 0.05830696515918307,
+   "lateral_half_width_m": 0.05500554902785512,
+   "theta_deg": 31.5
+  },
+  {
+   "h_theta_m": 0.058304028959334224,
+   "lateral_half_width_m": 0.055062645812183446,
+   "theta_deg": 31.75
+  },
+  {
+   "h_theta_m": 0.058299982734817436,
+   "lateral_half_width_m": 0.0551186942831066,
+   "theta_deg": 32.0
+  },
+  {
+   "h_theta_m": 0.058294826562667004,
+   "lateral_half_width_m": 0.05517369337354249,
+   "theta_deg": 32.25
+  },
+  {
+   "h_theta_m": 0.058288560541048993,
+   "lateral_half_width_m": 0.05522764203638772,
+   "theta_deg": 32.5
+  },
+  {
+   "h_theta_m": 0.058281184789259435,
+   "lateral_half_width_m": 0.055280539244537505,
+   "theta_deg": 32.75
+  },
+  {
+   "h_theta_m": 0.058272699447722016,
+   "lateral_half_width_m": 0.055332383990905266,
+   "theta_deg": 33.0
+  },
+  {
+   "h_theta_m": 0.058263104677985386,
+   "lateral_half_width_m": 0.055383175288441736,
+   "theta_deg": 33.25
+  },
+  {
+   "h_theta_m": 0.05825240066272015,
+   "lateral_half_width_m": 0.055432912170153864,
+   "theta_deg": 33.5
+  },
+  {
+   "h_theta_m": 0.05824058760571532,
+   "lateral_half_width_m": 0.05548159368912309,
+   "theta_deg": 33.75
+  },
+  {
+   "h_theta_m": 0.05822766573187449,
+   "lateral_half_width_m": 0.05552921891852346,
+   "theta_deg": 34.0
+  },
+  {
+   "h_theta_m": 0.05821363528721149,
+   "lateral_half_width_m": 0.05557578695163927,
+   "theta_deg": 34.25
+  },
+  {
+   "h_theta_m": 0.05819849653884577,
+   "lateral_half_width_m": 0.05562129690188229,
+   "theta_deg": 34.5
+  },
+  {
+   "h_theta_m": 0.05818224977499727,
+   "lateral_half_width_m": 0.05566574790280868,
+   "theta_deg": 34.75
+  },
+  {
+   "h_theta_m": 0.05816489530498098,
+   "lateral_half_width_m": 0.05570913910813545,
+   "theta_deg": 35.0
+  },
+  {
+   "h_theta_m": 0.05814643345920095,
+   "lateral_half_width_m": 0.05575146969175658,
+   "theta_deg": 35.25
+  },
+  {
+   "h_theta_m": 0.05812686458914415,
+   "lateral_half_width_m": 0.0557927388477588,
+   "theta_deg": 35.5
+  },
+  {
+   "h_theta_m": 0.05810618906737364,
+   "lateral_half_width_m": 0.055832945790436864,
+   "theta_deg": 35.75
+  },
+  {
+   "h_theta_m": 0.05808440728752156,
+   "lateral_half_width_m": 0.055872089754308546,
+   "theta_deg": 36.0
+  },
+  {
+   "h_theta_m": 0.058061519664281594,
+   "lateral_half_width_m": 0.055910169994129184,
+   "theta_deg": 36.25
+  },
+  {
+   "h_theta_m": 0.0580375266334011,
+   "lateral_half_width_m": 0.055947185784905894,
+   "theta_deg": 36.5
+  },
+  {
+   "h_theta_m": 0.058012428651672804,
+   "lateral_half_width_m": 0.05598313642191141,
+   "theta_deg": 36.75
+  },
+  {
+   "h_theta_m": 0.057986226196926074,
+   "lateral_half_width_m": 0.056018021220697406,
+   "theta_deg": 37.0
+  },
+  {
+   "h_theta_m": 0.05795891976801794,
+   "lateral_half_width_m": 0.056051839517107585,
+   "theta_deg": 37.25
+  },
+  {
+   "h_theta_m": 0.05793050988482337,
+   "lateral_half_width_m": 0.05608459066729035,
+   "theta_deg": 37.5
+  },
+  {
+   "h_theta_m": 0.057900997088225645,
+   "lateral_half_width_m": 0.056116274047711016,
+   "theta_deg": 37.75
+  },
+  {
+   "h_theta_m": 0.05787038194010584,
+   "lateral_half_width_m": 0.05614688905516367,
+   "theta_deg": 38.0
+  },
+  {
+   "h_theta_m": 0.057838665023332264,
+   "lateral_half_width_m": 0.05617643510678272,
+   "theta_deg": 38.25
+  },
+  {
+   "h_theta_m": 0.05780584694174928,
+   "lateral_half_width_m": 0.056204911640053916,
+   "theta_deg": 38.5
+  },
+  {
+   "h_theta_m": 0.057771928320165866,
+   "lateral_half_width_m": 0.05623231811282512,
+   "theta_deg": 38.75
+  },
+  {
+   "h_theta_m": 0.057736909804343664,
+   "lateral_half_width_m": 0.0562586540033166,
+   "theta_deg": 39.0
+  },
+  {
+   "h_theta_m": 0.057700792060984746,
+   "lateral_half_width_m": 0.05628391881013098,
+   "theta_deg": 39.25
+  },
+  {
+   "h_theta_m": 0.05766357577771891,
+   "lateral_half_width_m": 0.056308112052262715,
+   "theta_deg": 39.5
+  },
+  {
+   "h_theta_m": 0.05762526166309051,
+   "lateral_half_width_m": 0.056331233269107384,
+   "theta_deg": 39.75
+  },
+  {
+   "h_theta_m": 0.05758585044654508,
+   "lateral_half_width_m": 0.056353282020470324,
+   "theta_deg": 40.0
+  },
+  {
+   "h_theta_m": 0.057545342878415354,
+   "lateral_half_width_m": 0.0563742578865751,
+   "theta_deg": 40.25
+  },
+  {
+   "h_theta_m": 0.05750373972990705,
+   "lateral_half_width_m": 0.05639416046807146,
+   "theta_deg": 40.5
+  },
+  {
+   "h_theta_m": 0.057461041793084144,
+   "lateral_half_width_m": 0.05641298938604296,
+   "theta_deg": 40.75
+  },
+  {
+   "h_theta_m": 0.0574172498808538,
+   "lateral_half_width_m": 0.0564307442820141,
+   "theta_deg": 41.0
+  },
+  {
+   "h_theta_m": 0.05737236482695093,
+   "lateral_half_width_m": 0.056447424817957274,
+   "theta_deg": 41.25
+  },
+  {
+   "h_theta_m": 0.057326387485922226,
+   "lateral_half_width_m": 0.05646303067629915,
+   "theta_deg": 41.5
+  },
+  {
+   "h_theta_m": 0.05727931873311,
+   "lateral_half_width_m": 0.056477561559926635,
+   "theta_deg": 41.75
+  },
+  {
+   "h_theta_m": 0.05723115946463546,
+   "lateral_half_width_m": 0.05649101719219268,
+   "theta_deg": 42.0
+  },
+  {
+   "h_theta_m": 0.05718191059738163,
+   "lateral_half_width_m": 0.05650339731692143,
+   "theta_deg": 42.25
+  },
+  {
+   "h_theta_m": 0.057131573068976,
+   "lateral_half_width_m": 0.05651470169841316,
+   "theta_deg": 42.5
+  },
+  {
+   "h_theta_m": 0.057080147837772516,
+   "lateral_half_width_m": 0.05652493012144874,
+   "theta_deg": 42.75
+  },
+  {
+   "h_theta_m": 0.057027635882833466,
+   "lateral_half_width_m": 0.05653408239129375,
+   "theta_deg": 43.0
+  },
+  {
+   "h_theta_m": 0.05697403820391078,
+   "lateral_half_width_m": 0.056542158333702144,
+   "theta_deg": 43.25
+  },
+  {
+   "h_theta_m": 0.056919355821427,
+   "lateral_half_width_m": 0.05654915779491963,
+   "theta_deg": 43.5
+  },
+  {
+   "h_theta_m": 0.05686358977645586,
+   "lateral_half_width_m": 0.056555080641686566,
+   "theta_deg": 43.75
+  },
+  {
+   "h_theta_m": 0.05680674113070247,
+   "lateral_half_width_m": 0.05655992676124047,
+   "theta_deg": 44.0
+  },
+  {
+   "h_theta_m": 0.05674881096648311,
+   "lateral_half_width_m": 0.05656369606131822,
+   "theta_deg": 44.25
+  },
+  {
+   "h_theta_m": 0.05668980038670461,
+   "lateral_half_width_m": 0.056566388470157776,
+   "theta_deg": 44.5
+  },
+  {
+   "h_theta_m": 0.05662971051484331,
+   "lateral_half_width_m": 0.05656800393649956,
+   "theta_deg": 44.75
+  },
+  {
+   "h_theta_m": 0.056568542494923796,
+   "lateral_half_width_m": 0.056568542494923796,
+   "theta_deg": 45.0
+  },
+  {
+   "h_theta_m": 0.056568003936499564,
+   "lateral_half_width_m": 0.056629710514843314,
+   "theta_deg": 45.25
+  },
+  {
+   "h_theta_m": 0.05656638847015778,
+   "lateral_half_width_m": 0.05668980038670459,
+   "theta_deg": 45.5
+  },
+  {
+   "h_theta_m": 0.056563696061318225,
+   "lateral_half_width_m": 0.05674881096648311,
+   "theta_deg": 45.75
+  },
+  {
+   "h_theta_m": 0.05655992676124048,
+   "lateral_half_width_m": 0.05680674113070247,
+   "theta_deg": 46.0
+  },
+  {
+   "h_theta_m": 0.056555080641686566,
+   "lateral_half_width_m": 0.05686358977645585,
+   "theta_deg": 46.25
+  },
+  {
+   "h_theta_m": 0.05654915779491964,
+   "lateral_half_width_m": 0.05691935582142701,
+   "theta_deg": 46.5
+  },
+  {
+   "h_theta_m": 0.05654215833370214,
+   "lateral_half_width_m": 0.05697403820391079,
+   "theta_deg": 46.75
+  },
+  {
+   "h_theta_m": 0.056534082391293754,
+   "lateral_half_width_m": 0.05702763588283347,
+   "theta_deg": 47.0
+  },
+  {
+   "h_theta_m": 0.05652493012144874,
+   "lateral_half_width_m": 0.05708014783777253,
+   "theta_deg": 47.25
+  },
+  {
+   "h_theta_m": 0.05651470169841317,
+   "lateral_half_width_m": 0.05713157306897601,
+   "theta_deg": 47.5
+  },
+  {
+   "h_theta_m": 0.05650339731692143,
+   "lateral_half_width_m": 0.05718191059738163,
+   "theta_deg": 47.75
+  },
+  {
+   "h_theta_m": 0.05649101719219268,
+   "lateral_half_width_m": 0.057231159464635445,
+   "theta_deg": 48.0
+  },
+  {
+   "h_theta_m": 0.05647756155992663,
+   "lateral_half_width_m": 0.057279318733110006,
+   "theta_deg": 48.25
+  },
+  {
+   "h_theta_m": 0.05646303067629915,
+   "lateral_half_width_m": 0.05732638748592223,
+   "theta_deg": 48.5
+  },
+  {
+   "h_theta_m": 0.056447424817957295,
+   "lateral_half_width_m": 0.057372364826950926,
+   "theta_deg": 48.75
+  },
+  {
+   "h_theta_m": 0.05643074428201411,
+   "lateral_half_width_m": 0.05741724988085381,
+   "theta_deg": 49.0
+  },
+  {
+   "h_theta_m": 0.05641298938604295,
+   "lateral_half_width_m": 0.05746104179308416,
+   "theta_deg": 49.25
+  },
+  {
+   "h_theta_m": 0.056394160468071476,
+   "lateral_half_width_m": 0.05750373972990705,
+   "theta_deg": 49.5
+  },
+  {
+   "h_theta_m": 0.0563742578865751,
+   "lateral_half_width_m": 0.057545342878415354,
+   "theta_deg": 49.75
+  },
+  {
+   "h_theta_m": 0.056353282020470324,
+   "lateral_half_width_m": 0.05758585044654507,
+   "theta_deg": 50.0
+  },
+  {
+   "h_theta_m": 0.05633123326910738,
+   "lateral_half_width_m": 0.05762526166309052,
+   "theta_deg": 50.25
+  },
+  {
+   "h_theta_m": 0.056308112052262715,
+   "lateral_half_width_m": 0.05766357577771892,
+   "theta_deg": 50.5
+  },
+  {
+   "h_theta_m": 0.05628391881013098,
+   "lateral_half_width_m": 0.05770079206098476,
+   "theta_deg": 50.75
+  },
+  {
+   "h_theta_m": 0.056258654003316616,
+   "lateral_half_width_m": 0.057736909804343664,
+   "theta_deg": 51.0
+  },
+  {
+   "h_theta_m": 0.05623231811282513,
+   "lateral_half_width_m": 0.05777192832016586,
+   "theta_deg": 51.25
+  },
+  {
+   "h_theta_m": 0.056204911640053916,
+   "lateral_half_width_m": 0.057805846941749284,
+   "theta_deg": 51.5
+  },
+  {
+   "h_theta_m": 0.05617643510678272,
+   "lateral_half_width_m": 0.057838665023332264,
+   "theta_deg": 51.75
+  },
+  {
+   "h_theta_m": 0.05614688905516367,
+   "lateral_half_width_m": 0.05787038194010584,
+   "theta_deg": 52.0
+  },
+  {
+   "h_theta_m": 0.056116274047711016,
+   "lateral_half_width_m": 0.057900997088225645,
+   "theta_deg": 52.25
+  },
+  {
+   "h_theta_m": 0.05608459066729035,
+   "lateral_half_width_m": 0.05793050988482337,
+   "theta_deg": 52.5
+  },
+  {
+   "h_theta_m": 0.0560518395171076,
+   "lateral_half_width_m": 0.057958919768017925,
+   "theta_deg": 52.75
+  },
+  {
+   "h_theta_m": 0.056018021220697406,
+   "lateral_half_width_m": 0.05798622619692609,
+   "theta_deg": 53.0
+  },
+  {
+   "h_theta_m": 0.05598313642191141,
+   "lateral_half_width_m": 0.0580124286516728,
+   "theta_deg": 53.25
+  },
+  {
+   "h_theta_m": 0.0559471857849059,
+   "lateral_half_width_m": 0.0580375266334011,
+   "theta_deg": 53.5
+  },
+  {
+   "h_theta_m": 0.05591016999412918,
+   "lateral_half_width_m": 0.058061519664281594,
+   "theta_deg": 53.75
+  },
+  {
+   "h_theta_m": 0.055872089754308546,
+   "lateral_half_width_m": 0.05808440728752157,
+   "theta_deg": 54.0
+  },
+  {
+   "h_theta_m": 0.05583294579043688,
+   "lateral_half_width_m": 0.058106189067373644,
+   "theta_deg": 54.25
+  },
+  {
+   "h_theta_m": 0.055792738847758816,
+   "lateral_half_width_m": 0.058126864589144144,
+   "theta_deg": 54.5
+  },
+  {
+   "h_theta_m": 0.055751469691756594,
+   "lateral_half_width_m": 0.05814643345920095,
+   "theta_deg": 54.75
+  },
+  {
+   "h_theta_m": 0.05570913910813545,
+   "lateral_half_width_m": 0.058164895304980965,
+   "theta_deg": 55.0
+  },
+  {
+   "h_theta_m": 0.05566574790280869,
+   "lateral_half_width_m": 0.058182249774997266,
+   "theta_deg": 55.25
+  },
+  {
+   "h_theta_m": 0.0556212969018823,
+   "lateral_half_width_m": 0.05819849653884576,
+   "theta_deg": 55.5
+  },
+  {
+   "h_theta_m": 0.05557578695163927,
+   "lateral_half_width_m": 0.05821363528721149,
+   "theta_deg": 55.75
+  },
+  {
+   "h_theta_m": 0.05552921891852346,
+   "lateral_half_width_m": 0.05822766573187448,
+   "theta_deg": 56.0
+  },
+  {
+   "h_theta_m": 0.05548159368912309,
+   "lateral_half_width_m": 0.05824058760571532,
+   "theta_deg": 56.25
+  },
+  {
+   "h_theta_m": 0.055432912170153864,
+   "lateral_half_width_m": 0.05825240066272015,
+   "theta_deg": 56.5
+  },
+  {
+   "h_theta_m": 0.05538317528844175,
+   "lateral_half_width_m": 0.058263104677985386,
+   "theta_deg": 56.75
+  },
+  {
+   "h_theta_m": 0.05533238399090526,
+   "lateral_half_width_m": 0.05827269944772201,
+   "theta_deg": 57.0
+  },
+  {
+   "h_theta_m": 0.055280539244537505,
+   "lateral_half_width_m": 0.058281184789259435,
+   "theta_deg": 57.25
+  },
+  {
+   "h_theta_m": 0.05522764203638772,
+   "lateral_half_width_m": 0.058288560541049,
+   "theta_deg": 57.5
+  },
+  {
+   "h_theta_m": 0.0551736933735425,
+   "lateral_half_width_m": 0.058294826562667004,
+   "theta_deg": 57.75
+  },
+  {
+   "h_theta_m": 0.0551186942831066,
+   "lateral_half_width_m": 0.05829998273481744,
+   "theta_deg": 58.0
+  },
+  {
+   "h_theta_m": 0.05506264581218345,
+   "lateral_half_width_m": 0.05830402895933423,
+   "theta_deg": 58.25
+  },
+  {
+   "h_theta_m": 0.055005549027855115,
+   "lateral_half_width_m": 0.05830696515918307,
+   "theta_deg": 58.5
+  },
+  {
+   "h_theta_m": 0.054947405017162096,
+   "lateral_half_width_m": 0.05830879127846297,
+   "theta_deg": 58.75
+  },
+  {
+   "h_theta_m": 0.05488821488708252,
+   "lateral_half_width_m": 0.05830950728240725,
+   "theta_deg": 59.0
+  },
+  {
+   "h_theta_m": 0.05482797976451117,
+   "lateral_half_width_m": 0.05830911315738419,
+   "theta_deg": 59.25
+  },
+  {
+   "h_theta_m": 0.05476670079623791,
+   "lateral_half_width_m": 0.05830760891089741,
+   "theta_deg": 59.5
+  },
+  {
+   "h_theta_m": 0.054704379148926,
+   "lateral_half_width_m": 0.05830499457158557,
+   "theta_deg": 59.75
+  },
+  {
+   "h_theta_m": 0.05464101600908977,
+   "lateral_half_width_m": 0.05830127018922193,
+   "theta_deg": 60.0
+  },
+  {
+   "h_theta_m": 0.05457661258307203,
+   "lateral_half_width_m": 0.05829643583471336,
+   "theta_deg": 60.25
+  },
+  {
+   "h_theta_m": 0.05451117009702122,
+   "lateral_half_width_m": 0.05829049160009899,
+   "theta_deg": 60.5
+  },
+  {
+   "h_theta_m": 0.05444468979686793,
+   "lateral_half_width_m": 0.0582834375985485,
+   "theta_deg": 60.75
+  },
+  {
+   "h_theta_m": 0.054377172948301224,
+   "lateral_half_width_m": 0.0582752739643599,
+   "theta_deg": 61.0
+  },
+  {
+   "h_theta_m": 0.05430862083674459,
+   "lateral_half_width_m": 0.05826600085295701,
+   "theta_deg": 61.25
+  },
+  {
+   "h_theta_m": 0.054239034767331426,
+   "lateral_half_width_m": 0.05825561844088652,
+   "theta_deg": 61.5
+  },
+  {
+   "h_theta_m": 0.054168416064880175,
+   "lateral_half_width_m": 0.05824412692581458,
+   "theta_deg": 61.75
+  },
+  {
+   "h_theta_m": 0.05409676607386914,
+   "lateral_half_width_m": 0.05823152652652306,
+   "theta_deg": 62.0
+  },
+  {
+   "h_theta_m": 0.05402408615841086,
+   "lateral_half_width_m": 0.05821781748290543,
+   "theta_deg": 62.25
+  },
+  {
+   "h_theta_m": 0.053950377702226174,
+   "lateral_half_width_m": 0.05820300005596211,
+   "theta_deg": 62.5
+  },
+  {
+   "h_theta_m": 0.05387564210861783,
+   "lateral_half_width_m": 0.05818707452779552,
+   "theta_deg": 62.75
+  },
+  {
+   "h_theta_m": 0.053799880800443796,
+   "lateral_half_width_m": 0.05817004120160479,
+   "theta_deg": 63.0
+  },
+  {
+   "h_theta_m": 0.053723095220090195,
+   "lateral_half_width_m": 0.05815190040167989,
+   "theta_deg": 63.25
+  },
+  {
+   "h_theta_m": 0.05364528682944378,
+   "lateral_half_width_m": 0.058132652473395524,
+   "theta_deg": 63.5
+  },
+  {
+   "h_theta_m": 0.05356645710986413,
+   "lateral_half_width_m": 0.058112297783204446,
+   "theta_deg": 63.75
+  },
+  {
+   "h_theta_m": 0.05348660756215551,
+   "lateral_half_width_m": 0.058090836718630676,
+   "theta_deg": 64.0
+  },
+  {
+   "h_theta_m": 0.05340573970653818,
+   "lateral_half_width_m": 0.05806826968826191,
+   "theta_deg": 64.25
+  },
+  {
+   "h_theta_m": 0.05332385508261956,
+   "lateral_half_width_m": 0.05804459712174188,
+   "theta_deg": 64.5
+  },
+  {
+   "h_theta_m": 0.053240955249364855,
+   "lateral_half_width_m": 0.058019819469762146,
+   "theta_deg": 64.75
+  },
+  {
+   "h_theta_m": 0.053157041785067374,
+   "lateral_half_width_m": 0.05799393720405348,
+   "theta_deg": 65.0
+  },
+  {
+   "h_theta_m": 0.053072116287318546,
+   "lateral_half_width_m": 0.0579669508173769,
+   "theta_deg": 65.25
+  },
+  {
+   "h_theta_m": 0.0529861803729774,
+   "lateral_half_width_m": 0.05793886082351432,
+   "theta_deg": 65.5
+  },
+  {
+   "h_theta_m": 0.0528992356781399,
+   "lateral_half_width_m": 0.05790966775725874,
+   "theta_deg": 65.75
+  },
+  {
+   "h_theta_m": 0.0528112838581077,
+   "lateral_half_width_m": 0.05787937217440405,
+   "theta_deg": 66.0
+  },
+  {
+   "h_theta_m": 0.05272232658735664,
+   "lateral_half_width_m": 0.05784797465173447,
+   "theta_deg": 66.25
+  },
+  {
+   "h_theta_m": 0.05263236555950498,
+   "lateral_half_width_m": 0.057815475787013584,
+   "theta_deg": 66.5
+  },
+  {
+   "h_theta_m": 0.05254140248728099,
+   "lateral_half_width_m": 0.05778187619897293,
+   "theta_deg": 66.75
+  },
+  {
+   "h_theta_m": 0.05244943910249042,
+   "lateral_half_width_m": 0.05774717652730023,
+   "theta_deg": 67.0
+  },
+  {
+   "h_theta_m": 0.0523564771559836,
+   "lateral_half_width_m": 0.057711377432627206,
+   "theta_deg": 67.25
+  },
+  {
+   "h_theta_m": 0.052262518417621966,
+   "lateral_half_width_m": 0.05767447959651703,
+   "theta_deg": 67.5
+  },
+  {
+   "h_theta_m": 0.05216756467624445,
+   "lateral_half_width_m": 0.0576364837214513,
+   "theta_deg": 67.75
+  },
+  {
+   "h_theta_m": 0.05207161773963342,
+   "lateral_half_width_m": 0.05759739053081673,
+   "theta_deg": 68.0
+  },
+  {
+   "h_theta_m": 0.05197467943448025,
+   "lateral_half_width_m": 0.057557200768891294,
+   "theta_deg": 68.25
+  },
+  {
+   "h_theta_m": 0.051876751606350545,
+   "lateral_half_width_m": 0.057515915200830145,
+   "theta_deg": 68.5
+  },
+  {
+   "h_theta_m": 0.05177783611964897,
+   "lateral_half_width_m": 0.057473534612650964,
+   "theta_deg": 68.75
+  },
+  {
+   "h_theta_m": 0.05167793485758383,
+   "lateral_half_width_m": 0.0574300598112191,
+   "theta_deg": 69.0
+  },
+  {
+   "h_theta_m": 0.05157704972213113,
+   "lateral_half_width_m": 0.057385491624232066,
+   "theta_deg": 69.25
+  },
+  {
+   "h_theta_m": 0.05147518263399845,
+   "lateral_half_width_m": 0.05733983090020389,
+   "theta_deg": 69.5
+  },
+  {
+   "h_theta_m": 0.0513723355325883,
+   "lateral_half_width_m": 0.057293078508448995,
+   "theta_deg": 69.75
+  },
+  {
+   "h_theta_m": 0.05126851037596124,
+   "lateral_half_width_m": 0.05724523533906548,
+   "theta_deg": 70.0
+  },
+  {
+   "h_theta_m": 0.05116370914079856,
+   "lateral_half_width_m": 0.05719630230291833,
+   "theta_deg": 70.25
+  },
+  {
+   "h_theta_m": 0.05105793382236476,
+   "lateral_half_width_m": 0.05714628033162204,
+   "theta_deg": 70.5
+  },
+  {
+   "h_theta_m": 0.050951186434469414,
+   "lateral_half_width_m": 0.05709517037752283,
+   "theta_deg": 70.75
+  },
+  {
+   "h_theta_m": 0.0508434690094289,
+   "lateral_half_width_m": 0.05704297341368053,
+   "theta_deg": 71.0
+  },
+  {
+   "h_theta_m": 0.05073478359802772,
+   "lateral_half_width_m": 0.056989690433850125,
+   "theta_deg": 71.25
+  },
+  {
+   "h_theta_m": 0.05062513226947948,
+   "lateral_half_width_m": 0.05693532245246274,
+   "theta_deg": 71.5
+  },
+  {
+   "h_theta_m": 0.05051451711138735,
+   "lateral_half_width_m": 0.05687987050460633,
+   "theta_deg": 71.75
+  },
+  {
+   "h_theta_m": 0.05040294022970455,
+   "lateral_half_width_m": 0.0568233356460061,
+   "theta_deg": 72.0
+  },
+  {
+   "h_theta_m": 0.05029040374869405,
+   "lateral_half_width_m": 0.05676571895300424,
+   "theta_deg": 72.25
+  },
+  {
+   "h_theta_m": 0.050176909810888216,
+   "lateral_half_width_m": 0.056707021522539536,
+   "theta_deg": 72.5
+  },
+  {
+   "h_theta_m": 0.050062460577048044,
+   "lateral_half_width_m": 0.05664724447212645,
+   "theta_deg": 72.75
+  },
+  {
+   "h_theta_m": 0.049947058226121985,
+   "lateral_half_width_m": 0.05658638893983388,
+   "theta_deg": 73.0
+  },
+  {
+   "h_theta_m": 0.04983070495520443,
+   "lateral_half_width_m": 0.0565244560842634,
+   "theta_deg": 73.25
+  },
+  {
+   "h_theta_m": 0.049713402979493934,
+   "lateral_half_width_m": 0.05646144708452733,
+   "theta_deg": 73.5
+  },
+  {
+   "h_theta_m": 0.04959515453225104,
+   "lateral_half_width_m": 0.05639736314022619,
+   "theta_deg": 73.75
+  },
+  {
+   "h_theta_m": 0.04947596186475573,
+   "lateral_half_width_m": 0.05633220547142592,
+   "theta_deg": 74.0
+  },
+  {
+   "h_theta_m": 0.049355827246264576,
+   "lateral_half_width_m": 0.05626597531863459,
+   "theta_deg": 74.25
+  },
+  {
+   "h_theta_m": 0.049234752963967544,
+   "lateral_half_width_m": 0.05619867394277885,
+   "theta_deg": 74.5
+  },
+  {
+   "h_theta_m": 0.04911274132294446,
+   "lateral_half_width_m": 0.056130302625179894,
+   "theta_deg": 74.75
+  },
+  {
+   "h_theta_m": 0.04898979464612106,
+   "lateral_half_width_m": 0.056060862667529035,
+   "theta_deg": 75.0
+  },
+  {
+   "h_theta_m": 0.048865915274224875,
+   "lateral_half_width_m": 0.055990355391862985,
+   "theta_deg": 75.25
+  },
+  {
+   "h_theta_m": 0.04874110556574058,
+   "lateral_half_width_m": 0.05591878214053863,
+   "theta_deg": 75.5
+  },
+  {
+   "h_theta_m": 0.0486153678968651,
+   "lateral_half_width_m": 0.05584614427620751,
+   "theta_deg": 75.75
+  },
+  {
+   "h_theta_m": 0.048488704661462385,
+   "lateral_half_width_m": 0.055772443181789845,
+   "theta_deg": 76.0
+  },
+  {
+   "h_theta_m": 0.048361118271017904,
+   "lateral_half_width_m": 0.05569768026044826,
+   "theta_deg": 76.25
+  },
+  {
+   "h_theta_m": 0.04823261115459259,
+   "lateral_half_width_m": 0.055621856935561,
+   "theta_deg": 76.5
+  },
+  {
+   "h_theta_m": 0.0481031857587767,
+   "lateral_half_width_m": 0.05554497465069484,
+   "theta_deg": 76.75
+  },
+  {
+   "h_theta_m": 0.0479728445476432,
+   "lateral_half_width_m": 0.05546703486957771,
+   "theta_deg": 77.0
+  },
+  {
+   "h_theta_m": 0.04784159000270091,
+   "lateral_half_width_m": 0.05538803907607067,
+   "theta_deg": 77.25
+  },
+  {
+   "h_theta_m": 0.047709424622847114,
+   "lateral_half_width_m": 0.05530798877413975,
+   "theta_deg": 77.5
+  },
+  {
+   "h_theta_m": 0.04757635092432016,
+   "lateral_half_width_m": 0.05522688548782733,
+   "theta_deg": 77.75
+  },
+  {
+   "h_theta_m": 0.047442371440651436,
+   "lateral_half_width_m": 0.05514473076122306,
+   "theta_deg": 78.0
+  },
+  {
+   "h_theta_m": 0.0473074887226172,
+   "lateral_half_width_m": 0.05506152615843452,
+   "theta_deg": 78.25
+  },
+  {
+   "h_theta_m": 0.047171705338189936,
+   "lateral_half_width_m": 0.054977273263557384,
+   "theta_deg": 78.5
+  },
+  {
+   "h_theta_m": 0.04703502387248961,
+   "lateral_half_width_m": 0.05489197368064537,
+   "theta_deg": 78.75
+  },
+  {
+   "h_theta_m": 0.046897446927734274,
+   "lateral_half_width_m": 0.05480562903367955,
+   "theta_deg": 79.0
+  },
+  {
+   "h_theta_m": 0.04675897712319063,
+   "lateral_half_width_m": 0.05471824096653752,
+   "theta_deg": 79.25
+  },
+  {
+   "h_theta_m": 0.046619617095124195,
+   "lateral_half_width_m": 0.05462981114296215,
+   "theta_deg": 79.5
+  },
+  {
+   "h_theta_m": 0.046479369496749,
+   "lateral_half_width_m": 0.0545403412465298,
+   "theta_deg": 79.75
+  },
+  {
+   "h_theta_m": 0.04633823699817714,
+   "lateral_half_width_m": 0.0544498329806183,
+   "theta_deg": 80.0
+  },
+  {
+   "h_theta_m": 0.04619622228636797,
+   "lateral_half_width_m": 0.054358288068374616,
+   "theta_deg": 80.25
+  },
+  {
+   "h_theta_m": 0.04605332806507691,
+   "lateral_half_width_m": 0.0542657082526819,
+   "theta_deg": 80.5
+  },
+  {
+   "h_theta_m": 0.0459095570548039,
+   "lateral_half_width_m": 0.05417209529612637,
+   "theta_deg": 80.75
+  },
+  {
+   "h_theta_m": 0.045764911992741776,
+   "lateral_half_width_m": 0.0540774509809638,
+   "theta_deg": 81.0
+  },
+  {
+   "h_theta_m": 0.04561939563272403,
+   "lateral_half_width_m": 0.053981777109085534,
+   "theta_deg": 81.25
+  },
+  {
+   "h_theta_m": 0.045473010745172376,
+   "lateral_half_width_m": 0.05388507550198417,
+   "theta_deg": 81.5
+  },
+  {
+   "h_theta_m": 0.04532576011704405,
+   "lateral_half_width_m": 0.05378734800071888,
+   "theta_deg": 81.75
+  },
+  {
+   "h_theta_m": 0.045177646551778784,
+   "lateral_half_width_m": 0.05368859646588047,
+   "theta_deg": 82.0
+  },
+  {
+   "h_theta_m": 0.04502867286924537,
+   "lateral_half_width_m": 0.05358882277755581,
+   "theta_deg": 82.25
+  },
+  {
+   "h_theta_m": 0.04487884190568792,
+   "lateral_half_width_m": 0.05348802883529205,
+   "theta_deg": 82.5
+  },
+  {
+   "h_theta_m": 0.044728156513672054,
+   "lateral_half_width_m": 0.05338621655806064,
+   "theta_deg": 82.75
+  },
+  {
+   "h_theta_m": 0.044576619562030434,
+   "lateral_half_width_m": 0.05328338788422053,
+   "theta_deg": 83.0
+  },
+  {
+   "h_theta_m": 0.044424233935808154,
+   "lateral_half_width_m": 0.053179544771481436,
+   "theta_deg": 83.25
+  },
+  {
+   "h_theta_m": 0.04427100253620789,
+   "lateral_half_width_m": 0.053074689196866566,
+   "theta_deg": 83.5
+  },
+  {
+   "h_theta_m": 0.04411692828053462,
+   "lateral_half_width_m": 0.05296882315667492,
+   "theta_deg": 83.75
+  },
+  {
+   "h_theta_m": 0.04396201410214006,
+   "lateral_half_width_m": 0.05286194866644328,
+   "theta_deg": 84.0
+  },
+  {
+   "h_theta_m": 0.04380626295036688,
+   "lateral_half_width_m": 0.052754067760907866,
+   "theta_deg": 84.25
+  },
+  {
+   "h_theta_m": 0.0436496777904925,
+   "lateral_half_width_m": 0.052645182493965666,
+   "theta_deg": 84.5
+  },
+  {
+   "h_theta_m": 0.04349226160367265,
+   "lateral_half_width_m": 0.052535294938635166,
+   "theta_deg": 84.75
+  },
+  {
+   "h_theta_m": 0.04333401738688459,
+   "lateral_half_width_m": 0.05242440718701702,
+   "theta_deg": 85.0
+  },
+  {
+   "h_theta_m": 0.043174948152870145,
+   "lateral_half_width_m": 0.0523125213502542,
+   "theta_deg": 85.25
+  },
+  {
+   "h_theta_m": 0.04301505693007822,
+   "lateral_half_width_m": 0.05219963955849175,
+   "theta_deg": 85.5
+  },
+  {
+   "h_theta_m": 0.042854346762607194,
+   "lateral_half_width_m": 0.05208576396083625,
+   "theta_deg": 85.75
+  },
+  {
+   "h_theta_m": 0.04269282071014703,
+   "lateral_half_width_m": 0.05197089672531496,
+   "theta_deg": 86.0
+  },
+  {
+   "h_theta_m": 0.04253048184792093,
+   "lateral_half_width_m": 0.05185504003883447,
+   "theta_deg": 86.25
+  },
+  {
+   "h_theta_m": 0.0423673332666268,
+   "lateral_half_width_m": 0.05173819610713904,
+   "theta_deg": 86.5
+  },
+  {
+   "h_theta_m": 0.042203378072378464,
+   "lateral_half_width_m": 0.051620367154768754,
+   "theta_deg": 86.75
+  },
+  {
+   "h_theta_m": 0.04203861938664652,
+   "lateral_half_width_m": 0.051501555425017005,
+   "theta_deg": 87.0
+  },
+  {
+   "h_theta_m": 0.04187306034619879,
+   "lateral_half_width_m": 0.051381763179887865,
+   "theta_deg": 87.25
+  },
+  {
+   "h_theta_m": 0.04170670410304079,
+   "lateral_half_width_m": 0.051260992700052965,
+   "theta_deg": 87.5
+  },
+  {
+   "h_theta_m": 0.041539553824355605,
+   "lateral_half_width_m": 0.05113924628480821,
+   "theta_deg": 87.75
+  },
+  {
+   "h_theta_m": 0.041371612692443584,
+   "lateral_half_width_m": 0.05101652625202983,
+   "theta_deg": 88.0
+  },
+  {
+   "h_theta_m": 0.04120288390466175,
+   "lateral_half_width_m": 0.05089283493813032,
+   "theta_deg": 88.25
+  },
+  {
+   "h_theta_m": 0.0410333706733631,
+   "lateral_half_width_m": 0.050768174698014056,
+   "theta_deg": 88.5
+  },
+  {
+   "h_theta_m": 0.04086307622583515,
+   "lateral_half_width_m": 0.050642547905032295,
+   "theta_deg": 88.75
+  },
+  {
+   "h_theta_m": 0.040692003804238694,
+   "lateral_half_width_m": 0.05051595695093805,
+   "theta_deg": 89.0
+  },
+  {
+   "h_theta_m": 0.04052015666554608,
+   "lateral_half_width_m": 0.05038840424584067,
+   "theta_deg": 89.25
+  },
+  {
+   "h_theta_m": 0.04034753808147911,
+   "lateral_half_width_m": 0.05025989221815978,
+   "theta_deg": 89.5
+  },
+  {
+   "h_theta_m": 0.04017415133844678,
+   "lateral_half_width_m": 0.0501304233145791,
+   "theta_deg": 89.75
+  },
+  {
+   "h_theta_m": 0.03999999973748278,
+   "lateral_half_width_m": 0.05,
+   "theta_deg": 90.0
+  }
+ ]
+}
