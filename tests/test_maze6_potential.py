@@ -14,14 +14,14 @@ pytest は使わない plain Python スクリプト（tests/test_corridor.py と
 検査項目（design.md §4 末尾の (a)〜(e) ＋ (b-2) ＋ (b-3)。裁定 R8・R12 を反映）:
   (a)   区画中心で Φ が旧実装（階段版）と一致する（検証帯 20 面 × 全区画。ゴール区画は除く）
   (b)   跳びが無いこと。閾値は式で定義する（裁定 R7-6・R18-2・R21-E）:
-            |ΔΦ_t| ≤ 2.7972 · 1.10 · |Δp_t| + 1e-9 m
+            |ΔΦ_t| ≤ L_E · 1.10 · |Δp_t| + 1e-9 m,  L_E = s/(√2·(t_w/2 + w_lat)) ≈ 2.767
         |Δp| は真の位置から求めた機体中心の 1 ステップ変位。直進・90°旋回・S 字・急停止の
         4 種で全ステップを検査。同じ走行を階段版でも検査し、そちらでは 0.18 に近い跳びが
         出ることを確認する（＝この検査が連続化を検出できることの証拠。階段版の比は 8.08
-        以上あるので、定数を 2.7972 にしても検出力は残る）
+        以上あるので、L_E をこの水準にしても検出力は残る）
   (L)   刻み不変性（裁定 R18-4 で新設）。区画内を 3 水準の格子で走査し、最大
         |ΔΦ|/|Δp| が**定義の Lipschitz 定数**（条件 E は √2）近傍で一定であること。
-        真の不連続なら刻み数に比例して発散する。**(b) の 2.7972 とは用途が違う定数**
+        真の不連続なら刻み数に比例して発散する。**(b) の L_E とは用途が違う定数**
   (b-2) **全**降下開口部での境界一致（裁定 R8・R13 条件 3。D1/D2 の回帰検査）
   (b-3) step() 経路と直接呼び出しの全ステップ一致（裁定 R12 の確認事項）
   (c)   Φ が横方向のずれに不感（**降下隣接がちょうど 1 つ、かつ折れ線が一直線**の構成に
@@ -76,16 +76,95 @@ VMAX = WHEEL_R * _P.voltage_limit / (_P.motor_Ke * _P.gear_ratio)
 # 🔴 **2 つの定数を混同しないこと**（用途が違う）:
 #   JUMP_L_E   … (b) 用。**区画をまたぐ歩**を含めた実効の上限。条件 E は境界一致が
 #                開口部の中点でしか成立しないので、中点から外れて通ると差が出る。
-#                辺全体での一致を課したときの下限。無次元形は（裁定 R24-3）
-#                    L_E = s / (√2·(t_w/2 + w_r)) = 1/(√2·ŵ)、ŵ = (t_w/2 + w_r)/s
-#                s=区画寸法 0.18、t_w=壁厚 0.012（mouse/mjcf.py）、w_r=機体最外半径 0.0395。
+#                辺全体での一致を課したときの下限。無次元形は（裁定 R24-3・R25）
+#                    L_E = s / (√2·(t_w/2 + w_lat)) = 1/(√2·ŵ)、ŵ = (t_w/2 + w_lat)/s
+#                s=区画寸法、t_w=壁厚（mouse/mjcf.py）、w_lat=機体の**真の**最外側半幅
+#                （下で実行時導出。0.04000 m ＝ コーナー片。**車輪 0.0395 ではない**）。
 #                上限に到達する 2 点対は「進入辺・退出辺のそれぞれで、2 辺が共有する
-#                内側の角へ最も寄れる点」（中点から ±μ_max、μ_max=(s−t_w)/2−w_r=0.0445）。
-#                🔴 初出時に 3.2223 と書いたのは t_w/2=6mm を落とした誤り。是正は
-#                定数を小さくする＝**検査を厳しくする**向き。裁定 R21-E・R24-3
+#                内側の角へ最も寄れる点」（中点から ±μ_max、μ_max=(s−t_w)/2−w_lat）。
+#                🔴 この定数は 3 度是正された: 3.2223（t_w/2=6mm の脱落）→ 2.7972
+#                （車輪外面を使用）→ 2.7669（真の最外側）。**いずれも検査を厳しくする向き**
+#                🔴 **L_E は「条件 E が満たすべき必要条件」ではない**（E は中点一致しか
+#                課さないので辺全体一致の下限に縛られない。実測 2.392 < L_E はそれで説明が
+#                つく）。**役割は階段版（比 ≥8.08）と正しい E（2.392）を分離する天井**。
+#                裁定 R21-E・R24-3・R25
 #   LIPSCHITZ_DEF … (L) 用。**同一区画・同一 c_prev の中**での定義そのものの
 #                Lipschitz 定数。条件 E では折れの内側で ∇ℓ = a − b（a ⊥ b・単位）なので √2
-JUMP_L_E = 0.18 / (math.sqrt(2.0) * (0.012 / 2 + 0.0395))   # = 2.7972
+from mouse.mjcf import WALL_THICKNESS      # noqa: E402  壁厚 [m]。**ここで値を作らない**
+
+
+def robot_lateral_half_width() -> float:
+    """機体の**真の**最外側半幅 w_lat [m] を、モデルの実形状から導出する（裁定 R25-1）。
+
+    **AABB（軸並行境界箱）は使わない。**AABB は姿勢によって膨らむので、幅を過大評価して
+    正しい実装を誤って落とす。ここで要るのは「機体中心が実際に到達しうる集合」を決める
+    真の外形なので、mesh は全頂点、primitive はサポート関数で厳密に測る。
+
+    検算: 同じ手続きで +x を測ると 0.05000 m となり、既に検証済みの導出
+    （geom pos 0.014 + メッシュ頂点 0.036）と一致する。AABB 測定の 0.05051 は
+    0.51 mm 膨らんでいる。
+    """
+    global _W_LAT_CACHE
+    if _W_LAT_CACHE is not None:
+        return _W_LAT_CACHE
+    import tempfile
+    import mujoco
+    from mouse.mjcf import build_maze_robot_xml
+    m = generate_maze(VALID_SEEDS[0], mode=MAZE_MODE)
+    fd, tmp = tempfile.mkstemp(suffix=".xml")
+    os.close(fd)
+    try:
+        build_maze_robot_xml(m["v_walls"], m["h_walls"], tmp, mouse_pos="0 0 0",
+                             mouse_euler="0 0 0", center_goal=False, params=_P)
+        model = mujoco.MjModel.from_xml_path(tmp)
+    finally:
+        os.remove(tmp)
+    data = mujoco.MjData(model)
+    root = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, "root")
+    adr = model.jnt_qposadr[root]
+    data.qpos[adr:adr + 3] = 0.0
+    data.qpos[adr + 3:adr + 7] = [1, 0, 0, 0]      # 原点・無回転 → world y = 機体 y
+    mujoco.mj_forward(model, data)
+    root_body = model.jnt_bodyid[root]
+    bodies = set()
+    for b in range(model.nbody):
+        p = b
+        while p != 0:
+            if p == root_body:
+                bodies.add(b)
+                break
+            p = model.body_parentid[p]
+    best = 0.0
+    for g in range(model.ngeom):
+        if model.geom_bodyid[g] not in bodies:
+            continue
+        gt, R, c, size = (model.geom_type[g], data.geom_xmat[g].reshape(3, 3),
+                          data.geom_xpos[g], model.geom_size[g])
+        if gt == mujoco.mjtGeom.mjGEOM_MESH:
+            mid = model.geom_dataid[g]
+            a, n = model.mesh_vertadr[mid], model.mesh_vertnum[mid]
+            ys = (model.mesh_vert[a:a + n].reshape(-1, 3) @ R.T)[:, 1] + c[1]
+            ext_lo, ext_hi = ys.min(), ys.max()
+        elif gt == mujoco.mjtGeom.mjGEOM_BOX:
+            e = sum(abs(R[1, i]) * size[i] for i in range(3))
+            ext_lo, ext_hi = c[1] - e, c[1] + e
+        elif gt == mujoco.mjtGeom.mjGEOM_SPHERE:
+            ext_lo, ext_hi = c[1] - size[0], c[1] + size[0]
+        elif gt in (mujoco.mjtGeom.mjGEOM_CYLINDER, mujoco.mjtGeom.mjGEOM_CAPSULE):
+            e = size[0] * math.hypot(R[1, 0], R[1, 1]) + size[1] * abs(R[1, 2])
+            ext_lo, ext_hi = c[1] - e, c[1] + e
+        else:
+            continue
+        best = max(best, abs(ext_lo), abs(ext_hi))
+    _W_LAT_CACHE = best
+    return best
+
+
+_W_LAT_CACHE = None
+# 実行時に導出する（0.0395 のハードコードを置き換え。裁定 R25-2）。
+# 実測 0.04000 m ＝ コーナー片（mein_body2..5、mesh 'coner'）。**車輪 0.0395 ではない。**
+W_LAT = robot_lateral_half_width()
+JUMP_L_E = CS / (math.sqrt(2.0) * (WALL_THICKNESS / 2 + W_LAT))   # ≈ 2.7669
 LIPSCHITZ_DEF = math.sqrt(2.0)
 JUMP_KAPPA = 1.10
 JUMP_EPS = 1e-9                           # [m]
