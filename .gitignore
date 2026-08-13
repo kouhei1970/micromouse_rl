@@ -31,3 +31,12 @@ outputs/**
 # legacy/models/ の学習済みチェックポイントは凍結成果物として追跡する
 # Checkpoints under legacy/models/ are frozen artifacts and must remain tracked
 !legacy/models/*.zip
+
+# exp_012 条件 E の「ゴールに届いた唯一の重み」を追跡する（指示 2026-08-13）。
+# 出所: logs/exp_012_condE_seed2/rl_model_2000000_steps.zip（200 万歩ちょうどの
+# チェックポイント）。**本実験で唯一生き残った陽性の重み**である —
+# 最終保存 models/exp_012_condE_seed2.zip は 896 歩の追加学習で「7017 に届く状態」から
+# 離脱しており（同じ面で 42 歩・衝突）、seed1 の陽性 3 点は重みが残っていない。
+# 機構分析の唯一の材料なので、logs/ が版管理外であることによる消失を防ぐ。
+# 489,543 バイト・一度きり（准教授 AUDIT_018 §3-bis・研究計画書 §9-19）。
+!models/exp_012_condE_seed2_step2000000_goal7017.zip
