@@ -1,0 +1,20 @@
+{
+  "model": "t = a * n_cells + b * n_turns（切片なし）",
+  "method": "L0-c+E1 の**最短走行のみ**を最小二乗（探索走行は速度制限が違うので除外）",
+  "a": 0.15541149902046142,
+  "b": 0.13584977502915416,
+  "turn_cost": 0.8741294941841352,
+  "n_runs": 80,
+  "n_mazes": 20,
+  "rms_residual_s": 0.21108101801171936,
+  "max_abs_residual_s": 0.4464346049563055,
+  "median_relative_residual": 0.010262344955312848,
+  "source": "outputs/exp_014_design_check/l0c_e1/runs_detail.json",
+  "maze_dir": "competition/mazes/design_v4",
+  "seed_band": "41000 以降（設計帯。予約帯 [1000, 40999] の外）",
+  "policy": "competition.baseline_slalom_e1:SlalomE1Policy",
+  "n_cells_definition": "計時窓内の**移動回数**（機体中心基準。runs_detail.json のフィールド）",
+  "n_turns_definition": "裁定 R4: 区画列の進行方向変化（180° = 2）",
+  "caveat": "**この係数は L0-c（スラローム）専用である。**超信地旋回の方式（L0-a/L0-b）は turn_cost が大きく異なる（現行の評価帯由来の値で 1.201）。方式をまたいで使わないこと。",
+  "git_rev": "f57638bd30cad5c0ddd6411d7fc362fd40d3fc67"
+}
