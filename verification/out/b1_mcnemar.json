@@ -1,0 +1,89 @@
+{
+ "cluster": [
+  {
+   "a": "exp_005 最終",
+   "b": "exp_003b 60万(選択)",
+   "course_neg": 3,
+   "course_pos": 4,
+   "courses_with_discordance": 7,
+   "n_courses": 20,
+   "p_sign_course": 1.0
+  },
+  {
+   "a": "exp_005 最終",
+   "b": "exp_003b 最終",
+   "course_neg": 3,
+   "course_pos": 6,
+   "courses_with_discordance": 10,
+   "n_courses": 20,
+   "p_sign_course": 0.5078125
+  },
+  {
+   "a": "exp_003b 60万(選択)",
+   "b": "exp_003b 最終",
+   "course_neg": 3,
+   "course_pos": 5,
+   "courses_with_discordance": 10,
+   "n_courses": 20,
+   "p_sign_course": 0.7265625
+  }
+ ],
+ "comparisons": [
+  {
+   "a": "exp_005 最終",
+   "b": "exp_003b 60万(選択)",
+   "n00": 2,
+   "n01": 5,
+   "n10": 6,
+   "n11": 87,
+   "p_exact_two_sided": 1.0
+  },
+  {
+   "a": "exp_005 最終",
+   "b": "exp_003b 最終",
+   "n00": 2,
+   "n01": 5,
+   "n10": 9,
+   "n11": 84,
+   "p_exact_two_sided": 0.4239501953125
+  },
+  {
+   "a": "exp_003b 60万(選択)",
+   "b": "exp_003b 最終",
+   "n00": 2,
+   "n01": 6,
+   "n10": 9,
+   "n11": 83,
+   "p_exact_two_sided": 0.60723876953125
+  }
+ ],
+ "metric": "no_contact_complete",
+ "n_pairs": 100,
+ "paired_premise_ok": true,
+ "power": [
+  {
+   "a": "exp_005 最終",
+   "b": "exp_003b 60万(選択)",
+   "discordance_rate": 0.11,
+   "need_discordant": 956,
+   "need_trials": 8691,
+   "p_hat": 0.5454545454545454
+  },
+  {
+   "a": "exp_005 最終",
+   "b": "exp_003b 最終",
+   "discordance_rate": 0.14,
+   "need_discordant": 94,
+   "need_trials": 672,
+   "p_hat": 0.6428571428571429
+  },
+  {
+   "a": "exp_003b 60万(選択)",
+   "b": "exp_003b 最終",
+   "discordance_rate": 0.15,
+   "need_discordant": 199,
+   "need_trials": 1327,
+   "p_hat": 0.6
+  }
+ ]
+}

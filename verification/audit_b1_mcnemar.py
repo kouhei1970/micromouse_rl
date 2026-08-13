@@ -52,6 +52,40 @@ def mcnemar_exact(b, c):
     return min(1.0, 2.0 * binom_cdf(min(b, c), n))
 
 
+def _log_pmf(k, m, p):
+    if p <= 0.0:
+        return 0.0 if k == 0 else -math.inf
+    if p >= 1.0:
+        return 0.0 if k == m else -math.inf
+    return (math.lgamma(m + 1) - math.lgamma(k + 1) - math.lgamma(m - k + 1)
+            + k * math.log(p) + (m - k) * math.log1p(-p))
+
+
+def crit_k(m, alpha=0.05):
+    """不一致対 m 個のときの棄却域の境界 k_crit（`k <= k_crit` または `k >= m-k_crit`）。
+
+    帰無仮説 p=0.5 の下で両側 alpha を満たす最大の k を返す（無ければ -1）。
+    """
+    kc, cdf = -1, 0.0
+    for k in range(0, m // 2 + 1):
+        cdf += math.exp(_log_pmf(k, m, 0.5))
+        if 2.0 * cdf <= alpha:
+            kc = k
+        else:
+            break
+    return kc
+
+
+def power_exact(m, p_true, alpha=0.05):
+    """真の偏りが p_true のときの、McNemar 厳密検定（両側）の検出力。O(m)。"""
+    kc = crit_k(m, alpha)
+    if kc < 0:
+        return 0.0
+    lo = sum(math.exp(_log_pmf(k, m, p_true)) for k in range(0, kc + 1))
+    hi = sum(math.exp(_log_pmf(k, m, p_true)) for k in range(m - kc, m + 1))
+    return lo + hi
+
+
 def min_detectable(n_disc, alpha=0.05):
     """不一致対が n_disc 個のとき、両側 alpha で有意になる最小の偏り（b:c の形）。"""
     for b in range(n_disc // 2, -1, -1):
@@ -132,14 +166,7 @@ def main():
             continue
         p_hat = max(n10, n01) / nd                 # 不一致対のうち優位側の割合
         rate = nd / len(data[a])                   # 不一致対の出現率
-        need = None
-        for m in range(2, 4001):
-            # 厳密検定の検出力（真の偏りが p_hat のとき）
-            pw = sum(math.comb(m, k) * p_hat ** k * (1 - p_hat) ** (m - k)
-                     for k in range(m + 1) if mcnemar_exact(k, m - k) <= 0.05)
-            if pw >= 0.80:
-                need = m
-                break
+        need = next((m for m in range(2, 4001) if power_exact(m, p_hat) >= 0.80), None)
         n_trials = math.ceil(need / rate) if need else None
         req.append({"a": a, "b": b_, "p_hat": p_hat, "discordance_rate": rate,
                     "need_discordant": need, "need_trials": n_trials})
@@ -149,7 +176,38 @@ def main():
         print(f"    検出力 80% に要る不一致対 {need} 個 → **試行数 約 {n_trials} 対**"
               f"（実測は {len(data[a])} 対）")
 
+    print()
+    print("=" * 78)
+    print("4. クラスタ構造 — 100 試行は独立ではない（20 コース × 5 試行）")
+    print("=" * 78)
+    cluster = []
+    for a, b_, n11, n10, n01, n00, p in results:
+        A, B = data[a], data[b_]
+        courses = sorted({c for c, _ in A})
+        disc_by_course = {c: sum(1 for k in range(5) if A[(c, k)] != B[(c, k)])
+                          for c in courses}
+        n_c_with = sum(1 for c in courses if disc_by_course[c] > 0)
+        # コース水準の対応比較（各コースの成功数 0〜5 の差の符号検定）
+        diffs = [sum(A[(c, k)] for k in range(5)) - sum(B[(c, k)] for k in range(5))
+                 for c in courses]
+        pos = sum(1 for d in diffs if d > 0)
+        neg = sum(1 for d in diffs if d < 0)
+        p_sign = mcnemar_exact(pos, neg)
+        cluster.append({"a": a, "b": b_, "courses_with_discordance": n_c_with,
+                        "n_courses": len(courses), "course_pos": pos,
+                        "course_neg": neg, "p_sign_course": p_sign})
+        print(f"\n  【{a}】 対 【{b_}】")
+        print(f"    不一致対が出たコース: {n_c_with} / {len(courses)}  "
+              f"（不一致対 {n10+n01} 個がこの数のコースに集中）")
+        print(f"    コース水準の符号検定: A が良い {pos} コース / B が良い {neg} コース / "
+              f"同点 {len(courses)-pos-neg} → p = {p_sign:.4f}")
+
+    print("\n  → 試行は**コース内で相関する**（同じコースで繰り返し失敗する）。")
+    print("     試行水準の検定は独立を仮定するので **p 値を小さい側へ外す**。")
+    print("     本件はいずれも有意でないので、**クラスタを考慮すると結論はより強くなる**。")
+
     out = {"metric": METRIC, "paired_premise_ok": ok, "power": req,
+           "cluster": cluster,
            "n_pairs": len(keys[0]),
            "comparisons": [{"a": a, "b": b_, "n11": n11, "n10": n10, "n01": n01,
                             "n00": n00, "p_exact_two_sided": p}
