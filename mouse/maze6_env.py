@@ -81,7 +81,7 @@ import numpy as np
 from mouse.maze6_gen import (
     GOAL_CELLS, SIZE, cells_open, generate_maze, initial_heading_deg, shortest_distances,
 )
-from mouse.mjcf import build_maze_robot_xml
+from mouse.mjcf import WALL_THICKNESS, build_maze_robot_xml
 from mouse.params import RobotParams
 from mouse.sim import MouseSim
 
@@ -115,6 +115,18 @@ _HEADING_PERTURB_DEG = 10.0
 _GEO_STEPS_PER_CELL = 30
 _GEO_GRID_N = SIZE * _GEO_STEPS_PER_CELL + 1       # 181
 _GEO_GRID_H = 0.18 / _GEO_STEPS_PER_CELL           # 0.006 m
+
+# 条件 C の測地距離場は「**配置空間**の測地距離」である（裁定 R32）。
+# 点の測地（機体を点とみなす）は**実機の中心が辿れない経路**の距離を返すので、
+# 用途に合わない代理量になる。機体中心は閉じた壁面から w_lat 以上離れる必要があり、
+# 壁は境界の中心線を軸に厚み t_w を持つので、**壁の中心線からの離隔**は t_w/2 + w_lat。
+#   ⚠️ ラベルに注意: 壁**面**からの離隔 = w_lat = 0.0400 m
+#                    壁**中心線**からの離隔 = t_w/2 + w_lat = 0.0460 m ← 格子の判定に使うのはこちら
+# w_lat はモデルのメッシュ頂点から導出した機体の真の最外側半幅（コーナー片 mein_body2..5。
+# 車輪 0.0395 でも AABB 0.04141 でもない。ROBOT_SPEC §2.1・裁定 R25/R26）。
+# tests/test_maze6_potential.py が実行時導出値との一致を検査する。
+_ROBOT_LAT_HALF_WIDTH = 0.0400
+_GEO_CLEARANCE = WALL_THICKNESS / 2 + _ROBOT_LAT_HALF_WIDTH      # 0.0460 m（壁中心線から）
 
 _GEO_TOPOLOGY = None    # プロセス内で 1 度だけ計算する位相キャッシュ（迷路によらない）
 
@@ -562,13 +574,21 @@ class Maze6Env(gym.Env):
         np.cumsum(counts, out=offsets[1:])
         offsets_list = offsets.tolist()
 
+        # --- 配置空間の自由空間マスク（裁定 R32）--------------------------
+        # 機体中心が閉じた区画境界（＝壁の中心線）から _GEO_CLEARANCE 以上
+        # 離れている格子点だけを「機体が到達しうる」とみなす。
+        allowed = self._geo_allowed_mask()
+        allowed_list = allowed.ravel().tolist()
+
         dist = np.full(n_nodes, np.inf, dtype=np.float64)
         visited = bytearray(n_nodes)
         heap = []
         for node in topo["goal_nodes"].tolist():
-            if dist[node] != 0.0:
+            if allowed_list[node] and dist[node] != 0.0:
                 dist[node] = 0.0
                 heapq.heappush(heap, (0.0, node))
+        # 第 1 段: **到達可能な格子点だけ**で Dijkstra を回す。ここで確定した値が
+        # 配置空間の測地距離であり、以後変更しない。
         while heap:
             du, u = heapq.heappop(heap)
             if visited[u]:
@@ -576,19 +596,85 @@ class Maze6Env(gym.Env):
             visited[u] = 1
             for k in range(offsets_list[u], offsets_list[u + 1]):
                 v = d_list[k]
-                if visited[v]:
+                if visited[v] or not allowed_list[v]:
                     continue
                 nd = du + w_list[k]
                 if nd < dist[v]:
                     dist[v] = nd
                     heapq.heappush(heap, (nd, v))
 
+        bad = ~np.isfinite(dist) & allowed.ravel()
+        if bad.any():
+            raise AssertionError(
+                f"配置空間の測地距離場に到達不能な格子点が {int(bad.sum())} 個ある"
+                "（迷路生成の不変条件「全区画へ到達可能」と矛盾する。実装の欠陥の可能性）")
+
+        # 第 2 段: 到達不能側（壁際の帯）へ値を延長する。**到達可能な点の値は
+        # 変えない**（第 1 段で確定済み）ので、壁際の帯を通る近道は生じない。
+        # 延長が要るのは、機体が到達しうる位置を囲む格子セルの隅が帯に入りうる
+        # ためで、双線形補間が inf を掴まないようにするためだけの措置である。
+        heap = [(float(dist[i]), int(i)) for i in np.flatnonzero(np.isfinite(dist))]
+        heapq.heapify(heap)
+        visited2 = bytearray(n_nodes)
+        while heap:
+            du, u = heapq.heappop(heap)
+            if visited2[u]:
+                continue
+            visited2[u] = 1
+            for k in range(offsets_list[u], offsets_list[u + 1]):
+                v = d_list[k]
+                if visited2[v] or allowed_list[v]:
+                    continue                      # 到達可能な点は第 1 段の値を守る
+                nd = du + w_list[k]
+                if nd < dist[v]:
+                    dist[v] = nd
+                    heapq.heappush(heap, (nd, v))
         if not np.all(np.isfinite(dist)):
             n_bad = int(np.sum(~np.isfinite(dist)))
             raise AssertionError(
-                f"測地距離場に到達不能な格子点が {n_bad} 個ある（迷路生成の不変条件"
-                "「全区画へ到達可能」と矛盾する。実装の欠陥の可能性）")
+                f"延長後も値の付かない格子点が {n_bad} 個ある（実装の欠陥の可能性）")
         return dist.reshape(N, N)
+
+    def _geo_allowed_mask(self) -> np.ndarray:
+        """機体中心が到達しうる格子点の真偽マスク (N, N)（配置空間。裁定 R32）。
+
+        格子点 (i, j) は、その属する区画の 4 つの境界のうち**閉じているもの**
+        （壁があるか迷路の外周）すべてから `_GEO_CLEARANCE` 以上離れているときに
+        到達可能とする。`_GEO_CLEARANCE` は**壁の中心線**からの離隔である
+        （壁面からの離隔 w_lat = 0.0400 m ＋ 壁の半厚 t_w/2 = 0.006 m）。
+        """
+        N, S, H = _GEO_GRID_N, _GEO_STEPS_PER_CELL, _GEO_GRID_H
+        cs = self.params.cell_size
+        v_walls, h_walls = self.maze["v_walls"], self.maze["h_walls"]
+        idx = np.arange(N)
+        cell = np.minimum(idx // S, SIZE - 1)
+        pos = idx * H
+        lo = pos - cell * cs                 # 区画の低い側の境界からの距離
+        hi = (cell + 1) * cs - pos           # 高い側の境界からの距離
+        allowed = np.ones((N, N), dtype=bool)
+        for cx in range(SIZE):
+            xs = np.flatnonzero(cell == cx)
+            for cy in range(SIZE):
+                ys = np.flatnonzero(cell == cy)
+                if len(xs) == 0 or len(ys) == 0:
+                    continue
+                c = (cx, cy)
+                blk_x_lo = not (cx > 0 and cells_open(v_walls, h_walls, c, (cx - 1, cy)))
+                blk_x_hi = not (cx < SIZE - 1 and cells_open(v_walls, h_walls, c, (cx + 1, cy)))
+                blk_y_lo = not (cy > 0 and cells_open(v_walls, h_walls, c, (cx, cy - 1)))
+                blk_y_hi = not (cy < SIZE - 1 and cells_open(v_walls, h_walls, c, (cx, cy + 1)))
+                ok_x = np.ones(len(xs), dtype=bool)
+                ok_y = np.ones(len(ys), dtype=bool)
+                if blk_x_lo:
+                    ok_x &= lo[xs] >= _GEO_CLEARANCE
+                if blk_x_hi:
+                    ok_x &= hi[xs] >= _GEO_CLEARANCE
+                if blk_y_lo:
+                    ok_y &= lo[ys] >= _GEO_CLEARANCE
+                if blk_y_hi:
+                    ok_y &= hi[ys] >= _GEO_CLEARANCE
+                allowed[np.ix_(xs, ys)] = ok_x[:, None] & ok_y[None, :]
+        return allowed
 
     def _geodesic_value(self, x: float, y: float) -> float:
         """測地距離場の値 g(P) を**双線形補間**で取り出す（条件 C。裁定 R30）。
