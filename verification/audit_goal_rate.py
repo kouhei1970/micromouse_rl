@@ -86,3 +86,39 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+# ----------------------------------------------------------------------
+# 追加（2026-08-14）: 陽性点の直接再現とゴールの独立再判定（AUDIT_018 §3）
+# ----------------------------------------------------------------------
+def verify_positive():
+    """seed2 の 200 万歩点（唯一 重みが残っている陽性点）を再現し、
+    ゴールを軌跡から独立に再判定する（環境のフラグに頼らない）。"""
+    from mouse.maze6_env import Maze6Env
+    from mouse.maze6_eval import _trial_seed
+
+    model = PPO.load(f"{REPO_ROOT}/logs/exp_012_condE_seed2/rl_model_2000000_steps.zip",
+                     device="cpu")
+    ts = _trial_seed(0, 7017, 0)
+    env = Maze6Env(maze_dir=VALIDATION_MAZE_DIR, maze_seeds=[7017], max_cache=2,
+                   gamma=0.995, mode="fixed", maze_mode="loop")
+    obs, _ = env.reset(seed=ts)
+    xs = []
+    for _ in range(5000):
+        a, _ = model.predict(obs, deterministic=True)
+        obs, _r, term, trunc, info = env.step(np.clip(np.asarray(a, dtype=np.float64), -1, 1))
+        x, y, _ = env.sim.privileged_pose()
+        xs.append((x, y))
+        if term or trunc:
+            break
+    xs = np.array(xs)
+    LO, HI = 2 * 0.18, 4 * 0.18                 # ゴール 2×2 の範囲 [m]
+    W = 0.0400                                   # 機体の横半幅（裁定 R26）。どの向きでもこれ以上
+    center_in = (xs[:, 0] >= LO) & (xs[:, 0] <= HI) & (xs[:, 1] >= LO) & (xs[:, 1] <= HI)
+    contained = ((xs[:, 0] - W >= LO) & (xs[:, 0] + W <= HI)
+                 & (xs[:, 1] - W >= LO) & (xs[:, 1] + W <= HI))
+    env.close()
+    return {"trial_seed": ts, "n_steps": len(xs), "env_goal_flag": bool(info.get("goal")),
+            "center_in_goal_steps": int(center_in.sum()),
+            "body_contained_steps": int(contained.sum()),
+            "final_xy": [float(xs[-1, 0]), float(xs[-1, 1])]}
