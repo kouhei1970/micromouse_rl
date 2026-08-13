@@ -80,6 +80,18 @@ FULL_TOTAL_STEPS = 2_000_000    # M1 の 2 倍。迷路はエピソードが長�
 VALIDATION_EVERY_STEPS = 100_000
 
 
+# 条件（裁定 R21・R24）→ Φ の実現方法。**変えるのはここだけ**で、k・γ・並列数・
+# 総ステップ・学習 seed は 3 条件で完全に同一にする。
+#   E  … 区画ごとの明示式 ＋ 全降下隣接の min（検証的。H の判定はこれのみ）
+#   C  … 配置空間の測地距離場（探索的）
+#   Cp … C の Φ を面ごとの定数 ρ 倍して総整形量を E に揃えたもの（探索的。C'）
+CONDITION_FLAGS = {
+    "E": dict(continuous_potential=True),
+    "C": dict(geodesic_potential=True),
+    "Cp": dict(geodesic_potential=True, geodesic_rho_scale=True),
+}
+
+
 def make_env(rank: int, gamma: float, log_dir: Path, args):
     def _init():
         env = Maze6Env(
@@ -92,7 +104,8 @@ def make_env(rank: int, gamma: float, log_dir: Path, args):
             action_smooth_penalty=args.action_smooth_penalty,
             action_highpass_penalty=args.action_highpass_penalty,
             action_highpass_alpha=args.action_highpass_alpha,
-            continuous_potential=True,  # exp_012: exp_010 との差はこの 1 点のみ
+            # exp_012: exp_010 との差は「Φ の実現方法」1 点のみ
+            **CONDITION_FLAGS[args.condition],
         )
         return Monitor(env, filename=str(log_dir / f"env_{rank}"))
     return _init
@@ -142,14 +155,21 @@ class EpisodeStatsCallback(BaseCallback):
                 self._ep_flip_rates.pop(0)
                 self._ep_diff_rms.pop(0)
             if self._seed_file is not None:
-                self._seed_file.write(json.dumps(dict(
+                rec = dict(
                     step=int(self.num_timesteps),
                     maze_seed=int(info.get("maze_seed", -1)),
                     outcome=("goal" if info.get("goal") else
                              "collision" if info.get("collision") else "timeout"),
                     n_visited=int(info.get("n_visited", 0)),
                     odom_error_m=float(info.get("odom_error_m", float("nan"))),
-                ), ensure_ascii=False) + "\n")
+                )
+                # 条件 C・C' の記録の義務（裁定 R24-1）: 学習迷路ごとの 1/ρ を残す。
+                # 値は**実行時の場**から出たもの（= 1/ρ_field。design.md の命名。R39-3）。
+                if "geo_inv_rho" in info:
+                    rec["geo_inv_rho_field"] = float(info["geo_inv_rho"])
+                    rec["geo_rho"] = float(info["geo_rho"])
+                    rec["geo_g_start_m"] = float(info["geo_g_start_m"])
+                self._seed_file.write(json.dumps(rec, ensure_ascii=False) + "\n")
                 self._written += 1
                 if self._written % 200 == 0:
                     self._seed_file.flush()
@@ -182,7 +202,7 @@ class ValidationCallback(BaseCallback):
     """
 
     def __init__(self, eval_every_steps: int, log_dir: Path, gamma: float,
-                 maze_mode: str, n_trials: int = 1):
+                 maze_mode: str, n_trials: int = 1, save_on_goal_path: Path = None):
         super().__init__()
         self.eval_every = int(eval_every_steps)
         self.log_dir = Path(log_dir)
@@ -191,6 +211,14 @@ class ValidationCallback(BaseCallback):
         self.n_trials = int(n_trials)
         self.history = []
         self._next_at = self.eval_every
+        # 🔴 稀少事象の重み退避（研究計画書 §9-19。2026-08-13 追加）。
+        # 出所: exp_012 条件 E の seed1 が 70/90/130 万歩でゴール率 0.05 を出したが、
+        # チェックポイントは 40 万歩ごとで、その 4 点はいずれも 0.00 だった
+        # ＝ **届いた方策の重みが谷間で失われ、事後に取り返せなかった**。
+        # **記録側だけの追加で、学習の力学には一切介入しない**（1 実験 1 変更の
+        # 「介入」には当たらない。裁定 2026-08-13。design.md「記録の非対称」も参照）。
+        self.save_on_goal_path = Path(save_on_goal_path) if save_on_goal_path else None
+        self.saved_goal_snapshots = []
 
     def _evaluate(self):
         t0 = time.time()
@@ -219,6 +247,16 @@ class ValidationCallback(BaseCallback):
               f"ゴール率={rec['goal_rate']:.2f} "
               f"訪問={rec['mean_n_visited'] or float('nan'):.1f} 区画 "
               f"({rec['eval_wall_time_s']:.1f} s)", flush=True)
+        # 稀少事象（ゴール率が非ゼロ）を記録した時点の重みを退避する（§9-19）。
+        if self.save_on_goal_path is not None and rec["goal_rate"] > 0.0:
+            p = self.save_on_goal_path.with_name(
+                f"{self.save_on_goal_path.stem}_first_goal_{rec['total_timesteps']}.zip")
+            p.parent.mkdir(parents=True, exist_ok=True)
+            self.model.save(str(p))
+            self.saved_goal_snapshots.append(
+                dict(total_timesteps=rec["total_timesteps"],
+                     goal_rate=rec["goal_rate"], path=str(p)))
+            print(f"[validation] 🔴 ゴール率が非ゼロ → 重みを退避: {p}", flush=True)
         return rec
 
     def _on_step(self) -> bool:
@@ -254,6 +292,11 @@ def main(argv=None):
     p.add_argument("--action-highpass-alpha", type=float, default=0.5)
     p.add_argument("--init-model", type=str, default=None,
                    help="初期重みにする学習済みモデル（微調整）")
+    p.add_argument("--condition", choices=["E", "C", "Cp"], default="E",
+                   help="Φ の実現方法。E=明示式（既定・条件 E）／C=配置空間の測地距離場／"
+                        "Cp=C を面ごとの定数 ρ 倍したもの（条件 C'）")
+    p.add_argument("--no-save-on-goal", action="store_true",
+                   help="検証でゴール率が非ゼロになった時点の重み退避（§9-19）を止める")
     args = p.parse_args(argv)
 
     total_steps = SMOKE_TOTAL_STEPS if args.smoke else args.total_steps
@@ -270,6 +313,8 @@ def main(argv=None):
     print(f"[train] 行動の高周波成分への罰 k = {args.action_highpass_penalty}"
           f"（α = {args.action_highpass_alpha}）")
     print(f"[train] 並列環境数 = {n_envs}")
+    print(f"[train] 条件 = {args.condition}"
+          f"（Φ: {CONDITION_FLAGS[args.condition]}）")
 
     if args.init_model:
         model = PPO.load(args.init_model, env=vec_env, seed=args.seed, verbose=1)
@@ -286,7 +331,9 @@ def main(argv=None):
     stats_cb = EpisodeStatsCallback(n_envs=n_envs,
                                     seed_log_path=log_dir / "episode_seeds.jsonl")
     val_cb = ValidationCallback(eval_every_steps=args.validation_every, log_dir=log_dir,
-                                gamma=args.gamma, maze_mode=args.maze_mode)
+                                gamma=args.gamma, maze_mode=args.maze_mode,
+                                save_on_goal_path=(None if args.no_save_on_goal
+                                                   else Path(args.model_out)))
     ckpt_cb = CheckpointCallback(save_freq=max(400_000 // n_envs, 1),
                                  save_path=str(log_dir))
 
@@ -306,13 +353,15 @@ def main(argv=None):
     with open(log_dir / ("smoke_run_summary.json" if args.smoke else "run_summary.json"),
               "w", encoding="utf-8") as f:
         json.dump(dict(
-            experiment="exp_012_cont_phi", smoke=bool(args.smoke), total_steps=total_steps,
+            experiment=f"exp_012_cond{args.condition}", smoke=bool(args.smoke), total_steps=total_steps,
             n_envs=n_envs, seed=args.seed, gamma=args.gamma, maze_mode=args.maze_mode,
             visit_bonus=args.visit_bonus, collision_penalty=args.collision_penalty,
             action_smooth_penalty=args.action_smooth_penalty,
             action_highpass_penalty=args.action_highpass_penalty,
             action_highpass_alpha=args.action_highpass_alpha,
             init_model=args.init_model, train_base_seed=TRAIN_BASE_SEED,
+            condition=args.condition, condition_flags=CONDITION_FLAGS[args.condition],
+            goal_snapshots=val_cb.saved_goal_snapshots,
             elapsed_s=elapsed, steps_per_sec=total_steps / max(elapsed, 1e-9),
             validation_history=val_cb.history, **stats_cb.summary()),
             f, indent=2, ensure_ascii=False)
