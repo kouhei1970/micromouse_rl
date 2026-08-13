@@ -339,6 +339,10 @@ class Maze6Env(gym.Env):
         # **その迷路の ρ ではない**: 条件 C では常に 1.0 が入る（同じ迷路の ρ が 1.4 でも）。
         # 面の ρ が要るときは info["geo_inv_rho"] の逆数を使う。
         self._geo_rho_applied = 1.0    # 条件 C' で適用する面ごとの定数（条件 C では 1.0）
+        # 規約判定（機体全体の内包）の記録用（裁定 R42-4）。評価ハーネスの実装を
+        # 呼ぶので、ここでは導出結果のキャッシュだけを持つ（初回のゴール時に埋まる）。
+        self._goal_footprint = None
+        self._goal_bounds = None
         self._prev_action = np.zeros(2, dtype=np.float32)
         self._action_lowpass = np.zeros(2, dtype=np.float64)   # ā_(−1) = 0（案 3）
         self._prev_dist_raw = None
@@ -872,9 +876,38 @@ class Maze6Env(gym.Env):
                               self._prev_action, rel])
         return obs.astype(np.float32)
 
+    def _goal_containment(self, x: float, y: float, yaw: float) -> bool:
+        """**機体全体**がゴール 2×2 の内側に完全に入っているか（競技規約の判定）。
+
+        🔴 これは**記録専用**であり、終了条件には使わない（裁定 R42-4・R11 バッチ項目 8）。
+        環境の終了条件は**機体中心**が区画に入ったか（`goal_rate_env`）のままである。
+        **終了条件を変えると学習の力学が変わる**（＝介入になる）ので、ここでは並記だけを
+        足す（§9-19 の重み退避と同じ理屈で不介入）。
+
+        判定の規則と外形は**評価ハーネスの実装をそのまま呼ぶ**
+        （`competition/evaluator.py` の `body_footprint` / `body_fully_inside` /
+        `goal_region_bounds`）。**独立の再記述を作らない** — R34 で確立した作法。
+        外形はモデルの AABB 8 隅から導出されるので、寸法のハードコードも無い。
+        """
+        if self._goal_footprint is None:
+            # 遅延 import（評価ハーネスは重い。既定 False の経路では読み込まない）
+            from competition.evaluator import (body_footprint, goal_region_bounds)
+            bid = mujoco.mj_name2id(self.sim.model, mujoco.mjtObj.mjOBJ_BODY, "mouse")
+            self._goal_footprint = body_footprint(self.sim.model, self.sim.data, bid)
+            self._goal_bounds = goal_region_bounds(SIZE, SIZE, self.params.cell_size)
+        from competition.evaluator import body_fully_inside
+        return bool(body_fully_inside(x, y, yaw, self._goal_footprint, self._goal_bounds))
+
     def _make_info(self, cell, collision, goal, sim_time) -> dict:
         x, y, _ = self.sim.privileged_pose()
         extra = {}
+        if goal:
+            # 🔴 規約判定の並記（裁定 R42-4）。**環境の判定（機体中心）でゴールとされた
+            # 走行について、競技規約の判定（機体全体の内包）でも成立するか**を記録する。
+            # 両者は**別の規則**である（design.md「goal_rate は環境の判定の量」）。
+            # ゴールでない歩では計算しない（毎歩やると無駄。値は False で自明）。
+            _x, _y, _yaw = self.sim.privileged_pose()
+            extra["goal_contained_rule"] = self._goal_containment(_x, _y, _yaw)
         if self.geodesic_potential:
             # 条件 C・C' の記録の義務（裁定 R24-1）: 学習迷路ごとの
             # 1/ρ = g(start)/(cs·D₀) を残す。分布が予想と食い違うこと自体が
