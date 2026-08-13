@@ -35,15 +35,19 @@ BAND = list(range(7000, 7020))
 PRED = f"{REPO_ROOT}/verification/out/r34_band7000.json"
 
 
-def impl_mask(maze):
-    """実装のマスクを呼ぶ。R34 実装後は追加の属性が要るかもしれないので、
-    足りない属性は `Maze6Env` の実体メソッドを束縛して補う（実装の中身は変えない）。"""
-    shim = SimpleNamespace(maze=maze, params=SimpleNamespace(cell_size=CS))
-    for name in dir(Maze6Env):
-        if name.startswith("_geo") and callable(getattr(Maze6Env, name, None)):
-            if not hasattr(shim, name):
-                setattr(shim, name, getattr(Maze6Env, name).__get__(shim, Maze6Env))
-    return shim._geo_allowed_mask()
+def impl_env(seed):
+    """実装のマスクを得るために**本物の環境**を建てる。
+
+    ⚠️ **配管だけの変更**（2026-08-14。検査の中身は事前作成時のまま）:
+    提出版 `b5dd960` の `_geo_obstacle_boxes()` は **MuJoCo モデル（`self.sim.model`）
+    から障害物を読む**ので、器（SimpleNamespace）では呼べない。**これは R34-1 が
+    要求した「モデル本体から導出」そのものなので、合格方向の帰結である。**
+    **合格条件は 1 つも変えていない。**
+    """
+    env = Maze6Env(maze_dir=REPO_ROOT, maze_seeds=[seed], mode="fixed",
+                   maze_mode=MODE, geodesic_potential=True)
+    env.reset(seed=0)          # sim（MuJoCo モデル）はここで建つ
+    return env
 
 
 def main():
@@ -59,7 +63,9 @@ def main():
     print(f"{'seed':>6} {'マスク不一致':>12} {'食い込み点':>10} {'1/ρ':>8} {'予測':>8} {'差':>9}")
     for seed in BAND:
         m = generate_maze(seed, mode=MODE)
-        im = impl_mask(m)
+        env = impl_env(seed)
+        assert tuple(env.maze["start"]) == tuple(m["start"]), "迷路が一致しない"
+        im = env._geo_allowed_mask()          # 仕様マスク（表面から w_lat）= 1/ρ_spec の側
         rects = obstacle_rects(m["v_walls"], m["h_walls"], with_posts=True, full_length=False)
         mine = erode_mask(xs, xs, rects, W_LAT)
         mism = int(np.sum(im != mine))
@@ -82,15 +88,15 @@ def main():
 
         # 場が完走するか ＋ 1/ρ
         try:
-            shim = SimpleNamespace(maze=m, params=SimpleNamespace(cell_size=CS))
-            shim._geo_allowed_mask = lambda mm=im: mm
-            field = Maze6Env._compute_geodesic_field(shim)
+            env._geo_allowed_mask = lambda *a, mm=im, **kw: mm
+            field = env._compute_geodesic_field()
             dmap = shortest_distances(m["v_walls"], m["h_walls"])
             start = tuple(int(v) for v in m["start"])
             d0 = int(dmap[start])
             i = int(round((start[0] + 0.5) * CS / h))
             j = int(round((start[1] + 0.5) * CS / h))
             r = float(field[i, j]) / (CS * d0)
+            env.close()
         except AssertionError as e:
             field_fail.append((seed, str(e)[:60]))
             r = float("nan")
