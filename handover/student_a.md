@@ -26,9 +26,34 @@
 
 ## 0. ⚠️ **最初に読むこと** — 現況（2026-08-13・5 代目セッション）
 
-**exp_015 は凍結帯まで完走し、カード §6・§7 記入・教授へ報告済み（検収待ち）。
-note_017 執筆済み。exp_018 起票済み。次にやるのは exp_017。**
-実行中の長時間処理は無い。
+**exp_015・note_017・exp_018 起票の 3 件は教授の検収に合格した**（R36 の便）。
+**いま exp_017（E2 を L0-b へ）を実施中。**
+
+### ⚠️ 実行中の長時間処理がある（中断したらここを読む）
+
+```bash
+# 設計帯 20 面（L0-b は 1 面 80 s 程度＝全体で 25〜30 分）
+.venv/bin/python -u experiments/exp_014_e1_integration/run_arm.py \
+    --arm l0b_e2 --policy competition.baseline_straightrun_e2:StraightRunE2Policy \
+    --maze-dir competition/mazes/design_v4 --out-root outputs/exp_017_design_check
+```
+
+**完走の確認**: `outputs/exp_017_design_check/l0b_e2/runs_detail.json` が出来ていること。
+**途中で死んでいたら出力ディレクトリを消して上のコマンドを再実行する**（決定的なので
+同じ結果になる）。その後、凍結帯で**最終 1 回**:
+
+```bash
+.venv/bin/python -u experiments/exp_014_e1_integration/run_arm.py \
+    --arm l0b_e2 --policy competition.baseline_straightrun_e2:StraightRunE2Policy \
+    --maze-dir competition/mazes/eval --out-root outputs/exp_017_budget_cutoff_l0b
+```
+
+### ⚠️ 教授へ自己申告済みの作法違反（裁定待ち）
+
+**実装直後のスモークテストに、設計帯ではなく凍結帯の maze_7837 を 1 面使った。**
+書いた直後の実装そのままで、**この結果を見て変えたものは 1 つも無い**
+（余裕 0.15 を含めパラメータは既定のまま）。**以後の開発確認は設計帯のみ。**
+教授の裁定（(a) このまま進める／(b) やり直す／(c) 別の扱い）を待っている。
 
 ### いま担当している系列 — **古典高速化トラック**（RL を使わず古典の延長で最速を狙う）
 
@@ -317,20 +342,36 @@ v3 帯では「(c1) は 3 方式とも 0.4〜1.6% しかなく、(c) は実質�
 | `experiments/exp_015_time_optimal_route/route_model.py` | 紙の上で「対照が引く経路」と「TR が引く経路」を再現。**発動の事前予想に使える** |
 | `experiments/exp_015_time_optimal_route/aggregate.py` | 集計。exp_013 の定義と exp_014 の対応差を importlib で再利用（R23） |
 
-## 0-E. exp_017（E2 を L0-b へ）— **承認済み・未着手**
+## 0-E. exp_017（E2 を L0-b へ）— **実施中**
 
-**実施時期: exp_015 の後・exp_016 の着手前**（裁定 R29）。
+カード `experiments/exp_017_budget_cutoff_l0b/card.md`（commit `2936211`）。
+**予測 V1〜V6 は実装前に登録済み。変更しないこと。**
+実装 `competition/baseline_straightrun_e2.py`（commit `b198dbb`）。
 
-**動機**: exp_014 で **maze_7837 が 0.6 s 差で (b) を失った**（§0-C）。E2 は
+**動機**: exp_014 で **maze_7837 が 0.6 s 差で (b) を失った**。E2 は
 「残り持ち時間で最速走行が 1 本入るか」で打ち切る設計なので、**まさにこれを救う機構**。
-exp_013 で E2 は L0-a の (b) を 80% → 90% にした実績がある。
 
-**教授の指示**: 事前登録に **maze_7837 の救済可否を面指定で書いてよい**
-（発動予測が具体的に書ける稀な機会）。
+**実装の要点**: `StraightRunE1Policy` を継承し **`_target_cells` だけ**上書き。
+予算判定の本体（`_seconds_per_cell` / `_known_distance` / `_budget_exhausted`）は
+`AdachiE2Policy` から**関数を借りて再利用**（コピーしない）。
+**`__init__` / `on_maze_start` / `act` は借りない** — 引数なし `super()` は
+**定義されたクラス**を基準に解決されるので、借りると L0-a 側の実装へ飛ぶ。
 
-**実装の見込み**: `competition/baseline_classical_e2.py` の `AdachiE2Policy` が
-`AdachiPolicy` を継承して `_target_cells` と予算判定だけを上書きしている。
-**同じ形で `StraightRunE1Policy` を継承すればよい。**
+**maze_7837 の面指定予測は的中した**（凍結帯 1 面のスモークテスト。上記の自己申告）:
+
+| 量 | 紙の推定（事前登録） | 実測 |
+|---|---|---|
+| 打ち切り $t_{cut}$ | ≤ 197.9 s | **198.19 s** |
+| 走行 2 の開始 | 310 s 以前 | **306.61 s** |
+| 走行 2 | goal | **goal 86.12 s**（392.73 s 完了） |
+| (d) | 100 s 未満 | **182.24 → 86.12 s** |
+
+**ただし「下界（これより早く成立する）」という向きの主張は外れ**（実測が 0.29 s 遅い）。
+**向きも予測の一部なので外れとして記録する。**理由は未詰め（$s_{区画}$ の分母の
+数え方が紙の計算と実装で違う可能性）。
+
+**残り**: 設計帯の完走確認 → 凍結帯 1 回 → 集計 → カード §7・§8 → 報告。
+**報告には (b) と (e') の交換を必ず両方書く**（カード §6）。
 
 ---
 
