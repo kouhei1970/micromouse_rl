@@ -13,13 +13,15 @@ pytest は使わない plain Python スクリプト（tests/test_corridor.py と
 
 検査項目（design.md §4 末尾の (a)〜(e) ＋ (b-2) ＋ (b-3)。裁定 R8・R12 を反映）:
   (a)   区画中心で Φ が旧実装（階段版）と一致する（検証帯 20 面 × 全区画。ゴール区画は除く）
-  (b)   跳びが無いこと。閾値は式で定義する（裁定 R7-6・R18-2）:
-            |ΔΦ_t| ≤ √2 · 1.10 · |Δp_t| + 1e-9 m
+  (b)   跳びが無いこと。閾値は式で定義する（裁定 R7-6・R18-2・R21-E）:
+            |ΔΦ_t| ≤ 2.7972 · 1.10 · |Δp_t| + 1e-9 m
         |Δp| は真の位置から求めた機体中心の 1 ステップ変位。直進・90°旋回・S 字・急停止の
         4 種で全ステップを検査。同じ走行を階段版でも検査し、そちらでは 0.18 に近い跳びが
-        出ることを確認する（＝この検査が連続化を検出できることの証拠）
+        出ることを確認する（＝この検査が連続化を検出できることの証拠。階段版の比は 8.08
+        以上あるので、定数を 2.7972 にしても検出力は残る）
   (L)   刻み不変性（裁定 R18-4 で新設）。区画内を 3 水準の格子で走査し、最大
-        |ΔΦ|/|Δp| が √2 近傍で一定であること。真の不連続なら刻み数に比例して発散する
+        |ΔΦ|/|Δp| が**定義の Lipschitz 定数**（条件 E は √2）近傍で一定であること。
+        真の不連続なら刻み数に比例して発散する。**(b) の 2.7972 とは用途が違う定数**
   (b-2) **全**降下開口部での境界一致（裁定 R8・R13 条件 3。D1/D2 の回帰検査）
   (b-3) step() 経路と直接呼び出しの全ステップ一致（裁定 R12 の確認事項）
   (c)   Φ が横方向のずれに不感（**降下隣接がちょうど 1 つ、かつ折れ線が一直線**の構成に
@@ -66,22 +68,32 @@ WHEEL_R = _P.wheel_radius                 # 車輪半径 [m]
 VMAX = WHEEL_R * _P.voltage_limit / (_P.motor_Ke * _P.gear_ratio)
 
 # (b) の閾値（design.md §4 (b) の式。**緩めてはならない**）
-#   |ΔΦ_t| ≤ √2 · κ · |Δp_t| + ε
-# √2 は新しい Φ の Lipschitz 定数（厳密値）。(a)（中心で階段版と一致）と境界一致を
-# 課すと、曲がる区画では w_in と w_out の間で Φ が cs = 0.18 m 変化しなければならない
-# のに直線距離は cs/√2 = 0.127279 m しかないので、|∇Φ| ≤ 1 は数学的に達成できない。
+#   |ΔΦ_t| ≤ L · κ · |Δp_t| + ε
 # κ は「区画をまたぐ歩で境界の交点を経由して評価する」ぶんの余裕で、1 歩の弧長／弦長
 # (θ/2)/sin(θ/2) を押さえる。物理的な最大は両輪を逆向きに全電圧で回した
 # ω_max = 2·v_max/tread で θ_max = ω_max·Δt = 1.136 rad → 1.0553。κ=1.10 は 4% の余裕。
 # ε は数値誤差ぶん（Φ は O(1 m) の倍精度和なので実際の誤差は 1e-15 程度）。
-LIPSCHITZ = math.sqrt(2.0)
+# 🔴 **2 つの定数を混同しないこと**（用途が違う）:
+#   JUMP_L_E   … (b) 用。**区画をまたぐ歩**を含めた実効の上限。条件 E は境界一致が
+#                開口部の中点でしか成立しないので、中点から外れて通ると差が出る。
+#                辺全体での一致を課したときの下限。無次元形は（裁定 R24-3）
+#                    L_E = s / (√2·(t_w/2 + w_r)) = 1/(√2·ŵ)、ŵ = (t_w/2 + w_r)/s
+#                s=区画寸法 0.18、t_w=壁厚 0.012（mouse/mjcf.py）、w_r=機体最外半径 0.0395。
+#                上限に到達する 2 点対は「進入辺・退出辺のそれぞれで、2 辺が共有する
+#                内側の角へ最も寄れる点」（中点から ±μ_max、μ_max=(s−t_w)/2−w_r=0.0445）。
+#                🔴 初出時に 3.2223 と書いたのは t_w/2=6mm を落とした誤り。是正は
+#                定数を小さくする＝**検査を厳しくする**向き。裁定 R21-E・R24-3
+#   LIPSCHITZ_DEF … (L) 用。**同一区画・同一 c_prev の中**での定義そのものの
+#                Lipschitz 定数。条件 E では折れの内側で ∇ℓ = a − b（a ⊥ b・単位）なので √2
+JUMP_L_E = 0.18 / (math.sqrt(2.0) * (0.012 / 2 + 0.0395))   # = 2.7972
+LIPSCHITZ_DEF = math.sqrt(2.0)
 JUMP_KAPPA = 1.10
 JUMP_EPS = 1e-9                           # [m]
 DISP_ABS_CAP = VMAX * DT                  # [m] |Δp| 自体の物理的な上限（照合用）
 
 # (L) 刻み不変性検査の刻み数（区画一辺 0.18 m を N 分割）と、許容する最大比
 GRID_LEVELS = (30, 120, 480)              # → 6.0 / 1.5 / 0.375 mm
-GRID_TOL = 1e-6                           # 最大比が √2 を超えてよい幅
+GRID_TOL = 1e-6                           # 最大比が定義の Lipschitz 定数を超えてよい幅
 
 TOL_EXACT = 1e-12                         # (a)(b-3)(c)(f) の一致判定。(b-3) のみ design.md
                                           # が「絶対誤差 1e-12 未満」と明示。他は厳密一致が
@@ -143,7 +155,7 @@ def jump_threshold(disp: float) -> float:
     最大 2.414 倍まで過小評価する（実測。10311 歩）。v 基準を保つには余裕係数 2.5 が
     必要で検査が 2.4 倍甘くなるため、真の位置から |Δp| を直接測る形へ改めた。
     """
-    return LIPSCHITZ * JUMP_KAPPA * disp + JUMP_EPS
+    return JUMP_L_E * JUMP_KAPPA * disp + JUMP_EPS
 
 
 # ======================================================================
@@ -350,7 +362,8 @@ def test_b_no_jump():
     detail = [
         f"走行: {len(VALID_SEEDS)} 面 × 台本 {len(SCRIPTS)} 種、判定したステップ {n_steps}、"
         f"区画遷移 {n_trans} 回",
-        f"閾値: √2 · {JUMP_KAPPA} · |Δp| + {JUMP_EPS:.0e} m",
+        f"閾値: {JUMP_L_E} · {JUMP_KAPPA} · |Δp| + {JUMP_EPS:.0e} m"
+        f"（L_E = s/(√2·(t_w/2+w_r)) = {JUMP_L_E:.4f}。辺全体一致と機体到達域から。裁定 R24-3）",
         f"|Δp| の最大 = {max_disp:.5f} m（物理上限 v_max·Δt = {DISP_ABS_CAP:.4f} m、"
         f"超過 {n_cap} 歩。v_max = {VMAX:.3f} m/s）",
         "",
@@ -377,7 +390,7 @@ def test_b_no_jump():
                 f"   面{v['seed']} {v['script']} step{v['step']} [{v['kind']}] "
                 f"|ΔΦ|={v['dphi']:.5f} > 閾値 {v['thr']:.5f} "
                 f"（|Δp|={v['disp']:.5f}、比 {v['ratio']:.3f}／許容 "
-                f"{LIPSCHITZ * JUMP_KAPPA:.3f}）区画 {v['cell_from']}→{v['cell_to']} "
+                f"{JUMP_L_E * JUMP_KAPPA:.3f}）区画 {v['cell_from']}→{v['cell_to']} "
                 f"xy=({v['xy_from'][0]:.4f},{v['xy_from'][1]:.4f})→"
                 f"({v['xy_to'][0]:.4f},{v['xy_to'][1]:.4f})")
     return ok, detail
@@ -491,13 +504,19 @@ def test_L_grid_invariance():
     # **決定的に選んだ標本**に限り、代わりに 3 つの型（折れ／直線／退化）を必ず含める。
     # 型が 1 つでも欠けたら検査が空振りなので FAIL にする。
     configs = []            # (seed, cell, prev, 型)
-    per_kind = {"折れ": [], "直線": [], "退化": []}
+    per_kind = {"折れ": [], "直線": [], "退化": [], "ゴール": []}
     for seed in VALID_SEEDS[:5]:
         env = geom_env(seed)
         for cx in range(SIZE):
             for cy in range(SIZE):
                 cell = (cx, cy)
                 if cell in GOAL_CELLS:
+                    # 裁定 R21: ゴール 2x2 も走査対象に含める。d=0 で remaining=0 と
+                    # 短絡するので Φ は一様のはずで、最大比 0 が期待値。0 でなければ
+                    # 短絡の実装に欠陥がある。
+                    for prev in prev_cell_candidates(env, cell):
+                        if len(per_kind["ゴール"]) < 4:
+                            per_kind["ゴール"].append((seed, cell, prev, "ゴール"))
                     continue
                 C = env._cell_center(cell)
                 for prev in prev_cell_candidates(env, cell):
@@ -509,7 +528,7 @@ def test_L_grid_invariance():
                         if len(per_kind[kind]) < 8:
                             per_kind[kind].append((seed, cell, prev, kind))
                         break
-    for kind in ("折れ", "直線", "退化"):
+    for kind in ("折れ", "直線", "退化", "ゴール"):
         configs += per_kind[kind]
 
     envs = {s: geom_env(s) for s in {c[0] for c in configs}}
@@ -539,12 +558,13 @@ def test_L_grid_invariance():
                         if r > worst:
                             worst, worst_at = r, (seed, cell, prev, kind, d)
         rows.append((N, step * 1000, worst, worst_at))
-        if worst > LIPSCHITZ + GRID_TOL:
+        if worst > LIPSCHITZ_DEF + GRID_TOL:
             ok = False
     detail = [
         f"標本 {len(configs)} 構成（折れ {len(per_kind['折れ'])} / 直線 "
-        f"{len(per_kind['直線'])} / 退化 {len(per_kind['退化'])}）× 刻み 3 水準。"
-        f"許容 √2 = {LIPSCHITZ:.6f} + {GRID_TOL:.0e}",
+        f"{len(per_kind['直線'])} / 退化 {len(per_kind['退化'])} / "
+        f"ゴール2x2 {len(per_kind['ゴール'])}）× 刻み 3 水準。"
+        f"許容（定義の Lipschitz 定数）= {LIPSCHITZ_DEF:.6f} + {GRID_TOL:.0e}",
         f"{'刻み':>6}{'1 刻み[mm]':>12}{'最大 |ΔΦ|/|Δp|':>18}   最大値の位置",
     ]
     for N, mm, worst, at in rows:
@@ -552,7 +572,7 @@ def test_L_grid_invariance():
     spread = max(r[2] for r in rows) - min(r[2] for r in rows)
     detail.append(f"3 水準の最大比のばらつき = {spread:.3e}"
                   f"（刻みに比例して増えていれば真の不連続。旧実装では 30 → 120 → 480 だった）")
-    for kind in ("折れ", "直線", "退化"):
+    for kind in ("折れ", "直線", "退化", "ゴール"):
         if not per_kind[kind]:
             detail.append(f"🔴 型「{kind}」の標本が 0 件 = 検査が空振りしている")
     return ok, detail
