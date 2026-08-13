@@ -1,0 +1,142 @@
+{
+ "definition": "h(phi) = max_{p in body} p·(cos phi, sin phi)、機体座標系",
+ "main_column": "lateral_half_width_m = h(theta+90deg)（進行方向 theta で走るときの横方向半幅）",
+ "n_geoms": 20,
+ "rows": [
+  {
+   "h_theta_m": 0.049999999999999996,
+   "lateral_half_width_m": 0.03999999973748278,
+   "theta_deg": 0
+  },
+  {
+   "h_theta_m": 0.05242440718701702,
+   "lateral_half_width_m": 0.0433340173868846,
+   "theta_deg": 5
+  },
+  {
+   "h_theta_m": 0.054449832980618305,
+   "lateral_half_width_m": 0.04633823699817715,
+   "theta_deg": 10
+  },
+  {
+   "h_theta_m": 0.056060862667529035,
+   "lateral_half_width_m": 0.048989794646121076,
+   "theta_deg": 15
+  },
+  {
+   "h_theta_m": 0.05724523533906548,
+   "lateral_half_width_m": 0.051268510375961224,
+   "theta_deg": 20
+  },
+  {
+   "h_theta_m": 0.05799393720405348,
+   "lateral_half_width_m": 0.053157041785067374,
+   "theta_deg": 25
+  },
+  {
+   "h_theta_m": 0.05830127018922192,
+   "lateral_half_width_m": 0.05464101600908976,
+   "theta_deg": 30
+  },
+  {
+   "h_theta_m": 0.05816489530498098,
+   "lateral_half_width_m": 0.05570913910813545,
+   "theta_deg": 35
+  },
+  {
+   "h_theta_m": 0.05758585044654508,
+   "lateral_half_width_m": 0.056353282020470324,
+   "theta_deg": 40
+  },
+  {
+   "h_theta_m": 0.0574172498808538,
+   "lateral_half_width_m": 0.0564307442820141,
+   "theta_deg": 41
+  },
+  {
+   "h_theta_m": 0.05723115946463546,
+   "lateral_half_width_m": 0.05649101719219268,
+   "theta_deg": 42
+  },
+  {
+   "h_theta_m": 0.057027635882833466,
+   "lateral_half_width_m": 0.05653408239129375,
+   "theta_deg": 43
+  },
+  {
+   "h_theta_m": 0.05680674113070247,
+   "lateral_half_width_m": 0.05655992676124047,
+   "theta_deg": 44
+  },
+  {
+   "h_theta_m": 0.056568542494923796,
+   "lateral_half_width_m": 0.056568542494923796,
+   "theta_deg": 45
+  },
+  {
+   "h_theta_m": 0.05655992676124048,
+   "lateral_half_width_m": 0.05680674113070247,
+   "theta_deg": 46
+  },
+  {
+   "h_theta_m": 0.056534082391293754,
+   "lateral_half_width_m": 0.05702763588283347,
+   "theta_deg": 47
+  },
+  {
+   "h_theta_m": 0.05649101719219268,
+   "lateral_half_width_m": 0.057231159464635445,
+   "theta_deg": 48
+  },
+  {
+   "h_theta_m": 0.05643074428201411,
+   "lateral_half_width_m": 0.05741724988085381,
+   "theta_deg": 49
+  },
+  {
+   "h_theta_m": 0.056353282020470324,
+   "lateral_half_width_m": 0.05758585044654507,
+   "theta_deg": 50
+  },
+  {
+   "h_theta_m": 0.05570913910813545,
+   "lateral_half_width_m": 0.058164895304980965,
+   "theta_deg": 55
+  },
+  {
+   "h_theta_m": 0.05464101600908977,
+   "lateral_half_width_m": 0.05830127018922193,
+   "theta_deg": 60
+  },
+  {
+   "h_theta_m": 0.053157041785067374,
+   "lateral_half_width_m": 0.05799393720405348,
+   "theta_deg": 65
+  },
+  {
+   "h_theta_m": 0.05126851037596124,
+   "lateral_half_width_m": 0.05724523533906548,
+   "theta_deg": 70
+  },
+  {
+   "h_theta_m": 0.04898979464612106,
+   "lateral_half_width_m": 0.056060862667529035,
+   "theta_deg": 75
+  },
+  {
+   "h_theta_m": 0.04633823699817714,
+   "lateral_half_width_m": 0.0544498329806183,
+   "theta_deg": 80
+  },
+  {
+   "h_theta_m": 0.04333401738688459,
+   "lateral_half_width_m": 0.05242440718701702,
+   "theta_deg": 85
+  },
+  {
+   "h_theta_m": 0.03999999973748278,
+   "lateral_half_width_m": 0.05,
+   "theta_deg": 90
+  }
+ ]
+}
