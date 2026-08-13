@@ -250,7 +250,7 @@ def verify_rho_plumbing(run_rollout: bool = True) -> dict:
                                geodesic_rho_scale=scale)
                 _obs, info = env.reset(seed=0)
                 if scale:
-                    rho_seen = env._geo_rho
+                    rho_seen = env._geo_rho_applied
                 else:
                     info0 = info
                 series = [env._potential(env._cell, env._prev_cell,
@@ -280,7 +280,7 @@ def verify_rho_plumbing(run_rollout: bool = True) -> dict:
         sx, sy = m["start"]
         cx_m, cy_m = sx * CS + CS / 2, sy * CS + CS / 2
         env._geo_start = env._geodesic_value(cx_m, cy_m)
-        env._geo_rho = (CS * env._d_start) / env._geo_start
+        env._geo_rho_applied = (CS * env._d_start) / env._geo_start
         # ゴール区画の**区画中心**で Φ を測る（g = 0 の点）。
         # ⚠️ ゴール 2x2 の**中心**は使えない — そこには柱 post_3_3 が実際に立っており
         # （design.md「既知の環境特性」）、R34 のマスクでは禁止帯に入るため g = 0 でない。

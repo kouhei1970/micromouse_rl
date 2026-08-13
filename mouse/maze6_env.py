@@ -335,7 +335,10 @@ class Maze6Env(gym.Env):
         self._prev_cell = None         # c_prev: 直前に居た区画（連続 Φ 専用。reset で None）
         self._geo_field = None         # (N, N) 測地距離場（測地版 Φ 専用。reset で前計算）
         self._geo_start = None         # g(reset 直後の真の位置)（測地版 Φ のエピソード定数）
-        self._geo_rho = 1.0            # 条件 C' の面ごとの定数 ρ（条件 C では 1.0 のまま）
+        # 🔴 名前は「**適用した倍率**」を指す（R11 バッチ項目 6・§9-17「量を名指しする」）。
+        # **その迷路の ρ ではない**: 条件 C では常に 1.0 が入る（同じ迷路の ρ が 1.4 でも）。
+        # 面の ρ が要るときは info["geo_inv_rho"] の逆数を使う。
+        self._geo_rho_applied = 1.0    # 条件 C' で適用する面ごとの定数（条件 C では 1.0）
         self._prev_action = np.zeros(2, dtype=np.float32)
         self._action_lowpass = np.zeros(2, dtype=np.float64)   # ā_(−1) = 0（案 3）
         self._prev_dist_raw = None
@@ -802,11 +805,12 @@ class Maze6Env(gym.Env):
         `self._geo_start` として reset() がエピソード定数として保存する
         （擾乱後の真の位置で決めるので Φ₀ = 0 が構成上成立する）。
 
-        ρ は条件 C' の面ごとの定数（`self._geo_rho`。条件 C では 1.0）。
+        ρ は条件 C' で**実際に適用する**面ごとの定数（`self._geo_rho_applied`。
+        条件 C では 1.0）。
         定数倍なので Φ₀ = 0・位置だけの関数・c_prev 非依存はいずれも保たれ、
         Lipschitz 定数と 1 歩の跳びだけが ρ 倍される。
         """
-        return self._geo_rho * (self._geo_start - self._geodesic_value(x, y))
+        return self._geo_rho_applied * (self._geo_start - self._geodesic_value(x, y))
 
     def _potential(self, cell, prev_cell=None, x: float = None, y: float = None) -> float:
         """Φ [m]。優先順位は geodesic > continuous > stair（この順に分岐する）。
@@ -876,7 +880,10 @@ class Maze6Env(gym.Env):
             # 1/ρ = g(start)/(cs·D₀) を残す。分布が予想と食い違うこと自体が
             # 結果の解釈に効くため、C（ρ=1）でも C'（ρ≠1）でも同じ量を記録する。
             denom = self.params.cell_size * self._d_start
-            extra["geo_rho"] = float(self._geo_rho)
+            # 🔴 2026-08-14（R11 項目 6）: 鍵名を `geo_rho` → `geo_rho_applied` へ改名。
+            # **値も計算式も変えていない**ので、**exp_012 の C・C' のログに残る旧名
+            # `geo_rho` はこの `geo_rho_applied` と同じ量**（＝ 実際に適用した倍率）である。
+            extra["geo_rho_applied"] = float(self._geo_rho_applied)
             extra["geo_inv_rho"] = (float(self._geo_start / denom) if denom > 0
                                     else float("nan"))
             extra["geo_g_start_m"] = float(self._geo_start)
@@ -944,13 +951,13 @@ class Maze6Env(gym.Env):
             #     ρ = cs·D₀ / g(start)
             # 分子は条件 E での総整形量（Φ の全変化量 = D₀ 区画 × cs）、分母は条件 C
             # でのそれ。**ρ 倍は Φ 全体に掛かる定数倍なので Φ₀ = 0 は保たれる。**
-            self._geo_rho = 1.0
+            self._geo_rho_applied = 1.0
             if self.geodesic_rho_scale:
                 if not self._geo_start > 0.0:
                     raise AssertionError(
                         f"g(start) = {self._geo_start!r} が正でないので ρ を決められない"
                         "（スタート区画がゴール 2x2 に一致している可能性。実装の欠陥）")
-                self._geo_rho = (cs * self._d_start) / self._geo_start
+                self._geo_rho_applied = (cs * self._d_start) / self._geo_start
 
         self._visited = {start}
         self._step_count = 0

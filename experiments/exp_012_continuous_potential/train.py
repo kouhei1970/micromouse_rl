@@ -167,7 +167,7 @@ class EpisodeStatsCallback(BaseCallback):
                 # 値は**実行時の場**から出たもの（= 1/ρ_field。design.md の命名。R39-3）。
                 if "geo_inv_rho" in info:
                     rec["geo_inv_rho_field"] = float(info["geo_inv_rho"])
-                    rec["geo_rho"] = float(info["geo_rho"])
+                    rec["geo_rho_applied"] = float(info["geo_rho_applied"])
                     rec["geo_g_start_m"] = float(info["geo_g_start_m"])
                 self._seed_file.write(json.dumps(rec, ensure_ascii=False) + "\n")
                 self._written += 1
