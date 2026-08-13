@@ -1,0 +1,249 @@
+{
+ "band": "seed 7000-7019",
+ "grid_h_m": 0.006,
+ "grid_n": 181,
+ "median_current": 0.6922725035,
+ "median_r34": 0.734352545,
+ "rows": [
+  {
+   "D0": 6,
+   "g_start_current": 0.564852814,
+   "g_start_r34": 0.671043723,
+   "inv_rho_current": 0.523011865,
+   "inv_rho_r34": 0.62133678,
+   "seed": 7000,
+   "start": [
+    5,
+    0
+   ]
+  },
+  {
+   "D0": 9,
+   "g_start_current": 0.852499567,
+   "g_start_r34": 1.007543289,
+   "inv_rho_current": 0.5262343,
+   "inv_rho_r34": 0.621940302,
+   "seed": 7001,
+   "start": [
+    5,
+    0
+   ]
+  },
+  {
+   "D0": 13,
+   "g_start_current": 1.513778787,
+   "g_start_r34": 1.712454978,
+   "inv_rho_current": 0.646914012,
+   "inv_rho_r34": 0.731818366,
+   "seed": 7002,
+   "start": [
+    0,
+    0
+   ]
+  },
+  {
+   "D0": 10,
+   "g_start_current": 1.265719913,
+   "g_start_r34": 1.368572727,
+   "inv_rho_current": 0.703177729,
+   "inv_rho_r34": 0.760318181,
+   "seed": 7003,
+   "start": [
+    0,
+    5
+   ]
+  },
+  {
+   "D0": 13,
+   "g_start_current": 1.662499567,
+   "g_start_r34": 1.817896536,
+   "inv_rho_current": 0.7104699,
+   "inv_rho_r34": 0.776878862,
+   "seed": 7004,
+   "start": [
+    0,
+    5
+   ]
+  },
+  {
+   "D0": 13,
+   "g_start_current": 1.804014285,
+   "g_start_r34": 1.915955411,
+   "inv_rho_current": 0.770946276,
+   "inv_rho_r34": 0.818784364,
+   "seed": 7005,
+   "start": [
+    5,
+    5
+   ]
+  },
+  {
+   "D0": 10,
+   "g_start_current": 1.265719913,
+   "g_start_r34": 1.368572727,
+   "inv_rho_current": 0.703177729,
+   "inv_rho_r34": 0.760318181,
+   "seed": 7006,
+   "start": [
+    0,
+    5
+   ]
+  },
+  {
+   "D0": 10,
+   "g_start_current": 1.237602164,
+   "g_start_r34": 1.326396103,
+   "inv_rho_current": 0.687556758,
+   "inv_rho_r34": 0.736886724,
+   "seed": 7007,
+   "start": [
+    0,
+    5
+   ]
+  },
+  {
+   "D0": 11,
+   "g_start_current": 1.553646753,
+   "g_start_r34": 1.619220346,
+   "inv_rho_current": 0.784670077,
+   "inv_rho_r34": 0.817788054,
+   "seed": 7008,
+   "start": [
+    5,
+    0
+   ]
+  },
+  {
+   "D0": 15,
+   "g_start_current": 2.024454978,
+   "g_start_r34": 2.122337229,
+   "inv_rho_current": 0.74979814,
+   "inv_rho_r34": 0.786050825,
+   "seed": 7009,
+   "start": [
+    0,
+    5
+   ]
+  },
+  {
+   "D0": 4,
+   "g_start_current": 0.454440692,
+   "g_start_r34": 0.48607316,
+   "inv_rho_current": 0.631167628,
+   "inv_rho_r34": 0.675101611,
+   "seed": 7010,
+   "start": [
+    0,
+    5
+   ]
+  },
+  {
+   "D0": 9,
+   "g_start_current": 1.176925974,
+   "g_start_r34": 1.251837662,
+   "inv_rho_current": 0.726497515,
+   "inv_rho_r34": 0.772739297,
+   "seed": 7011,
+   "start": [
+    0,
+    5
+   ]
+  },
+  {
+   "D0": 15,
+   "g_start_current": 1.773807358,
+   "g_start_r34": 1.911454111,
+   "inv_rho_current": 0.656965688,
+   "inv_rho_r34": 0.707945967,
+   "seed": 7012,
+   "start": [
+    0,
+    5
+   ]
+  },
+  {
+   "D0": 14,
+   "g_start_current": 1.756410388,
+   "g_start_r34": 1.83689567,
+   "inv_rho_current": 0.696988249,
+   "inv_rho_r34": 0.728926853,
+   "seed": 7013,
+   "start": [
+    0,
+    5
+   ]
+  },
+  {
+   "D0": 8,
+   "g_start_current": 1.020322943,
+   "g_start_r34": 1.065837662,
+   "inv_rho_current": 0.708557599,
+   "inv_rho_r34": 0.740165043,
+   "seed": 7014,
+   "start": [
+    5,
+    5
+   ]
+  },
+  {
+   "D0": 8,
+   "g_start_current": 0.878132034,
+   "g_start_r34": 1.015955411,
+   "inv_rho_current": 0.609813913,
+   "inv_rho_r34": 0.705524591,
+   "seed": 7015,
+   "start": [
+    5,
+    5
+   ]
+  },
+  {
+   "D0": 5,
+   "g_start_current": 0.703882251,
+   "g_start_r34": 0.735338095,
+   "inv_rho_current": 0.78209139,
+   "inv_rho_r34": 0.817042328,
+   "seed": 7016,
+   "start": [
+    5,
+    5
+   ]
+  },
+  {
+   "D0": 4,
+   "g_start_current": 0.429837662,
+   "g_start_r34": 0.443896536,
+   "inv_rho_current": 0.596996753,
+   "inv_rho_r34": 0.616522967,
+   "seed": 7017,
+   "start": [
+    0,
+    5
+   ]
+  },
+  {
+   "D0": 6,
+   "g_start_current": 0.570852814,
+   "g_start_r34": 0.677043723,
+   "inv_rho_current": 0.52856742,
+   "inv_rho_r34": 0.626892336,
+   "seed": 7018,
+   "start": [
+    5,
+    5
+   ]
+  },
+  {
+   "D0": 7,
+   "g_start_current": 0.631529004,
+   "g_start_r34": 0.751602164,
+   "inv_rho_current": 0.501213495,
+   "inv_rho_r34": 0.596509654,
+   "seed": 7019,
+   "start": [
+    5,
+    5
+   ]
+  }
+ ]
+}

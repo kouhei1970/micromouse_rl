@@ -1,0 +1,294 @@
+{
+ "band": "学習迷路 6x6 loop, seed 1-20",
+ "definition": "inv_rho = g(start) / (0.18 * D0)",
+ "grid_h_m": 0.006,
+ "grid_n": 181,
+ "mask_A_current": "実装 Maze6Env._geo_allowed_mask() をそのまま",
+ "mask_B_r34": "mouse/mjcf.py が生成する壁の箱＋柱の表面からの距離 >= 0.0400 m",
+ "median_current": 0.651671562,
+ "median_r34": 0.707588899,
+ "purpose": "裁定 R34 の面ごと回答表（准教授の事前予測）。SHA-256 を先行コミットする",
+ "rows": [
+  {
+   "D0": 7,
+   "g_start_current": 0.625529004,
+   "g_start_r34": 0.751602164,
+   "inv_rho_current": 0.49645159,
+   "inv_rho_r34": 0.596509654,
+   "n_allowed_current": 19526,
+   "n_allowed_r34": 17637,
+   "seed": 1,
+   "start": [
+    5,
+    0
+   ]
+  },
+  {
+   "D0": 7,
+   "g_start_current": 0.722735065,
+   "g_start_r34": 0.814867099,
+   "inv_rho_current": 0.573599258,
+   "inv_rho_r34": 0.64671992,
+   "n_allowed_current": 18942,
+   "n_allowed_r34": 17364,
+   "seed": 2,
+   "start": [
+    5,
+    5
+   ]
+  },
+  {
+   "D0": 11,
+   "g_start_current": 0.997705627,
+   "g_start_r34": 1.192513852,
+   "inv_rho_current": 0.503891731,
+   "inv_rho_r34": 0.602279723,
+   "n_allowed_current": 19237,
+   "n_allowed_r34": 17597,
+   "seed": 3,
+   "start": [
+    5,
+    0
+   ]
+  },
+  {
+   "D0": 4,
+   "g_start_current": 0.537764502,
+   "g_start_r34": 0.555338095,
+   "inv_rho_current": 0.746895142,
+   "inv_rho_r34": 0.77130291,
+   "n_allowed_current": 18611,
+   "n_allowed_r34": 17123,
+   "seed": 4,
+   "start": [
+    5,
+    0
+   ]
+  },
+  {
+   "D0": 9,
+   "g_start_current": 0.970617316,
+   "g_start_r34": 1.076808225,
+   "inv_rho_current": 0.599146491,
+   "inv_rho_r34": 0.664696435,
+   "n_allowed_current": 19687,
+   "n_allowed_r34": 17854,
+   "seed": 5,
+   "start": [
+    5,
+    0
+   ]
+  },
+  {
+   "D0": 11,
+   "g_start_current": 1.210014285,
+   "g_start_r34": 1.373543289,
+   "inv_rho_current": 0.611118326,
+   "inv_rho_r34": 0.693708732,
+   "n_allowed_current": 20546,
+   "n_allowed_r34": 18167,
+   "seed": 6,
+   "start": [
+    5,
+    0
+   ]
+  },
+  {
+   "D0": 9,
+   "g_start_current": 1.176925974,
+   "g_start_r34": 1.251837662,
+   "inv_rho_current": 0.726497515,
+   "inv_rho_r34": 0.772739297,
+   "n_allowed_current": 19695,
+   "n_allowed_r34": 17854,
+   "seed": 7,
+   "start": [
+    0,
+    5
+   ]
+  },
+  {
+   "D0": 4,
+   "g_start_current": 0.535279221,
+   "g_start_r34": 0.549338095,
+   "inv_rho_current": 0.743443362,
+   "inv_rho_r34": 0.762969577,
+   "n_allowed_current": 19920,
+   "n_allowed_r34": 17886,
+   "seed": 8,
+   "start": [
+    5,
+    0
+   ]
+  },
+  {
+   "D0": 7,
+   "g_start_current": 0.756249783,
+   "g_start_r34": 0.851043723,
+   "inv_rho_current": 0.600198241,
+   "inv_rho_r34": 0.675431526,
+   "n_allowed_current": 19815,
+   "n_allowed_r34": 17870,
+   "seed": 9,
+   "start": [
+    0,
+    0
+   ]
+  },
+  {
+   "D0": 9,
+   "g_start_current": 1.182925974,
+   "g_start_r34": 1.245837662,
+   "inv_rho_current": 0.730201218,
+   "inv_rho_r34": 0.769035594,
+   "n_allowed_current": 19511,
+   "n_allowed_r34": 17637,
+   "seed": 10,
+   "start": [
+    5,
+    0
+   ]
+  },
+  {
+   "D0": 10,
+   "g_start_current": 1.053411255,
+   "g_start_r34": 1.187543289,
+   "inv_rho_current": 0.585228475,
+   "inv_rho_r34": 0.659746272,
+   "n_allowed_current": 19455,
+   "n_allowed_r34": 17629,
+   "seed": 11,
+   "start": [
+    5,
+    5
+   ]
+  },
+  {
+   "D0": 6,
+   "g_start_current": 0.700367532,
+   "g_start_r34": 0.769102597,
+   "inv_rho_current": 0.648488456,
+   "inv_rho_r34": 0.712132034,
+   "n_allowed_current": 19399,
+   "n_allowed_r34": 17621,
+   "seed": 12,
+   "start": [
+    5,
+    0
+   ]
+  },
+  {
+   "D0": 12,
+   "g_start_current": 1.435778787,
+   "g_start_r34": 1.547543289,
+   "inv_rho_current": 0.664712402,
+   "inv_rho_r34": 0.716455227,
+   "n_allowed_current": 19841,
+   "n_allowed_r34": 17878,
+   "seed": 13,
+   "start": [
+    5,
+    5
+   ]
+  },
+  {
+   "D0": 12,
+   "g_start_current": 1.424808225,
+   "g_start_r34": 1.553543289,
+   "inv_rho_current": 0.659633437,
+   "inv_rho_r34": 0.719233004,
+   "n_allowed_current": 18956,
+   "n_allowed_r34": 17364,
+   "seed": 14,
+   "start": [
+    0,
+    0
+   ]
+  },
+  {
+   "D0": 13,
+   "g_start_current": 1.552617316,
+   "g_start_r34": 1.69874935,
+   "inv_rho_current": 0.663511673,
+   "inv_rho_r34": 0.725961261,
+   "n_allowed_current": 18443,
+   "n_allowed_r34": 17099,
+   "seed": 15,
+   "start": [
+    0,
+    0
+   ]
+  },
+  {
+   "D0": 4,
+   "g_start_current": 0.541279221,
+   "g_start_r34": 0.555338095,
+   "inv_rho_current": 0.751776695,
+   "inv_rho_r34": 0.77130291,
+   "n_allowed_current": 19286,
+   "n_allowed_r34": 17605,
+   "seed": 16,
+   "start": [
+    5,
+    5
+   ]
+  },
+  {
+   "D0": 7,
+   "g_start_current": 0.762249783,
+   "g_start_r34": 0.851043723,
+   "inv_rho_current": 0.604960146,
+   "inv_rho_r34": 0.675431526,
+   "n_allowed_current": 18578,
+   "n_allowed_r34": 17115,
+   "seed": 17,
+   "start": [
+    0,
+    5
+   ]
+  },
+  {
+   "D0": 14,
+   "g_start_current": 1.638572727,
+   "g_start_r34": 1.767307791,
+   "inv_rho_current": 0.650227272,
+   "inv_rho_r34": 0.701312616,
+   "n_allowed_current": 19583,
+   "n_allowed_r34": 17645,
+   "seed": 18,
+   "start": [
+    0,
+    5
+   ]
+  },
+  {
+   "D0": 8,
+   "g_start_current": 1.050925974,
+   "g_start_r34": 1.114014285,
+   "inv_rho_current": 0.729809704,
+   "inv_rho_r34": 0.773621031,
+   "n_allowed_current": 19406,
+   "n_allowed_r34": 17621,
+   "seed": 19,
+   "start": [
+    5,
+    0
+   ]
+  },
+  {
+   "D0": 7,
+   "g_start_current": 0.822925974,
+   "g_start_r34": 0.885837662,
+   "inv_rho_current": 0.653115852,
+   "inv_rho_r34": 0.703045763,
+   "n_allowed_current": 19301,
+   "n_allowed_r34": 17605,
+   "seed": 20,
+   "start": [
+    0,
+    5
+   ]
+  }
+ ],
+ "start_point": "スタート区画の中心（実装は擾乱つき reset 位置なので面ごとに揺れる）"
+}
