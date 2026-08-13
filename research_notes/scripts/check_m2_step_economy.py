@@ -76,6 +76,7 @@ if str(REPO_ROOT) not in sys.path:
 
 from stable_baselines3 import PPO  # noqa: E402
 
+from common.seed_bands import assert_seeds_allowed, describe_seeds  # noqa: E402
 from mouse.maze6_env import Maze6Env, _GOAL_BONUS, _TIME_PENALTY  # noqa: E402
 from mouse.maze6_eval import VALIDATION_MAZE_DIR, _trial_seed  # noqa: E402
 
@@ -466,6 +467,10 @@ def main(argv=None):
         if not models:
             raise SystemExit(f"--only {args.only!r} に一致するモデルが無い")
     seeds = VALIDATION_SEEDS[:3] if args.smoke else VALIDATION_SEEDS
+
+    # 🔴 帯の明示と安全弁（裁定 R40 条件 4・R11 項目 7）。本スクリプトは**検証帯**で測る。
+    assert_seeds_allowed(seeds, namespace="maze6", purpose="validate")
+    print(describe_seeds(seeds, namespace="maze6"), flush=True)
 
     summaries = []
     err_tracker_by_model = {}

@@ -67,6 +67,7 @@ from stable_baselines3.common.logger import configure  # noqa: E402
 from stable_baselines3.common.monitor import Monitor  # noqa: E402
 from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv  # noqa: E402
 
+from common.seed_bands import assert_seeds_allowed, describe_seeds  # noqa: E402
 from mouse.maze6_env import Maze6Env  # noqa: E402
 from mouse.maze6_eval import VALIDATION_MAZE_DIR, evaluate_maze6  # noqa: E402
 from mouse.params import RobotParams  # noqa: E402
@@ -313,6 +314,12 @@ def main(argv=None):
     print(f"[train] 行動の高周波成分への罰 k = {args.action_highpass_penalty}"
           f"（α = {args.action_highpass_alpha}）")
     print(f"[train] 並列環境数 = {n_envs}")
+    # 🔴 帯の明示と安全弁（裁定 R40 条件 4・R11 項目 7）。学習に使う maze seed は
+    # TRAIN_BASE_SEED 以降で、環境側が予約帯を決定的に読み飛ばす。**ここでは起点が
+    # 凍結帯に入っていないことを明示的に確かめる**（道具の側の歯止め）。
+    _train_seeds = [TRAIN_BASE_SEED + i * WORKER_SEED_STRIDE for i in range(n_envs)]
+    print(f"[train] {describe_seeds(_train_seeds, namespace='maze6')}")
+    assert_seeds_allowed(_train_seeds, namespace="maze6", purpose="train")
     print(f"[train] 条件 = {args.condition}"
           f"（Φ: {CONDITION_FLAGS[args.condition]}）")
 

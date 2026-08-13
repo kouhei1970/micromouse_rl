@@ -48,6 +48,7 @@ from mouse.maze6_env import (  # noqa: E402
     _GEO_CLEARANCE, _GEO_GRID_H, _GEO_GRID_N, _GEO_STEPS_PER_CELL,
     _ROBOT_LAT_HALF_WIDTH, Maze6Env,
 )
+from common.seed_bands import assert_seeds_allowed, describe_seeds  # noqa: E402
 from mouse.maze6_gen import GOAL_CELLS, SIZE  # noqa: E402
 from mouse.params import RobotParams  # noqa: E402
 
@@ -475,6 +476,9 @@ def main(argv=None):
     args = p.parse_args(argv)
 
     rng = np.random.default_rng(0)
+    # 🔴 帯の明示と安全弁（裁定 R40 条件 4・R11 項目 7）。本スクリプトは**検証帯**で測る。
+    assert_seeds_allowed(VALID_SEEDS, namespace="maze6", purpose="validate")
+    print(describe_seeds(VALID_SEEDS, namespace="maze6"))
     print("=" * 78)
     print("条件 C・C' の測定（配置空間の測地距離場。裁定 R32・R33）")
     print(f"  収縮の基準（R34）: 障害物**表面**から w_lat = {_ROBOT_LAT_HALF_WIDTH:.4f} m 以上"
