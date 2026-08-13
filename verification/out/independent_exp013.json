@@ -1,0 +1,2315 @@
+{
+  "git_head": "603dcb7fe68b20319c45abef4f0e0e7bf9c35c77",
+  "arms": {
+    "l0c": {
+      "summary": {
+        "arm": "l0c",
+        "policy": "competition.baseline_slalom:SlalomPolicy",
+        "maze_dir": "competition/mazes/eval",
+        "n_mazes": 20,
+        "a_goal_rate": 1.0,
+        "a_count": [
+          20,
+          20
+        ],
+        "b_fast_rate": 1.0,
+        "b_count": [
+          20,
+          20
+        ],
+        "b_post_run_dist": {
+          "n": 20,
+          "min": 4,
+          "max": 4,
+          "median": 4.0,
+          "q1": 4.0,
+          "q3": 4.0,
+          "mean": 4.0
+        },
+        "c_effective_rate": 1.0,
+        "c_count": [
+          20,
+          20
+        ],
+        "c_shorten_rate_dist": {
+          "n": 20,
+          "min": 0.30404916847051777,
+          "max": 0.7415506958246554,
+          "median": 0.6084401650150801,
+          "q1": 0.4899313747977889,
+          "q3": 0.6646957132496172,
+          "mean": 0.5666456204401766
+        },
+        "c1_path_dist": {
+          "n": 20,
+          "min": 0.06282715075767509,
+          "max": 0.5469542101181301,
+          "median": 0.39836392791576236,
+          "q1": 0.2446773466952493,
+          "q3": 0.45158758779339625,
+          "mean": 0.34775319850883435
+        },
+        "c2_speed_dist": {
+          "n": 20,
+          "min": 0.28101027660537903,
+          "max": 0.8034553891241469,
+          "median": 0.5766456349305094,
+          "q1": 0.4156236383902837,
+          "q3": 0.6746061087118207,
+          "mean": 0.5461598127752814
+        },
+        "identity_max_abs_residual": 1.1102230246251565e-16,
+        "d_best_time_dist": {
+          "n": 20,
+          "min": 9.920000000047366,
+          "max": 22.28999999947291,
+          "median": 15.074999999643524,
+          "q1": 11.804999999802266,
+          "q3": 18.754999999556503,
+          "mean": 15.493499999713645
+        },
+        "t_explore_dist": {
+          "n": 20,
+          "min": 17.700000000003726,
+          "max": 75.16000000017762,
+          "median": 40.94500000001425,
+          "q1": 27.444999999981015,
+          "q3": 46.73500000004189,
+          "mean": 39.55250000002896
+        },
+        "t_fast_dist": {
+          "n": 20,
+          "min": 9.920000000047366,
+          "max": 22.28999999947291,
+          "median": 15.074999999643524,
+          "q1": 11.804999999802266,
+          "q3": 18.754999999556503,
+          "mean": 15.493499999713645
+        },
+        "e_dist": {
+          "n": 20,
+          "min": 1.0,
+          "max": 1.7520547945703444,
+          "median": 1.3780459186060692,
+          "q1": 1.2360275122147009,
+          "q3": 1.4682742650437446,
+          "mean": 1.3441375627496566
+        },
+        "e_defined_count": 20,
+        "e_degenerate_mazes": [],
+        "e_no_post_run_mazes": [],
+        "e2_path_eff_dist": {
+          "n": 20,
+          "min": 1.0,
+          "max": 1.253968253968254,
+          "median": 1.0344926703075596,
+          "q1": 1.0,
+          "q3": 1.0727353859883981,
+          "mean": 1.0523243295671691
+        },
+        "e2_alt_moves_dist": {
+          "n": 20,
+          "min": 0.9777777777777777,
+          "max": 1.2380952380952381,
+          "median": 1.01724633515378,
+          "q1": 0.9867187500000001,
+          "q3": 1.0566666666666666,
+          "mean": 1.0367985484596987
+        },
+        "d_true_dist": {
+          "n": 20,
+          "min": 45,
+          "max": 97,
+          "median": 66.0,
+          "q1": 53.0,
+          "q3": 81.0,
+          "mean": 68.05
+        },
+        "recon_checked": 800,
+        "recon_mismatches": []
+      },
+      "per_maze": {
+        "maze_1018": {
+          "n_runs": 5,
+          "n_goal_runs": 5,
+          "a_goal_reached": true,
+          "explore_run_index": 1,
+          "n_post_goal_runs": 4,
+          "b_fast_run": true,
+          "t_explore": 28.919999999977577,
+          "d_best_time": 19.099999999548345,
+          "t_fast_best": 19.099999999548345,
+          "fast_run_index": 4,
+          "c_shorten_rate": 0.3395573997384802,
+          "c_effective": true,
+          "c1_path": 0.06282715075767509,
+          "c2_speed": 0.4190072670527709,
+          "identity_residual": 0.0,
+          "e_first_fast_eff": 1.4884816754349754,
+          "e_raw": 1.4884816754349754,
+          "e_status": "defined",
+          "e2_path_eff": 1.072289156626506,
+          "e2_nodes": 89,
+          "e2_alt_moves": 1.0602409638554218,
+          "d_true": 83,
+          "start_cell": [
+            0,
+            0
+          ],
+          "start_candidates": [
+            [
+              0,
+              0
+            ],
+            [
+              0,
+              15
+            ]
+          ],
+          "per_run": [
+            {
+              "n_samples": 2893,
+              "duration": 28.919999999977577,
+              "path_length_m": 14.876384693339629,
+              "mean_speed": 0.5143978109734151,
+              "n_cells_nodes": 89,
+              "n_cells_moves": 88,
+              "distinct_cells": 86,
+              "n_turns_r4": 50,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 28.919999999977577,
+              "run": 1
+            },
+            {
+              "n_samples": 2844,
+              "duration": 28.43000000013575,
+              "path_length_m": 14.612333393534126,
+              "mean_speed": 0.5139758492249157,
+              "n_cells_nodes": 89,
+              "n_cells_moves": 88,
+              "distinct_cells": 87,
+              "n_turns_r4": 56,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 28.43000000013575,
+              "run": 2
+            },
+            {
+              "n_samples": 1914,
+              "duration": 19.129999999547636,
+              "path_length_m": 13.936850852570494,
+              "mean_speed": 0.7285337612598043,
+              "n_cells_nodes": 83,
+              "n_cells_moves": 82,
+              "distinct_cells": 83,
+              "n_turns_r4": 44,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 19.129999999547636,
+              "run": 3
+            },
+            {
+              "n_samples": 1911,
+              "duration": 19.099999999548345,
+              "path_length_m": 13.94174382948201,
+              "mean_speed": 0.7299342319273135,
+              "n_cells_nodes": 83,
+              "n_cells_moves": 82,
+              "distinct_cells": 83,
+              "n_turns_r4": 44,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 19.099999999548345,
+              "run": 4
+            },
+            {
+              "n_samples": 1912,
+              "duration": 19.109999999548137,
+              "path_length_m": 13.939924638242976,
+              "mean_speed": 0.7294570716155202,
+              "n_cells_nodes": 83,
+              "n_cells_moves": 82,
+              "distinct_cells": 83,
+              "n_turns_r4": 44,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 19.109999999548137,
+              "run": 5
+            }
+          ]
+        },
+        "maze_1019": {
+          "n_runs": 5,
+          "n_goal_runs": 5,
+          "a_goal_reached": true,
+          "explore_run_index": 1,
+          "n_post_goal_runs": 4,
+          "b_fast_run": true,
+          "t_explore": 27.659999999980514,
+          "d_best_time": 19.250000000091916,
+          "t_fast_best": 19.250000000091916,
+          "fast_run_index": 3,
+          "c_shorten_rate": 0.30404916847051777,
+          "c_effective": true,
+          "c1_path": 0.09471878298053626,
+          "c2_speed": 0.30078329675954096,
+          "identity_residual": 0.0,
+          "e_first_fast_eff": 1.0046753246753246,
+          "e_raw": 1.0046753246753246,
+          "e_status": "defined",
+          "e2_path_eff": 1.0,
+          "e2_nodes": 81,
+          "e2_alt_moves": 0.9876543209876543,
+          "d_true": 81,
+          "start_cell": [
+            0,
+            0
+          ],
+          "start_candidates": [
+            [
+              0,
+              0
+            ],
+            [
+              15,
+              0
+            ]
+          ],
+          "per_run": [
+            {
+              "n_samples": 2767,
+              "duration": 27.659999999980514,
+              "path_length_m": 14.75649217021013,
+              "mean_speed": 0.533495740065818,
+              "n_cells_nodes": 89,
+              "n_cells_moves": 88,
+              "distinct_cells": 89,
+              "n_turns_r4": 54,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 27.659999999980514,
+              "run": 1
+            },
+            {
+              "n_samples": 1935,
+              "duration": 19.340000000092346,
+              "path_length_m": 13.396446867303574,
+              "mean_speed": 0.6926808100951193,
+              "n_cells_nodes": 81,
+              "n_cells_moves": 80,
+              "distinct_cells": 81,
+              "n_turns_r4": 52,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 19.340000000092346,
+              "run": 2
+            },
+            {
+              "n_samples": 1926,
+              "duration": 19.250000000091916,
+              "path_length_m": 13.358775190786014,
+              "mean_speed": 0.6939623475699859,
+              "n_cells_nodes": 81,
+              "n_cells_moves": 80,
+              "distinct_cells": 81,
+              "n_turns_r4": 52,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 19.250000000091916,
+              "run": 3
+            },
+            {
+              "n_samples": 1929,
+              "duration": 19.27999999954409,
+              "path_length_m": 13.370774499293951,
+              "mean_speed": 0.6935049014320606,
+              "n_cells_nodes": 81,
+              "n_cells_moves": 80,
+              "distinct_cells": 81,
+              "n_turns_r4": 52,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 19.27999999954409,
+              "run": 4
+            },
+            {
+              "n_samples": 1933,
+              "duration": 19.319999999543143,
+              "path_length_m": 13.389641667019145,
+              "mean_speed": 0.6930456349552675,
+              "n_cells_nodes": 81,
+              "n_cells_moves": 80,
+              "distinct_cells": 81,
+              "n_turns_r4": 52,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 19.319999999543143,
+              "run": 5
+            }
+          ]
+        },
+        "maze_1021": {
+          "n_runs": 5,
+          "n_goal_runs": 5,
+          "a_goal_reached": true,
+          "explore_run_index": 1,
+          "n_post_goal_runs": 4,
+          "b_fast_run": true,
+          "t_explore": 17.700000000003726,
+          "d_best_time": 11.859999999828105,
+          "t_fast_best": 11.859999999828105,
+          "fast_run_index": 5,
+          "c_shorten_rate": 0.3299435028347114,
+          "c_effective": true,
+          "c1_path": 0.14165074122506238,
+          "c2_speed": 0.28101027660537903,
+          "identity_residual": -1.1102230246251565e-16,
+          "e_first_fast_eff": 1.0008431703396894,
+          "e_raw": 1.0008431703396894,
+          "e_status": "defined",
+          "e2_path_eff": 1.0,
+          "e2_nodes": 49,
+          "e2_alt_moves": 0.9795918367346939,
+          "d_true": 49,
+          "start_cell": [
+            0,
+            0
+          ],
+          "start_candidates": [
+            [
+              0,
+              0
+            ]
+          ],
+          "per_run": [
+            {
+              "n_samples": 1771,
+              "duration": 17.700000000003726,
+              "path_length_m": 9.448446027133715,
+              "mean_speed": 0.5338105100074421,
+              "n_cells_nodes": 57,
+              "n_cells_moves": 56,
+              "distinct_cells": 57,
+              "n_turns_r4": 32,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 17.700000000003726,
+              "run": 1
+            },
+            {
+              "n_samples": 1188,
+              "duration": 11.870000000056677,
+              "path_length_m": 8.12437806748097,
+              "mean_speed": 0.6844463409808069,
+              "n_cells_nodes": 49,
+              "n_cells_moves": 48,
+              "distinct_cells": 49,
+              "n_turns_r4": 30,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 11.870000000056677,
+              "run": 2
+            },
+            {
+              "n_samples": 1191,
+              "duration": 11.90000000005682,
+              "path_length_m": 8.135515000689729,
+              "mean_speed": 0.6836567227437716,
+              "n_cells_nodes": 49,
+              "n_cells_moves": 48,
+              "distinct_cells": 49,
+              "n_turns_r4": 30,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 11.90000000005682,
+              "run": 3
+            },
+            {
+              "n_samples": 1187,
+              "duration": 11.86000000005663,
+              "path_length_m": 8.107253211838945,
+              "mean_speed": 0.6835795288195813,
+              "n_cells_nodes": 49,
+              "n_cells_moves": 48,
+              "distinct_cells": 49,
+              "n_turns_r4": 30,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 11.86000000005663,
+              "run": 4
+            },
+            {
+              "n_samples": 1187,
+              "duration": 11.859999999828105,
+              "path_length_m": 8.110066643965228,
+              "mean_speed": 0.6838167490794917,
+              "n_cells_nodes": 49,
+              "n_cells_moves": 48,
+              "distinct_cells": 49,
+              "n_turns_r4": 30,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 11.859999999828105,
+              "run": 5
+            }
+          ]
+        },
+        "maze_1023": {
+          "n_runs": 5,
+          "n_goal_runs": 5,
+          "a_goal_reached": true,
+          "explore_run_index": 1,
+          "n_post_goal_runs": 4,
+          "b_fast_run": true,
+          "t_explore": 34.669999999984284,
+          "d_best_time": 18.639999999559222,
+          "t_fast_best": 18.639999999559222,
+          "fast_run_index": 4,
+          "c_shorten_rate": 0.46235938853280434,
+          "c_effective": true,
+          "c1_path": 0.1965898639660434,
+          "c2_speed": 0.49432561249695883,
+          "identity_residual": 0.0,
+          "e_first_fast_eff": 1.3642703863048693,
+          "e_raw": 1.3642703863048693,
+          "e_status": "defined",
+          "e2_path_eff": 1.0246913580246915,
+          "e2_nodes": 83,
+          "e2_alt_moves": 1.0123456790123457,
+          "d_true": 81,
+          "start_cell": [
+            0,
+            0
+          ],
+          "start_candidates": [
+            [
+              0,
+              0
+            ]
+          ],
+          "per_run": [
+            {
+              "n_samples": 3468,
+              "duration": 34.669999999984284,
+              "path_length_m": 16.830771238412115,
+              "mean_speed": 0.4854563379988389,
+              "n_cells_nodes": 101,
+              "n_cells_moves": 100,
+              "distinct_cells": 95,
+              "n_turns_r4": 66,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 34.669999999984284,
+              "run": 1
+            },
+            {
+              "n_samples": 2544,
+              "duration": 25.430000000121424,
+              "path_length_m": 13.693351269062457,
+              "mean_speed": 0.5384723267399557,
+              "n_cells_nodes": 83,
+              "n_cells_moves": 82,
+              "distinct_cells": 82,
+              "n_turns_r4": 48,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 25.430000000121424,
+              "run": 2
+            },
+            {
+              "n_samples": 1867,
+              "duration": 18.659999999676685,
+              "path_length_m": 13.520291097262207,
+              "mean_speed": 0.7245600802516864,
+              "n_cells_nodes": 81,
+              "n_cells_moves": 80,
+              "distinct_cells": 81,
+              "n_turns_r4": 46,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 18.659999999676685,
+              "run": 3
+            },
+            {
+              "n_samples": 1865,
+              "duration": 18.639999999559222,
+              "path_length_m": 13.522012210209082,
+              "mean_speed": 0.7254298396206457,
+              "n_cells_nodes": 81,
+              "n_cells_moves": 80,
+              "distinct_cells": 81,
+              "n_turns_r4": 46,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 18.639999999559222,
+              "run": 4
+            },
+            {
+              "n_samples": 1866,
+              "duration": 18.649999999558986,
+              "path_length_m": 13.528188303158018,
+              "mean_speed": 0.725372026996135,
+              "n_cells_nodes": 81,
+              "n_cells_moves": 80,
+              "distinct_cells": 81,
+              "n_turns_r4": 46,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 18.649999999558986,
+              "run": 5
+            }
+          ]
+        },
+        "maze_1024": {
+          "n_runs": 5,
+          "n_goal_runs": 5,
+          "a_goal_reached": true,
+          "explore_run_index": 1,
+          "n_post_goal_runs": 4,
+          "b_fast_run": true,
+          "t_explore": 17.740000000003633,
+          "d_best_time": 11.270000000053813,
+          "t_fast_best": 11.270000000053813,
+          "fast_run_index": 2,
+          "c_shorten_rate": 0.3647125140895432,
+          "c_effective": true,
+          "c1_path": 0.1501147866843454,
+          "c2_speed": 0.3377962452662653,
+          "identity_residual": 0.0,
+          "e_first_fast_eff": 1.0,
+          "e_raw": 1.0,
+          "e_status": "defined",
+          "e2_path_eff": 1.0,
+          "e2_nodes": 49,
+          "e2_alt_moves": 0.9795918367346939,
+          "d_true": 49,
+          "start_cell": [
+            0,
+            0
+          ],
+          "start_candidates": [
+            [
+              0,
+              0
+            ],
+            [
+              15,
+              15
+            ]
+          ],
+          "per_run": [
+            {
+              "n_samples": 1775,
+              "duration": 17.740000000003633,
+              "path_length_m": 9.465813551136193,
+              "mean_speed": 0.5335858822510854,
+              "n_cells_nodes": 57,
+              "n_cells_moves": 56,
+              "distinct_cells": 57,
+              "n_turns_r4": 31,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 17.740000000003633,
+              "run": 1
+            },
+            {
+              "n_samples": 1128,
+              "duration": 11.270000000053813,
+              "path_length_m": 8.044854969113597,
+              "mean_speed": 0.7138291898025896,
+              "n_cells_nodes": 49,
+              "n_cells_moves": 48,
+              "distinct_cells": 49,
+              "n_turns_r4": 29,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 11.270000000053813,
+              "run": 2
+            },
+            {
+              "n_samples": 1131,
+              "duration": 11.300000000053956,
+              "path_length_m": 8.076200743403074,
+              "mean_speed": 0.71470803038624,
+              "n_cells_nodes": 49,
+              "n_cells_moves": 48,
+              "distinct_cells": 49,
+              "n_turns_r4": 29,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 11.300000000053956,
+              "run": 3
+            },
+            {
+              "n_samples": 1130,
+              "duration": 11.290000000053908,
+              "path_length_m": 8.0523740561199,
+              "mean_speed": 0.7132306515572587,
+              "n_cells_nodes": 49,
+              "n_cells_moves": 48,
+              "distinct_cells": 49,
+              "n_turns_r4": 29,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 11.290000000053908,
+              "run": 4
+            },
+            {
+              "n_samples": 1129,
+              "duration": 11.279999999881326,
+              "path_length_m": 8.054779332012865,
+              "mean_speed": 0.7140761819235467,
+              "n_cells_nodes": 49,
+              "n_cells_moves": 48,
+              "distinct_cells": 49,
+              "n_turns_r4": 29,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 11.279999999881326,
+              "run": 5
+            }
+          ]
+        },
+        "maze_1041": {
+          "n_runs": 5,
+          "n_goal_runs": 5,
+          "a_goal_reached": true,
+          "explore_run_index": 1,
+          "n_post_goal_runs": 4,
+          "b_fast_run": true,
+          "t_explore": 33.869999999980465,
+          "d_best_time": 15.549999999632291,
+          "t_fast_best": 15.549999999632291,
+          "fast_run_index": 4,
+          "c_shorten_rate": 0.5408916445337686,
+          "c_effective": true,
+          "c1_path": 0.27595131852970844,
+          "c2_speed": 0.577075809772639,
+          "identity_residual": 0.0,
+          "e_first_fast_eff": 1.4385852090441025,
+          "e_raw": 1.4385852090441025,
+          "e_status": "defined",
+          "e2_path_eff": 1.028169014084507,
+          "e2_nodes": 73,
+          "e2_alt_moves": 1.0140845070422535,
+          "d_true": 71,
+          "start_cell": [
+            0,
+            0
+          ],
+          "start_candidates": [
+            [
+              0,
+              0
+            ],
+            [
+              15,
+              0
+            ]
+          ],
+          "per_run": [
+            {
+              "n_samples": 3388,
+              "duration": 33.869999999980465,
+              "path_length_m": 16.38869525514914,
+              "mean_speed": 0.4838705419296898,
+              "n_cells_nodes": 97,
+              "n_cells_moves": 96,
+              "distinct_cells": 83,
+              "n_turns_r4": 51,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 33.869999999980465,
+              "run": 1
+            },
+            {
+              "n_samples": 2238,
+              "duration": 22.370000000106813,
+              "path_length_m": 12.092570914110137,
+              "mean_speed": 0.5405708946827178,
+              "n_cells_nodes": 73,
+              "n_cells_moves": 72,
+              "distinct_cells": 72,
+              "n_turns_r4": 41,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 22.370000000106813,
+              "run": 2
+            },
+            {
+              "n_samples": 1557,
+              "duration": 15.559999999917679,
+              "path_length_m": 11.890900836683693,
+              "mean_speed": 0.764196711873175,
+              "n_cells_nodes": 71,
+              "n_cells_moves": 70,
+              "distinct_cells": 71,
+              "n_turns_r4": 37,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 15.559999999917679,
+              "run": 3
+            },
+            {
+              "n_samples": 1556,
+              "duration": 15.549999999632291,
+              "path_length_m": 11.866213190509159,
+              "mean_speed": 0.7631005267388912,
+              "n_cells_nodes": 71,
+              "n_cells_moves": 70,
+              "distinct_cells": 71,
+              "n_turns_r4": 37,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 15.549999999632291,
+              "run": 4
+            },
+            {
+              "n_samples": 1559,
+              "duration": 15.579999999631582,
+              "path_length_m": 11.89212097422213,
+              "mean_speed": 0.7632940291722299,
+              "n_cells_nodes": 71,
+              "n_cells_moves": 70,
+              "distinct_cells": 71,
+              "n_turns_r4": 37,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 15.579999999631582,
+              "run": 5
+            }
+          ]
+        },
+        "maze_1046": {
+          "n_runs": 5,
+          "n_goal_runs": 5,
+          "a_goal_reached": true,
+          "explore_run_index": 1,
+          "n_post_goal_runs": 4,
+          "b_fast_run": true,
+          "t_explore": 21.149999999995686,
+          "d_best_time": 9.920000000047366,
+          "t_fast_best": 9.920000000047366,
+          "fast_run_index": 3,
+          "c_shorten_rate": 0.5309692671371447,
+          "c_effective": true,
+          "c1_path": 0.2607065076049846,
+          "c2_speed": 0.5762154600883798,
+          "identity_residual": 0.0,
+          "e_first_fast_eff": 1.0040322580645162,
+          "e_raw": 1.0040322580645162,
+          "e_status": "defined",
+          "e2_path_eff": 1.0,
+          "e2_nodes": 45,
+          "e2_alt_moves": 0.9777777777777777,
+          "d_true": 45,
+          "start_cell": [
+            0,
+            0
+          ],
+          "start_candidates": [
+            [
+              0,
+              0
+            ]
+          ],
+          "per_run": [
+            {
+              "n_samples": 2116,
+              "duration": 21.149999999995686,
+              "path_length_m": 10.177950729716436,
+              "mean_speed": 0.4812269848566672,
+              "n_cells_nodes": 61,
+              "n_cells_moves": 60,
+              "distinct_cells": 53,
+              "n_turns_r4": 35,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 21.149999999995686,
+              "run": 1
+            },
+            {
+              "n_samples": 997,
+              "duration": 9.960000000047557,
+              "path_length_m": 7.554547462645271,
+              "mean_speed": 0.7584887010651806,
+              "n_cells_nodes": 45,
+              "n_cells_moves": 44,
+              "distinct_cells": 45,
+              "n_turns_r4": 21,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 9.960000000047557,
+              "run": 2
+            },
+            {
+              "n_samples": 993,
+              "duration": 9.920000000047366,
+              "path_length_m": 7.524492740396459,
+              "mean_speed": 0.7585174133427954,
+              "n_cells_nodes": 45,
+              "n_cells_moves": 44,
+              "distinct_cells": 45,
+              "n_turns_r4": 21,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 9.920000000047366,
+              "run": 3
+            },
+            {
+              "n_samples": 998,
+              "duration": 9.96999999976424,
+              "path_length_m": 7.55726678699016,
+              "mean_speed": 0.758000680759164,
+              "n_cells_nodes": 45,
+              "n_cells_moves": 44,
+              "distinct_cells": 45,
+              "n_turns_r4": 21,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 9.96999999976424,
+              "run": 4
+            },
+            {
+              "n_samples": 994,
+              "duration": 9.929999999765187,
+              "path_length_m": 7.53495602356431,
+              "mean_speed": 0.7588072531462727,
+              "n_cells_nodes": 45,
+              "n_cells_moves": 44,
+              "distinct_cells": 45,
+              "n_turns_r4": 21,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 9.929999999765187,
+              "run": 5
+            }
+          ]
+        },
+        "maze_1073": {
+          "n_runs": 5,
+          "n_goal_runs": 5,
+          "a_goal_reached": true,
+          "explore_run_index": 1,
+          "n_post_goal_runs": 4,
+          "b_fast_run": true,
+          "t_explore": 57.52000000009339,
+          "d_best_time": 20.409999999517368,
+          "t_fast_best": 20.409999999517368,
+          "fast_run_index": 4,
+          "c_shorten_rate": 0.6451668984790642,
+          "c_effective": true,
+          "c1_path": 0.38994535104966976,
+          "c2_speed": 0.71927209252865,
+          "identity_residual": 0.0,
+          "e_first_fast_eff": 1.7040666340513722,
+          "e_raw": 1.7040666340513722,
+          "e_status": "defined",
+          "e2_path_eff": 1.202247191011236,
+          "e2_nodes": 107,
+          "e2_alt_moves": 1.1910112359550562,
+          "d_true": 89,
+          "start_cell": [
+            0,
+            0
+          ],
+          "start_candidates": [
+            [
+              0,
+              0
+            ],
+            [
+              15,
+              0
+            ]
+          ],
+          "per_run": [
+            {
+              "n_samples": 5753,
+              "duration": 57.52000000009339,
+              "path_length_m": 24.552568351793344,
+              "mean_speed": 0.42685271821546383,
+              "n_cells_nodes": 143,
+              "n_cells_moves": 142,
+              "distinct_cells": 116,
+              "n_turns_r4": 78,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 57.52000000009339,
+              "run": 1
+            },
+            {
+              "n_samples": 3479,
+              "duration": 34.78000000016607,
+              "path_length_m": 17.994774399101956,
+              "mean_speed": 0.5173885681143195,
+              "n_cells_nodes": 107,
+              "n_cells_moves": 106,
+              "distinct_cells": 102,
+              "n_turns_r4": 48,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 34.78000000016607,
+              "run": 2
+            },
+            {
+              "n_samples": 2043,
+              "duration": 20.41999999951713,
+              "path_length_m": 14.97978342143218,
+              "mean_speed": 0.7335839090003137,
+              "n_cells_nodes": 89,
+              "n_cells_moves": 88,
+              "distinct_cells": 89,
+              "n_turns_r4": 46,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 20.41999999951713,
+              "run": 3
+            },
+            {
+              "n_samples": 2042,
+              "duration": 20.409999999517368,
+              "path_length_m": 14.978408466682277,
+              "mean_speed": 0.7338759660478427,
+              "n_cells_nodes": 89,
+              "n_cells_moves": 88,
+              "distinct_cells": 89,
+              "n_turns_r4": 46,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 20.409999999517368,
+              "run": 4
+            },
+            {
+              "n_samples": 2045,
+              "duration": 20.439999999516658,
+              "path_length_m": 14.976780955303308,
+              "mean_speed": 0.7327192248364708,
+              "n_cells_nodes": 89,
+              "n_cells_moves": 88,
+              "distinct_cells": 89,
+              "n_turns_r4": 46,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 20.439999999516658,
+              "run": 5
+            }
+          ]
+        },
+        "maze_1103": {
+          "n_runs": 5,
+          "n_goal_runs": 5,
+          "a_goal_reached": true,
+          "explore_run_index": 1,
+          "n_post_goal_runs": 4,
+          "b_fast_run": true,
+          "t_explore": 45.6900000000369,
+          "d_best_time": 16.469999999610536,
+          "t_fast_best": 16.469999999610536,
+          "fast_run_index": 3,
+          "c_shorten_rate": 0.6395272488597672,
+          "c_effective": true,
+          "c1_path": 0.4367536312103535,
+          "c2_speed": 0.5625213473362647,
+          "identity_residual": 0.0,
+          "e_first_fast_eff": 1.3485124469091854,
+          "e_raw": 1.3485124469091854,
+          "e_status": "defined",
+          "e2_path_eff": 1.056338028169014,
+          "e2_nodes": 75,
+          "e2_alt_moves": 1.0422535211267605,
+          "d_true": 71,
+          "start_cell": [
+            0,
+            0
+          ],
+          "start_candidates": [
+            [
+              0,
+              0
+            ]
+          ],
+          "per_run": [
+            {
+              "n_samples": 4570,
+              "duration": 45.6900000000369,
+              "path_length_m": 21.029427509376568,
+              "mean_speed": 0.4602632416143485,
+              "n_cells_nodes": 125,
+              "n_cells_moves": 124,
+              "distinct_cells": 113,
+              "n_turns_r4": 78,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 45.6900000000369,
+              "run": 1
+            },
+            {
+              "n_samples": 2222,
+              "duration": 22.210000000069087,
+              "path_length_m": 12.340990671407365,
+              "mean_speed": 0.5556501878149022,
+              "n_cells_nodes": 75,
+              "n_cells_moves": 74,
+              "distinct_cells": 75,
+              "n_turns_r4": 44,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 22.210000000069087,
+              "run": 2
+            },
+            {
+              "n_samples": 1648,
+              "duration": 16.469999999610536,
+              "path_length_m": 11.844748682381452,
+              "mean_speed": 0.7191711404166086,
+              "n_cells_nodes": 71,
+              "n_cells_moves": 70,
+              "distinct_cells": 71,
+              "n_turns_r4": 42,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 16.469999999610536,
+              "run": 3
+            },
+            {
+              "n_samples": 1650,
+              "duration": 16.489999999610063,
+              "path_length_m": 11.85972858958906,
+              "mean_speed": 0.7192073129090059,
+              "n_cells_nodes": 71,
+              "n_cells_moves": 70,
+              "distinct_cells": 71,
+              "n_turns_r4": 42,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 16.489999999610063,
+              "run": 4
+            },
+            {
+              "n_samples": 1650,
+              "duration": 16.489999999610063,
+              "path_length_m": 11.871326959780657,
+              "mean_speed": 0.719910670713243,
+              "n_cells_nodes": 71,
+              "n_cells_moves": 70,
+              "distinct_cells": 71,
+              "n_turns_r4": 42,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 16.489999999610063,
+              "run": 5
+            }
+          ]
+        },
+        "maze_1126": {
+          "n_runs": 5,
+          "n_goal_runs": 5,
+          "a_goal_reached": true,
+          "explore_run_index": 1,
+          "n_post_goal_runs": 4,
+          "b_fast_run": true,
+          "t_explore": 26.799999999982518,
+          "d_best_time": 11.63999999972475,
+          "t_fast_best": 11.63999999972475,
+          "fast_run_index": 5,
+          "c_shorten_rate": 0.5656716418010319,
+          "c_effective": true,
+          "c1_path": 0.3430918954960205,
+          "c2_speed": 0.5124688317106079,
+          "identity_residual": -1.1102230246251565e-16,
+          "e_first_fast_eff": 1.5446735395628026,
+          "e_raw": 1.5446735395628026,
+          "e_status": "defined",
+          "e2_path_eff": 1.0740740740740742,
+          "e2_nodes": 58,
+          "e2_alt_moves": 1.0555555555555556,
+          "d_true": 54,
+          "start_cell": [
+            0,
+            0
+          ],
+          "start_candidates": [
+            [
+              0,
+              0
+            ]
+          ],
+          "per_run": [
+            {
+              "n_samples": 2681,
+              "duration": 26.799999999982518,
+              "path_length_m": 13.74505274027987,
+              "mean_speed": 0.5128751022495834,
+              "n_cells_nodes": 82,
+              "n_cells_moves": 81,
+              "distinct_cells": 78,
+              "n_turns_r4": 44,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 26.799999999982518,
+              "run": 1
+            },
+            {
+              "n_samples": 1799,
+              "duration": 17.98000000008585,
+              "path_length_m": 9.599975732975967,
+              "mean_speed": 0.5339252354243675,
+              "n_cells_nodes": 58,
+              "n_cells_moves": 57,
+              "distinct_cells": 58,
+              "n_turns_r4": 29,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 17.98000000008585,
+              "run": 2
+            },
+            {
+              "n_samples": 1166,
+              "duration": 11.650000000055627,
+              "path_length_m": 9.042128776077796,
+              "mean_speed": 0.7761483927926713,
+              "n_cells_nodes": 54,
+              "n_cells_moves": 53,
+              "distinct_cells": 54,
+              "n_turns_r4": 27,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 11.650000000055627,
+              "run": 3
+            },
+            {
+              "n_samples": 1171,
+              "duration": 11.699999999723332,
+              "path_length_m": 9.070768812034576,
+              "mean_speed": 0.7752793856623138,
+              "n_cells_nodes": 54,
+              "n_cells_moves": 53,
+              "distinct_cells": 54,
+              "n_turns_r4": 27,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 11.699999999723332,
+              "run": 4
+            },
+            {
+              "n_samples": 1165,
+              "duration": 11.63999999972475,
+              "path_length_m": 9.02923654192448,
+              "mean_speed": 0.775707606712886,
+              "n_cells_nodes": 54,
+              "n_cells_moves": 53,
+              "distinct_cells": 54,
+              "n_turns_r4": 27,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 11.63999999972475,
+              "run": 5
+            }
+          ]
+        },
+        "maze_1138": {
+          "n_runs": 5,
+          "n_goal_runs": 5,
+          "a_goal_reached": true,
+          "explore_run_index": 1,
+          "n_post_goal_runs": 4,
+          "b_fast_run": true,
+          "t_explore": 50.300000000058915,
+          "d_best_time": 13.000000000035058,
+          "t_fast_best": 13.000000000035058,
+          "fast_run_index": 3,
+          "c_shorten_rate": 0.7415506958246554,
+          "c_effective": true,
+          "c1_path": 0.533898209569589,
+          "c2_speed": 0.8034553891241469,
+          "identity_residual": 0.0,
+          "e_first_fast_eff": 1.3692307692336145,
+          "e_raw": 1.3692307692336145,
+          "e_status": "defined",
+          "e2_path_eff": 1.0,
+          "e2_nodes": 58,
+          "e2_alt_moves": 0.9827586206896551,
+          "d_true": 58,
+          "start_cell": [
+            0,
+            0
+          ],
+          "start_candidates": [
+            [
+              0,
+              0
+            ]
+          ],
+          "per_run": [
+            {
+              "n_samples": 5031,
+              "duration": 50.300000000058915,
+              "path_length_m": 20.697392839428254,
+              "mean_speed": 0.4114789828907358,
+              "n_cells_nodes": 122,
+              "n_cells_moves": 121,
+              "distinct_cells": 95,
+              "n_turns_r4": 81,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 50.300000000058915,
+              "run": 1
+            },
+            {
+              "n_samples": 1781,
+              "duration": 17.800000000084992,
+              "path_length_m": 9.50366036321081,
+              "mean_speed": 0.5339135035486198,
+              "n_cells_nodes": 58,
+              "n_cells_moves": 57,
+              "distinct_cells": 58,
+              "n_turns_r4": 31,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 17.800000000084992,
+              "run": 2
+            },
+            {
+              "n_samples": 1301,
+              "duration": 13.000000000035058,
+              "path_length_m": 9.647091859699078,
+              "mean_speed": 0.7420839892056201,
+              "n_cells_nodes": 58,
+              "n_cells_moves": 57,
+              "distinct_cells": 58,
+              "n_turns_r4": 31,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 13.000000000035058,
+              "run": 3
+            },
+            {
+              "n_samples": 1306,
+              "duration": 13.049999999691408,
+              "path_length_m": 9.67565757960578,
+              "mean_speed": 0.7414296996041823,
+              "n_cells_nodes": 58,
+              "n_cells_moves": 57,
+              "distinct_cells": 58,
+              "n_turns_r4": 31,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 13.049999999691408,
+              "run": 4
+            },
+            {
+              "n_samples": 1309,
+              "duration": 13.079999999690699,
+              "path_length_m": 9.694514227667698,
+              "mean_speed": 0.7411708125303473,
+              "n_cells_nodes": 58,
+              "n_cells_moves": 57,
+              "distinct_cells": 58,
+              "n_turns_r4": 31,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 13.079999999690699,
+              "run": 5
+            }
+          ]
+        },
+        "maze_1161": {
+          "n_runs": 5,
+          "n_goal_runs": 5,
+          "a_goal_reached": true,
+          "explore_run_index": 1,
+          "n_post_goal_runs": 4,
+          "b_fast_run": true,
+          "t_explore": 22.779999999991887,
+          "d_best_time": 11.40999999973019,
+          "t_fast_best": 11.40999999973019,
+          "fast_run_index": 5,
+          "c_shorten_rate": 0.4991220368861171,
+          "c_effective": true,
+          "c1_path": 0.30421327455296143,
+          "c2_speed": 0.3891342336593073,
+          "identity_residual": 0.0,
+          "e_first_fast_eff": 1.3865030675240693,
+          "e_raw": 1.3865030675240693,
+          "e_status": "defined",
+          "e2_path_eff": 1.0408163265306123,
+          "e2_nodes": 51,
+          "e2_alt_moves": 1.0204081632653061,
+          "d_true": 49,
+          "start_cell": [
+            0,
+            0
+          ],
+          "start_candidates": [
+            [
+              0,
+              0
+            ],
+            [
+              15,
+              15
+            ]
+          ],
+          "per_run": [
+            {
+              "n_samples": 2279,
+              "duration": 22.779999999991887,
+              "path_length_m": 11.604660098296712,
+              "mean_speed": 0.5094231825417403,
+              "n_cells_nodes": 69,
+              "n_cells_moves": 68,
+              "distinct_cells": 66,
+              "n_turns_r4": 34,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 22.779999999991887,
+              "run": 1
+            },
+            {
+              "n_samples": 1583,
+              "duration": 15.820000000075538,
+              "path_length_m": 8.388859567810648,
+              "mean_speed": 0.530269252071466,
+              "n_cells_nodes": 51,
+              "n_cells_moves": 50,
+              "distinct_cells": 50,
+              "n_turns_r4": 30,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 15.820000000075538,
+              "run": 2
+            },
+            {
+              "n_samples": 1147,
+              "duration": 11.46000000005472,
+              "path_length_m": 8.096673815714407,
+              "mean_speed": 0.7065160397622816,
+              "n_cells_nodes": 49,
+              "n_cells_moves": 48,
+              "distinct_cells": 49,
+              "n_turns_r4": 28,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 11.46000000005472,
+              "run": 3
+            },
+            {
+              "n_samples": 1147,
+              "duration": 11.46000000005472,
+              "path_length_m": 8.091516098443307,
+              "mean_speed": 0.7060659771731825,
+              "n_cells_nodes": 49,
+              "n_cells_moves": 48,
+              "distinct_cells": 49,
+              "n_turns_r4": 28,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 11.46000000005472,
+              "run": 4
+            },
+            {
+              "n_samples": 1142,
+              "duration": 11.40999999973019,
+              "path_length_m": 8.074368449719778,
+              "mean_speed": 0.7076571822884059,
+              "n_cells_nodes": 49,
+              "n_cells_moves": 48,
+              "distinct_cells": 49,
+              "n_turns_r4": 28,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 11.40999999973019,
+              "run": 5
+            }
+          ]
+        },
+        "maze_1240": {
+          "n_runs": 5,
+          "n_goal_runs": 5,
+          "a_goal_reached": true,
+          "explore_run_index": 1,
+          "n_post_goal_runs": 4,
+          "b_fast_run": true,
+          "t_explore": 42.07000000001962,
+          "d_best_time": 15.599999999631109,
+          "t_fast_best": 15.599999999631109,
+          "fast_run_index": 4,
+          "c_shorten_rate": 0.6291894461701014,
+          "c_effective": true,
+          "c1_path": 0.40678250478185496,
+          "c2_speed": 0.5997858990018685,
+          "identity_residual": 0.0,
+          "e_first_fast_eff": 1.461538461580001,
+          "e_raw": 1.461538461580001,
+          "e_status": "defined",
+          "e2_path_eff": 1.088235294117647,
+          "e2_nodes": 74,
+          "e2_alt_moves": 1.0735294117647058,
+          "d_true": 68,
+          "start_cell": [
+            0,
+            0
+          ],
+          "start_candidates": [
+            [
+              0,
+              0
+            ]
+          ],
+          "per_run": [
+            {
+              "n_samples": 4208,
+              "duration": 42.07000000001962,
+              "path_length_m": 19.103314172835468,
+              "mean_speed": 0.4540840069604602,
+              "n_cells_nodes": 114,
+              "n_cells_moves": 113,
+              "distinct_cells": 98,
+              "n_turns_r4": 77,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 42.07000000001962,
+              "run": 1
+            },
+            {
+              "n_samples": 2281,
+              "duration": 22.800000000108867,
+              "path_length_m": 12.170517019052259,
+              "mean_speed": 0.5337946060962345,
+              "n_cells_nodes": 74,
+              "n_cells_moves": 73,
+              "distinct_cells": 74,
+              "n_turns_r4": 41,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 22.800000000108867,
+              "run": 2
+            },
+            {
+              "n_samples": 1563,
+              "duration": 15.619999999630636,
+              "path_length_m": 11.34623724657176,
+              "mean_speed": 0.7263916291190822,
+              "n_cells_nodes": 68,
+              "n_cells_moves": 67,
+              "distinct_cells": 68,
+              "n_turns_r4": 37,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 15.619999999630636,
+              "run": 3
+            },
+            {
+              "n_samples": 1561,
+              "duration": 15.599999999631109,
+              "path_length_m": 11.332420183974747,
+              "mean_speed": 0.7264371912976105,
+              "n_cells_nodes": 68,
+              "n_cells_moves": 67,
+              "distinct_cells": 68,
+              "n_turns_r4": 37,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 15.599999999631109,
+              "run": 4
+            },
+            {
+              "n_samples": 1562,
+              "duration": 15.609999999630872,
+              "path_length_m": 11.33319094899102,
+              "mean_speed": 0.7260212011056383,
+              "n_cells_nodes": 68,
+              "n_cells_moves": 67,
+              "distinct_cells": 68,
+              "n_turns_r4": 37,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 15.609999999630872,
+              "run": 5
+            }
+          ]
+        },
+        "maze_14037": {
+          "n_runs": 5,
+          "n_goal_runs": 5,
+          "a_goal_reached": true,
+          "explore_run_index": 1,
+          "n_post_goal_runs": 4,
+          "b_fast_run": true,
+          "t_explore": 43.22000000002511,
+          "d_best_time": 17.819999999578613,
+          "t_fast_best": 17.819999999578613,
+          "fast_run_index": 4,
+          "c_shorten_rate": 0.5876908838600587,
+          "c_effective": true,
+          "c1_path": 0.420510771698022,
+          "c2_speed": 0.4054727524028221,
+          "identity_residual": 0.0,
+          "e_first_fast_eff": 1.0005611672562715,
+          "e_raw": 1.0005611672562715,
+          "e_status": "defined",
+          "e2_path_eff": 1.0,
+          "e2_nodes": 80,
+          "e2_alt_moves": 0.9875,
+          "d_true": 80,
+          "start_cell": [
+            0,
+            0
+          ],
+          "start_candidates": [
+            [
+              0,
+              0
+            ],
+            [
+              15,
+              0
+            ],
+            [
+              0,
+              15
+            ],
+            [
+              15,
+              15
+            ]
+          ],
+          "per_run": [
+            {
+              "n_samples": 4323,
+              "duration": 43.22000000002511,
+              "path_length_m": 23.05200453827007,
+              "mean_speed": 0.5333642882521211,
+              "n_cells_nodes": 138,
+              "n_cells_moves": 137,
+              "distinct_cells": 123,
+              "n_turns_r4": 79,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 43.22000000002511,
+              "run": 1
+            },
+            {
+              "n_samples": 1784,
+              "duration": 17.830000000085136,
+              "path_length_m": 13.362834219039293,
+              "mean_speed": 0.7494578922588607,
+              "n_cells_nodes": 80,
+              "n_cells_moves": 79,
+              "distinct_cells": 80,
+              "n_turns_r4": 45,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 17.830000000085136,
+              "run": 2
+            },
+            {
+              "n_samples": 1789,
+              "duration": 17.879999999903745,
+              "path_length_m": 13.393330038130763,
+              "mean_speed": 0.7490676755147015,
+              "n_cells_nodes": 80,
+              "n_cells_moves": 79,
+              "distinct_cells": 80,
+              "n_turns_r4": 45,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 17.879999999903745,
+              "run": 3
+            },
+            {
+              "n_samples": 1783,
+              "duration": 17.819999999578613,
+              "path_length_m": 13.358388320695816,
+              "mean_speed": 0.7496289742430808,
+              "n_cells_nodes": 80,
+              "n_cells_moves": 79,
+              "distinct_cells": 80,
+              "n_turns_r4": 45,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 17.819999999578613,
+              "run": 4
+            },
+            {
+              "n_samples": 1783,
+              "duration": 17.819999999578613,
+              "path_length_m": 13.353130251334639,
+              "mean_speed": 0.7493339086223568,
+              "n_cells_nodes": 80,
+              "n_cells_moves": 79,
+              "distinct_cells": 80,
+              "n_turns_r4": 45,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 17.819999999578613,
+              "run": 5
+            }
+          ]
+        },
+        "maze_1804": {
+          "n_runs": 5,
+          "n_goal_runs": 5,
+          "a_goal_reached": true,
+          "explore_run_index": 1,
+          "n_post_goal_runs": 4,
+          "b_fast_run": true,
+          "t_explore": 49.87000000005686,
+          "d_best_time": 14.599999999654756,
+          "t_fast_best": 14.599999999654756,
+          "fast_run_index": 4,
+          "c_shorten_rate": 0.7072388209416862,
+          "c_effective": true,
+          "c1_path": 0.5063569700479167,
+          "c2_speed": 0.6861628701589455,
+          "identity_residual": 0.0,
+          "e_first_fast_eff": 1.4239726027801978,
+          "e_raw": 1.4239726027801978,
+          "e_status": "defined",
+          "e2_path_eff": 1.0625,
+          "e2_nodes": 68,
+          "e2_alt_moves": 1.046875,
+          "d_true": 64,
+          "start_cell": [
+            0,
+            0
+          ],
+          "start_candidates": [
+            [
+              0,
+              0
+            ],
+            [
+              15,
+              0
+            ]
+          ],
+          "per_run": [
+            {
+              "n_samples": 4988,
+              "duration": 49.87000000005686,
+              "path_length_m": 21.617031092564194,
+              "mean_speed": 0.4334676377088339,
+              "n_cells_nodes": 128,
+              "n_cells_moves": 127,
+              "distinct_cells": 98,
+              "n_turns_r4": 84,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 49.87000000005686,
+              "run": 1
+            },
+            {
+              "n_samples": 2080,
+              "duration": 20.79000000009927,
+              "path_length_m": 11.09215865472676,
+              "mean_speed": 0.5335333648231744,
+              "n_cells_nodes": 68,
+              "n_cells_moves": 67,
+              "distinct_cells": 68,
+              "n_turns_r4": 40,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 20.79000000009927,
+              "run": 2
+            },
+            {
+              "n_samples": 1966,
+              "duration": 19.649999999653275,
+              "path_length_m": 10.48801173502228,
+              "mean_speed": 0.5337410552268367,
+              "n_cells_nodes": 64,
+              "n_cells_moves": 63,
+              "distinct_cells": 64,
+              "n_turns_r4": 36,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 19.649999999653275,
+              "run": 3
+            },
+            {
+              "n_samples": 1461,
+              "duration": 14.599999999654756,
+              "path_length_m": 10.671096727101784,
+              "mean_speed": 0.7308970361201453,
+              "n_cells_nodes": 64,
+              "n_cells_moves": 63,
+              "distinct_cells": 64,
+              "n_turns_r4": 36,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 14.599999999654756,
+              "run": 4
+            },
+            {
+              "n_samples": 1461,
+              "duration": 14.599999999654756,
+              "path_length_m": 10.66590287437307,
+              "mean_speed": 0.7305412927825539,
+              "n_cells_nodes": 64,
+              "n_cells_moves": 63,
+              "distinct_cells": 64,
+              "n_turns_r4": 36,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 14.599999999654756,
+              "run": 5
+            }
+          ]
+        },
+        "maze_2304": {
+          "n_runs": 5,
+          "n_goal_runs": 5,
+          "a_goal_reached": true,
+          "explore_run_index": 1,
+          "n_post_goal_runs": 4,
+          "b_fast_run": true,
+          "t_explore": 42.65000000002239,
+          "d_best_time": 14.599999999654756,
+          "t_fast_best": 14.599999999654756,
+          "fast_run_index": 4,
+          "c_shorten_rate": 0.6576787807820142,
+          "c_effective": true,
+          "c1_path": 0.4249433906463158,
+          "c2_speed": 0.6798742732553062,
+          "identity_residual": 0.0,
+          "e_first_fast_eff": 1.7520547945703444,
+          "e_raw": 1.7520547945703444,
+          "e_status": "defined",
+          "e2_path_eff": 1.253968253968254,
+          "e2_nodes": 79,
+          "e2_alt_moves": 1.2380952380952381,
+          "d_true": 63,
+          "start_cell": [
+            0,
+            0
+          ],
+          "start_candidates": [
+            [
+              0,
+              0
+            ],
+            [
+              15,
+              0
+            ],
+            [
+              15,
+              15
+            ]
+          ],
+          "per_run": [
+            {
+              "n_samples": 4266,
+              "duration": 42.65000000002239,
+              "path_length_m": 18.294913065352496,
+              "mean_speed": 0.4289545853538779,
+              "n_cells_nodes": 109,
+              "n_cells_moves": 108,
+              "distinct_cells": 79,
+              "n_turns_r4": 73,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 42.65000000002239,
+              "run": 1
+            },
+            {
+              "n_samples": 2559,
+              "duration": 25.58000000012214,
+              "path_length_m": 13.221692516341983,
+              "mean_speed": 0.516876173427633,
+              "n_cells_nodes": 79,
+              "n_cells_moves": 78,
+              "distinct_cells": 76,
+              "n_turns_r4": 39,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 25.58000000012214,
+              "run": 2
+            },
+            {
+              "n_samples": 1462,
+              "duration": 14.609999999996987,
+              "path_length_m": 10.527639892388294,
+              "mean_speed": 0.7205776791506137,
+              "n_cells_nodes": 63,
+              "n_cells_moves": 62,
+              "distinct_cells": 63,
+              "n_turns_r4": 35,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 14.609999999996987,
+              "run": 3
+            },
+            {
+              "n_samples": 1461,
+              "duration": 14.599999999654756,
+              "path_length_m": 10.520610675782024,
+              "mean_speed": 0.720589772330877,
+              "n_cells_nodes": 63,
+              "n_cells_moves": 62,
+              "distinct_cells": 63,
+              "n_turns_r4": 35,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 14.599999999654756,
+              "run": 4
+            },
+            {
+              "n_samples": 1462,
+              "duration": 14.60999999965452,
+              "path_length_m": 10.52687671809877,
+              "mean_speed": 0.7205254427342709,
+              "n_cells_nodes": 63,
+              "n_cells_moves": 62,
+              "distinct_cells": 63,
+              "n_turns_r4": 35,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 14.60999999965452,
+              "run": 5
+            }
+          ]
+        },
+        "maze_3707": {
+          "n_runs": 5,
+          "n_goal_runs": 5,
+          "a_goal_reached": true,
+          "explore_run_index": 1,
+          "n_post_goal_runs": 4,
+          "b_fast_run": true,
+          "t_explore": 39.820000000008875,
+          "d_best_time": 13.8199999996732,
+          "t_fast_best": 13.8199999996732,
+          "fast_run_index": 5,
+          "c_shorten_rate": 0.6529382220072797,
+          "c_effective": true,
+          "c1_path": 0.41941768599074514,
+          "c2_speed": 0.6728500538639921,
+          "identity_residual": -1.1102230246251565e-16,
+          "e_first_fast_eff": 1.3777134587945838,
+          "e_raw": 1.3777134587945838,
+          "e_status": "defined",
+          "e2_path_eff": 1.0,
+          "e2_nodes": 64,
+          "e2_alt_moves": 0.984375,
+          "d_true": 64,
+          "start_cell": [
+            0,
+            0
+          ],
+          "start_candidates": [
+            [
+              0,
+              0
+            ],
+            [
+              0,
+              15
+            ],
+            [
+              15,
+              15
+            ]
+          ],
+          "per_run": [
+            {
+              "n_samples": 3983,
+              "duration": 39.820000000008875,
+              "path_length_m": 18.459175481341994,
+              "mean_speed": 0.4635654314750849,
+              "n_cells_nodes": 110,
+              "n_cells_moves": 109,
+              "distinct_cells": 96,
+              "n_turns_r4": 69,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 39.820000000008875,
+              "run": 1
+            },
+            {
+              "n_samples": 1905,
+              "duration": 19.040000000090913,
+              "path_length_m": 10.595499525585492,
+              "mean_speed": 0.5564863196184296,
+              "n_cells_nodes": 64,
+              "n_cells_moves": 63,
+              "distinct_cells": 64,
+              "n_turns_r4": 33,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 19.040000000090913,
+              "run": 2
+            },
+            {
+              "n_samples": 1390,
+              "duration": 13.890000000066323,
+              "path_length_m": 10.749495551626953,
+              "mean_speed": 0.7739017675720393,
+              "n_cells_nodes": 64,
+              "n_cells_moves": 63,
+              "distinct_cells": 64,
+              "n_turns_r4": 33,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 13.890000000066323,
+              "run": 3
+            },
+            {
+              "n_samples": 1385,
+              "duration": 13.839999999672727,
+              "path_length_m": 10.72535842924055,
+              "mean_speed": 0.7749536437495789,
+              "n_cells_nodes": 64,
+              "n_cells_moves": 63,
+              "distinct_cells": 64,
+              "n_turns_r4": 33,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 13.839999999672727,
+              "run": 4
+            },
+            {
+              "n_samples": 1383,
+              "duration": 13.8199999996732,
+              "path_length_m": 10.717070815660437,
+              "mean_speed": 0.7754754570125805,
+              "n_cells_nodes": 64,
+              "n_cells_moves": 63,
+              "distinct_cells": 64,
+              "n_turns_r4": 33,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 13.8199999996732,
+              "run": 5
+            }
+          ]
+        },
+        "maze_5188": {
+          "n_runs": 5,
+          "n_goal_runs": 5,
+          "a_goal_reached": true,
+          "explore_run_index": 1,
+          "n_post_goal_runs": 4,
+          "b_fast_run": true,
+          "t_explore": 75.16000000017762,
+          "d_best_time": 21.14999999949987,
+          "t_fast_best": 21.14999999949987,
+          "fast_run_index": 4,
+          "c_shorten_rate": 0.7186003193261058,
+          "c_effective": true,
+          "c1_path": 0.5469542101181301,
+          "c2_speed": 0.6099726509885113,
+          "identity_residual": -1.1102230246251565e-16,
+          "e_first_fast_eff": 1.5215130023884962,
+          "e_raw": 1.5215130023884962,
+          "e_status": "defined",
+          "e2_path_eff": 1.063157894736842,
+          "e2_nodes": 101,
+          "e2_alt_moves": 1.0526315789473684,
+          "d_true": 95,
+          "start_cell": [
+            0,
+            0
+          ],
+          "start_candidates": [
+            [
+              0,
+              0
+            ]
+          ],
+          "per_run": [
+            {
+              "n_samples": 7517,
+              "duration": 75.16000000017762,
+              "path_length_m": 35.07233020168816,
+              "mean_speed": 0.4666355801171538,
+              "n_cells_nodes": 209,
+              "n_cells_moves": 208,
+              "distinct_cells": 158,
+              "n_turns_r4": 135,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 75.16000000017762,
+              "run": 1
+            },
+            {
+              "n_samples": 3219,
+              "duration": 32.179999999755736,
+              "path_length_m": 16.81844966653526,
+              "mean_speed": 0.5226367205302337,
+              "n_cells_nodes": 101,
+              "n_cells_moves": 100,
+              "distinct_cells": 99,
+              "n_turns_r4": 53,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 32.179999999755736,
+              "run": 2
+            },
+            {
+              "n_samples": 2123,
+              "duration": 21.219999999498214,
+              "path_length_m": 15.917787237343836,
+              "mean_speed": 0.7501313495626881,
+              "n_cells_nodes": 95,
+              "n_cells_moves": 94,
+              "distinct_cells": 95,
+              "n_turns_r4": 53,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 21.219999999498214,
+              "run": 3
+            },
+            {
+              "n_samples": 2116,
+              "duration": 21.14999999949987,
+              "path_length_m": 15.889371539221576,
+              "mean_speed": 0.7512705219667759,
+              "n_cells_nodes": 95,
+              "n_cells_moves": 94,
+              "distinct_cells": 95,
+              "n_turns_r4": 53,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 21.14999999949987,
+              "run": 4
+            },
+            {
+              "n_samples": 2125,
+              "duration": 21.23999999949774,
+              "path_length_m": 15.919247785562387,
+              "mean_speed": 0.7494937752325248,
+              "n_cells_nodes": 95,
+              "n_cells_moves": 94,
+              "distinct_cells": 95,
+              "n_turns_r4": 53,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 21.23999999949774,
+              "run": 5
+            }
+          ]
+        },
+        "maze_7837": {
+          "n_runs": 5,
+          "n_goal_runs": 5,
+          "a_goal_reached": true,
+          "explore_run_index": 1,
+          "n_post_goal_runs": 4,
+          "b_fast_run": true,
+          "t_explore": 70.93000000015742,
+          "d_best_time": 22.28999999947291,
+          "t_fast_best": 22.28999999947291,
+          "fast_run_index": 5,
+          "c_shorten_rate": 0.6857465106524258,
+          "c_effective": true,
+          "c1_path": 0.49608945754252454,
+          "c2_speed": 0.603516140755193,
+          "identity_residual": 1.1102230246251565e-16,
+          "e_first_fast_eff": 1.3131449080611595,
+          "e_raw": 1.3131449080611595,
+          "e_status": "defined",
+          "e2_path_eff": 1.0,
+          "e2_nodes": 97,
+          "e2_alt_moves": 0.9896907216494846,
+          "d_true": 97,
+          "start_cell": [
+            0,
+            0
+          ],
+          "start_candidates": [
+            [
+              0,
+              0
+            ],
+            [
+              15,
+              0
+            ]
+          ],
+          "per_run": [
+            {
+              "n_samples": 7094,
+              "duration": 70.93000000015742,
+              "path_length_m": 32.26378636825934,
+              "mean_speed": 0.45486798770883596,
+              "n_cells_nodes": 191,
+              "n_cells_moves": 190,
+              "distinct_cells": 146,
+              "n_turns_r4": 118,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 70.93000000015742,
+              "run": 1
+            },
+            {
+              "n_samples": 2928,
+              "duration": 29.2699999999911,
+              "path_length_m": 16.069506707421546,
+              "mean_speed": 0.5490094536189419,
+              "n_cells_nodes": 97,
+              "n_cells_moves": 96,
+              "distinct_cells": 97,
+              "n_turns_r4": 54,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 29.2699999999911,
+              "run": 2
+            },
+            {
+              "n_samples": 2232,
+              "duration": 22.30999999947244,
+              "path_length_m": 16.24640002702929,
+              "mean_speed": 0.7282115655496847,
+              "n_cells_nodes": 97,
+              "n_cells_moves": 96,
+              "distinct_cells": 97,
+              "n_turns_r4": 54,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 22.30999999947244,
+              "run": 3
+            },
+            {
+              "n_samples": 2231,
+              "duration": 22.299999999472675,
+              "path_length_m": 16.2553351274419,
+              "mean_speed": 0.7289387949697886,
+              "n_cells_nodes": 97,
+              "n_cells_moves": 96,
+              "distinct_cells": 97,
+              "n_turns_r4": 54,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 22.299999999472675,
+              "run": 4
+            },
+            {
+              "n_samples": 2230,
+              "duration": 22.28999999947291,
+              "path_length_m": 16.258062090561666,
+              "mean_speed": 0.7293881602039533,
+              "n_cells_nodes": 97,
+              "n_cells_moves": 96,
+              "distinct_cells": 97,
+              "n_turns_r4": 54,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 22.28999999947291,
+              "run": 5
+            }
+          ]
+        },
+        "maze_8209": {
+          "n_runs": 5,
+          "n_goal_runs": 5,
+          "a_goal_reached": true,
+          "explore_run_index": 1,
+          "n_post_goal_runs": 4,
+          "b_fast_run": true,
+          "t_explore": 42.530000000021815,
+          "d_best_time": 11.46999999972877,
+          "t_fast_best": 11.46999999972877,
+          "fast_run_index": 4,
+          "c_shorten_rate": 0.7303080178762547,
+          "c_effective": true,
+          "c1_path": 0.5435474657242285,
+          "c2_speed": 0.6924957526780795,
+          "identity_residual": 0.0,
+          "e_first_fast_eff": 1.3783783784175543,
+          "e_raw": 1.3783783784175543,
+          "e_status": "defined",
+          "e2_path_eff": 1.08,
+          "e2_nodes": 54,
+          "e2_alt_moves": 1.06,
+          "d_true": 50,
+          "start_cell": [
+            0,
+            0
+          ],
+          "start_candidates": [
+            [
+              0,
+              0
+            ]
+          ],
+          "per_run": [
+            {
+              "n_samples": 4254,
+              "duration": 42.530000000021815,
+              "path_length_m": 18.242120858497877,
+              "mean_speed": 0.42892360353840864,
+              "n_cells_nodes": 108,
+              "n_cells_moves": 107,
+              "distinct_cells": 84,
+              "n_turns_r4": 69,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 42.530000000021815,
+              "run": 1
+            },
+            {
+              "n_samples": 1582,
+              "duration": 15.81000000007549,
+              "path_length_m": 8.92820462642975,
+              "mean_speed": 0.5647188251984262,
+              "n_cells_nodes": 54,
+              "n_cells_moves": 53,
+              "distinct_cells": 54,
+              "n_turns_r4": 27,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 15.81000000007549,
+              "run": 2
+            },
+            {
+              "n_samples": 1967,
+              "duration": 19.660000000093873,
+              "path_length_m": 9.63557804187713,
+              "mean_speed": 0.49011078544410586,
+              "n_cells_nodes": 58,
+              "n_cells_moves": 57,
+              "distinct_cells": 54,
+              "n_turns_r4": 33,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 19.660000000093873,
+              "run": 3
+            },
+            {
+              "n_samples": 1148,
+              "duration": 11.46999999972877,
+              "path_length_m": 8.326662296426267,
+              "mean_speed": 0.7259513772121331,
+              "n_cells_nodes": 50,
+              "n_cells_moves": 49,
+              "distinct_cells": 50,
+              "n_turns_r4": 27,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 11.46999999972877,
+              "run": 4
+            },
+            {
+              "n_samples": 1150,
+              "duration": 11.489999999728298,
+              "path_length_m": 8.337223972041741,
+              "mean_speed": 0.7256069601600427,
+              "n_cells_nodes": 50,
+              "n_cells_moves": 49,
+              "distinct_cells": 50,
+              "n_turns_r4": 27,
+              "non_adjacent_transitions": 0,
+              "outcome": "goal",
+              "run_time": 11.489999999728298,
+              "run": 5
+            }
+          ]
+        }
+      }
+    }
+  }
+}
