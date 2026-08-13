@@ -191,8 +191,17 @@ def summarize(arm_data):
         explore=dist(r["explore_time"] for r in rows),
         fast=dist(r["fast_time"] for r in rows),
         e=dist(e_ok), e_n_degenerate=n_deg, e_n_undefined=n_e_undef,
-        e_harness=dist(r["e_harness"] for r in rows
-                       if r["e_harness"] is not None and not r["e_degenerate"]),
+        # 【裁定 2026-08-13-R15】ハーネスの値は (e) と呼ばない。
+        #  `first_fast_efficiency（ハーネス値・参考）` として併記し、
+        #  §2 定義と食い違った面数を明示する（同じ名前で 2 つの量を流通させない）
+        harness_ffe=dist(r["e_harness"] for r in rows
+                         if r["e_harness"] is not None and not r["e_degenerate"]),
+        n_harness_mismatch=sum(
+            1 for r in rows
+            if r["e"] is not None and r["e_harness"] is not None
+            and abs(r["e"] - r["e_harness"]) > 1e-9),
+        n_harness_comparable=sum(
+            1 for r in rows if r["e"] is not None and r["e_harness"] is not None),
         e_prime=dist(r["e_prime"] for r in rows),
         e_prime_uncorrected=dist(r["e_prime_uncorrected"] for r in rows),
         excess=dist(r["excess_cells"] for r in rows),
@@ -308,7 +317,11 @@ def render(summaries, act, missing):
         w(f"| 初回最短走行タイム | {fmt(s['first_fast_time'], ' s')} |")
         w(f"| **(e')** 経路効率 | {fmt(s['e_prime'], '', 1, 3)} |")
         w(f"| 超過区画数（0 = 真の最短） | {fmt(s['excess'], ' 区画', 1, 1)} |")
-        w(f"| **(e)** 初回最短走行効率（退化面を除く） | {fmt(s['e'], '', 1, 3)} |")
+        w(f"| **(e)** 初回最短走行効率（§2 定義・退化面を除く） | {fmt(s['e'], '', 1, 3)} |")
+        w(f"| `first_fast_efficiency`（ハーネス値・**参考**。(e) と呼ばない） "
+          f"| {fmt(s['harness_ffe'], '', 1, 3)} |")
+        w(f"| ↑ うち §2 定義と食い違った面 | "
+          f"**{s['n_harness_mismatch']} / {s['n_harness_comparable']} 面** |")
         w(f"| 探索後に成立した走行回数 | {fmt(s['n_later_goals'], ' 本', 1, 1)} |")
         w(f"| 1 面あたりの走行本数 | {fmt(s['n_runs'], ' 本', 1, 1)} |")
         ie = s["identity_err_max"]
@@ -330,7 +343,92 @@ def render(summaries, act, missing):
             w(f"  - {d}")
         w("")
 
-    w("## 4. 面ごとの内訳\n")
+    # ------------------------------------------------------------------
+    # 事前登録予測の判定は**面ごとに対応をとった差**で行う。
+    # 腕をまたいだ中央値どうしの比較は、(b) の成否で母集団が変わるため使えない
+    # （E2 で新たに (b) が成立した面は E1 側に対応する値が無い）
+    # ------------------------------------------------------------------
+    by_arm = {s["arm"]: s for s in summaries}
+    s1, s2 = by_arm.get("l0a_e1"), by_arm.get("l0a_e2")
+    if s1 and s2:
+        w("## 4. 事前登録予測の判定（E1 対 E2・**面ごとに対応をとった差**）\n")
+        r1 = {r["maze"]: r for r in s1["rows"]}
+        r2 = {r["maze"]: r for r in s2["rows"]}
+        common = sorted(set(r1) & set(r2))
+        gained = [m for m in common if not r1[m]["b"] and r2[m]["b"]]
+        lost = [m for m in common if r1[m]["b"] and not r2[m]["b"]]
+        w(f"**P1 (b) 最短走行成立率が上がる**: "
+          f"{s1['b']['rate']*100:.0f}%（{s1['b']['n']}/{s1['n_mazes']}） → "
+          f"**{s2['b']['rate']*100:.0f}%（{s2['b']['n']}/{s2['n_mazes']}）**。"
+          f"新たに成立した面 {len(gained)}（{', '.join(gained) or 'なし'}）／"
+          f"失われた面 {len(lost)}（{', '.join(lost) or 'なし'}）\n")
+
+        # (d) は両腕とも best_time が定義される面でのみ対応をとる
+        pair_d = [(m, r1[m]["best_time"], r2[m]["best_time"]) for m in common
+                  if r1[m]["best_time"] is not None and r2[m]["best_time"] is not None]
+        dd = [b - a for _, a, b in pair_d]
+        worse = [(m, a, b) for m, a, b in pair_d if b > a + 1e-9]
+        better = [(m, a, b) for m, a, b in pair_d if b < a - 1e-9]
+        w(f"**P2 (d) が悪化する面がある**: 対応がとれた {len(pair_d)} 面で、"
+          f"**悪化 {len(worse)} 面 / 改善 {len(better)} 面 / 不変 "
+          f"{len(pair_d)-len(worse)-len(better)} 面**。"
+          f"差（E2 − E1）の中央値 {np.median(dd):+.2f} s"
+          f"（最小 {min(dd):+.2f} / 最大 {max(dd):+.2f}）\n")
+        if worse:
+            w("| 悪化した面 | E1 の (d) | E2 の (d) | 差 |")
+            w("|---|---|---|---|")
+            for m, a, b in sorted(worse, key=lambda t: t[1] - t[2]):
+                w(f"| {m} | {a:.2f} s | {b:.2f} s | **{b-a:+.2f} s** |")
+            w("")
+        if better:
+            w("| 改善した面 | E1 の (d) | E2 の (d) | 差 |")
+            w("|---|---|---|---|")
+            for m, a, b in sorted(better, key=lambda t: t[1] - t[2]):
+                w(f"| {m} | {a:.2f} s | {b:.2f} s | **{b-a:+.2f} s** |")
+            w("")
+        # ⚠️ 腕どうしの (d) 中央値の差を「E2 で悪化した」と読んではならない
+        m1, m2 = s1["d"]["median"], s2["d"]["median"]
+        if m1 is not None and m2 is not None:
+            w(f"> ### ⚠️ (d) の**中央値どうし**を比べてはならない（本集計で実際に生じた）\n>")
+            w(f"> 腕ごとの (d) 中央値は **{m1:.2f} s → {m2:.2f} s（{m2-m1:+.2f} s）**"
+              f"と動くが、**対応をとった差の中央値は "
+              f"{np.median(dd):+.2f} s**（悪化 {len(worse)} 面・改善 {len(better)} 面・"
+              f"不変 {len(pair_d)-len(worse)-len(better)} 面）である。")
+            w("> 中央値が動いたのは**順位の中央にいた面が入れ替わった**ためで、"
+              "20 面中 14 面は 1 ミリ秒も動いていない。"
+              "**中央値の差を「E2 で遅くなった量」と読むと、実際の悪化幅を大きく取り違える。**")
+            w("> 逆に E2 の最大の効果（(b) が成立した面での大幅短縮）は"
+              "**順位の裾に出るので中央値にはまったく現れない**。")
+            w("> これは §2 が (c) について警告している「中央値どうしの比 ≠ "
+              "面ごとに対応をとった比の中央値」と同じ誤りが、(d) で起きたものである。\n")
+
+        pair_e = [(m, r1[m]["e"], r2[m]["e"]) for m in common
+                  if r1[m]["e"] is not None and r2[m]["e"] is not None
+                  and not r1[m]["e_degenerate"] and not r2[m]["e_degenerate"]]
+        w(f"**P3 (e) も悪化するはず**: 両腕とも (e) が**退化せず定義された**面は "
+          f"**{len(pair_e)} 面**しかない（E1 の退化 {s1['e_n_degenerate']} 面・"
+          f"未定義 {s1['e_n_undefined']} 面、E2 の退化 {s2['e_n_degenerate']} 面・"
+          f"未定義 {s2['e_n_undefined']} 面）。"
+          + ("**対応がとれる面が少なすぎて (e) では判定にならない。**\n"
+             if len(pair_e) < 5 else "\n"))
+        if pair_e:
+            w("| 面 | E1 の (e) | E2 の (e) | 差 |")
+            w("|---|---|---|---|")
+            for m, a, b in pair_e:
+                w(f"| {m} | {a:.3f} | {b:.3f} | {b-a:+.3f} |")
+            w("")
+        # (e') は走行回数に依存しないので、こちらでは全面で対応がとれる
+        pair_ep = [(m, r1[m]["e_prime"], r2[m]["e_prime"]) for m in common
+                   if r1[m]["e_prime"] is not None and r2[m]["e_prime"] is not None]
+        dep = [b - a for _, a, b in pair_ep]
+        ep_worse = [m for m, a, b in pair_ep if b > a + 1e-9]
+        w(f"**(e') での代替判定**（走行回数に依存しないので (e) より対応がとれる）: "
+          f"{len(pair_ep)} 面で **悪化 {len(ep_worse)} 面**、"
+          f"差の中央値 {np.median(dep):+.3f}"
+          f"（最小 {min(dep):+.3f} / 最大 {max(dep):+.3f}）"
+          + (f"。悪化面: {', '.join(ep_worse)}\n" if ep_worse else "\n"))
+
+    w("## 5. 面ごとの内訳\n")
     for s in summaries:
         w(f"### {s['label']}\n")
         w("| 面 | D_true | 走行 | ゴール | 探索 s | 最短 s | 最速 s | (c) | (c1) | (c2) | (e') | 超過区画 | (e) |")
@@ -345,7 +443,7 @@ def render(summaries, act, missing):
               f"| {g(r['e_prime'], 3)} | {ex} | {e_txt} |")
         w("")
 
-    w("## 5. 限界（必ず併記する）\n")
+    w("## 6. 限界（必ず併記する）\n")
     w("- **L0-c の速度プロファイル安全率 0.7 は校正されていない。**"
       "`docs/L0PLUS_DESIGN.md` §8 の探索記録の表は**プレースホルダのまま空欄**であり"
       "（`| 0.7 | — | — | — | — |`）、0.6 → 0.7 → 0.8 と上げて完走率 100% を確認する"
@@ -361,10 +459,14 @@ def render(summaries, act, missing):
     w("- **(e') は裁定 R14 の定義（分子 = 節点数 = 移動回数 + 1）で算出した。**"
       "補正前の値（移動回数 ÷ D_true）も参考として併記してあるが**判定には使わない**。"
       "過去の報告に (e') の数値が出ている場合、**どちらの分子で計算されたものかを確認すること**")
-    w("- **(e) の分母**は §2 の正本（その迷路での**最良タイム**）で計算した。"
-      "凍結ハーネス `maze_kpi` の `first_fast_efficiency` は分母が"
-      "「探索後の走行のうち最速」なので、**探索走行が最速の面で両者は食い違う**。"
-      "参考値として両方を JSON に出してある")
+    w("- **【裁定 2026-08-13-R15】(e) の分母は §2 の正本**（探索走行を含む"
+      "**全走行の最良タイム**）で計算した。凍結ハーネス `maze_kpi` の "
+      "`first_fast_efficiency` は分母が「探索後の走行のうち最速」で、"
+      "**探索走行が最速だった面で両者は食い違う**（§2 定義なら (e) > 1 になる面が"
+      "ハーネスでは 1.00 になり、情報が潰れる）。**凍結ハーネスは触らず集計側で "
+      "§2 定義を実装**し、ハーネス値は **(e) の名を使わず** "
+      "`first_fast_efficiency（ハーネス値・参考）` として併記した"
+      "（同じ名前で 2 つの量を流通させない。`note_015` の教訓の適用）")
     w("- **L0-b・L0-c には E1 が統合されていない**ので、"
       "**E2 の効果を測れるのは腕 1 対腕 2 の対比だけ**である（カード §2）\n")
     return "\n".join(L)
