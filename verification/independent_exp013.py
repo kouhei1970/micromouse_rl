@@ -193,6 +193,9 @@ def maze_metrics(runs: list[dict], d_true: int) -> dict:
     res["identity_residual"] = s - (1.0 - (1.0 - c1) / (1.0 + c2))
 
     # (e) 初回最短走行効率 = 初回の最短走行タイム / その面の最良タイム
+    #   分母は §2 を正とする（全ゴール走行にわたる最良タイム。裁定 R15）。
+    #   凍結ハーネスの first_fast_efficiency は分母が「探索後の走行のうち最速」なので
+    #   別量として (e-harness) の名で併記する。
     i_first_post = post[0]
     t_first_post = runs[i_first_post]["run_time"]
     t_best_all = res["d_best_time"]
@@ -202,6 +205,10 @@ def maze_metrics(runs: list[dict], d_true: int) -> dict:
     res["e_first_fast_eff"] = None if degenerate else e
     res["e_raw"] = e
     res["e_status"] = "degenerate" if degenerate else "defined"
+    # (e-harness): 分母 = 探索後の走行のうち最速（凍結ハーネスの定義）
+    e_h = t_first_post / t_best
+    res["e_harness"] = e_h
+    res["e_defs_differ"] = bool(abs(e - e_h) > 1e-12)
 
     # (e') 初回最短走行の経路効率 = 通過した区画数 / D_0
     n_nodes = runs[i_first_post]["n_cells_nodes"]
@@ -315,6 +322,8 @@ def process_arm(arm_dir: Path) -> dict:
         "e_defined_count": len(e_defined),
         "e_degenerate_mazes": e_degen,
         "e_no_post_run_mazes": e_none,
+        "e_harness_dist": q([v.get("e_harness") for v in per_maze.values()]),
+        "e_defs_differ_mazes": [k for k, v in per_maze.items() if v.get("e_defs_differ")],
         "e2_path_eff_dist": q([v.get("e2_path_eff") for v in per_maze.values()]),
         "e2_alt_moves_dist": q([v.get("e2_alt_moves") for v in per_maze.values()]),
         "d_true_dist": q([v["d_true"] for v in per_maze.values()]),
