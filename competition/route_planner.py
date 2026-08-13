@@ -160,6 +160,40 @@ class TimeField(dict):
         super().__init__(per_cell)
 
 
+def forward_field(start_states, width: int, height: int, connects, model) -> dict:
+    """**前向き** Dijkstra。`start_states` から各状態までの最小時間を返す。
+
+    2026-08-13 追加（exp_018）。`value_field`（後ろ向き）と対で使い、
+    「ある未知壁が最適経路に使われうるか」を状態の上で判定する
+    （$D_f(s) + c(s \\to s') + D_b(s') = T$ なら、その辺は最適経路上にある）。
+
+    **`value_field` と同じモデル契約の上で動く**（`successors` と `cell_of` しか
+    使わない）ので、exp_016 で状態空間を差し替えても両方そのまま使える。
+
+    Args:
+        start_states: 出発状態の列（例 `[((0, 0), "N")]`）。**出発時の向きを含む**
+    Returns:
+        dict: 状態 → 出発状態からの最小時間 [s]
+    """
+    best = {}
+    pq = []
+    for st in start_states:
+        if st not in best:
+            best[st] = 0.0
+            heapq.heappush(pq, (0.0, st))
+    while pq:
+        cost, state = heapq.heappop(pq)
+        if cost > best.get(state, float("inf")) + TIE_EPS:
+            continue
+        cell, d_in = state
+        for _d_out, _n, nxt, w in model.successors(cell, d_in, width, height, connects):
+            nc = cost + w
+            if nc < best.get(nxt, float("inf")) - TIE_EPS:
+                best[nxt] = nc
+                heapq.heappush(pq, (nc, nxt))
+    return best
+
+
 def value_field(targets, width: int, height: int, connects, model) -> TimeField:
     """目標集合からの**後ろ向き** Dijkstra。
 
