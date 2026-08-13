@@ -4,7 +4,7 @@ tests/test_maze6_potential.py
 exp_012（ポテンシャル Φ の連続化）の単体テスト。
 
 **このテストが全項目 PASS することが、exp_012 の学習を回す条件である**
-（裁定 R5-1。`experiments/exp_012_continuous_potential/design.md` §4 末尾が仕様の正本）。
+（裁定 R5-1。仕様は `experiments/exp_012_continuous_potential/design.md` §4 末尾を正とする）。
 
 pytest は使わない plain Python スクリプト（tests/test_corridor.py と同じ流儀）。
 実行方法（リポジトリルートで）:
@@ -67,8 +67,12 @@ JUMP_SLOPE = 1.25                         # 離散化・滑り・旋回ぶんの
 JUMP_OFFSET = 0.001                       # [m]
 JUMP_ABS_CAP = VMAX * DT                  # [m] 絶対上限
 
-TOL_EXACT = 1e-12                         # (a)(b-3)(c)(f) の一致判定
-TOL_BOUNDARY = 1e-9                       # (b-2)(d) の一致判定（design.md の指定どおり）
+TOL_EXACT = 1e-12                         # (a)(b-3)(c)(f) の一致判定。(b-3) のみ design.md
+                                          # が「絶対誤差 1e-12 未満」と明示。他は厳密一致が
+                                          # 数学的に期待される量なので同じ水準を当てている
+TOL_BOUNDARY = 1e-9                       # (b-2) は design.md が「絶対誤差 1e-9 未満」と明示。
+                                          # (d) は design.md に数値の指定が無く、本テストの判断
+                                          # で同じ水準を当てている（Φ₀ は厳密に 0 が期待値）
 
 MAX_SCRIPT_STEPS = 600                    # 走行台本 1 本あたりの上限ステップ
 
