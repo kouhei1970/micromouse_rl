@@ -117,7 +117,7 @@ def per_maze_metrics(maze, rec):
              best_time=best_time, improvement=k["improvement_ratio"],
              c1=None, c2=None, identity_err=None,
              e=None, e_harness=k["first_fast_efficiency"], e_degenerate=False,
-             e_prime=None, n_later_goals=0, excess_cells=None,
+             e_prime=None, e_prime_uncorrected=None, n_later_goals=0, excess_cells=None,
              first_fast_time=k["first_fast_time"], first_fast_n_cells=None,
              first_fast_n_turns=None)
 
@@ -153,13 +153,17 @@ def per_maze_metrics(maze, rec):
     # ---- (e') 初回最短走行が通過した**区画数** ÷ D_true（距離で正規化しない）
     m["first_fast_n_cells"] = first_fast["n_cells"]
     m["first_fast_n_turns"] = first_fast["n_turns"]
+    # 【裁定 2026-08-13-R14】(e') の分子 = **計時窓内で経由した区画の個数（節点数）**
+    #  ＝ 窓内の**移動回数 + 1**。`runs_detail.json` の `n_cells` は
+    #  `len(区画列) - 1` すなわち**移動回数**なので、そのまま割ると系統的に低く出る。
+    #  実測でも真の最短を引けた走行で `n_cells = D_true − 1` となり、
+    #  「完璧な走行がちょうど 1.00」という §2 の錨が壊れていた。
     if d_true > 0:
-        m["e_prime"] = first_fast["n_cells"] / d_true
-    # 計時窓の端で遷移が 1 つ落ちる（計時は**機体前端**通過基準、区画の判定は
-    # **機体中心**基準）ため、**真の最短を引けた走行でも n_cells = D_true − 1**
-    # になる。したがって (e') の下限は 1.00 ではなく (D−1)/D である。
-    # 診断量として超過区画数を出す（**0 = 真の最短**、1 以上が遠回り）。
-    m["excess_cells"] = first_fast["n_cells"] - (d_true - 1)
+        m["e_prime"] = (first_fast["n_cells"] + 1) / d_true
+        # 補正前の値。過去の報告・独立検証との突き合わせ用に残す（**判定には使わない**）
+        m["e_prime_uncorrected"] = first_fast["n_cells"] / d_true
+    # 超過区画数（**0 = 真の最短**、1 以上が遠回り）。= 節点数 − D_true
+    m["excess_cells"] = (first_fast["n_cells"] + 1) - d_true
     return m
 
 
@@ -190,11 +194,12 @@ def summarize(arm_data):
         e_harness=dist(r["e_harness"] for r in rows
                        if r["e_harness"] is not None and not r["e_degenerate"]),
         e_prime=dist(r["e_prime"] for r in rows),
+        e_prime_uncorrected=dist(r["e_prime_uncorrected"] for r in rows),
         excess=dist(r["excess_cells"] for r in rows),
         n_excess_zero=sum(1 for r in rows if r["excess_cells"] == 0),
+        n_excess_neg=sum(1 for r in rows if r["excess_cells"] is not None
+                         and r["excess_cells"] < 0),
         n_excess_defined=sum(1 for r in rows if r["excess_cells"] is not None),
-        e_prime_floor=dist((r["d_true"] - 1) / r["d_true"] for r in rows
-                           if r["e_prime"] is not None),
         n_later_goals=dist(r["n_later_goals"] for r in rows if r["b"]),
         n_runs=dist(r["n_runs"] for r in rows),
         first_fast_time=dist(r["first_fast_time"] for r in rows),
@@ -265,25 +270,28 @@ def render(summaries, act, missing):
       "**(e) の退化面（探索後の走行 1 回かつ最良がその走行）は 1.00 と書かず未定義**とし、"
       "中央値から除外して件数を併記した（§2）。\n")
 
-    w("> ### ⚠️ (e') を 1.00 基準で読まないこと（本集計で判明・重要）\n>")
-    w("> **(e') の下限は 1.00 ではない。**計時は**機体前端**のセンサ通過基準、"
-      "区画の判定は**機体中心**基準なので、**計時窓の端で区画の遷移が 1 つ落ちる**。"
-      "したがって**真の最短経路を引けた走行でも `n_cells = D_true − 1`** となり、"
-      "**(e') = (D−1)/D ≒ 0.98〜0.99** になる（引き継ぎメモ §2 (3) と同じ機構。"
-      "そこでは 18 面すべてで歩数 = $D_0-1$ が確認されている）。")
-    w("> **0.98 を「最短より良い」と読んではならない。**そこで診断量として")
-    w("> **超過区画数 = n_cells − (D_true − 1)** を併記する（**0 = 真の最短**、"
-      "1 以上が遠回り）。判定にはこちらを使うのが安全である。\n")
-    w("| 腕 | 超過区画数 中央値（四分位, 最小/最大） | **真の最短を引けた面** | (e') の下限 (D−1)/D 中央値 |")
-    w("|---|---|---|---|")
+    w("> ### (e') は裁定 R14 の定義（節点数）で算出している\n>")
+    w("> **【裁定 2026-08-13-R14】(e') の分子 ＝ 計時窓内で経由した区画の個数（節点数）"
+      "＝ 窓内の移動回数 + 1。**`runs_detail.json` の `n_cells` は"
+      "`len(区画列) − 1` すなわち**移動回数**なので、本スクリプトは **+1 して**割っている。")
+    w("> **補正しないと系統的に低く出る**: 真の最短経路を引けた走行でも "
+      "`n_cells = D_true − 1` となり、(e') = (D−1)/D ≒ 0.98〜0.99 になって、"
+      "**「完璧な走行がちょうど 1.00」という §2 の錨が壊れる**"
+      "（0.98 を「最短より良い」と誤読しうる）。")
+    w("> 併せて診断量 **超過区画数 = 節点数 − D_true**（**0 = 真の最短**、1 以上が遠回り）"
+      "を出す。R14 が正しければ**超過区画数は負にならない**はずで、これは検証可能な予測である。\n")
+    w("| 腕 | 超過区画数 中央値（四分位, 最小/最大） | **真の最短を引けた面** | **負の面**（R14 の反証） | 補正前 (e') 中央値（参考・判定に使わない） |")
+    w("|---|---|---|---|---|")
     for s in summaries:
         ex = s["excess"]
         if ex["n"] == 0:
-            w(f"| {s['label']} | — | — | — |")
+            w(f"| {s['label']} | — | — | — | — |")
             continue
+        neg = s["n_excess_neg"]
         w(f"| **{s['label']}** | {ex['median']:.1f}（{ex['q1']:.1f}〜{ex['q3']:.1f}, "
           f"{ex['min']:.0f}/{ex['max']:.0f}） | **{s['n_excess_zero']}/{s['n_excess_defined']} 面** "
-          f"| {s['e_prime_floor']['median']:.3f} |")
+          f"| {'**' + str(neg) + ' 面 ⚠️**' if neg else '0 面 ✓'} "
+          f"| {s['e_prime_uncorrected']['median']:.3f} |")
     w("")
 
     w("## 2. 分布（二値化した割合だけにしない）\n")
@@ -350,11 +358,9 @@ def render(summaries, act, missing):
       "さらに exp_007 の eval 腕は **v2 帯**で走っており、v4 と重なるのは **2 面のみ**である")
     w("- **`n_turns` は裁定 R4 の正本定義**（区画列の進行方向変化。180° = 2）で記録した。"
       "±45° リセットあり定義は使っていない")
-    w("- **(e') は 1.00 が下限ではない**（上記 §1 の注記）。計時窓の端で区画の遷移が"
-      "1 つ落ちるので、**真の最短でも (D−1)/D ≒ 0.98〜0.99** になる。"
-      "この端の切り取り量は `front_offset`（`competition/evaluator.py`）と速度から"
-      "見積もれるはずだが**未実施**であり、(e') の定義そのものを是正すべきかは"
-      "教授の裁定事項である（本集計では定義を変えず、超過区画数を併記して回避した）")
+    w("- **(e') は裁定 R14 の定義（分子 = 節点数 = 移動回数 + 1）で算出した。**"
+      "補正前の値（移動回数 ÷ D_true）も参考として併記してあるが**判定には使わない**。"
+      "過去の報告に (e') の数値が出ている場合、**どちらの分子で計算されたものかを確認すること**")
     w("- **(e) の分母**は §2 の正本（その迷路での**最良タイム**）で計算した。"
       "凍結ハーネス `maze_kpi` の `first_fast_efficiency` は分母が"
       "「探索後の走行のうち最速」なので、**探索走行が最速の面で両者は食い違う**。"
