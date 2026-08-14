@@ -1,0 +1,23 @@
+{
+  "model": "logs/exp_023a_seed1/rl_model_800000_steps.zip",
+  "num_timesteps": 800000,
+  "order_a": [
+    7000,
+    7001,
+    7002,
+    7003,
+    7004
+  ],
+  "order_b": [
+    7003,
+    7001,
+    7002,
+    7004,
+    7000
+  ],
+  "L6a_diff": 0,
+  "L6b_diff": 5,
+  "L6b_prefix_changed": 5,
+  "L6b_diff_among_changed": 5,
+  "verdict": "pass"
+}
