@@ -1,0 +1,1049 @@
+{
+ "measurement": "M-1",
+ "safety_factor": 0.75,
+ "maze_dir": "competition/mazes/eval",
+ "policy": "competition.baseline_slalom:SlalomPolicy",
+ "gate_reason": "課題 J: M5 確定基準表の独立再計算（准教授・検証目的の再実行）。教授指示 2026-08-14",
+ "mazes": [
+  {
+   "maze": "maze_1018",
+   "runs": [
+    {
+     "run": 1,
+     "outcome": "goal",
+     "t_start": 0.1500000000000001,
+     "t_end": 28.299999999979395,
+     "run_time": 28.149999999979396
+    },
+    {
+     "run": 2,
+     "outcome": "goal",
+     "t_start": 84.30000000022049,
+     "t_end": 112.02000000035285,
+     "run_time": 27.72000000013236
+    },
+    {
+     "run": 3,
+     "outcome": "goal",
+     "t_start": 139.74000000015153,
+     "t_end": 158.35999999971122,
+     "run_time": 18.619999999559695
+    },
+    {
+     "run": 4,
+     "outcome": "goal",
+     "t_start": 186.06999999905597,
+     "t_end": 204.7099999986152,
+     "run_time": 18.639999999559222
+    },
+    {
+     "run": 5,
+     "outcome": "goal",
+     "t_start": 232.48999999795828,
+     "t_end": 251.06999999751892,
+     "run_time": 18.57999999956064
+    }
+   ],
+   "harness_kpi": {
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 28.149999999979396,
+    "fast_time": 18.57999999956064,
+    "improvement_ratio": 0.3399644760364391,
+    "first_fast_time": 27.72000000013236,
+    "first_fast_efficiency": 1.4919268030563966
+   },
+   "harness_best_time": 18.57999999956064,
+   "harness_success": true
+  },
+  {
+   "maze": "maze_1019",
+   "runs": [
+    {
+     "run": 1,
+     "outcome": "goal",
+     "t_start": 0.1500000000000001,
+     "t_end": 27.07999999998224,
+     "run_time": 26.92999999998224
+    },
+    {
+     "run": 2,
+     "outcome": "goal",
+     "t_start": 53.93000000007548,
+     "t_end": 72.71000000016515,
+     "run_time": 18.78000000008967
+    },
+    {
+     "run": 3,
+     "outcome": "goal",
+     "t_start": 99.48000000029297,
+     "t_end": 118.31000000038289,
+     "run_time": 18.83000000008991
+    },
+    {
+     "run": 4,
+     "outcome": "goal",
+     "t_start": 145.1200000000243,
+     "t_end": 163.9299999995795,
+     "run_time": 18.809999999555203
+    },
+    {
+     "run": 5,
+     "outcome": "goal",
+     "t_start": 190.73999999894554,
+     "t_end": 209.53999999850097,
+     "run_time": 18.79999999955544
+    }
+   ],
+   "harness_kpi": {
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 26.92999999998224,
+    "fast_time": 18.78000000008967,
+    "improvement_ratio": 0.30263646490523366,
+    "first_fast_time": 18.78000000008967,
+    "first_fast_efficiency": 1.0
+   },
+   "harness_best_time": 18.78000000008967,
+   "harness_success": true
+  },
+  {
+   "maze": "maze_1021",
+   "runs": [
+    {
+     "run": 1,
+     "outcome": "goal",
+     "t_start": 0.1500000000000001,
+     "t_end": 17.370000000004868,
+     "run_time": 17.22000000000487
+    },
+    {
+     "run": 2,
+     "outcome": "goal",
+     "t_start": 34.66999999998352,
+     "t_end": 46.230000000038714,
+     "run_time": 11.560000000055197
+    },
+    {
+     "run": 3,
+     "outcome": "goal",
+     "t_start": 63.43000000012084,
+     "t_end": 74.97000000017594,
+     "run_time": 11.540000000055102
+    },
+    {
+     "run": 4,
+     "outcome": "goal",
+     "t_start": 92.22000000025831,
+     "t_end": 103.8400000003138,
+     "run_time": 11.620000000055484
+    },
+    {
+     "run": 5,
+     "outcome": "goal",
+     "t_start": 121.03000000039587,
+     "t_end": 132.5900000003206,
+     "run_time": 11.559999999924727
+    }
+   ],
+   "harness_kpi": {
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 17.22000000000487,
+    "fast_time": 11.540000000055102,
+    "improvement_ratio": 0.32984901277283174,
+    "first_fast_time": 11.560000000055197,
+    "first_fast_efficiency": 1.001733102253033
+   },
+   "harness_best_time": 11.540000000055102,
+   "harness_success": true
+  },
+  {
+   "maze": "maze_1023",
+   "runs": [
+    {
+     "run": 1,
+     "outcome": "goal",
+     "t_start": 0.1500000000000001,
+     "t_end": 33.97999999998022,
+     "run_time": 33.829999999980224
+    },
+    {
+     "run": 2,
+     "outcome": "goal",
+     "t_start": 68.96000000014725,
+     "t_end": 93.71000000026542,
+     "run_time": 24.750000000118177
+    },
+    {
+     "run": 3,
+     "outcome": "goal",
+     "t_start": 120.78000000039468,
+     "t_end": 139.0100000001688,
+     "run_time": 18.22999999977411
+    },
+    {
+     "run": 4,
+     "outcome": "goal",
+     "t_start": 166.04999999952938,
+     "t_end": 184.22999999909948,
+     "run_time": 18.1799999995701
+    },
+    {
+     "run": 5,
+     "outcome": "goal",
+     "t_start": 211.23999999846077,
+     "t_end": 229.4399999980304,
+     "run_time": 18.199999999569627
+    }
+   ],
+   "harness_kpi": {
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 33.829999999980224,
+    "fast_time": 18.1799999995701,
+    "improvement_ratio": 0.46260715342652303,
+    "first_fast_time": 24.750000000118177,
+    "first_fast_efficiency": 1.3613861386525543
+   },
+   "harness_best_time": 18.1799999995701,
+   "harness_success": true
+  },
+  {
+   "maze": "maze_1024",
+   "runs": [
+    {
+     "run": 1,
+     "outcome": "goal",
+     "t_start": 0.1500000000000001,
+     "t_end": 17.370000000004868,
+     "run_time": 17.22000000000487
+    },
+    {
+     "run": 2,
+     "outcome": "goal",
+     "t_start": 34.73999999998385,
+     "t_end": 45.76000000003647,
+     "run_time": 11.020000000052619
+    },
+    {
+     "run": 3,
+     "outcome": "goal",
+     "t_start": 63.05000000011903,
+     "t_end": 74.0800000001717,
+     "run_time": 11.030000000052667
+    },
+    {
+     "run": 4,
+     "outcome": "goal",
+     "t_start": 91.42000000025449,
+     "t_end": 102.39000000030687,
+     "run_time": 10.97000000005238
+    },
+    {
+     "run": 5,
+     "outcome": "goal",
+     "t_start": 119.69000000038947,
+     "t_end": 130.7000000003653,
+     "run_time": 11.009999999975818
+    }
+   ],
+   "harness_kpi": {
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 17.22000000000487,
+    "fast_time": 10.97000000005238,
+    "improvement_ratio": 0.3629500580691476,
+    "first_fast_time": 11.020000000052619,
+    "first_fast_efficiency": 1.0045578851412944
+   },
+   "harness_best_time": 10.97000000005238,
+   "harness_success": true
+  },
+  {
+   "maze": "maze_1041",
+   "runs": [
+    {
+     "run": 1,
+     "outcome": "goal",
+     "t_start": 0.1500000000000001,
+     "t_end": 33.119999999976116,
+     "run_time": 32.96999999997612
+    },
+    {
+     "run": 2,
+     "outcome": "goal",
+     "t_start": 65.65000000013144,
+     "t_end": 87.45000000023553,
+     "run_time": 21.80000000010409
+    },
+    {
+     "run": 3,
+     "outcome": "goal",
+     "t_start": 115.03000000036722,
+     "t_end": 130.1800000003776,
+     "run_time": 15.150000000010365
+    },
+    {
+     "run": 4,
+     "outcome": "goal",
+     "t_start": 154.7199999997973,
+     "t_end": 169.91999999943786,
+     "run_time": 15.199999999640568
+    },
+    {
+     "run": 5,
+     "outcome": "goal",
+     "t_start": 193.85999999887176,
+     "t_end": 208.99999999851374,
+     "run_time": 15.139999999641987
+    }
+   ],
+   "harness_kpi": {
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 32.96999999997612,
+    "fast_time": 15.139999999641987,
+    "improvement_ratio": 0.5407946618242963,
+    "first_fast_time": 21.80000000010409,
+    "first_fast_efficiency": 1.4398943197238834
+   },
+   "harness_best_time": 15.139999999641987,
+   "harness_success": true
+  },
+  {
+   "maze": "maze_1046",
+   "runs": [
+    {
+     "run": 1,
+     "outcome": "goal",
+     "t_start": 0.1500000000000001,
+     "t_end": 20.77999999999692,
+     "run_time": 20.629999999996922
+    },
+    {
+     "run": 2,
+     "outcome": "goal",
+     "t_start": 78.0600000001907,
+     "t_end": 87.72000000023682,
+     "run_time": 9.660000000046125
+    },
+    {
+     "run": 3,
+     "outcome": "goal",
+     "t_start": 103.96000000031437,
+     "t_end": 113.64000000036059,
+     "run_time": 9.68000000004622
+    },
+    {
+     "run": 4,
+     "outcome": "goal",
+     "t_start": 129.87000000038492,
+     "t_end": 139.55000000015602,
+     "run_time": 9.679999999771098
+    },
+    {
+     "run": 5,
+     "outcome": "goal",
+     "t_start": 155.789999999772,
+     "t_end": 165.4399999995438,
+     "run_time": 9.649999999771808
+    }
+   ],
+   "harness_kpi": {
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 20.629999999996922,
+    "fast_time": 9.649999999771808,
+    "improvement_ratio": 0.5322346098025571,
+    "first_fast_time": 9.660000000046125,
+    "first_fast_efficiency": 1.0010362694585029
+   },
+   "harness_best_time": 9.649999999771808,
+   "harness_success": true
+  },
+  {
+   "maze": "maze_1073",
+   "runs": [
+    {
+     "run": 1,
+     "outcome": "goal",
+     "t_start": 0.1500000000000001,
+     "t_end": 56.33000000008694,
+     "run_time": 56.18000000008694
+    },
+    {
+     "run": 2,
+     "outcome": "goal",
+     "t_start": 89.80000000024675,
+     "t_end": 123.58000000040805,
+     "run_time": 33.780000000161294
+    },
+    {
+     "run": 3,
+     "outcome": "goal",
+     "t_start": 154.85999999979398,
+     "t_end": 174.74999999932365,
+     "run_time": 19.889999999529664
+    },
+    {
+     "run": 4,
+     "outcome": "goal",
+     "t_start": 204.32999999862417,
+     "t_end": 224.1499999981555,
+     "run_time": 19.81999999953132
+    },
+    {
+     "run": 5,
+     "outcome": "goal",
+     "t_start": 253.71999999745626,
+     "t_end": 273.57999999698666,
+     "run_time": 19.8599999995304
+    }
+   ],
+   "harness_kpi": {
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 56.18000000008694,
+    "fast_time": 19.81999999953132,
+    "improvement_ratio": 0.6472054111872437,
+    "first_fast_time": 33.780000000161294,
+    "first_fast_efficiency": 1.7043390515116088
+   },
+   "harness_best_time": 19.81999999953132,
+   "harness_success": true
+  },
+  {
+   "maze": "maze_1103",
+   "runs": [
+    {
+     "run": 1,
+     "outcome": "goal",
+     "t_start": 0.1500000000000001,
+     "t_end": 44.82000000003198,
+     "run_time": 44.67000000003198
+    },
+    {
+     "run": 2,
+     "outcome": "goal",
+     "t_start": 104.6800000003178,
+     "t_end": 126.2700000004209,
+     "run_time": 21.59000000010309
+    },
+    {
+     "run": 3,
+     "outcome": "goal",
+     "t_start": 150.23999999990323,
+     "t_end": 166.30999999952323,
+     "run_time": 16.069999999619995
+    },
+    {
+     "run": 4,
+     "outcome": "goal",
+     "t_start": 190.25999999895689,
+     "t_end": 206.33999999857664,
+     "run_time": 16.07999999961976
+    },
+    {
+     "run": 5,
+     "outcome": "goal",
+     "t_start": 230.2899999980103,
+     "t_end": 246.34999999763053,
+     "run_time": 16.05999999962023
+    }
+   ],
+   "harness_kpi": {
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 44.67000000003198,
+    "fast_time": 16.05999999962023,
+    "improvement_ratio": 0.6404745914571585,
+    "first_fast_time": 21.59000000010309,
+    "first_fast_efficiency": 1.3443337484815459
+   },
+   "harness_best_time": 16.05999999962023,
+   "harness_success": true
+  },
+  {
+   "maze": "maze_1126",
+   "runs": [
+    {
+     "run": 1,
+     "outcome": "goal",
+     "t_start": 0.1500000000000001,
+     "t_end": 26.249999999984173,
+     "run_time": 26.099999999984174
+    },
+    {
+     "run": 2,
+     "outcome": "goal",
+     "t_start": 65.00000000012834,
+     "t_end": 82.4600000002117,
+     "run_time": 17.46000000008337
+    },
+    {
+     "run": 3,
+     "outcome": "goal",
+     "t_start": 102.60000000030787,
+     "t_end": 113.93000000036197,
+     "run_time": 11.330000000054099
+    },
+    {
+     "run": 4,
+     "outcome": "goal",
+     "t_start": 132.8900000003135,
+     "t_end": 144.2200000000456,
+     "run_time": 11.329999999732081
+    },
+    {
+     "run": 5,
+     "outcome": "goal",
+     "t_start": 163.19999999959677,
+     "t_end": 174.54999999932838,
+     "run_time": 11.349999999731608
+    }
+   ],
+   "harness_kpi": {
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 26.099999999984174,
+    "fast_time": 11.329999999732081,
+    "improvement_ratio": 0.5659003831517644,
+    "first_fast_time": 17.46000000008337,
+    "first_fast_efficiency": 1.5410414828328547
+   },
+   "harness_best_time": 11.329999999732081,
+   "harness_success": true
+  },
+  {
+   "maze": "maze_1138",
+   "runs": [
+    {
+     "run": 1,
+     "outcome": "goal",
+     "t_start": 0.1500000000000001,
+     "t_end": 49.27000000005323,
+     "run_time": 49.12000000005323
+    },
+    {
+     "run": 2,
+     "outcome": "goal",
+     "t_start": 75.610000000179,
+     "t_end": 92.96000000026184,
+     "run_time": 17.350000000082844
+    },
+    {
+     "run": 3,
+     "outcome": "goal",
+     "t_start": 113.15000000035825,
+     "t_end": 125.84000000041884,
+     "run_time": 12.690000000060593
+    },
+    {
+     "run": 4,
+     "outcome": "goal",
+     "t_start": 145.91000000000562,
+     "t_end": 158.58999999970578,
+     "run_time": 12.679999999700158
+    },
+    {
+     "run": 5,
+     "outcome": "goal",
+     "t_start": 178.69999999923024,
+     "t_end": 191.4099999989297,
+     "run_time": 12.709999999699448
+    }
+   ],
+   "harness_kpi": {
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 49.12000000005323,
+    "fast_time": 12.679999999700158,
+    "improvement_ratio": 0.741856677530814,
+    "first_fast_time": 17.350000000082844,
+    "first_fast_efficiency": 1.3682965300073435
+   },
+   "harness_best_time": 12.679999999700158,
+   "harness_success": true
+  },
+  {
+   "maze": "maze_1161",
+   "runs": [
+    {
+     "run": 1,
+     "outcome": "goal",
+     "t_start": 0.1500000000000001,
+     "t_end": 22.309999999993355,
+     "run_time": 22.159999999993357
+    },
+    {
+     "run": 2,
+     "outcome": "goal",
+     "t_start": 43.14000000002396,
+     "t_end": 58.55000000009754,
+     "run_time": 15.41000000007358
+    },
+    {
+     "run": 3,
+     "outcome": "goal",
+     "t_start": 75.75000000017967,
+     "t_end": 86.89000000023286,
+     "run_time": 11.140000000053192
+    },
+    {
+     "run": 4,
+     "outcome": "goal",
+     "t_start": 104.06000000031484,
+     "t_end": 115.27000000036837,
+     "run_time": 11.210000000053526
+    },
+    {
+     "run": 5,
+     "outcome": "goal",
+     "t_start": 132.4800000003232,
+     "t_end": 143.6700000000586,
+     "run_time": 11.189999999735392
+    }
+   ],
+   "harness_kpi": {
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 22.159999999993357,
+    "fast_time": 11.140000000053192,
+    "improvement_ratio": 0.49729241877001207,
+    "first_fast_time": 15.41000000007358,
+    "first_fast_efficiency": 1.3833034111310591
+   },
+   "harness_best_time": 11.140000000053192,
+   "harness_success": true
+  },
+  {
+   "maze": "maze_1240",
+   "runs": [
+    {
+     "run": 1,
+     "outcome": "goal",
+     "t_start": 0.1500000000000001,
+     "t_end": 41.160000000014506,
+     "run_time": 41.01000000001451
+    },
+    {
+     "run": 2,
+     "outcome": "goal",
+     "t_start": 87.79000000023716,
+     "t_end": 109.98000000034311,
+     "run_time": 22.190000000105954
+    },
+    {
+     "run": 3,
+     "outcome": "goal",
+     "t_start": 133.12000000030807,
+     "t_end": 148.2999999999491,
+     "run_time": 15.17999999964104
+    },
+    {
+     "run": 4,
+     "outcome": "goal",
+     "t_start": 171.40999999940263,
+     "t_end": 186.5799999990439,
+     "run_time": 15.169999999641277
+    },
+    {
+     "run": 5,
+     "outcome": "goal",
+     "t_start": 209.68999999849743,
+     "t_end": 224.89999999813776,
+     "run_time": 15.209999999640331
+    }
+   ],
+   "harness_kpi": {
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 41.01000000001451,
+    "fast_time": 15.169999999641277,
+    "improvement_ratio": 0.6300902219059763,
+    "first_fast_time": 22.190000000105954,
+    "first_fast_efficiency": 1.4627554384067685
+   },
+   "harness_best_time": 15.169999999641277,
+   "harness_success": true
+  },
+  {
+   "maze": "maze_1804",
+   "runs": [
+    {
+     "run": 1,
+     "outcome": "goal",
+     "t_start": 0.1500000000000001,
+     "t_end": 48.88000000005137,
+     "run_time": 48.73000000005137
+    },
+    {
+     "run": 2,
+     "outcome": "goal",
+     "t_start": 78.65000000019351,
+     "t_end": 98.88000000029011,
+     "run_time": 20.230000000096595
+    },
+    {
+     "run": 3,
+     "outcome": "goal",
+     "t_start": 120.82000000039487,
+     "t_end": 139.9400000001468,
+     "run_time": 19.119999999751926
+    },
+    {
+     "run": 4,
+     "outcome": "goal",
+     "t_start": 161.8999999996275,
+     "t_end": 176.1599999992903,
+     "run_time": 14.259999999662796
+    },
+    {
+     "run": 5,
+     "outcome": "goal",
+     "t_start": 198.05999999877244,
+     "t_end": 212.25999999843665,
+     "run_time": 14.199999999664215
+    }
+   ],
+   "harness_kpi": {
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 48.73000000005137,
+    "fast_time": 14.199999999664215,
+    "improvement_ratio": 0.7085983993505183,
+    "first_fast_time": 20.230000000096595,
+    "first_fast_efficiency": 1.4246478873644346
+   },
+   "harness_best_time": 14.199999999664215,
+   "harness_success": true
+  },
+  {
+   "maze": "maze_2304",
+   "runs": [
+    {
+     "run": 1,
+     "outcome": "goal",
+     "t_start": 0.1500000000000001,
+     "t_end": 41.870000000017896,
+     "run_time": 41.7200000000179
+    },
+    {
+     "run": 2,
+     "outcome": "goal",
+     "t_start": 66.7300000001366,
+     "t_end": 91.77000000025616,
+     "run_time": 25.040000000119562
+    },
+    {
+     "run": 3,
+     "outcome": "goal",
+     "t_start": 113.3500000003592,
+     "t_end": 127.64000000042743,
+     "run_time": 14.290000000068233
+    },
+    {
+     "run": 4,
+     "outcome": "goal",
+     "t_start": 149.13999999992924,
+     "t_end": 163.45999999959062,
+     "run_time": 14.319999999661377
+    },
+    {
+     "run": 5,
+     "outcome": "goal",
+     "t_start": 184.9899999990815,
+     "t_end": 199.22999999874477,
+     "run_time": 14.239999999663269
+    }
+   ],
+   "harness_kpi": {
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 41.7200000000179,
+    "fast_time": 14.239999999663269,
+    "improvement_ratio": 0.65867689358444,
+    "first_fast_time": 25.040000000119562,
+    "first_fast_efficiency": 1.7584269663421124
+   },
+   "harness_best_time": 14.239999999663269,
+   "harness_success": true
+  },
+  {
+   "maze": "maze_3707",
+   "runs": [
+    {
+     "run": 1,
+     "outcome": "goal",
+     "t_start": 0.1500000000000001,
+     "t_end": 39.030000000004335,
+     "run_time": 38.88000000000434
+    },
+    {
+     "run": 2,
+     "outcome": "goal",
+     "t_start": 66.22000000013416,
+     "t_end": 84.7400000002226,
+     "run_time": 18.52000000008843
+    },
+    {
+     "run": 3,
+     "outcome": "goal",
+     "t_start": 106.93000000032855,
+     "t_end": 120.38000000039277,
+     "run_time": 13.450000000064222
+    },
+    {
+     "run": 4,
+     "outcome": "goal",
+     "t_start": 145.39000000001792,
+     "t_end": 158.87999999969892,
+     "run_time": 13.489999999681004
+    },
+    {
+     "run": 5,
+     "outcome": "goal",
+     "t_start": 180.79999999918059,
+     "t_end": 194.2899999988616,
+     "run_time": 13.489999999681004
+    }
+   ],
+   "harness_kpi": {
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 38.88000000000434,
+    "fast_time": 13.450000000064222,
+    "improvement_ratio": 0.6540637860066172,
+    "first_fast_time": 18.52000000008843,
+    "first_fast_efficiency": 1.3769516728624536
+   },
+   "harness_best_time": 13.450000000064222,
+   "harness_success": true
+  },
+  {
+   "maze": "maze_5188",
+   "runs": [
+    {
+     "run": 1,
+     "outcome": "goal",
+     "t_start": 0.1500000000000001,
+     "t_end": 73.5800000001693,
+     "run_time": 73.4300000001693
+    },
+    {
+     "run": 2,
+     "outcome": "goal",
+     "t_start": 107.16000000032965,
+     "t_end": 138.81000000017352,
+     "run_time": 31.64999999984387
+    },
+    {
+     "run": 3,
+     "outcome": "goal",
+     "t_start": 169.82999999944,
+     "t_end": 190.54999999895003,
+     "run_time": 20.719999999510037
+    },
+    {
+     "run": 4,
+     "outcome": "goal",
+     "t_start": 221.5999999982158,
+     "t_end": 242.3799999977244,
+     "run_time": 20.779999999508618
+    },
+    {
+     "run": 5,
+     "outcome": "goal",
+     "t_start": 273.35999999699186,
+     "t_end": 294.0799999965019,
+     "run_time": 20.719999999510037
+    }
+   ],
+   "harness_kpi": {
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 73.4300000001693,
+    "fast_time": 20.719999999510037,
+    "improvement_ratio": 0.7178265014372563,
+    "first_fast_time": 31.64999999984387,
+    "first_fast_efficiency": 1.5275096525382381
+   },
+   "harness_best_time": 20.719999999510037,
+   "harness_success": true
+  },
+  {
+   "maze": "maze_7837",
+   "runs": [
+    {
+     "run": 1,
+     "outcome": "goal",
+     "t_start": 0.1500000000000001,
+     "t_end": 69.3900000001493,
+     "run_time": 69.2400000001493
+    },
+    {
+     "run": 2,
+     "outcome": "goal",
+     "t_start": 101.30000000030167,
+     "t_end": 129.80000000038658,
+     "run_time": 28.50000000008491
+    },
+    {
+     "run": 3,
+     "outcome": "goal",
+     "t_start": 162.01999999962467,
+     "t_end": 183.699999999112,
+     "run_time": 21.679999999487336
+    },
+    {
+     "run": 4,
+     "outcome": "goal",
+     "t_start": 215.68999999835555,
+     "t_end": 237.46999999784052,
+     "run_time": 21.77999999948497
+    },
+    {
+     "run": 5,
+     "outcome": "goal",
+     "t_start": 269.4599999970841,
+     "t_end": 291.18999999657024,
+     "run_time": 21.729999999486154
+    }
+   ],
+   "harness_kpi": {
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 69.2400000001493,
+    "fast_time": 21.679999999487336,
+    "improvement_ratio": 0.6868861929601302,
+    "first_fast_time": 28.50000000008491,
+    "first_fast_efficiency": 1.3145756457914597
+   },
+   "harness_best_time": 21.679999999487336,
+   "harness_success": true
+  },
+  {
+   "maze": "maze_8209",
+   "runs": [
+    {
+     "run": 1,
+     "outcome": "goal",
+     "t_start": 0.1500000000000001,
+     "t_end": 41.69000000001704,
+     "run_time": 41.54000000001704
+    },
+    {
+     "run": 2,
+     "outcome": "goal",
+     "t_start": 63.62000000012175,
+     "t_end": 78.97000000019504,
+     "run_time": 15.350000000073294
+    },
+    {
+     "run": 3,
+     "outcome": "goal",
+     "t_start": 96.61000000027927,
+     "t_end": 115.83000000037104,
+     "run_time": 19.220000000091773
+    },
+    {
+     "run": 4,
+     "outcome": "goal",
+     "t_start": 133.54000000029814,
+     "t_end": 144.7400000000333,
+     "run_time": 11.199999999735155
+    },
+    {
+     "run": 5,
+     "outcome": "goal",
+     "t_start": 162.38999999961592,
+     "t_end": 173.59999999935084,
+     "run_time": 11.209999999734919
+    }
+   ],
+   "harness_kpi": {
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 41.54000000001704,
+    "fast_time": 11.199999999735155,
+    "improvement_ratio": 0.7303803562895869,
+    "first_fast_time": 15.350000000073294,
+    "first_fast_efficiency": 1.3705357143246673
+   },
+   "harness_best_time": 11.199999999735155,
+   "harness_success": true
+  },
+  {
+   "maze": "maze_14037",
+   "runs": [
+    {
+     "run": 1,
+     "outcome": "goal",
+     "t_start": 0.1500000000000001,
+     "t_end": 42.22000000001957,
+     "run_time": 42.07000000001957
+    },
+    {
+     "run": 2,
+     "outcome": "goal",
+     "t_start": 69.20000000014839,
+     "t_end": 86.54000000023119,
+     "run_time": 17.340000000082796
+    },
+    {
+     "run": 3,
+     "outcome": "goal",
+     "t_start": 113.40000000035944,
+     "t_end": 130.77000000036364,
+     "run_time": 17.370000000004197
+    },
+    {
+     "run": 4,
+     "outcome": "goal",
+     "t_start": 157.649999999728,
+     "t_end": 175.02999999931703,
+     "run_time": 17.379999999589018
+    },
+    {
+     "run": 5,
+     "outcome": "goal",
+     "t_start": 201.89999999868164,
+     "t_end": 219.28999999827042,
+     "run_time": 17.38999999958878
+    }
+   ],
+   "harness_kpi": {
+    "goal_reached": true,
+    "fast_run_done": true,
+    "fast_run_effective": true,
+    "explore_time": 42.07000000001957,
+    "fast_time": 17.340000000082796,
+    "improvement_ratio": 0.5878298074619746,
+    "first_fast_time": 17.340000000082796,
+    "first_fast_efficiency": 1.0
+   },
+   "harness_best_time": 17.340000000082796,
+   "harness_success": true
+  }
+ ]
+}

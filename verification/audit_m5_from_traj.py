@@ -147,19 +147,62 @@ def main():
     if os.path.exists(rr_json):
         with open(rr_json) as f:
             rr = json.load(f)
-        rr_ft = {}
-        for row in (rr if isinstance(rr, list) else rr.get("rows", rr.get("mazes", []))):
-            v = row.get("harness_fast_time", row.get("fast_time"))
+        # 🔧 是正（2026-08-14・初回実行後）: 再実行側の値は `harness_kpi` の中にある。
+        # 当初の抽出は `harness_fast_time` / `fast_time` を直に探しており空振りして
+        # 「0/20 不一致」を出した。**不一致の原因は私の抽出コードであって測定ではない。**
+        rows_rr = rr if isinstance(rr, list) else rr.get("rows", rr.get("mazes", []))
+        rr_ft, rr_et = {}, {}
+        for row in rows_rr:
+            kpi = row.get("harness_kpi") or {}
+            v = row.get("harness_fast_time", kpi.get("fast_time"))
             if v is not None:
                 rr_ft[row["maze"]] = v
+            e = kpi.get("explore_time")
+            if e is not None:
+                rr_et[row["maze"]] = e
+
         n = sum(1 for m in m1_ft if m in rr_ft and rr_ft[m] == m1_ft[m])
-        record("J-1", "再実行 対 M-1（完全一致）", n == 20,
+        record("J-1", "最速タイム: 再実行 対 M-1（bit 単位）", n == 20,
                f"{n}/20 が bit 単位で一致")
-        近 = sum(1 for m in m1_ft if m in rr_ft and abs(rr_ft[m] - m1_ft[m]) <= 1e-9)
-        if 近 != n:
-            record("J-1", "（参考）1e-9 以内", None, f"{近}/20")
+        near = sum(1 for m in m1_ft if m in rr_ft and abs(rr_ft[m] - m1_ft[m]) <= 1e-9)
+        if near != n:
+            record("J-1", "（参考）1e-9 以内", None, f"{near}/20")
+
+        # 探索走行タイムも M-1 に記録がある。独立な第 2 の値として照合する。
+        m1_et = {r["maze"]: r.get("explore_time") for r in m1["rows"]}
+        ne = sum(1 for m in m1_et if m1_et[m] is not None
+                 and m in rr_et and rr_et[m] == m1_et[m])
+        record("J-1", "探索走行タイム: 再実行 対 M-1（bit 単位）", ne == 20,
+               f"{ne}/20 が bit 単位で一致")
     else:
         record("J-1", "再実行の集約 json", False, f"{rr_json} が無い")
+
+    # ---------------------------------------------------------------
+    # J-1b 標本数の一致（**再実行の開始後に追加した検査**・2026-08-14）
+    # ---------------------------------------------------------------
+    # 🔧 当初この検査は「軌跡の標本数 = M-1 の n_ticks」を課していたが、**前提が誤り**だった。
+    # M-1 の `n_ticks` は `int(ey.size)`（run_016cal.py:143）で、横位置誤差の標本数である。
+    # その `ey` は `ProbedCalPolicy._do_drive_control` が **`self._path is not None` のときだけ**
+    # 追記する（run_016cal.py:67-70）ので、**経路追従中の周期しか数えていない**。
+    # 一方こちらの軌跡は `act()` の全呼び出しを記録している（その場旋回・帰路も含む）。
+    # **数えている対象が違うので一致しなくて当然**であり、当初の 0/20 は測定の差ではなく
+    # 私の前提の誤りだった。比較可能な形（軌跡の標本数 ≥ n_ticks）に置き換える。
+    print("\n=== J-1b 標本数の整合（前提を是正した版） ===")
+    m1_ticks = {r["maze"]: r.get("n_ticks") for r in m1["rows"]}
+    n1b, chk1b, ratios = 0, 0, []
+    for p in paths:
+        maze = os.path.basename(p)[:-4]
+        if m1_ticks.get(maze) is None:
+            continue
+        chk1b += 1
+        n = int(np.load(p, allow_pickle=False)["t"].shape[0])
+        n1b += (n >= m1_ticks[maze])
+        ratios.append(m1_ticks[maze] / n)
+    record("J-1b", "軌跡の標本数 ≥ M-1 の n_ticks（経路追従中の部分集合）",
+           n1b == chk1b and chk1b == 20,
+           f"{n1b}/{chk1b} で成立。経路追従が占める割合は "
+           f"{min(ratios) * 100:.1f}〜{max(ratios) * 100:.1f} %"
+           f"（中央値 {statistics.median(ratios) * 100:.1f} %）")
 
     # ---------------------------------------------------------------
     # J-2 / J-3 / J-4 軌跡からの自前計算
