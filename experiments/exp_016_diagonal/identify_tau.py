@@ -30,6 +30,8 @@ for p in (REPO_ROOT, REPO_ROOT / "experiments" / "exp_016_diagonal"):
     if str(p) not in sys.path:
         sys.path.insert(0, str(p))
 
+from common.seed_bands import (assert_seeds_allowed,  # noqa: E402
+                                describe_seeds)
 from competition.baseline_slalom import SlalomPolicy  # noqa: E402
 from competition.reference_interp import ReferenceInterpMixin  # noqa: E402
 from competition.velocity_loop import VelocityLoopMixin  # noqa: E402
@@ -105,10 +107,18 @@ def main():
                                           / "016f" / "tau_w.json"))
     args = ap.parse_args()
 
+    # **帯の安全弁**（裁定 R40 条件 4・2026-08-14 追加）。
+    # ⚠️ **この安全弁は当初入っていなかった。**棚卸しの実測で、
+    # **凍結帯の面を渡すと素通りする**ことが判明したため追加した（自己申告済み）。
+    _seed = int(Path(args.maze).stem.split("_")[1])
+    print(describe_seeds([_seed], "competition"))
+    assert_seeds_allowed([_seed], namespace="competition", purpose="validate")
+
     params = RobotParams()
     ev = CompetitionEvaluator(maze_dir=str(Path(args.maze).parent), out_dir="/tmp/x")
     xml, seed, v, h, W, H = ev._load_or_build_xml(Path(args.maze))
-    print(f"内側ループの時定数の同定（設計帯 {Path(args.maze).stem}）")
+    # ⚠️ **「設計帯」と決め打ちで書いていた**（帯は引数で変わるのに）。帯は上の行が出す
+    print(f"内側ループの時定数の同定（{Path(args.maze).stem}）")
     print(f"版: k_acc_ff = {args.k_acc_ff:g}（F0）／ref_interp = {args.ref_interp}（F0-b）")
     print(f"{'v [m/s]':>8}{'ω step [rad/s]':>16}{'ω 定常':>10}{'τ_w 63.2% [s]':>15}"
           f"{'τ_w 最小二乗 [s]':>18}   定常の一致")
