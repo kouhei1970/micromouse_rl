@@ -187,7 +187,9 @@ def main():
             incident_kinds=sorted({q.get("kind") for q in inc}),
             n_retrieval=getattr(probe, "n_retrieval", None),
             n_align_ok=getattr(probe._inner, "n_align_ok", None),
-            n_align_defer=getattr(probe._inner, "n_align_defer", None))
+            n_align_defer=getattr(probe._inner, "n_align_defer", None),
+            # 是正 (A) の印が効いた回数（2026-08-15 追加。前回は記録し忘れていた）
+            n_flag_saved_diag=getattr(probe._inner, "n_flag_saved_diag", None))
         print(f"  {r['maze_id']} D={d_true:3d} 走行 {len(r['runs'])} 本"
               f" (d)最速={r.get('best_time')}"
               + (f" 斜め経路 {n_diag} 回" if n_diag is not None else "")
