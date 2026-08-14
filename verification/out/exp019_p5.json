@@ -1,0 +1,1136 @@
+{
+  "verdict": "P5_HOLDS",
+  "median": 0.75,
+  "threshold": 0.5,
+  "missing_seeds": [],
+  "per_seed": [
+    {
+      "seed": 1,
+      "n_denom": 12,
+      "n_pass": 9,
+      "frac": 0.75,
+      "rows": [
+        {
+          "maze_seed": 7000,
+          "d0": 6,
+          "d0_env": 6,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7001,
+          "d0": 9,
+          "d0_env": 9,
+          "n_respawn": 3,
+          "min_D_after_last_respawn": 9,
+          "qualifies": true,
+          "passed": false
+        },
+        {
+          "maze_seed": 7002,
+          "d0": 13,
+          "d0_env": 13,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7003,
+          "d0": 10,
+          "d0_env": 10,
+          "n_respawn": 1,
+          "min_D_after_last_respawn": 9,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7004,
+          "d0": 13,
+          "d0_env": 13,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7005,
+          "d0": 13,
+          "d0_env": 13,
+          "n_respawn": 1,
+          "min_D_after_last_respawn": 9,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7006,
+          "d0": 10,
+          "d0_env": 10,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7007,
+          "d0": 10,
+          "d0_env": 10,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7008,
+          "d0": 11,
+          "d0_env": 11,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7009,
+          "d0": 15,
+          "d0_env": 15,
+          "n_respawn": 1,
+          "min_D_after_last_respawn": 11,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7010,
+          "d0": 4,
+          "d0_env": 4,
+          "n_respawn": 3,
+          "min_D_after_last_respawn": 3,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7011,
+          "d0": 9,
+          "d0_env": 9,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7012,
+          "d0": 15,
+          "d0_env": 15,
+          "n_respawn": 1,
+          "min_D_after_last_respawn": 11,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7013,
+          "d0": 14,
+          "d0_env": 14,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7014,
+          "d0": 8,
+          "d0_env": 8,
+          "n_respawn": 3,
+          "min_D_after_last_respawn": 5,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7015,
+          "d0": 8,
+          "d0_env": 8,
+          "n_respawn": 4,
+          "min_D_after_last_respawn": 6,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7016,
+          "d0": 5,
+          "d0_env": 5,
+          "n_respawn": 6,
+          "min_D_after_last_respawn": 2,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7017,
+          "d0": 4,
+          "d0_env": 4,
+          "n_respawn": 1,
+          "min_D_after_last_respawn": 3,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7018,
+          "d0": 6,
+          "d0_env": 6,
+          "n_respawn": 11,
+          "min_D_after_last_respawn": 6,
+          "qualifies": true,
+          "passed": false
+        },
+        {
+          "maze_seed": 7019,
+          "d0": 7,
+          "d0_env": 7,
+          "n_respawn": 3,
+          "min_D_after_last_respawn": 7,
+          "qualifies": true,
+          "passed": false
+        }
+      ]
+    },
+    {
+      "seed": 2,
+      "n_denom": 12,
+      "n_pass": 9,
+      "frac": 0.75,
+      "rows": [
+        {
+          "maze_seed": 7000,
+          "d0": 6,
+          "d0_env": 6,
+          "n_respawn": 19,
+          "min_D_after_last_respawn": 6,
+          "qualifies": true,
+          "passed": false
+        },
+        {
+          "maze_seed": 7001,
+          "d0": 9,
+          "d0_env": 9,
+          "n_respawn": 10,
+          "min_D_after_last_respawn": 9,
+          "qualifies": true,
+          "passed": false
+        },
+        {
+          "maze_seed": 7002,
+          "d0": 13,
+          "d0_env": 13,
+          "n_respawn": 1,
+          "min_D_after_last_respawn": 10,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7003,
+          "d0": 10,
+          "d0_env": 10,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7004,
+          "d0": 13,
+          "d0_env": 13,
+          "n_respawn": 1,
+          "min_D_after_last_respawn": 10,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7005,
+          "d0": 13,
+          "d0_env": 13,
+          "n_respawn": 3,
+          "min_D_after_last_respawn": 12,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7006,
+          "d0": 10,
+          "d0_env": 10,
+          "n_respawn": 1,
+          "min_D_after_last_respawn": 9,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7007,
+          "d0": 10,
+          "d0_env": 10,
+          "n_respawn": 1,
+          "min_D_after_last_respawn": 5,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7008,
+          "d0": 11,
+          "d0_env": 11,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7009,
+          "d0": 15,
+          "d0_env": 15,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7010,
+          "d0": 4,
+          "d0_env": 4,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7011,
+          "d0": 9,
+          "d0_env": 9,
+          "n_respawn": 2,
+          "min_D_after_last_respawn": 7,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7012,
+          "d0": 15,
+          "d0_env": 15,
+          "n_respawn": 1,
+          "min_D_after_last_respawn": 11,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7013,
+          "d0": 14,
+          "d0_env": 14,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7014,
+          "d0": 8,
+          "d0_env": 8,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7015,
+          "d0": 8,
+          "d0_env": 8,
+          "n_respawn": 1,
+          "min_D_after_last_respawn": 6,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7016,
+          "d0": 5,
+          "d0_env": 5,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7017,
+          "d0": 4,
+          "d0_env": 4,
+          "n_respawn": 1,
+          "min_D_after_last_respawn": 3,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7018,
+          "d0": 6,
+          "d0_env": 6,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7019,
+          "d0": 7,
+          "d0_env": 7,
+          "n_respawn": 7,
+          "min_D_after_last_respawn": 7,
+          "qualifies": true,
+          "passed": false
+        }
+      ]
+    },
+    {
+      "seed": 3,
+      "n_denom": 14,
+      "n_pass": 11,
+      "frac": 0.7857142857142857,
+      "rows": [
+        {
+          "maze_seed": 7000,
+          "d0": 6,
+          "d0_env": 6,
+          "n_respawn": 3,
+          "min_D_after_last_respawn": 6,
+          "qualifies": true,
+          "passed": false
+        },
+        {
+          "maze_seed": 7001,
+          "d0": 9,
+          "d0_env": 9,
+          "n_respawn": 3,
+          "min_D_after_last_respawn": 9,
+          "qualifies": true,
+          "passed": false
+        },
+        {
+          "maze_seed": 7002,
+          "d0": 13,
+          "d0_env": 13,
+          "n_respawn": 10,
+          "min_D_after_last_respawn": 11,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7003,
+          "d0": 10,
+          "d0_env": 10,
+          "n_respawn": 8,
+          "min_D_after_last_respawn": 9,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7004,
+          "d0": 13,
+          "d0_env": 13,
+          "n_respawn": 2,
+          "min_D_after_last_respawn": 9,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7005,
+          "d0": 13,
+          "d0_env": 13,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7006,
+          "d0": 10,
+          "d0_env": 10,
+          "n_respawn": 2,
+          "min_D_after_last_respawn": 9,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7007,
+          "d0": 10,
+          "d0_env": 10,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7008,
+          "d0": 11,
+          "d0_env": 11,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7009,
+          "d0": 15,
+          "d0_env": 15,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7010,
+          "d0": 4,
+          "d0_env": 4,
+          "n_respawn": 1,
+          "min_D_after_last_respawn": 3,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7011,
+          "d0": 9,
+          "d0_env": 9,
+          "n_respawn": 2,
+          "min_D_after_last_respawn": 5,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7012,
+          "d0": 15,
+          "d0_env": 15,
+          "n_respawn": 1,
+          "min_D_after_last_respawn": 11,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7013,
+          "d0": 14,
+          "d0_env": 14,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7014,
+          "d0": 8,
+          "d0_env": 8,
+          "n_respawn": 9,
+          "min_D_after_last_respawn": 6,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7015,
+          "d0": 8,
+          "d0_env": 8,
+          "n_respawn": 8,
+          "min_D_after_last_respawn": 7,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7016,
+          "d0": 5,
+          "d0_env": 5,
+          "n_respawn": 6,
+          "min_D_after_last_respawn": 2,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7017,
+          "d0": 4,
+          "d0_env": 4,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7018,
+          "d0": 6,
+          "d0_env": 6,
+          "n_respawn": 12,
+          "min_D_after_last_respawn": 5,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7019,
+          "d0": 7,
+          "d0_env": 7,
+          "n_respawn": 3,
+          "min_D_after_last_respawn": 7,
+          "qualifies": true,
+          "passed": false
+        }
+      ]
+    },
+    {
+      "seed": 4,
+      "n_denom": 9,
+      "n_pass": 9,
+      "frac": 1.0,
+      "rows": [
+        {
+          "maze_seed": 7000,
+          "d0": 6,
+          "d0_env": 6,
+          "n_respawn": 2,
+          "min_D_after_last_respawn": 5,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7001,
+          "d0": 9,
+          "d0_env": 9,
+          "n_respawn": 1,
+          "min_D_after_last_respawn": 8,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7002,
+          "d0": 13,
+          "d0_env": 13,
+          "n_respawn": 4,
+          "min_D_after_last_respawn": 10,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7003,
+          "d0": 10,
+          "d0_env": 10,
+          "n_respawn": 2,
+          "min_D_after_last_respawn": 9,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7004,
+          "d0": 13,
+          "d0_env": 13,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7005,
+          "d0": 13,
+          "d0_env": 13,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7006,
+          "d0": 10,
+          "d0_env": 10,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7007,
+          "d0": 10,
+          "d0_env": 10,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7008,
+          "d0": 11,
+          "d0_env": 11,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7009,
+          "d0": 15,
+          "d0_env": 15,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7010,
+          "d0": 4,
+          "d0_env": 4,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7011,
+          "d0": 9,
+          "d0_env": 9,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7012,
+          "d0": 15,
+          "d0_env": 15,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7013,
+          "d0": 14,
+          "d0_env": 14,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7014,
+          "d0": 8,
+          "d0_env": 8,
+          "n_respawn": 2,
+          "min_D_after_last_respawn": 5,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7015,
+          "d0": 8,
+          "d0_env": 8,
+          "n_respawn": 4,
+          "min_D_after_last_respawn": 6,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7016,
+          "d0": 5,
+          "d0_env": 5,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7017,
+          "d0": 4,
+          "d0_env": 4,
+          "n_respawn": 2,
+          "min_D_after_last_respawn": 3,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7018,
+          "d0": 6,
+          "d0_env": 6,
+          "n_respawn": 1,
+          "min_D_after_last_respawn": 5,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7019,
+          "d0": 7,
+          "d0_env": 7,
+          "n_respawn": 2,
+          "min_D_after_last_respawn": 6,
+          "qualifies": true,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "seed": 5,
+      "n_denom": 8,
+      "n_pass": 4,
+      "frac": 0.5,
+      "rows": [
+        {
+          "maze_seed": 7000,
+          "d0": 6,
+          "d0_env": 6,
+          "n_respawn": 12,
+          "min_D_after_last_respawn": 6,
+          "qualifies": true,
+          "passed": false
+        },
+        {
+          "maze_seed": 7001,
+          "d0": 9,
+          "d0_env": 9,
+          "n_respawn": 9,
+          "min_D_after_last_respawn": 9,
+          "qualifies": true,
+          "passed": false
+        },
+        {
+          "maze_seed": 7002,
+          "d0": 13,
+          "d0_env": 13,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7003,
+          "d0": 10,
+          "d0_env": 10,
+          "n_respawn": 1,
+          "min_D_after_last_respawn": 9,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7004,
+          "d0": 13,
+          "d0_env": 13,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7005,
+          "d0": 13,
+          "d0_env": 13,
+          "n_respawn": 1,
+          "min_D_after_last_respawn": 9,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7006,
+          "d0": 10,
+          "d0_env": 10,
+          "n_respawn": 2,
+          "min_D_after_last_respawn": 9,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7007,
+          "d0": 10,
+          "d0_env": 10,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7008,
+          "d0": 11,
+          "d0_env": 11,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7009,
+          "d0": 15,
+          "d0_env": 15,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7010,
+          "d0": 4,
+          "d0_env": 4,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7011,
+          "d0": 9,
+          "d0_env": 9,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7012,
+          "d0": 15,
+          "d0_env": 15,
+          "n_respawn": 1,
+          "min_D_after_last_respawn": 11,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7013,
+          "d0": 14,
+          "d0_env": 14,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7014,
+          "d0": 8,
+          "d0_env": 8,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7015,
+          "d0": 8,
+          "d0_env": 8,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7016,
+          "d0": 5,
+          "d0_env": 5,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7017,
+          "d0": 4,
+          "d0_env": 4,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7018,
+          "d0": 6,
+          "d0_env": 6,
+          "n_respawn": 1,
+          "min_D_after_last_respawn": 6,
+          "qualifies": true,
+          "passed": false
+        },
+        {
+          "maze_seed": 7019,
+          "d0": 7,
+          "d0_env": 7,
+          "n_respawn": 12,
+          "min_D_after_last_respawn": 7,
+          "qualifies": true,
+          "passed": false
+        }
+      ]
+    },
+    {
+      "seed": 6,
+      "n_denom": 12,
+      "n_pass": 8,
+      "frac": 0.6666666666666666,
+      "rows": [
+        {
+          "maze_seed": 7000,
+          "d0": 6,
+          "d0_env": 6,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7001,
+          "d0": 9,
+          "d0_env": 9,
+          "n_respawn": 2,
+          "min_D_after_last_respawn": 9,
+          "qualifies": true,
+          "passed": false
+        },
+        {
+          "maze_seed": 7002,
+          "d0": 13,
+          "d0_env": 13,
+          "n_respawn": 1,
+          "min_D_after_last_respawn": 13,
+          "qualifies": true,
+          "passed": false
+        },
+        {
+          "maze_seed": 7003,
+          "d0": 10,
+          "d0_env": 10,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7004,
+          "d0": 13,
+          "d0_env": 13,
+          "n_respawn": 2,
+          "min_D_after_last_respawn": 12,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7005,
+          "d0": 13,
+          "d0_env": 13,
+          "n_respawn": 1,
+          "min_D_after_last_respawn": 9,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7006,
+          "d0": 10,
+          "d0_env": 10,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7007,
+          "d0": 10,
+          "d0_env": 10,
+          "n_respawn": 2,
+          "min_D_after_last_respawn": 6,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7008,
+          "d0": 11,
+          "d0_env": 11,
+          "n_respawn": 2,
+          "min_D_after_last_respawn": 10,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7009,
+          "d0": 15,
+          "d0_env": 15,
+          "n_respawn": 2,
+          "min_D_after_last_respawn": 14,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7010,
+          "d0": 4,
+          "d0_env": 4,
+          "n_respawn": 1,
+          "min_D_after_last_respawn": 3,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7011,
+          "d0": 9,
+          "d0_env": 9,
+          "n_respawn": 2,
+          "min_D_after_last_respawn": 8,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7012,
+          "d0": 15,
+          "d0_env": 15,
+          "n_respawn": 2,
+          "min_D_after_last_respawn": 14,
+          "qualifies": true,
+          "passed": true
+        },
+        {
+          "maze_seed": 7013,
+          "d0": 14,
+          "d0_env": 14,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7014,
+          "d0": 8,
+          "d0_env": 8,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7015,
+          "d0": 8,
+          "d0_env": 8,
+          "n_respawn": 1,
+          "min_D_after_last_respawn": 8,
+          "qualifies": true,
+          "passed": false
+        },
+        {
+          "maze_seed": 7016,
+          "d0": 5,
+          "d0_env": 5,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7017,
+          "d0": 4,
+          "d0_env": 4,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7018,
+          "d0": 6,
+          "d0_env": 6,
+          "n_respawn": 0,
+          "min_D_after_last_respawn": null,
+          "qualifies": false,
+          "passed": false
+        },
+        {
+          "maze_seed": 7019,
+          "d0": 7,
+          "d0_env": 7,
+          "n_respawn": 3,
+          "min_D_after_last_respawn": 7,
+          "qualifies": true,
+          "passed": false
+        }
+      ]
+    }
+  ]
+}
