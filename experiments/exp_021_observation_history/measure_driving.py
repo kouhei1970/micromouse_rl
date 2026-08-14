@@ -311,7 +311,7 @@ def main() -> None:
         clause="experiments/exp_021_observation_history/card.md §4-1・§5",
         # 🔴 測定条件を出力に残す（verify_bit_identity.py で「どのファイルを照合したか」が
         # 記録されず別実験の結果と見分けがつかなかった件の教訓。R11 候補として登録済み）
-        models=model_info, history_lags=list(lags),
+        models=model_info, history_lags=list(lags), history_sham=bool(args.history_sham),
         seed_rule=dict(fn="mouse.maze6_eval._trial_seed", base=_SEED_BASE,
                        trial_idx=_TRIAL_IDX),
         env_kwargs=_ENV_KWARGS, maze_dir=str(maze_dir), maze_seeds=maze_seeds,
