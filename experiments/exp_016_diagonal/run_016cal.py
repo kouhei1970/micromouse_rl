@@ -12,7 +12,7 @@
   （＝ **collision / tipover / stuck が 0 回**）
 - 最速タイム（(b) の走行のうち最速。**指標の定義は凍結ハーネスの `maze_kpi` をそのまま呼ぶ**）
 - **横偏差 最大 / RMS**（**方策を包んで記録するだけ**。電圧も軌跡も変えない）
-- 失敗様式（面 ID つき）
+- 失敗様式（迷路 ID つき）
 
 --------------------------------------------------------------------------
 ⚠️ 制御には一切触れない
@@ -99,7 +99,7 @@ def main():
     out = Path(args.out or (REPO_ROOT / "outputs" / "exp_016_diagonal" / "016cal"
                             / f"sf{args.safety:g}.json"))
     out.parent.mkdir(parents=True, exist_ok=True)
-    print(f"安全率 {args.safety:g}／{len(mazes)} 面／{args.maze_dir}\n", flush=True)
+    print(f"安全率 {args.safety:g}／{len(mazes)} 迷路／{args.maze_dir}\n", flush=True)
 
     rows = []
     for m in mazes:
@@ -149,7 +149,7 @@ def main():
           f"／最悪 {summ['e_y_max_max_m']*1000:.2f} mm"
           f"／RMS 中央値 {summ['e_y_rms_median_m']*1000:.2f} mm")
     if summ["failed_faces"]:
-        print(f"  未完走の面: {summ['failed_faces']}／様式 {summ['failure_kinds']}")
+        print(f"  未完走の迷路: {summ['failed_faces']}／様式 {summ['failure_kinds']}")
 
     json.dump(dict(summary=summ, rows=rows, maze_dir=args.maze_dir),
               open(out, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
