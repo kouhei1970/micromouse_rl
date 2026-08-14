@@ -51,6 +51,9 @@ LIMIT = 2000
 GAMMA = 0.995
 THRESHOLD = 0.50          # 事前確定・動かさない
 MODEL_TMPL = "models/exp_019_v2_seed{n}.zip"
+# 第 1 引数でモデルの雛形を差し替えられる（exp_020 の Q4 で流用するため）
+if len(sys.argv) > 1:
+    MODEL_TMPL = sys.argv[1]
 
 
 # ------------------------------------------------------------ 自前 BFS
@@ -158,7 +161,8 @@ def main() -> int:
               f"「差が無い」ではなく「この n では判定できない」と書き分けること（§9-18）")
     print("=" * 78)
 
-    out = Path(__file__).resolve().parent / "out" / "exp019_p5.json"
+    tag = "exp020_q4" if "exp_020" in MODEL_TMPL else "exp019_p5"
+    out = Path(__file__).resolve().parent / "out" / f"{tag}.json"
     out.parent.mkdir(exist_ok=True)
     out.write_text(json.dumps({"verdict": verdict, "median": med,
                                "threshold": THRESHOLD, "missing_seeds": missing,
