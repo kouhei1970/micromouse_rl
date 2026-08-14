@@ -1,0 +1,25 @@
+=== 保全時刻 2026-08-14 14:55:00 JST ===
+--- seed1 ---
+logs/exp_019_v2_seed1/validation_history.json  mtime=2026-08-14 14:54:20  size=8142
+logs/exp_019_v2_seed1/train.log  mtime=2026-08-14 14:54:59  size=556120
+(eval):9: no matches found: logs/exp_019_v2_seed1/PPO_1/events*
+--- seed2 ---
+logs/exp_019_v2_seed2/validation_history.json  mtime=2026-08-14 14:52:22  size=6791
+logs/exp_019_v2_seed2/train.log  mtime=2026-08-14 14:54:56  size=496566
+(eval):9: no matches found: logs/exp_019_v2_seed2/PPO_1/events*
+--- seed3 ---
+logs/exp_019_v2_seed3/validation_history.json  mtime=2026-08-14 14:53:41  size=7478
+logs/exp_019_v2_seed3/train.log  mtime=2026-08-14 14:54:57  size=521291
+(eval):9: no matches found: logs/exp_019_v2_seed3/PPO_1/events*
+--- seed4 ---
+logs/exp_019_v2_seed4/validation_history.json  mtime=2026-08-14 14:52:04  size=6799
+logs/exp_019_v2_seed4/train.log  mtime=2026-08-14 14:54:43  size=499274
+(eval):9: no matches found: logs/exp_019_v2_seed4/PPO_1/events*
+--- seed5 ---
+logs/exp_019_v2_seed5/validation_history.json  mtime=2026-08-14 14:52:24  size=7475
+logs/exp_019_v2_seed5/train.log  mtime=2026-08-14 14:55:00  size=541619
+(eval):9: no matches found: logs/exp_019_v2_seed5/PPO_1/events*
+--- seed6 ---
+logs/exp_019_v2_seed6/validation_history.json  mtime=2026-08-14 14:51:41  size=8824
+logs/exp_019_v2_seed6/train.log  mtime=2026-08-14 14:54:20  size=634693
+(eval):9: no matches found: logs/exp_019_v2_seed6/PPO_1/events*
