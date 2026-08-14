@@ -30,6 +30,7 @@ if str(REPO_ROOT) not in sys.path:
 from stable_baselines3 import PPO  # noqa: E402
 
 from mouse.maze6_env import Maze6Env  # noqa: E402
+from common.seed_bands import describe_seeds  # noqa: E402
 from mouse.maze6_eval import VALIDATION_MAZE_DIR, _trial_seed  # noqa: E402
 
 
@@ -73,6 +74,10 @@ def main():
     model = PPO.load(args.model, device="cpu")
     seeds = sorted(int(np.load(p)["seed"])
                    for p in Path(VALIDATION_MAZE_DIR).glob("maze6_*.npz"))
+    # 帯の明示（R40 条件 4 (a)）。本スクリプトは帯を CLI で選べない（検証帯に固定）ので
+    # 拒否の安全弁 (b) は要らないが、**どの帯で測ったかがログに残らない**のは別の問題である。
+    # 「固定しているつもり」と「実際に固定されている」の差は、ログが無いと後から確認できない。
+    print(describe_seeds(seeds, "maze6"))
     rows = [diagnose(model, VALIDATION_MAZE_DIR, ms, _trial_seed(0, ms, t))
             for ms in seeds for t in range(args.n_trials)]
 

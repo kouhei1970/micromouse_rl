@@ -36,6 +36,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from common.seed_bands import describe_seeds  # noqa: E402
 from mouse.maze6_gen import generate_maze, shortest_distances  # noqa: E402
 from mouse.params import RobotParams  # noqa: E402
 
@@ -166,6 +167,9 @@ def main() -> int:
     print("=" * 92)
     print("M2 起案 §2 の凍結報酬形の机上検算（実装なし・計算のみ）")
     print("=" * 92)
+    # 帯の明示（R40 条件 4 (a)）。本スクリプトは帯を CLI で選べない（VALID_SEEDS 固定）ので
+    # 拒否の安全弁 (b) は要らないが、**どの帯で計算したかがログに残らない**のは別の問題である。
+    print("  " + describe_seeds(VALID_SEEDS, "maze6"))
     print(f"  γ = {GAMMA}（実効地平 {1/(1-GAMMA):.0f} 歩 = {1/(1-GAMMA)*DT:.0f} s）／"
           f"時間罰 {TIME_PENALTY}／ゴール +{GOAL_BONUS}／衝突 {COLLISION_PENALTY}／"
           f"訪問 +{VISIT_BONUS}")
