@@ -273,7 +273,8 @@ class Maze6Env(gym.Env):
                  geodesic_potential: bool = False,
                  geodesic_rho_scale: bool = False,
                  episode_limit_steps: int = _TIME_LIMIT_STEPS,
-                 collision_respawn: bool = False):
+                 collision_respawn: bool = False,
+                 goal_rule_containment: bool = False):
         super().__init__()
         if mode not in ("fixed", "generate"):
             raise ValueError(f"mode は 'fixed' か 'generate': {mode!r}")
@@ -332,6 +333,13 @@ class Maze6Env(gym.Env):
         # 訪問済み `_visited` は**エピソード単位で維持**する（裁定済み）ので、
         # 「衝突 → 戻る → 同じ区画で稼ぐ」報酬ポンプは**構成上作れない**。
         self.collision_respawn = bool(collision_respawn)
+        # 🔴 R49 規約終端（環境 v2 項目 1・ユーザ裁定 1 で承認確定。既定 False で従来どおり）。
+        # ゴールの成立を**機体中心が区画に入ったか**（`goal_rate_env`）ではなく
+        # **機体全体がゴール 2×2 に内包されたか**（競技規約 §2）で判定する。
+        # 判定は `competition/evaluator.py` の実装をそのまま呼ぶ（`_goal_containment()`。
+        # **独立の再記述を作らない**。R34 の作法）。
+        # ⚠️ 両者は**別の規則**であり、規約側の方が厳しい（中心が入っても内包は成らない）。
+        self.goal_rule_containment = bool(goal_rule_containment)
         if self.geodesic_rho_scale and not self.geodesic_potential:
             raise ValueError(
                 "geodesic_rho_scale=True は geodesic_potential=True のときだけ有効です"
@@ -362,6 +370,7 @@ class Maze6Env(gym.Env):
         # **その迷路の ρ ではない**: 条件 C では常に 1.0 が入る（同じ迷路の ρ が 1.4 でも）。
         # 面の ρ が要るときは info["geo_inv_rho"] の逆数を使う。
         self._geo_rho_applied = 1.0    # 条件 C' で適用する面ごとの定数（条件 C では 1.0）
+        self._center_in_goal_step = None   # 中心が最初にゴール区画へ入った歩（ΔT の測定用）
         self._episode_seed = 0         # リスポーンの擾乱を決定的に導く種（v2）
         self._respawn_count = 0        # 同一エピソード内のリスポーン回数 k（v2）
         self._start_heading = 0.0      # 開始点の方位 [deg]（リスポーンで再利用）
@@ -976,6 +985,7 @@ class Maze6Env(gym.Env):
         self._episode_seed = int(seed) if seed is not None else int(
             self.np_random.integers(0, 2 ** 31 - 1))
         self._respawn_count = 0
+        self._center_in_goal_step = None
         lateral_reset = float(self.np_random.uniform(-_LATERAL_PERTURB_M, _LATERAL_PERTURB_M))
         dh_reset = float(self.np_random.uniform(-_HEADING_PERTURB_DEG, _HEADING_PERTURB_DEG))
         if self.geodesic_potential:
@@ -1067,6 +1077,7 @@ class Maze6Env(gym.Env):
         tx, ty, tyaw = self.sim.privileged_pose()
         self._odo_x, self._odo_y, self._odo_yaw = tx, ty, tyaw
         self._prev_dist_raw = None      # センサ差分は 1 歩ぶん未定義にする（reset と同じ）
+        self._center_in_goal_step = None   # ΔT の測定は次の到達で取り直す
 
     def step(self, action):
         action = np.clip(np.asarray(action, dtype=np.float64), -1.0, 1.0)
@@ -1075,14 +1086,23 @@ class Maze6Env(gym.Env):
         self._step_count += 1
         self._update_odometry(self.sim.observation())
 
-        x, y, _yaw = self.sim.privileged_pose()
+        x, y, yaw = self.sim.privileged_pose()
         cell = self._cell_of(x, y)
         if cell != self._cell:
             # 区画が変わった瞬間の直前区画を c_prev として保持する（連続 Φ 専用）。
             # 同じ区画に留まっている間は c_prev を更新しない（課題の仕様どおり）。
             self._prev_cell = self._cell
             self._cell = cell
-        goal_reached = cell in GOAL_CELLS
+        center_in_goal = cell in GOAL_CELLS
+        if self.goal_rule_containment:
+            # 規約終端（v2）: **機体全体の内包**で成立。中心が区画内でなければ
+            # 内包はあり得ないので、そのときだけ判定を呼ぶ（計算を無駄にしない）。
+            goal_reached = bool(center_in_goal and self._goal_containment(x, y, yaw))
+        else:
+            goal_reached = center_in_goal
+        # 規約終端の遅れ ΔT を測るための記録（中心が最初に入った歩）
+        if center_in_goal and self._center_in_goal_step is None:
+            self._center_in_goal_step = self._step_count
         physical_fail = bool(result["collision"] or result["tipped"])
 
         # 訪問報酬は**衝突した区画（＝この歩で居た区画）**に対して判定する。
@@ -1131,6 +1151,10 @@ class Maze6Env(gym.Env):
         if self.collision_respawn:
             info["respawned"] = bool(respawned)
             info["n_respawn"] = int(self._respawn_count)
+        if goal_reached and self._center_in_goal_step is not None:
+            # 🔴 規約終端の遅れ ΔT（中心が入ってから内包が成るまでの歩数）。
+            # 机上模型（外接円半径 ÷ 1 歩の距離 = 0.96 m/s で 6.8 歩）と突き合わせる量。
+            info["delta_t_containment"] = int(self._step_count - self._center_in_goal_step)
         return obs, float(reward), terminated, truncated, info
 
     def render(self):
