@@ -18,6 +18,9 @@
     .venv/bin/python -u experiments/exp_016_diagonal/run_016f0_ladder.py --k-acc-ff 1.0
     # 是正前（基準スナップショットの再現。差分 0 になるはず）
     .venv/bin/python -u experiments/exp_016_diagonal/run_016f0_ladder.py --k-acc-ff 0.0
+    # 016-G の対照（**新しい既定** = F0＋F0-b＋校正済み旋回安全率 0.75）
+    .venv/bin/python -u experiments/exp_016_diagonal/run_016f0_ladder.py \
+        --k-acc-ff 1.0 --ref-interp --safety 0.75
 """
 import argparse
 import sys
@@ -36,11 +39,16 @@ from competition.velocity_loop import VelocityLoopMixin  # noqa: E402
 
 
 def make_policy_class(k_acc_ff: float, ref_interp: bool = False,
-                      tau_la: float = 0.0, k_r: float = 0.0):
+                      tau_la: float = 0.0, k_r: float = 0.0,
+                      safety: float = None):
     """016-C の方策に**速度ループ側の是正だけ**を混ぜ込んだクラスを作る。
 
     F0 = `_wheel_targets_to_voltage`／F0-b = `_do_drive_control` の**参照の読み方だけ**。
     **経路・速度計画・操舵の則は 016-C のまま**である。
+
+    `safety`（旋回安全率）は **None なら 1 つも渡さない**。
+    こうすると `SlalomPolicy.__init__` の既定値 0.70 がそのまま効き、
+    **引数を足す前と構成上ビット単位で同じ**になる（016-cal 以前の記録の再現性を保つ）。
     """
 
     class SegSpeedPolicyF0(TwoDofControlMixin, ReferenceInterpMixin, VelocityLoopMixin,
@@ -50,6 +58,8 @@ def make_policy_class(k_acc_ff: float, ref_interp: bool = False,
             kw.setdefault("ref_interp", ref_interp)
             kw.setdefault("tau_la", tau_la)
             kw.setdefault("k_r", k_r)
+            if safety is not None:
+                kw.setdefault("safety_factor", safety)
             super().__init__(*a, **kw)
 
     return SegSpeedPolicyF0
@@ -66,20 +76,27 @@ def main():
                     help="前方注視時間 [s]（016-F。0 なら現行と同じ）")
     ap.add_argument("--k-r", type=float, default=0.0,
                     help="レートダンピングの係数（016-F。0 なら現行と同じ）")
+    ap.add_argument("--safety", type=float, default=None,
+                    help="旋回安全率（016-cal の校正値は 0.75）。"
+                         "**省略すると方策の既定 0.70 がそのまま効き、"
+                         "本引数を足す前と同じ結果になる**")
     ap.add_argument("--out", default=None)
     ap.add_argument("--maze-dir", default="competition/mazes/design_v4")
     args = ap.parse_args()
 
     tag = (f"ladder_k{args.k_acc_ff:g}" + ("_ri" if args.ref_interp else "")
-           + (f"_la{args.tau_la:g}_kr{args.k_r:g}" if (args.tau_la or args.k_r) else ""))
+           + (f"_la{args.tau_la:g}_kr{args.k_r:g}" if (args.tau_la or args.k_r) else "")
+           + (f"_sf{args.safety:g}" if args.safety is not None else ""))
     out = args.out or str(REPO_ROOT / "outputs" / "exp_016_diagonal" / "016f0" / f"{tag}.json")
     Path(out).parent.mkdir(parents=True, exist_ok=True)
 
+    sf_txt = "既定 0.70（引数なし）" if args.safety is None else f"{args.safety:g}"
     print(f"⚠️ F0: k_acc_ff = {args.k_acc_ff:g}／F0-b: ref_interp = {args.ref_interp}"
-          f"／F: tau_la = {args.tau_la:g} s・k_r = {args.k_r:g}\n")
+          f"／F: tau_la = {args.tau_la:g} s・k_r = {args.k_r:g}"
+          f"／旋回安全率 = {sf_txt}\n")
     # **harness は書き換えず、方策の名前だけ差し替える**
     run_016c.SegSpeedPolicy = make_policy_class(args.k_acc_ff, args.ref_interp,
-                                                args.tau_la, args.k_r)
+                                                args.tau_la, args.k_r, args.safety)
     sys.argv = ["run_016c.py", "--maze-dir", args.maze_dir, "--out", out]
     run_016c.main()
 
