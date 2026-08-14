@@ -195,8 +195,16 @@ def main():
     # ---------------------------------------------------------------
     print("\n" + "=" * 68)
     print(f"総括: 不合格 {len(fails)} 件" + ("" if not fails else f" → {fails}"))
-    print("""
-⚠️ 限界: `measure_driving.py` は毎歩の d_hist / resp_hist を出力に残さないので、
+    if has_raw:
+        print("""
+✅ 生データ（毎歩の d_hist / resp_hist）が出力に入っているので、L5 まで実行できた。
+   min_d と Q4 の窓を軌跡から自分で再構成して照合済みである。
+   ⚠️ 残る限界: 物理シミュレーションと方策は共有しているので、
+      そこに誤りがあれば両者は同じように誤る（作法 36）。
+""")
+    else:
+        print("""
+⚠️ 限界: 毎歩の d_hist / resp_hist が出力に無いので、
    `min_d` と `min_d_after_last_respawn` そのものは検証できない。
    確かめられるのは式と集約までである（AUDIT_039 §3-1 と同じ構造）。
 """)
