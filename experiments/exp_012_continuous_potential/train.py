@@ -103,6 +103,22 @@ ENV_VERSION_FLAGS = {
                episode_limit_steps=2000),
 }
 
+# 🔴 **評価環境の版**（裁定 2026-08-14。学習環境とは別に持つ）。
+# 出所: exp_019 の投入 35 分後に、**v2 のフラグを学習環境にだけ渡していて、
+# 定期評価は既定（v1 の尺）のまま**だったことが分かった。カード §4 は
+# 「v2 では規約判定で数える」と宣言していたので、**条文と測定が食い違っていた**
+# （`post_3_3` と同じ「是正が呼び出し側まで届いていない」型の欠陥）。
+#
+# **評価にリスポーンは入れない。**立て直しは**学習の道具**であって競技の規則ではなく、
+# 評価は**競技の単発試行の意味論**（衝突したらその試行は失敗）で測るためである。
+# 上限歩数も据え置く（評価の尺を学習の都合で動かさない）。
+# こうすると衝突で終わる規則が v1 と同じなので、**中心が初めてゴール区画へ入った歩**から
+# **v1 のゴール事象が厳密に再現**でき、規約ゴール率と v1 互換値を 1 回の評価で両取りできる。
+EVAL_ENV_FLAGS = {
+    "v1": {},
+    "v2": dict(goal_rule_containment=True),
+}
+
 
 def make_env(rank: int, gamma: float, log_dir: Path, args):
     def _init():
@@ -224,8 +240,11 @@ class ValidationCallback(BaseCallback):
 
     def __init__(self, eval_every_steps: int, log_dir: Path, gamma: float,
                  maze_mode: str, n_trials: int = 1, save_on_goal_path: Path = None,
-                 fine_every: int = 200, fine_window: int = 2000, coarse_k: int = 2):
+                 fine_every: int = 200, fine_window: int = 2000, coarse_k: int = 2,
+                 eval_env_kwargs: dict = None):
         super().__init__()
+        # 評価環境の版（既定 None = 従来どおり）。上の EVAL_ENV_FLAGS を参照
+        self.eval_env_kwargs = dict(eval_env_kwargs or {})
         self.eval_every = int(eval_every_steps)
         self.log_dir = Path(log_dir)
         self.gamma = float(gamma)
@@ -260,9 +279,15 @@ class ValidationCallback(BaseCallback):
         s = evaluate_maze6(
             lambda o: self.model.predict(o, deterministic=True)[0],
             maze_dir=VALIDATION_MAZE_DIR, n_trials=self.n_trials, seed=0,
-            gamma=self.gamma, maze_mode=self.maze_mode)
+            gamma=self.gamma, maze_mode=self.maze_mode,
+            env_kwargs=(self.eval_env_kwargs or None))
         rec = dict(total_timesteps=int(self.num_timesteps),
-                   goal_rate=s["goal_rate"], collision_rate=s["collision_rate"],
+                   goal_rate=s["goal_rate"],
+                   # 🔴 どちらの尺で測ったかを記録から復元できるようにする。
+                   # v2 では goal_rate = 規約判定・center_rule = v1 互換の参考値
+                   goal_rate_center_rule=s.get("goal_rate_center_rule"),
+                   mean_delta_t_containment=s.get("mean_delta_t_containment"),
+                   collision_rate=s["collision_rate"],
                    timeout_rate=s["timeout_rate"],
                    mean_goal_time_s=s["mean_goal_time_s"],
                    mean_sec_per_cell=s["mean_sec_per_cell"],
@@ -383,6 +408,9 @@ def main(argv=None):
           f"（Φ: {CONDITION_FLAGS[args.condition]}）")
     print(f"[train] 環境の版 = {args.env_version}"
           f"（{ENV_VERSION_FLAGS[args.env_version] or '従来どおり'}）")
+    print(f"[train] 評価環境の版 = {args.env_version}"
+          f"（{EVAL_ENV_FLAGS[args.env_version] or '従来どおり'}）"
+          f" ※ 評価にリスポーンは入れない（競技の単発試行の意味論）")
     # 版の同一性を記録で担保する（exp_019 の条件。申告ではなく記録）
     try:
         _git_rev = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True,
@@ -408,7 +436,8 @@ def main(argv=None):
     val_cb = ValidationCallback(eval_every_steps=args.validation_every, log_dir=log_dir,
                                 gamma=args.gamma, maze_mode=args.maze_mode,
                                 save_on_goal_path=(None if args.no_save_on_goal
-                                                   else Path(args.model_out)))
+                                                   else Path(args.model_out)),
+                                eval_env_kwargs=EVAL_ENV_FLAGS[args.env_version])
     ckpt_cb = CheckpointCallback(save_freq=max(400_000 // n_envs, 1),
                                  save_path=str(log_dir))
 
@@ -438,6 +467,7 @@ def main(argv=None):
             condition=args.condition, condition_flags=CONDITION_FLAGS[args.condition],
             env_version=args.env_version,
             env_version_flags=ENV_VERSION_FLAGS[args.env_version],
+            eval_env_flags=EVAL_ENV_FLAGS[args.env_version],
             git_rev=_git_rev,
             goal_snapshots=val_cb.saved_goal_snapshots,
             elapsed_s=elapsed, steps_per_sec=total_steps / max(elapsed, 1e-9),

@@ -92,6 +92,13 @@ def _run_one_trial(env, policy_fn, tseed: int, keep_trace: bool = False) -> dict
     #  **計算式は変更していない**。新しいキーを 1 つ増やしただけである）
     _, _, yaw_prev = s_.privileged_pose()
     yaw_acc, n_turns = 0.0, 0
+    # 🔴 中心方式のゴール事象（v1 互換の参考値）。
+    # 環境を**規約判定（機体全体の内包）**で回すとき、v1 では「中心がゴール区画へ
+    # 入った時点で終了＝成功」だった。終端の規則は**その時点より前の力学に影響しない**ので、
+    # **中心が初めてゴール区画へ入ったか**を記録しておけば **v1 のゴール事象を厳密に再現**
+    # できる（評価ではリスポーンを使わない＝衝突で終わる規則が v1 と同じ、が前提）。
+    # dist_to_goal == 0 ⟺ 現在の区画がゴール区画（距離場の定義より）。
+    center_in_goal_step = None
     total_yaw_rad = 0.0  # |dyaw| の単純積算（リセットなし。R4 が指定した代替指標）
     while True:
         a = np.clip(np.asarray(policy_fn(obs), dtype=np.float64), -1.0, 1.0)
@@ -118,6 +125,8 @@ def _run_one_trial(env, policy_fn, tseed: int, keep_trace: bool = False) -> dict
         if abs(yaw_acc) >= math.pi / 4:
             n_turns += 1
             yaw_acc = 0.0
+        if center_in_goal_step is None and int(info.get("dist_to_goal", -1)) == 0:
+            center_in_goal_step = n_steps
         if keep_trace:
             omegas.append(0.5 * (w0 + w1))
             poses.append((x, y, yaw))
@@ -142,6 +151,12 @@ def _run_one_trial(env, policy_fn, tseed: int, keep_trace: bool = False) -> dict
         # 1 区画あたり所要時間: 最短歩数で割る（迷路ごとの難度で正規化する）
         sec_per_cell=(sim_time / info["d_start"]) if (no_contact_goal
                                                       and info.get("d_start")) else None,
+        # 中心方式のゴール（v1 互換の参考値）と、規約成立までの遅れ ΔT
+        goal_center_rule=bool(center_in_goal_step is not None),
+        center_in_goal_step=center_in_goal_step,
+        delta_t_containment=(int(info["delta_t_containment"])
+                             if "delta_t_containment" in info else None),
+        n_respawn=int(info.get("n_respawn", 0)),
         n_visited=int(info.get("n_visited", 0)),
         odom_error_m=float(info.get("odom_error_m", float("nan"))),
         min_wall_clearance_m=(float(meter.worst)
@@ -187,7 +202,8 @@ def _mean(xs):
 
 def evaluate_maze6(policy_fn, maze_dir=EVAL_MAZE_DIR, n_trials=DEFAULT_N_TRIALS,
                    seed=0, gamma=0.995, maze_mode="loop",
-                   keep_traces: bool = True, model_sha256: str = "unknown") -> dict:
+                   keep_traces: bool = True, model_sha256: str = "unknown",
+                   env_kwargs: dict = None) -> dict:
     """M2-0 の評価を実行する。
 
     Args:
@@ -195,6 +211,13 @@ def evaluate_maze6(policy_fn, maze_dir=EVAL_MAZE_DIR, n_trials=DEFAULT_N_TRIALS,
             `lambda o: model.predict(o, deterministic=True)[0]`。
         maze_dir: 迷路 npz+xml のディレクトリ（既定は評価帯 6000-6019）。
         n_trials: 迷路あたりの試行数（gate は 20 面 ×5 = 100 試行）。
+        env_kwargs: `Maze6Env` へ追加で渡す引数（既定 None = **従来と完全に同じ**）。
+            **環境 v2 の評価は `goal_rule_containment=True` だけを渡す**（裁定 2026-08-14）:
+            - **リスポーンは渡さない。**立て直しは**学習の道具**であって競技の規則ではなく、
+              評価は**競技の単発試行の意味論**（衝突したらその試行は失敗）で測る
+            - 上限歩数も据え置き（評価の尺を学習の都合で動かさない）
+            このとき `goal_rate` は**規約判定（機体全体の内包）**、
+            `goal_rate_center_rule` は**中心方式（v1 互換の参考値）**になる。
 
     Returns:
         dict: goal_rate（gate 本体）ほかの指標を含む summary。
@@ -210,7 +233,8 @@ def evaluate_maze6(policy_fn, maze_dir=EVAL_MAZE_DIR, n_trials=DEFAULT_N_TRIALS,
     per_maze, all_trials = [], []
     for ms in maze_seeds:
         env = Maze6Env(maze_dir=maze_dir, maze_seeds=[ms], max_cache=2,
-                       gamma=gamma, mode="fixed", maze_mode=maze_mode)
+                       gamma=gamma, mode="fixed", maze_mode=maze_mode,
+                       **(env_kwargs or {}))
         trials = [_run_one_trial(env, policy_fn, _trial_seed(seed, ms, t),
                                  keep_trace=keep_traces)
                   for t in range(n_trials)]
@@ -254,7 +278,16 @@ def evaluate_maze6(policy_fn, maze_dir=EVAL_MAZE_DIR, n_trials=DEFAULT_N_TRIALS,
         git_rev=_git_rev(), model_sha256=model_sha256, eval_schema_version=2,
         traces=traces,
         n_mazes=len(maze_seeds), n_trials_per_maze=n_trials, n_total_trials=n,
+        # 🔴 `goal_rate` は**環境の判定の量**である（v1 = 中心方式・v2 = 規約判定）。
+        # `env_kwargs` を見れば、どちらの尺で測ったかが記録から復元できる。
+        env_kwargs=dict(env_kwargs or {}),
         goal_rate=sum(1 for r in all_trials if r["no_contact_goal"]) / n,
+        # 中心方式の到達率（v1 互換の参考値）。規約判定で回したときだけ意味が変わる:
+        # v1 で回せば goal_rate と一致し、規約判定で回せば **v1 のゴール率を厳密に再現**する
+        goal_rate_center_rule=sum(1 for r in all_trials
+                                  if r["goal_center_rule"]) / n,
+        mean_delta_t_containment=_mean([r["delta_t_containment"] for r in all_trials]),
+        mean_n_respawn=_mean([r["n_respawn"] for r in all_trials]),
         collision_rate=sum(1 for r in all_trials if r["outcome"] == "collision") / n,
         timeout_rate=sum(1 for r in all_trials if r["outcome"] == "timeout") / n,
         n_success=len(ok),
