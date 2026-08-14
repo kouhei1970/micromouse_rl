@@ -1,0 +1,70 @@
+{
+  "exp020": [
+    {
+      "seed": 1,
+      "n_ep": 210,
+      "n_goal": 23
+    },
+    {
+      "seed": 2,
+      "n_ep": 210,
+      "n_goal": 18
+    },
+    {
+      "seed": 3,
+      "n_ep": 204,
+      "n_goal": 9
+    },
+    {
+      "seed": 4,
+      "n_ep": 207,
+      "n_goal": 17
+    },
+    {
+      "seed": 5,
+      "n_ep": 205,
+      "n_goal": 11
+    },
+    {
+      "seed": 6,
+      "n_ep": 208,
+      "n_goal": 16
+    }
+  ],
+  "exp019_matched": [
+    {
+      "seed": 1,
+      "n_ep": 24,
+      "n_goal": 3
+    },
+    {
+      "seed": 2,
+      "n_ep": 24,
+      "n_goal": 2
+    },
+    {
+      "seed": 3,
+      "n_ep": 24,
+      "n_goal": 1
+    },
+    {
+      "seed": 4,
+      "n_ep": 24,
+      "n_goal": 3
+    },
+    {
+      "seed": 5,
+      "n_ep": 24,
+      "n_goal": 0
+    },
+    {
+      "seed": 6,
+      "n_ep": 24,
+      "n_goal": 0
+    }
+  ],
+  "rate_new": 0.07556270096463022,
+  "rate_ref": 0.0625,
+  "median_counts": 16.5,
+  "exposure_only_expectation": 12.96875
+}
