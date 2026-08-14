@@ -270,7 +270,15 @@ def main() -> None:
         eps = [_run_episode(maze_dir, ms, policy_fn, lags) for ms in maze_seeds]
         mets = [_episode_metrics(e) for e in eps]
         p5 = [j for j in (_judge_p5(e) for e in eps) if j is not None]
-        per_seed[name] = dict(metrics=mets, p5=p5)
+        # 🔴 **毎歩の生データを出力に残す**（准教授 AUDIT_041 §3・2026-08-14 採択）。
+        # `min_d` と `min_d_after_last_respawn` は、D(t) と毎歩の `respawned` が無いと
+        # **独立に再計算できない**。とくに Q4 の窓（最後のリスポーン以降）は**裁定 R50 で
+        # 実際に誤りが見つかった箇所**で、窓の取り方が 1 箇所ずれても値だけ見ていては
+        # 気づけない。AUDIT_039 §3-1（生データが残らず検算できなかった件）と同じ構造。
+        raw = [dict(maze_seed=e["maze_seed"], trial_seed=e["trial_seed"], d0=e["d0"],
+                    outcome=e["outcome"], d_hist=e["d_hist"],
+                    resp_hist=[int(r) for r in e["resp_hist"]]) for e in eps]
+        per_seed[name] = dict(metrics=mets, p5=p5, raw=raw)
         # 🔴 実歩数を記録する（学習量が揃っているかを後から確認できるように）
         model_info.append(dict(name=name, path=str(m), num_timesteps=n_ts))
         print(f"[{name}] 正味の前進(中央値) "
