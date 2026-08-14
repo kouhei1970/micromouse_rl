@@ -68,8 +68,12 @@ class ObsHistoryWrapper(gym.Wrapper):
             空タプルは**使わない**（呼び出し側でラップしない）。
     """
 
-    def __init__(self, env, lags=DEFAULT_LAGS):
+    def __init__(self, env, lags=DEFAULT_LAGS, sham=False):
         super().__init__(env)
+        # exp_022: にせ履歴。遅れの位置に**現在の観測を複製**する（次元もパラメータ数も
+        # 同じまま、履歴の情報だけがゼロになる）。**既定 False ＝ exp_021 と完全に同一**。
+        # sham history: replicate the current observation into every lag slot.
+        self.sham = bool(sham)
         lags = parse_lags(lags)
         if not lags:
             raise ValueError("lags が空である。履歴を使わないならラップしないこと"
@@ -103,7 +107,13 @@ class ObsHistoryWrapper(gym.Wrapper):
 
     # ------------------------------------------------------------------
     def _stack(self) -> np.ndarray:
-        parts = [self._buf[0]] + [self._buf[lag] for lag in self.lags]
+        if self.sham:
+            # にせ履歴（exp_022）: 遅れの位置も現在の観測にする。
+            # **履歴の入れ物（_buf）の更新はやめない** — やめると reset/step の
+            # 計算量が変わり、乱数以外の差が 1 つ増えるため（カード §5-1）。
+            parts = [self._buf[0]] * (1 + len(self.lags))
+        else:
+            parts = [self._buf[0]] + [self._buf[lag] for lag in self.lags]
         return np.concatenate(parts).astype(np.float32)
 
     def reset(self, **kwargs):

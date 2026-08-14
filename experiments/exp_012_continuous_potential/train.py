@@ -142,7 +142,8 @@ def make_env(rank: int, gamma: float, log_dir: Path, args):
         # 履歴なしの経路は exp_019・exp_020 と完全に同一である（カード §2-3）。
         lags = parse_lags(getattr(args, "obs_history", None))
         if lags:
-            env = ObsHistoryWrapper(env, lags)
+            env = ObsHistoryWrapper(env, lags,
+                                    sham=bool(getattr(args, "obs_history_sham", False)))
         return Monitor(env, filename=str(log_dir / f"env_{rank}"))
     return _init
 
@@ -508,6 +509,10 @@ def main(argv=None):
                    help="観測履歴の連結（exp_021）。'1,2,4,8,16,32,64,128' の形で"
                         "遅れ［歩］を並べる。制御周期 10 ms なので 128 歩 = 1.28 秒。"
                         "**渡さなければ既定 off ＝ 履歴導入前と同一の経路**")
+    p.add_argument("--obs-history-sham", action="store_true",
+                   help="にせ履歴（exp_022）。遅れの位置に**現在の観測を複製**する。"
+                        "次元もパラメータ数も同じまま履歴の情報だけがゼロになる。"
+                        "**--obs-history と併用する**（渡さなければ既定 off ＝ exp_021 と同一）")
     p.add_argument("--fine-updates", type=int, default=4,
                    help="§9-19 の退避: 陽性の直後に押さえる PPO 更新の回数（R51-3）")
     p.add_argument("--no-save-on-goal", action="store_true",
@@ -533,13 +538,19 @@ def main(argv=None):
     # exp_021: 観測履歴の連結。**評価にも同じラッパを掛ける**（学習と評価で観測の形が
     # 食い違う事故を防ぐ。exp_019 の「評価だけ v1 の尺だった」欠陥と同じ型を封じる）。
     _obs_lags = parse_lags(args.obs_history)
-    _obs_wrapper = (lambda e: ObsHistoryWrapper(e, _obs_lags)) if _obs_lags else None
+    _obs_sham = bool(args.obs_history_sham)
+    _obs_wrapper = ((lambda e: ObsHistoryWrapper(e, _obs_lags, sham=_obs_sham))
+                    if _obs_lags else None)
     if _obs_lags:
         _n_out = int(vec_env.observation_space.shape[0])
         _n_base = _n_out // (1 + len(_obs_lags))       # ラッパの定義より割り切れる
         print(f"[train] 観測履歴の遅れ = {_obs_lags}"
               f"（観測 {_n_base} → {_n_out} 次元・"
               f"窓 = {max(_obs_lags)} 歩 = {max(_obs_lags) * 0.01:.2f} 秒）", flush=True)
+        if _obs_sham:
+            print("[train] にせ履歴 = 有効（遅れの位置に現在の観測を複製・情報ゼロ）", flush=True)
+        else:
+            print("[train] にせ履歴 = 無効（既定・exp_021 と同一経路）", flush=True)
     else:
         print("[train] 観測履歴 = 無効（既定・exp_019 と同一経路）", flush=True)
     # 🔴 帯の明示と安全弁（裁定 R40 条件 4・R11 項目 7）。学習に使う maze seed は

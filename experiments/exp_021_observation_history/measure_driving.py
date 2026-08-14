@@ -104,7 +104,7 @@ def _load_policy(model_path: Path):
             int(model.num_timesteps))
 
 
-def _run_episode(maze_dir: Path, maze_seed: int, policy_fn, lags) -> dict:
+def _run_episode(maze_dir: Path, maze_seed: int, policy_fn, lags, sham=False) -> dict:
     """1 迷路 1 エピソードを回し、**毎歩の D(t)・respawned・cell_entries** を返す。
 
     Run one episode on one maze; record D(t), the respawn flag and cell entries.
@@ -112,8 +112,9 @@ def _run_episode(maze_dir: Path, maze_seed: int, policy_fn, lags) -> dict:
     env = Maze6Env(maze_dir=maze_dir, maze_seeds=[maze_seed], max_cache=2,
                    gamma=GAMMA, mode="fixed", maze_mode="loop", **_ENV_KWARGS)
     if lags:
-        # 学習時と同じ形で掛ける（観測の形が学習と評価で食い違う事故を防ぐ）
-        env = ObsHistoryWrapper(env, lags)
+        # 学習時と同じ形で掛ける（観測の形が学習と評価で食い違う事故を防ぐ）。
+        # exp_022: sham=True で「にせ履歴」（遅れの位置に現在の観測を複製）
+        env = ObsHistoryWrapper(env, lags, sham=sham)
     tseed = _trial_seed(_SEED_BASE, maze_seed, _TRIAL_IDX)
     obs, info = env.reset(seed=tseed)
     d0 = int(info["dist_to_goal"])          # D_0 = 開始区画のゴール距離［区画数］
@@ -212,6 +213,18 @@ def summarize(per_seed: dict) -> dict:
                               # 報告時要件: この n で判別できる差の大きさ（割合の刻み）
                               resolution=1.0 / len(judged))
     across = {k: _median([v[k] for v in per_seed_medians.values()]) for k in keys}
+    # 🔴 exp_022 の P2・P3（**中央値では裾が見えないので 120 走行の件数で数える**）。
+    # 定義: P2 = (D0 - エピソード中の最小 D) >= 5 の走行数／P3 = ゴールした走行数。
+    n_runs = sum(len(d["metrics"]) for d in per_seed.values())
+    n_reach_ge5 = sum(1 for d in per_seed.values() for m in d["metrics"]
+                      if (m["d0"] - m["min_d"]) >= 5)
+    n_goal_rollout = sum(1 for d in per_seed.values() for m in d["metrics"]
+                         if m["outcome"] == "goal")
+    reach_hist = {}
+    for d in per_seed.values():
+        for m in d["metrics"]:
+            k = int(m["d0"] - m["min_d"])
+            reach_hist[k] = reach_hist.get(k, 0) + 1
     if p5_rates:
         p5 = dict(median_rate=statistics.median([v["rate"] for v in p5_rates.values()]),
                   threshold=0.50, n_seeds_used=len(p5_rates),
@@ -222,6 +235,8 @@ def summarize(per_seed: dict) -> dict:
                   per_seed=p5_rates, excluded_seeds=p5_excluded,
                   note="6 seed すべて分母 0 ＝ 前提事象（リスポーン）が不発生。対象消滅。")
     return dict(across_seeds_median=across, per_seed_median=per_seed_medians, p5=p5,
+                n_runs=n_runs, n_reach_ge5=n_reach_ge5, n_goal_rollout=n_goal_rollout,
+                reach_hist={str(k): reach_hist[k] for k in sorted(reach_hist)},
                 note=("集約は迷路 20 本の中央値 → seed の中央値。プール集計はしない。"
                       "Q1 = net_progress_per_1000（大きいほど良い）・"
                       "Q2 = respawn_per_1000（小さいほど良い）。"
@@ -237,6 +252,9 @@ def main() -> None:
     p.add_argument("--history-lags", type=str, default=None,
                    help="観測履歴の遅れ（例 '1,2,4,8,16,32,64,128'）。"
                         "**対照群（履歴なしの方策）では渡さない**")
+    p.add_argument("--history-sham", action="store_true",
+                   help="にせ履歴（exp_022）。遅れの位置に現在の観測を複製する。"
+                        "**学習時と同じ設定にすること**")
     p.add_argument("--label", type=str, required=True,
                    help="この測定の呼び名（出力に記録する。例 exp_019_final / exp_021_final）")
     p.add_argument("--purpose", type=str, default="validate",
@@ -267,7 +285,8 @@ def main() -> None:
     for m in args.models:
         name = _model_name(Path(m))
         policy_fn, n_ts = _load_policy(Path(m))
-        eps = [_run_episode(maze_dir, ms, policy_fn, lags) for ms in maze_seeds]
+        eps = [_run_episode(maze_dir, ms, policy_fn, lags, sham=args.history_sham)
+               for ms in maze_seeds]
         mets = [_episode_metrics(e) for e in eps]
         p5 = [j for j in (_judge_p5(e) for e in eps) if j is not None]
         # 🔴 **毎歩の生データを出力に残す**（准教授 AUDIT_041 §3・2026-08-14 採択）。
