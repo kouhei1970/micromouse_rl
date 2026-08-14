@@ -70,19 +70,22 @@ def run_case(goal_rates, extra_argv=()) -> dict:
     try:
         log_dir = tmp / "log"
         model_out = tmp / "models" / "cond_test.zip"
-        argv = ["--total-steps", "2048", "--validation-every", "1024",
+        argv = ["--total-steps", "6144", "--validation-every", "2048",
                 "--n-envs", "1", "--seed", "0",
                 "--log-dir", str(log_dir), "--model-out", str(model_out),
                 *extra_argv]
         rc = mod.main(argv)
         assert rc == 0, f"train.main が {rc} を返した"
         snaps = sorted((model_out.parent).glob("cond_test_first_goal_*.zip"))
+        fine = sorted((model_out.parent).glob("cond_test_after_goal_fine_*.zip"))
+        coarse = sorted((model_out.parent).glob("cond_test_after_goal_eval_*.zip"))
         summary = json.loads((log_dir / "run_summary.json").read_text(encoding="utf-8"))
         loadable = []
         for p in snaps:
             PPO.load(str(p), device="cpu")   # 壊れていれば例外
             loadable.append(p.name)
         return dict(snapshots=[p.name for p in snaps], loadable=loadable,
+                    fine=[p.name for p in fine], coarse=[p.name for p in coarse],
                     summary_snaps=summary.get("goal_snapshots", []),
                     n_eval_calls=calls["n"])
     finally:
@@ -106,14 +109,35 @@ def main() -> int:
     if len(r["loadable"]) != len(r["snapshots"]):
         ok = False
         print("  🔴 FAIL: 保存された重みが読み込めない")
-    if len(r["summary_snaps"]) != len(r["snapshots"]):
+    # ⚠️ §9-19 強化（2026-08-14）で退避は 3 種類になった（first_goal / after_goal_fine /
+    # after_goal_eval）。**期待値は「全種類の合計」で数える**（旧期待値は first_goal だけを
+    # 数えており、強化後は必ず食い違う。**テストの期待値も検証の対象**）。
+    n_files_total = len(r["snapshots"]) + len(r["fine"]) + len(r["coarse"])
+    if len(r["summary_snaps"]) != n_files_total:
         ok = False
-        print("  🔴 FAIL: run_summary.json の goal_snapshots と保存数が食い違う")
+        print(f"  🔴 FAIL: run_summary.json の goal_snapshots {len(r['summary_snaps'])} 件 と "
+              f"保存ファイル {n_files_total} 件が食い違う")
+    else:
+        print(f"  [PASS] goal_snapshots {len(r['summary_snaps'])} 件 = 保存ファイル "
+              f"{n_files_total} 件（first_goal {len(r['snapshots'])} / "
+              f"fine {len(r['fine'])} / eval {len(r['coarse'])}）")
     if r["summary_snaps"]:
         s0 = r["summary_snaps"][0]
         if not (s0.get("goal_rate", 0) > 0 and "total_timesteps" in s0):
             ok = False
             print(f"  🔴 FAIL: goal_snapshots の中身が不足: {s0}")
+
+    # 🔴 (3-bis) §9-19 強化: **細粒度（直後 200 歩ごと）と粗粒度（直後 K 回の評価点）**
+    # 陽性を 1 回だけ返す評価器で、両方が出ることを確かめる（AUDIT_022 指摘 1 の是正）
+    r2 = run_case([0.05, 0.0, 0.0])
+    print(f"  細粒度の退避: {len(r2['fine'])} 点 {r2['fine'][:3]}…")
+    print(f"  粗粒度の退避: {len(r2['coarse'])} 点 {r2['coarse']}")
+    if not r2["fine"]:
+        ok = False
+        print("  🔴 FAIL: 陽性の直後の**細粒度**退避が 1 点も無い")
+    if len(r2["coarse"]) != 2:
+        ok = False
+        print(f"  🔴 FAIL: 粗粒度の退避が 2 点でない（{len(r2['coarse'])} 点）")
 
     # (4) ゴール率 0 のときは保存されない（常時保存になっていないことの確認）
     r0 = run_case([0.0, 0.0])

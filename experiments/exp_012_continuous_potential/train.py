@@ -166,6 +166,13 @@ class EpisodeStatsCallback(BaseCallback):
                 )
                 # 条件 C・C' の記録の義務（裁定 R24-1）: 学習迷路ごとの 1/ρ を残す。
                 # 値は**実行時の場**から出たもの（= 1/ρ_field。design.md の命名。R39-3）。
+                if "goal_contained_rule" in info:
+                    # 規約判定（機体全体の内包）の並記（裁定 R42-4・§9-19 強化）
+                    rec["goal_contained_rule"] = bool(info["goal_contained_rule"])
+                if "n_respawn" in info:
+                    rec["n_respawn"] = int(info["n_respawn"])
+                if "delta_t_containment" in info:
+                    rec["delta_t_containment"] = int(info["delta_t_containment"])
                 if "geo_inv_rho" in info:
                     rec["geo_inv_rho_field"] = float(info["geo_inv_rho"])
                     rec["geo_rho_applied"] = float(info["geo_rho_applied"])
@@ -203,7 +210,8 @@ class ValidationCallback(BaseCallback):
     """
 
     def __init__(self, eval_every_steps: int, log_dir: Path, gamma: float,
-                 maze_mode: str, n_trials: int = 1, save_on_goal_path: Path = None):
+                 maze_mode: str, n_trials: int = 1, save_on_goal_path: Path = None,
+                 fine_every: int = 200, fine_window: int = 2000, coarse_k: int = 2):
         super().__init__()
         self.eval_every = int(eval_every_steps)
         self.log_dir = Path(log_dir)
@@ -220,6 +228,19 @@ class ValidationCallback(BaseCallback):
         # 「介入」には当たらない。裁定 2026-08-13。design.md「記録の非対称」も参照）。
         self.save_on_goal_path = Path(save_on_goal_path) if save_on_goal_path else None
         self.saved_goal_snapshots = []
+        # 🔴 §9-19 強化（環境 v2 項目 4。准教授 AUDIT_022 指摘 1）:
+        # **陽性の直後を細かい粒度でも保存する**。
+        # 当初案（陽性の直後 K=2 回の**評価点**）は**評価点の間隔が 10 万歩**なので、
+        # **捕らえたい現象（896 歩で「届く状態」が失われる）の 1000 倍粗く**、
+        # 現行の記録で既に分かっていることしか増えなかった。
+        # → **細粒度（直後 `fine_window` 歩を `fine_every` 歩ごと）と
+        #    粗粒度（直後 `coarse_k` 回の評価点）の両建て**にする。
+        self.fine_every = int(fine_every)         # 200 歩ごと
+        self.fine_window = int(fine_window)       # 直後 2000 歩ぶん（＝ 10 点）
+        self.coarse_k = int(coarse_k)             # 直後 2 回の評価点
+        self._fine_until = None                   # 細粒度保存の終了ステップ
+        self._fine_next_at = None                 # 次に細粒度保存するステップ
+        self._coarse_left = 0                     # 残りの粗粒度保存回数
 
     def _evaluate(self):
         t0 = time.time()
@@ -250,17 +271,39 @@ class ValidationCallback(BaseCallback):
               f"({rec['eval_wall_time_s']:.1f} s)", flush=True)
         # 稀少事象（ゴール率が非ゼロ）を記録した時点の重みを退避する（§9-19）。
         if self.save_on_goal_path is not None and rec["goal_rate"] > 0.0:
-            p = self.save_on_goal_path.with_name(
-                f"{self.save_on_goal_path.stem}_first_goal_{rec['total_timesteps']}.zip")
-            p.parent.mkdir(parents=True, exist_ok=True)
-            self.model.save(str(p))
-            self.saved_goal_snapshots.append(
-                dict(total_timesteps=rec["total_timesteps"],
-                     goal_rate=rec["goal_rate"], path=str(p)))
-            print(f"[validation] 🔴 ゴール率が非ゼロ → 重みを退避: {p}", flush=True)
+            self._save_snapshot("first_goal", rec["total_timesteps"],
+                                goal_rate=rec["goal_rate"])
+            # **陽性の直後を細かい粒度でも押さえる**（896 歩の現象を括るため）
+            self._fine_until = rec["total_timesteps"] + self.fine_window
+            self._fine_next_at = rec["total_timesteps"] + self.fine_every
+            self._coarse_left = self.coarse_k
+        elif self.save_on_goal_path is not None and self._coarse_left > 0:
+            # 陽性の**直後 K 回の評価点**（「その後も届き続けるか」を見るため）
+            self._coarse_left -= 1
+            self._save_snapshot("after_goal_eval", rec["total_timesteps"],
+                                goal_rate=rec["goal_rate"])
         return rec
 
+    def _save_snapshot(self, tag: str, step: int, goal_rate: float = None) -> None:
+        """重みを 1 点退避して記録する（§9-19）。"""
+        p = self.save_on_goal_path.with_name(
+            f"{self.save_on_goal_path.stem}_{tag}_{step}.zip")
+        p.parent.mkdir(parents=True, exist_ok=True)
+        self.model.save(str(p))
+        self.saved_goal_snapshots.append(
+            dict(total_timesteps=int(step), tag=tag, goal_rate=goal_rate, path=str(p)))
+        print(f"[validation] 🔴 §9-19 退避（{tag}）: {p}", flush=True)
+
     def _on_step(self) -> bool:
+        # 細粒度の退避（陽性の直後 fine_window 歩を fine_every 歩ごと）。
+        # **評価は走らせない**（評価は重いので、ここでは重みを取るだけ）。
+        if (self.save_on_goal_path is not None and self._fine_next_at is not None
+                and self.num_timesteps >= self._fine_next_at):
+            if self.num_timesteps <= self._fine_until:
+                self._save_snapshot("after_goal_fine", self.num_timesteps)
+                self._fine_next_at += self.fine_every
+            else:
+                self._fine_next_at = None       # 窓を出たので細粒度は終了
         if self.num_timesteps >= self._next_at:
             self._evaluate()
             while self._next_at <= self.num_timesteps:
