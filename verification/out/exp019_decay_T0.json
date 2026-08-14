@@ -1,0 +1,27 @@
+{
+  "premise_holds": true,
+  "results": {
+    "3": {
+      "step": 2000000,
+      "expected": 0.05,
+      "goal_rate": 0.05,
+      "goal_rate_center_rule": 0.05,
+      "goal_faces": [
+        7017
+      ],
+      "n_failed": 19,
+      "reproduced": true
+    },
+    "4": {
+      "step": 1900000,
+      "expected": 0.05,
+      "goal_rate": 0.05,
+      "goal_rate_center_rule": 0.05,
+      "goal_faces": [
+        7011
+      ],
+      "n_failed": 19,
+      "reproduced": true
+    }
+  }
+}
