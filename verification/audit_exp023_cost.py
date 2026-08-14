@@ -44,6 +44,43 @@ CARD_SINGLE_PROC_RATIO = 2.8     # RecurrentPPO 624 歩/秒 対 PPO 1,754 歩/�
 CARD_EXP021_MINUTES = 68         # exp_021 の 6 本並列の実測（カード記載。私は未確認）
 
 
+def progress_series(n):
+    """`progress.csv`（**追記型**）から (経過秒, 歩数, エピソード長) の時系列を返す。
+
+    🔴 **これが正しい計器である**（2026-08-15 追記）。
+    **`mtime` は上書きされるので最後の 1 点しか取れず、累積の速さしか出せない。**
+    **累積は「冷えていた最初の速い区間」を含むので、残り時間の見積もりでは楽観側に出る。**
+    **`progress.csv` は書かれたら変わらない記録なので、区間ごとの速さが取れる。**
+    """
+    import csv
+    p = os.path.join(REPO, f"logs/exp_023a_seed{n}/progress.csv")
+    if not os.path.exists(p):
+        return []
+    out = []
+    for r in csv.DictReader(open(p, encoding="utf-8")):
+        if r.get("time/total_timesteps"):
+            out.append((float(r["time/time_elapsed"]),
+                        int(float(r["time/total_timesteps"])),
+                        float(r.get("rollout/ep_len_mean") or 0)))
+    return out
+
+
+def by_progress(window_s=300.0):
+    """追記型の記録から、累積の速さと直近 `window_s` 秒の速さを出す。"""
+    rows = []
+    for n in range(1, 7):
+        pts = progress_series(n)
+        if len(pts) < 3:
+            continue
+        t, s, _ = pts[-1]
+        w = [p for p in pts if p[0] >= t - window_s]
+        if len(w) < 2 or w[-1][0] <= w[0][0]:
+            continue
+        recent = (w[-1][1] - w[0][1]) / (w[-1][0] - w[0][0])
+        rows.append((n, s, t, s / t, recent, (TOTAL_STEPS - s) / recent / 3600.0))
+    return rows
+
+
 def main():
     rows = []
     for n in range(1, 7):
@@ -92,10 +129,45 @@ def main():
     else:
         print(f"  🟢 但し書きの心配は外れた（並列でも比はほぼ同じ）。")
 
-    done1 = LAUNCH + dt.timedelta(hours=h1)
-    print(f"\n--- 完了の見込み ---")
-    print(f"  群 1 完走: {done1:%H:%M} 頃")
-    print(f"  群 2 完走: {done1 + dt.timedelta(hours=h1):%H:%M} 頃（群 1 の完走後に起動）")
+    # ------------------------------------------------------------------
+    # 🔴 2026-08-15 追記: 上の mtime による累積は**楽観側に出る**。
+    #    追記型の progress.csv で区間の速さを取り直す（これが正しい計器）。
+    # ------------------------------------------------------------------
+    pr = by_progress()
+    if not pr:
+        print("\n🔴 progress.csv がまだ読めない")
+        return 1
+
+    import statistics
+    print("\n" + "=" * 78)
+    print("追記型の記録（progress.csv）による測り直し ← **こちらを正とする**")
+    print("=" * 78)
+    print(f"{'seed':>5}{'現在歩数':>11}{'経過[s]':>9}{'累積歩/秒':>11}"
+          f"{'直近5分歩/秒':>14}{'残り[時間]':>12}")
+    for n, s, t, c, r5, left in pr:
+        print(f"{n:>5}{s:>11,}{t:>9.0f}{c:>11.1f}{r5:>14.1f}{left:>12.2f}")
+
+    cum = statistics.mean(r[3] for r in pr)
+    rec = statistics.mean(r[4] for r in pr)
+    left_med = statistics.median(r[5] for r in pr)
+    left_max = max(r[5] for r in pr)
+    now = dt.datetime.now()
+
+    print(f"\n  累積 平均 **{cum:.1f} 歩/秒** ← mtime での測り方と同じ作り（**楽観側**）")
+    print(f"  直近 5 分 平均 **{rec:.1f} 歩/秒** ← **残り時間の見積もりはこちらで行う**")
+    print(f"  速さは単調に低下して頭打ちになる形"
+          f"（冷えた最初が速い。ファンの無い機体の熱制限が第一候補 — **推測**）。")
+    print(f"  100 万歩ごとではなく **10 万歩ごとの定期評価で区間の速さが落ち込む**"
+          f"（評価の所要時間が乗るため）。")
+
+    print(f"\n--- 完了の見込み（**直近の速さで外挿**）---")
+    print(f"  群 1 完走: **{now + dt.timedelta(hours=left_med):%H:%M} 〜 "
+          f"{now + dt.timedelta(hours=left_max):%H:%M}**")
+    g2 = TOTAL_STEPS / rec / 3600.0
+    print(f"  群 2 単独: **{g2:.2f} 時間**"
+          f"（**群 1 の実測 {TOTAL_STEPS / cum / 3600.0:.2f} 時間より長い** — "
+          f"**群 2 は最初から熱い機体で始まるので、冷えた速い区間を持たない**）")
+    print(f"  全完走: **{now + dt.timedelta(hours=left_max + g2):%H:%M} 頃**")
     print("=" * 78)
     print("⚠️ mtime は上書きされる値であり（作法 20・AUDIT_026）、費用の見積もり専用。")
     print("   本スクリプトの出力は判定に使わない。")
