@@ -84,6 +84,11 @@ class Probe:
         self._inner = inner
         self._sim = None
         self.rec = []
+        self.n_retrieval = 0        # 係員回収の回数（**読むだけ**。挙動に影響しない）
+
+    def on_retrieval(self):
+        self.n_retrieval += 1
+        return self._inner.on_retrieval()
 
     name = property(lambda self: getattr(self._inner, "name", "unnamed"))
     requires_privileged = property(
@@ -172,10 +177,23 @@ def main():
                 visited_cells=run["visited_cells"]))
         # 斜め経路を実際に引いた回数（載せ替え版だけが持つ。報告用）
         n_diag = getattr(probe._inner, "n_diag_plans", None)
+        # 🔴 **走行と走行の間の事故も数える**（2026-08-14 追加。
+        # `card_016diag_switch.md` §9-4 の教訓 2:「事故 0 件」はどの窓で数えたかを添える。
+        # 評価器の `incidents` は走行の外（`FREE` 状態）の事故も数えている）
+        inc = r.get("incidents", []) or []
+        detail[-1].update(
+            n_diag_plans=n_diag,
+            n_incidents=len(inc),
+            incident_kinds=sorted({q.get("kind") for q in inc}),
+            n_retrieval=getattr(probe, "n_retrieval", None),
+            n_align_ok=getattr(probe._inner, "n_align_ok", None),
+            n_align_defer=getattr(probe._inner, "n_align_defer", None))
         print(f"  {r['maze_id']} D={d_true:3d} 走行 {len(r['runs'])} 本"
               f" (d)最速={r.get('best_time')}"
-              + (f" 斜め経路 {n_diag} 回" if n_diag is not None else ""), flush=True)
-        detail[-1]["n_diag_plans"] = n_diag
+              + (f" 斜め経路 {n_diag} 回" if n_diag is not None else "")
+              + f" **事故 {len(inc)} 件・回収 {getattr(probe, 'n_retrieval', 0)} 回**"
+              + (f"／向き 一致 {probe._inner.n_align_ok}・委ね {probe._inner.n_align_defer}"
+                 if hasattr(probe._inner, "n_align_ok") else ""), flush=True)
 
     p = out_dir / "runs_detail.json"
     json.dump(dict(arm=args.arm, policy=args.policy, maze_dir=args.maze_dir,
