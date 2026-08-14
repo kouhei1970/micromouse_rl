@@ -423,10 +423,20 @@ def read_coverage(r1: dict, r6: dict, bracket: dict) -> dict:
                          "記憶の方向を打ち切る前に、§8 限界 3 の後続（容量の軸）を検討する"),
     }
     reading, next_move = table[(r1["hit"], r6["hit"])]
+    # 🔴 旗が立っているのに表を返す（裁定待ち）のと、旗が立たないから表を返すのは別の状態である。
+    # **同じ説明文を出すと、前者で「成立していない」という偽の文が判定文書に載る**
+    # （准教授 AUDIT_049 §10）。
+    if bracket["any_outside"]:
+        caveat = ("🔴 §3-3 (iii) の旗は**立っている**が、定義が裁定待ち"
+                  "（BRACKET_RULING_PENDING）のため表の抑制には使っていない。"
+                  "旗の中身は bracket_check を見ること")
+    else:
+        caveat = "§3-3 (iii) は計算済みで、成立していない"
     return dict(r1_hit=r1["hit"], r6_hit=r6["hit"], table_returned=True,
                 reading=reading, next_move=next_move,
-                caveat=("§3-4 の「第 3 の読み（どちらの群よりも外）」は計算済みで、成立していない"
-                        "（成立していれば本表は返らない）"))
+                bracket_flag_raised=bool(bracket["any_outside"]),
+                bracket_ruling_pending=bool(bracket.get("ruling_pending")),
+                caveat=caveat)
 
 
 # ---------------------------------------------------------------------------

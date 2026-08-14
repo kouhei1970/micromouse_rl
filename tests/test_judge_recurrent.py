@@ -290,6 +290,19 @@ check("是正6 順序そのものは記述として出る",
       flagged["per_quantity"]["q"]["order_low_to_high"] == ["対照", "群 1", "群 2"],
       str(flagged["per_quantity"]["q"]["order_low_to_high"]))
 
+# 🔴 AUDIT_049 §10 — 旗が立っているのに「成立していない」と書かない
+check("§10 旗が立って表を返すときは「立っている・裁定待ち」と書く",
+      flagged["any_outside"] is True and "立っている" in cov["caveat"], cov["caveat"][:40])
+check("§10 その状態が真偽値でも出る",
+      cov["bracket_flag_raised"] is True and cov["bracket_ruling_pending"] is True)
+# 旗が立たない場合（3 群の値が同一なら「外」は無い）は従来の文面
+same = J.bracket_check({"q": {"対照": 12, "群 1": 12, "群 2": 12}})
+cov_same = J.read_coverage(r1_hit, r6_hit, same)
+check("§10 旗が立たないときは「成立していない」と書く",
+      same["any_outside"] is False and "成立していない" in cov_same["caveat"],
+      cov_same["caveat"][:40])
+check("§10 旗が立たないときの真偽値", cov_same["bracket_flag_raised"] is False)
+
 # ---------------------------------------------------------------------------
 print("\n" + "=" * 78)
 n_ok = sum(1 for _, ok, _ in results if ok)
