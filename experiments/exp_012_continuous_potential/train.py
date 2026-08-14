@@ -200,6 +200,19 @@ class EpisodeStatsCallback(BaseCallback):
                     rec["goal_contained_rule"] = bool(info["goal_contained_rule"])
                 if "n_respawn" in info:
                     rec["n_respawn"] = int(info["n_respawn"])
+                # 🔴 R51 系の記録列（exp_020・**記録のみ**。env 側で貯めた値を書き写すだけで、
+                # 学習にも乱数にも一切触れない）。合格条件は「軌跡が bit 一致」＝ 項目 8 と同型。
+                #   R51-1: 最後のリスポーン以降の min D（P5 を学習中の走行で判定できるように）
+                #   R51-2: 走行距離・各区画の初訪問の歩・**区画境界を跨いだ回数**
+                #          （「遅い」の正体・割引後の訪問の取り分・Q3 の steps_per_entry）
+                if "min_d_since_respawn" in info:
+                    rec["min_d_since_respawn"] = int(info["min_d_since_respawn"])
+                if "path_len_m" in info:
+                    rec["path_len_m"] = float(info["path_len_m"])
+                if "visit_steps" in info:
+                    rec["visit_steps"] = [int(v) for v in info["visit_steps"]]
+                if "cell_entries" in info:
+                    rec["cell_entries"] = int(info["cell_entries"])
                 if "delta_t_containment" in info:
                     rec["delta_t_containment"] = int(info["delta_t_containment"])
                 if "geo_inv_rho" in info:
@@ -232,6 +245,85 @@ class EpisodeStatsCallback(BaseCallback):
                     sign_flip_rate_right_per_s=float(fr[1]))
 
 
+def parse_d0_schedule(text):
+    """`"400000:4,700000:6,1000000:9"` → [(400000, 4), (700000, 6), (1000000, None)] 形式。
+
+    **段の境界と $D_0$ 上限の対**を、**歩数の昇順**で返す。**最後の段は上限なし**
+    （`None`）であり、**明示的に書かない**（schedule の最後の境界を過ぎたら外れる）。
+    **成績には一切依存しない**（`experiments/exp_020_distance_curriculum/card.md` §3-1）。
+    """
+    if not text:
+        return None
+    out = []
+    for part in text.split(","):
+        step_s, d0_s = part.split(":")
+        out.append((int(step_s), int(d0_s)))
+    out.sort(key=lambda t: t[0])
+    return out
+
+
+class CurriculumCallback(BaseCallback):
+    """距離カリキュラム（exp_020）: **歩数で決まる固定 schedule** で $D_0$ 上限を切り替える。
+
+    🔴 **成績非依存**である（`num_timesteps` だけで決まる）。**方策の出来に関わらず
+    schedule は同一**なので、「学習信号の分布を成績で変える」懸念（AUDIT_022 §4）を
+    **構成的に回避する**。
+
+    schedule の読み方（`[(400000, 4), (700000, 6), (1000000, 9)]` の例）:
+
+    | 歩数 | $D_0$ 上限 |
+    |---|---|
+    | 0 〜 400,000 | **4** |
+    | 400,000 〜 700,000 | 6 |
+    | 700,000 〜 1,000,000 | 9 |
+    | 1,000,000 〜 | **なし（学習帯の全分布）** |
+
+    切り替えは `env_method("set_d0_max", ...)` で**全ワーカへ同時に通知**する。
+    **ロールアウトの粒度でしか見ないので、境界から数百歩ずれうる**（カード §3-3 で許容済み・
+    **ずれの実測はログに残す**）。
+    """
+
+    def __init__(self, schedule, log_dir: Path):
+        super().__init__()
+        self.schedule = list(schedule)
+        self.log_dir = Path(log_dir)
+        self._applied = None            # いま適用している上限（未設定 = None は「上限なし」と別）
+        self._applied_set = False
+        self.switch_log = []
+
+    def _d0_for(self, step: int):
+        """その歩数で適用すべき $D_0$ 上限。
+
+        schedule の対は **(その段の終わりの歩数, その段の $D_0$ 上限)** である
+        （`"400000:4"` = **40 万歩までは上限 4**）。
+        **どの段にも当たらない ＝ 最後の境界を過ぎた**ら **`None`（上限なし）**を返す。
+        """
+        for boundary, d0 in self.schedule:
+            if step < boundary:
+                return d0
+        return None
+
+    def _apply(self, value) -> None:
+        self.training_env.env_method("set_d0_max", value)
+        self._applied, self._applied_set = value, True
+        rec = dict(num_timesteps=int(self.num_timesteps), d0_max=value)
+        self.switch_log.append(rec)
+        with open(self.log_dir / "curriculum_switches.json", "w", encoding="utf-8") as f:
+            json.dump(self.switch_log, f, indent=2, ensure_ascii=False)
+        print(f"[curriculum] t={self.num_timesteps} → D0 上限 = {value}", flush=True)
+
+    def _on_training_start(self) -> None:
+        self._apply(self._d0_for(0))
+
+    def _on_rollout_start(self) -> None:
+        want = self._d0_for(self.num_timesteps)
+        if not self._applied_set or want != self._applied:
+            self._apply(want)
+
+    def _on_step(self) -> bool:
+        return True
+
+
 class ValidationCallback(BaseCallback):
     """**検証帯 7000-7019** でのゴール到達率を定期記録する。
 
@@ -240,7 +332,7 @@ class ValidationCallback(BaseCallback):
 
     def __init__(self, eval_every_steps: int, log_dir: Path, gamma: float,
                  maze_mode: str, n_trials: int = 1, save_on_goal_path: Path = None,
-                 fine_every: int = 200, fine_window: int = 2000, coarse_k: int = 2,
+                 fine_updates: int = 4, coarse_k: int = 2,
                  eval_env_kwargs: dict = None):
         super().__init__()
         # 評価環境の版（既定 None = 従来どおり）。上の EVAL_ENV_FLAGS を参照
@@ -267,11 +359,17 @@ class ValidationCallback(BaseCallback):
         # 現行の記録で既に分かっていることしか増えなかった。
         # → **細粒度（直後 `fine_window` 歩を `fine_every` 歩ごと）と
         #    粗粒度（直後 `coarse_k` 回の評価点）の両建て**にする。
-        self.fine_every = int(fine_every)         # 200 歩ごと
-        self.fine_window = int(fine_window)       # 直後 2000 歩ぶん（＝ 10 点）
+        # 🔴 R51-3（exp_020・裁定 2026-08-14）: **退避の単位を「歩」から「PPO 更新境界」へ**。
+        # 旧: 200 歩ごとに 2000 歩ぶん（＝ 10 点）。
+        # **PPO は n_steps ごとにしか重みを更新しない**ので、**歩で刻んでも解像度は上がらない**
+        # （exp_019 では 19 本を保存して、実際に異なる重みは 2〜4 種だった — AUDIT_028）。
+        # **更新境界で取れば、保存は約 1/10 になり、かつ「どの更新の重みか」まで特定できる。**
+        self.fine_updates = int(fine_updates)     # 陽性の直後に押さえる更新の回数
         self.coarse_k = int(coarse_k)             # 直後 2 回の評価点
-        self._fine_until = None                   # 細粒度保存の終了ステップ
-        self._fine_next_at = None                 # 次に細粒度保存するステップ
+        self._n_update = 0                        # 完了した PPO 更新の回数
+        self._n_update_started = False
+        self._fine_updates_left = 0
+        # （旧・歩を単位にした細粒度保存の状態は R51-3 で撤去した）
         self._coarse_left = 0                     # 残りの粗粒度保存回数
 
     def _evaluate(self):
@@ -312,8 +410,7 @@ class ValidationCallback(BaseCallback):
             self._save_snapshot("first_goal", rec["total_timesteps"],
                                 goal_rate=rec["goal_rate"])
             # **陽性の直後を細かい粒度でも押さえる**（896 歩の現象を括るため）
-            self._fine_until = rec["total_timesteps"] + self.fine_window
-            self._fine_next_at = rec["total_timesteps"] + self.fine_every
+            self._fine_updates_left = self.fine_updates   # R51-3: 次の N 回の更新境界で取る
             self._coarse_left = self.coarse_k
         elif self.save_on_goal_path is not None and self._coarse_left > 0:
             # 陽性の**直後 K 回の評価点**（「その後も届き続けるか」を見るため）
@@ -322,26 +419,39 @@ class ValidationCallback(BaseCallback):
                                 goal_rate=rec["goal_rate"])
         return rec
 
-    def _save_snapshot(self, tag: str, step: int, goal_rate: float = None) -> None:
-        """重みを 1 点退避して記録する（§9-19）。"""
+    def _save_snapshot(self, tag: str, step: int, goal_rate: float = None,
+                       n_update: int = None) -> None:
+        """重みを 1 点退避して記録する（§9-19）。
+
+        `n_update` は**完了した PPO 更新の回数**（R51-3。歩ではなく更新で追跡するため）。
+        """
         p = self.save_on_goal_path.with_name(
             f"{self.save_on_goal_path.stem}_{tag}_{step}.zip")
         p.parent.mkdir(parents=True, exist_ok=True)
         self.model.save(str(p))
         self.saved_goal_snapshots.append(
-            dict(total_timesteps=int(step), tag=tag, goal_rate=goal_rate, path=str(p)))
+            dict(total_timesteps=int(step), tag=tag, goal_rate=goal_rate, path=str(p),
+                 n_update=(None if n_update is None else int(n_update))))
         print(f"[validation] 🔴 §9-19 退避（{tag}）: {p}", flush=True)
 
+    def _on_rollout_start(self) -> None:
+        """PPO 更新の境界（R51-3）。
+
+        SB3 の順序は **collect_rollouts → on_rollout_end → train()** なので、
+        **次のロールアウトの開始時点の重みは「直前の更新を終えた重み」**である。
+        したがって**ここで取れば、更新 1 回ぶんの粒度で退避できる**。
+        **評価は走らせない**（評価は重いので、ここでは重みを取るだけ）。
+        """
+        if self._n_update_started:
+            self._n_update += 1          # 2 回目以降のロールアウト開始 = 更新が 1 回終わった
+        self._n_update_started = True
+        if (self.save_on_goal_path is not None and self._fine_updates_left > 0
+                and self._n_update > 0):
+            self._fine_updates_left -= 1
+            self._save_snapshot(f"after_goal_update{self._n_update}", self.num_timesteps,
+                                n_update=self._n_update)
+
     def _on_step(self) -> bool:
-        # 細粒度の退避（陽性の直後 fine_window 歩を fine_every 歩ごと）。
-        # **評価は走らせない**（評価は重いので、ここでは重みを取るだけ）。
-        if (self.save_on_goal_path is not None and self._fine_next_at is not None
-                and self.num_timesteps >= self._fine_next_at):
-            if self.num_timesteps <= self._fine_until:
-                self._save_snapshot("after_goal_fine", self.num_timesteps)
-                self._fine_next_at += self.fine_every
-            else:
-                self._fine_next_at = None       # 窓を出たので細粒度は終了
         if self.num_timesteps >= self._next_at:
             self._evaluate()
             while self._next_at <= self.num_timesteps:
@@ -380,6 +490,12 @@ def main(argv=None):
     p.add_argument("--env-version", choices=["v1", "v2"], default="v1",
                    help="学習環境の版。v2 = 規約終端（機体全体の内包）＋衝突リスポーン＋"
                         "エピソード上限 2000 歩（裁定 2026-08-14。既定 v1 は従来どおり）")
+    p.add_argument("--d0-schedule", type=str, default=None,
+                   help="距離カリキュラム（exp_020）。'400000:4,700000:6,1000000:9' の形で "
+                        "「その段の終わりの歩数:その段の D0 上限」を並べる。"
+                        "**渡さなければ既定 off ＝ カリキュラム導入前と同一の経路**")
+    p.add_argument("--fine-updates", type=int, default=4,
+                   help="§9-19 の退避: 陽性の直後に押さえる PPO 更新の回数（R51-3）")
     p.add_argument("--no-save-on-goal", action="store_true",
                    help="検証でゴール率が非ゼロになった時点の重み退避（§9-19）を止める")
     args = p.parse_args(argv)
@@ -437,12 +553,23 @@ def main(argv=None):
                                 gamma=args.gamma, maze_mode=args.maze_mode,
                                 save_on_goal_path=(None if args.no_save_on_goal
                                                    else Path(args.model_out)),
-                                eval_env_kwargs=EVAL_ENV_FLAGS[args.env_version])
+                                eval_env_kwargs=EVAL_ENV_FLAGS[args.env_version],
+                                fine_updates=args.fine_updates)
     ckpt_cb = CheckpointCallback(save_freq=max(400_000 // n_envs, 1),
                                  save_path=str(log_dir))
 
+    # 距離カリキュラム（exp_020）。**渡さなければ None ＝ コールバック自体を作らない**ので、
+    # **カリキュラム導入前と経路が完全に同一**になる（カード §2-3「不活性の bit 一致」）。
+    d0_schedule = parse_d0_schedule(args.d0_schedule)
+    callbacks = [ckpt_cb, stats_cb, val_cb]
+    if d0_schedule is not None:
+        callbacks.insert(0, CurriculumCallback(d0_schedule, log_dir))
+        print(f"[train] 距離カリキュラム = {d0_schedule}（最後の段以降は上限なし）", flush=True)
+    else:
+        print("[train] 距離カリキュラム = 無効（既定・exp_019 と同一経路）", flush=True)
+
     t0 = time.time()
-    model.learn(total_timesteps=total_steps, callback=[ckpt_cb, stats_cb, val_cb])
+    model.learn(total_timesteps=total_steps, callback=callbacks)
     elapsed = time.time() - t0
     print(f"[train] total_steps={total_steps} n_envs={n_envs} "
           f"elapsed={elapsed:.1f}s steps/s={total_steps / max(elapsed, 1e-9):.1f}")
@@ -458,6 +585,7 @@ def main(argv=None):
               "w", encoding="utf-8") as f:
         json.dump(dict(
             experiment=f"exp_012_cond{args.condition}", smoke=bool(args.smoke), total_steps=total_steps,
+            d0_schedule=d0_schedule, fine_updates=args.fine_updates,
             n_envs=n_envs, seed=args.seed, gamma=args.gamma, maze_mode=args.maze_mode,
             visit_bonus=args.visit_bonus, collision_penalty=args.collision_penalty,
             action_smooth_penalty=args.action_smooth_penalty,

@@ -383,6 +383,13 @@ class Maze6Env(gym.Env):
         self._prev_dist_raw = None
         self._visited = set()
         self._step_count = 0
+        # 🔴 R51 系の記録列（exp_020・記録のみ。**乱数を一切消費しない**）
+        self._d0_max = None            # カリキュラムの D₀ 上限（None = 無効 ＝ 既定）
+        self._path_len_m = 0.0         # 走行距離の総和 [m]（R51-2「歩あたりの進行距離」の分子）
+        self._prev_xy = None           # 直前の真位置（None = 次の差分を数えない ＝ リスポーン直後）
+        self._visit_steps = []         # 各区画の初訪問の歩（R51-2。割引後の訪問の取り分に要る）
+        self._cell_entries = 0         # 走行で区画境界を跨いだ回数（R51-2。再入場を含む）
+        self._min_d_since_respawn = -1  # 最後のリスポーン以降の min D（R51-1）
         # オドメトリ（自前センサの積分のみ。真の位置は使わない）
         self._odo_x = self._odo_y = self._odo_yaw = 0.0
 
@@ -390,13 +397,38 @@ class Maze6Env(gym.Env):
             gym.Env.reset(self, seed=seed)
 
     # ------------------------------------------------------------------
+    def set_d0_max(self, d0_max) -> None:
+        """カリキュラムの $D_0$ 上限を設定する（exp_020）。
+
+        **`None` で無効**（既定）。**無効のとき `_next_maze_seed()` のコード経路は
+        カリキュラム導入前と完全に同一**である（`experiments/exp_020_distance_curriculum/card.md`
+        §2-3「不活性の bit 一致」の前提）。
+        """
+        self._d0_max = None if d0_max is None else int(d0_max)
+
     def _next_maze_seed(self) -> int:
-        """学習用の迷路 seed（評価・検証に予約された帯は決定的に読み飛ばす）。"""
+        """学習用の迷路 seed（評価・検証に予約された帯は決定的に読み飛ばす）。
+
+        **カリキュラム（exp_020）**: `self._d0_max` が設定されているときは、
+        **開始点からゴールまでの区画距離 $D_0$ がその上限を超える面を読み飛ばす**。
+
+        🔴 **この分岐は `self.np_random` を一切消費しない**（`generate_maze` は seed から
+        決定的に作られ、`shortest_distances` は純粋な BFS である）。したがって
+        **上限が `None` のときはもちろん、棄却が起きたときも乱数の消費順序は変わらない。**
+        🔴 **棄却の判定に重い `_load_maze()`（XML 生成 ＋ MuJoCo モデル構築）は呼ばない。**
+        実測費用は 1 候補 0.6 ms（D0 <= 4 で平均 7.9 候補 ＝ 約 5 ms／エピソード）。
+        """
         while True:
             s = self.base_seed + self._episode_count
             self._episode_count += 1
-            if s not in _RESERVED_MAZE_SEEDS:
-                return s
+            if s in _RESERVED_MAZE_SEEDS:
+                continue
+            if self._d0_max is not None:
+                m = generate_maze(s, mode=self.maze_mode)
+                d0 = int(shortest_distances(m["v_walls"], m["h_walls"])[tuple(m["start"])])
+                if d0 > self._d0_max:
+                    continue
+            return s
 
     def _load_maze(self, maze_seed: int):
         m = generate_maze(maze_seed, mode=self.maze_mode)
@@ -941,6 +973,17 @@ class Maze6Env(gym.Env):
 
     def _make_info(self, cell, collision, goal, sim_time) -> dict:
         x, y, _ = self.sim.privileged_pose()
+        # 🔴 R51 系の記録（exp_020・**記録のみ。乱数を消費しない・報酬に一切入らない**）
+        # 走行距離: リスポーン直後は `_prev_xy = None` にしてあるので、
+        # **開始点への瞬間移動を走行距離に数えない**。
+        if self._prev_xy is not None:
+            self._path_len_m += math.hypot(x - self._prev_xy[0], y - self._prev_xy[1])
+        self._prev_xy = (x, y)
+        # 最後のリスポーン以降の min D（`_respawn_to_start()` が −1 に戻す）
+        _d_now = int(self._dist_map.get(cell, -1))
+        if _d_now >= 0:
+            self._min_d_since_respawn = (_d_now if self._min_d_since_respawn < 0
+                                         else min(self._min_d_since_respawn, _d_now))
         extra = {}
         if goal:
             # 🔴 規約判定の並記（裁定 R42-4）。**環境の判定（機体中心）でゴールとされた
@@ -973,6 +1016,11 @@ class Maze6Env(gym.Env):
             "sim_time": float(sim_time),
             # 自己位置推定の誤差（学習には使わない。評価・分析用）
             "odom_error_m": float(math.hypot(self._odo_x - x, self._odo_y - y)),
+            # 🔴 R51 系（exp_020・記録のみ）
+            "path_len_m": float(self._path_len_m),
+            "visit_steps": list(self._visit_steps),
+            "cell_entries": int(self._cell_entries),
+            "min_d_since_respawn": int(self._min_d_since_respawn),
         }
 
     # ------------------------------------------------------------------
@@ -992,6 +1040,12 @@ class Maze6Env(gym.Env):
             self.np_random.integers(0, 2 ** 31 - 1))
         self._respawn_count = 0
         self._center_in_goal_step = None
+        # R51 系の記録の初期化（記録のみ。乱数は引かない）
+        self._path_len_m = 0.0
+        self._prev_xy = None            # reset 直後の 1 歩目は差分を数えない
+        self._visit_steps = [0]         # 開始区画を 0 歩目の初訪問として数える
+        self._cell_entries = 1          # 開始区画への「入場」を 1 と数える
+        self._min_d_since_respawn = -1
         lateral_reset = float(self.np_random.uniform(-_LATERAL_PERTURB_M, _LATERAL_PERTURB_M))
         dh_reset = float(self.np_random.uniform(-_HEADING_PERTURB_DEG, _HEADING_PERTURB_DEG))
         if self.geodesic_potential:
@@ -1076,6 +1130,10 @@ class Maze6Env(gym.Env):
         dh = float(rng.uniform(-_HEADING_PERTURB_DEG, _HEADING_PERTURB_DEG))
         start = tuple(self.maze["start"])
         self._place_at_start(start, self._start_heading, lateral, dh)
+        # R51 系（記録のみ）: 瞬間移動を走行距離に数えないため基準を捨て、
+        # 「最後のリスポーン以降の min D」の窓を切り直す。
+        self._prev_xy = None
+        self._min_d_since_respawn = -1
         # 区画の状態を開始点へ戻す（c_prev は reset と同じく「直前の区画が無い」状態）
         self._cell = start
         self._prev_cell = None
@@ -1099,6 +1157,11 @@ class Maze6Env(gym.Env):
             # 同じ区画に留まっている間は c_prev を更新しない（課題の仕様どおり）。
             self._prev_cell = self._cell
             self._cell = cell
+            # 🔴 R51-2（exp_020・記録のみ）: **走行で区画境界を跨いだ回数**。
+            # **再入場を含む**（同じ区画へ戻ってきたら、もう 1 回と数える）。
+            # ⚠️ **リスポーンの瞬間移動は数えない**（`_respawn_to_start()` はここを通らない）。
+            # **走行の速さの代理量にするため、駆動による通過だけを数える**のが定義である。
+            self._cell_entries += 1
         center_in_goal = cell in GOAL_CELLS
         if self.goal_rule_containment:
             # 規約終端（v2）: **機体全体の内包**で成立。中心が区画内でなければ
@@ -1117,6 +1180,7 @@ class Maze6Env(gym.Env):
         if cell not in self._visited:
             self._visited.add(cell)
             visit_gain = self.visit_bonus
+            self._visit_steps.append(self._step_count)   # R51-2（記録のみ）
 
         # 🔴 衝突リスポーン（v2）: **整形を計算する前に**開始点へ戻す。
         # こうすると Φ(s') = Φ(start) = 0 になり、**稼いだ整形をポテンシャル自身が
