@@ -66,6 +66,11 @@ class ObsHistoryWrapper(gym.Wrapper):
         env: 元の環境（`mouse.maze6_env.Maze6Env` を想定）。
         lags: 遅れ［歩］の並び。**昇順・重複なし・すべて 1 以上**。
             空タプルは**使わない**（呼び出し側でラップしない）。
+        sham: **にせ履歴**（exp_022）。`True` のとき**遅れの位置にも現在の観測を入れる**。
+            **観測の次元も方策のパラメータ数も `sham=False` と完全に同じまま、
+            履歴の情報だけがゼロになる**ので、**「短期文脈が効かないのか、
+            入力次元が増えたことで最適化が難しくなったのか」を分離できる**。
+            **既定 `False` ＝ exp_021 と完全に同一の経路**。
     """
 
     def __init__(self, env, lags=DEFAULT_LAGS, sham=False):
