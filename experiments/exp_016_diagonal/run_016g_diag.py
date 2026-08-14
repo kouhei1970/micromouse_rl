@@ -127,23 +127,35 @@ def arc_spans(kinds, s):
 
 
 def arc_turn_deg(path, sp):
-    """円弧 1 本の旋回角 [deg]（弧長 ÷ 半径。半径は曲率から復元する）。"""
-    kap = abs(float(path.curvature[sp["i0"]]))
-    if kap < 1e-9:
-        return float("nan"), float("nan")
-    R = 1.0 / kap
-    # 標本は 1 点ぶん手前で切れているので、刻み 1 つぶんを足して弧長にする
-    ds = (sp["s1"] - sp["s0"]) / max(1, sp["i1"] - sp["i0"])
-    return math.degrees((sp["s1"] - sp["s0"] + ds) * kap), R
+    """曲がり角 1 つの旋回角 [deg] と、その中の最小の曲率半径 [m]。
+
+    ⚠️ **曲率から復元してはいけない。**016-G のクロソイド接続では
+    **区間の先頭の曲率が 0**（緩和曲線は κ=0 から始まる）なので、
+    円弧接続のときの「弧長 × 曲率」が使えない。
+    **方位の変化そのものから読む**（`path.heading` は連続化済み）。
+    """
+    i0, i1 = sp["i0"], sp["i1"]
+    h = np.asarray(path.heading)
+    # 標本は 1 点ぶん手前で切れているので、刻み 1 つぶんを外挿して足す
+    n = max(1, i1 - i0)
+    d_head = float(h[i1] - h[i0])
+    deg = abs(math.degrees(d_head * (n + 1) / n))
+    kap = float(np.max(np.abs(np.asarray(path.curvature)[i0:i1 + 1])))
+    return deg, (1.0 / kap if kap > 1e-9 else float("nan"))
 
 
 # ==========================================================================
 # 走行して記録する（**制御には触らない**）
 # ==========================================================================
 def drive_and_record(xml_path, params, nodes, dirs, v_diag, v_walls, h_walls,
-                     policy_cls, max_s=40.0):
-    """1 迷路 1 速度水準を走らせ、制御周期ごとの生の記録を返す。"""
-    path, kinds, idxs = build_diagonal_path(nodes, dirs, params.cell_size, R_ARC_M)
+                     policy_cls, max_s=40.0, builder=None):
+    """1 迷路 1 速度水準を走らせ、制御周期ごとの生の記録を返す。
+
+    `builder` に `clothoid_path.build_clothoid_path` を包んだものを渡すと
+    **016-G の経路**で測る（既定 None は現行の円弧接続）。
+    """
+    builder = builder or build_diagonal_path
+    path, kinds, idxs = builder(nodes, dirs, params.cell_size, R_ARC_M)
     sim = MouseSim(str(xml_path), params=params)
     start_cell = (nodes[0][0] // 2, nodes[0][1] // 2)
     heading = math.degrees(math.atan2(DELTA8[dirs[0]][1], DELTA8[dirs[0]][0]))
@@ -340,12 +352,19 @@ def main():
                     help="旋回安全率（016-cal の校正値 0.75 が既定）")
     ap.add_argument("--v-diag", type=float, default=0.45,
                     help="斜め・円弧に掛ける速度水準 [m/s]")
+    ap.add_argument("--L-c", dest="L_c", type=float, default=0.0,
+                    help="クロソイド 1 本の長さ [m]（016-G。**0 なら現行の円弧接続**）")
     ap.add_argument("--maze-dir", default="competition/mazes/design_v4")
     ap.add_argument("--out", default=None)
     args = ap.parse_args()
 
+    builder = None
+    if args.L_c > 0.0:
+        import run_016g_ladder
+        builder = run_016g_ladder.make_builder(args.L_c)
+    suffix = f"_lc{args.L_c*1000:g}mm" if args.L_c > 0.0 else ""
     out = Path(args.out or (REPO_ROOT / "outputs" / "exp_016_diagonal" / "016g"
-                            / f"diag_sf{args.safety:g}_v{args.v_diag:g}.json"))
+                            / f"diag_sf{args.safety:g}_v{args.v_diag:g}{suffix}.json"))
     out.parent.mkdir(parents=True, exist_ok=True)
 
     # 帯の安全弁（裁定 R40 条件 4）。**調整用迷路（seed 41000〜）専用**
@@ -360,7 +379,9 @@ def main():
     policy_cls = run_016f0_ladder.make_policy_class(
         k_acc_ff=1.0, ref_interp=True, safety=args.safety)
     print(f"旋回安全率 {args.safety:g}／速度水準 {args.v_diag:g} m/s"
-          f"／制御周期 {dt*1000:.1f} ms\n")
+          f"／制御周期 {dt*1000:.1f} ms"
+          f"／クロソイド長 {args.L_c*1000:g} mm"
+          f"{'（= 現行の円弧接続）' if args.L_c == 0 else '（016-G・45° のみ）'}\n")
 
     faces = []
     for f in sorted((REPO_ROOT / args.maze_dir).glob("maze_*.npz"),
@@ -418,7 +439,8 @@ def main():
     d1_rows, d2_rows = [], []
     for q in faces:
         r, collided, path, kinds = drive_and_record(
-            q["xml"], params, q["nodes"], q["dirs"], args.v_diag, q["v"], q["h"], policy_cls)
+            q["xml"], params, q["nodes"], q["dirs"], args.v_diag, q["v"], q["h"], policy_cls,
+            builder=builder)
         d1 = diag_d1(r, path, kinds, dt)
         d1["maze"], d1["collided"] = q["maze"], collided
         d1_rows.append(d1)
@@ -478,7 +500,7 @@ def main():
         print(f"  {tb:>6}{len(g):>5}{al:>12.2f}{en:>14.3f}{ex:>14.3f}"
               f"{np.median(ri):>14.3f}（{ri.min():.2f}〜{ri.max():.2f}）")
 
-    json.dump(dict(git_rev=git_rev(), safety=args.safety, v_diag=args.v_diag,
+    json.dump(dict(git_rev=git_rev(), safety=args.safety, v_diag=args.v_diag, L_c=args.L_c,
                    R_arc_m=R_ARC_M, control_dt=dt, maze_dir=args.maze_dir,
                    d1=d1_rows, d2=d2_rows, d3=d3_rows),
               open(out, "w", encoding="utf-8"), ensure_ascii=False, indent=2, default=float)
