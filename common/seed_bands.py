@@ -37,7 +37,9 @@ maze_7837 を 1 面スモークテストに使った**件の再発防止。即�
 | `maze6` | `eval` | 6000-6019 | `mouse/maze6_env._RESERVED_MAZE_SEEDS`・§9-7 | ❌ gate 専用 |
 | `maze6` | `validation` | 7000-7019 | 同上 | ❌ 日常判断・検証用 |
 | `maze6` | `free` | 上記以外（学習は 8000 以降） | — | ✅ |
-| `competition` | `pool` | 1000-40999 | 研究計画書 §9-7（eval プール [1000,20999]・validation プール [21000,40999]） | ❌ **プール全体が禁止**（採用 20 面だけではない） |
+| `competition` | `eval` | **manifest の採用 20 seed** | `competition/mazes/eval/manifest.json` の `mazes[].seed` | ❌ gate 専用（reason つきで許可） |
+| `competition` | `validation` | **manifest の採用 20 seed** | `competition/mazes/validation/manifest.json` | ❌ 日常判断・検証用 |
+| `competition` | `pool` | 1000-40999 の**非採用 seed** | 研究計画書 §9-7（候補プール全体） | ❌ **全 purpose で不許可**（「選ばれなかった」だけで同じ生成過程にある） |
 | `competition` | `free` | 上記以外 | — | ✅ |
 | `corridor` | `eval` / `validation` | 3000-3019 / 5000-5019 | `mouse/corridor_env._RESERVED_COURSE_SEEDS` | ❌ M1 の評価・検証帯 |
 | `corridor` | `free` | 上記以外 | — | ✅ |
@@ -61,6 +63,37 @@ from __future__ import annotations
 # ここに書く。§9-7 が改訂されたら**ここも直すこと**）。
 # 「学習への使用禁止の対象は採用 20 seed ではなく候補プール全体」（§9-7）。
 _COMPETITION_POOL = range(1000, 41000)
+
+# 競技帯の**採用 seed** は凍結 manifest から読む（**ここに列挙しない**。
+# 2026-08-14 の是正: プール全体を一律 'pool' にすると、**採用済みの評価帯が
+# purpose='gate' でも使えず、凍結帯の最終 1 回が実行できなかった**（学生A の実使用で発覚）。
+# 設計原則「帯の定義を複製せず正本から読む」の適用先を凍結 manifest まで広げる）。
+_COMPETITION_MANIFESTS = {
+    "eval": "competition/mazes/eval/manifest.json",
+    "validation": "competition/mazes/validation/manifest.json",
+}
+_COMPETITION_ADOPTED_CACHE = None
+
+
+def _competition_adopted():
+    """競技帯の採用 seed を凍結 manifest から読む（帯名 → seed の集合）。"""
+    global _COMPETITION_ADOPTED_CACHE
+    if _COMPETITION_ADOPTED_CACHE is None:
+        import json
+        from pathlib import Path
+        root = Path(__file__).resolve().parents[1]
+        out = {}
+        for band, rel in _COMPETITION_MANIFESTS.items():
+            path = root / rel
+            if not path.exists():
+                raise AssertionError(
+                    f"競技帯の manifest が無い: {path}。**帯の判定ができないので落とす**"
+                    "（黙って 'pool' 扱いにすると凍結帯が gate で使えなくなる）")
+            with open(path, encoding="utf-8") as f:
+                data = json.load(f)
+            out[band] = frozenset(int(m["seed"]) for m in data["mazes"])
+        _COMPETITION_ADOPTED_CACHE = out
+    return _COMPETITION_ADOPTED_CACHE
 
 
 def _m2_reserved():
@@ -140,7 +173,13 @@ def classify_seed(seed: int, namespace: str) -> str:
         if s in _M1_VALIDATION:
             return "validation"
         return "free"
-    # competition: 採用 20 面だけでなく**候補プール全体**が禁止（§9-7）
+    # competition: **採用 seed は manifest から**帯を決め、残りの候補プールは 'pool'。
+    # 'pool' は全 purpose で不許可（「選ばれなかった」だけで同じ生成過程にあるため。§9-7）。
+    adopted = _competition_adopted()
+    if s in adopted["eval"]:
+        return "eval"
+    if s in adopted["validation"]:
+        return "validation"
     return "pool" if s in _COMPETITION_POOL else "free"
 
 

@@ -51,7 +51,11 @@ def main() -> int:
              ("maze6", 8000, "free"), ("maze6", 8999, "free"),
              ("corridor", 3000, "eval"), ("corridor", 5019, "validation"),
              ("corridor", 8000, "free"),
-             ("competition", 7837, "pool"), ("competition", 1000, "pool"),
+             # 🔴 競技帯は**採用 seed を凍結 manifest から読む**（2026-08-14 是正）。
+             # 7837 は「候補プールの seed」ではなく**採用済みの評価帯の面**だった
+             # （R40 の逸脱で使われた面）。プール一律 'pool' だと gate でも使えなかった。
+             ("competition", 7837, "eval"),
+             ("competition", 1000, "pool"),      # 候補プールだが**非採用**（不合格の記録あり）
              ("competition", 40999, "pool"), ("competition", 41000, "free"),
              ("competition", 999, "free"),
              # 同じ 8000 が namespace で別の帯になることの明示的な検査
@@ -101,7 +105,27 @@ def main() -> int:
     # --- 追加: 競技の候補プール（採用 20 面でなくても禁止） ---
     ok, msg = _expect_raise(
         lambda: assert_seeds_allowed([7837], namespace="competition", purpose="train"),
-        "競技の候補プールの seed（R40 で実際に使われた 7837）を学習に指定")
+        "競技の評価帯の面（R40 で実際に使われた 7837）を学習に指定")
+    results.append(ok); lines.append(msg)
+
+    # --- 追加（2026-08-14 是正）: 採用済みの帯は gate で使え、非採用プールは全 purpose 不許可 ---
+    ok, msg = _expect_ok(
+        lambda: assert_seeds_allowed([7837], namespace="competition", purpose="gate",
+                                     reason="M5 gate の本番判定（凍結帯の最終 1 回）"),
+        "🔴 競技の**採用済み評価帯**を合言葉つきで gate に指定（是正の主目的）")
+    results.append(ok); lines.append(msg)
+    ok, msg = _expect_raise(
+        lambda: assert_seeds_allowed([1000], namespace="competition", purpose="gate",
+                                     reason="試しに使いたい"),
+        "🔴 候補プールの**非採用** seed を gate に指定（合言葉があっても通さない）")
+    results.append(ok); lines.append(msg)
+    ok, msg = _expect_ok(
+        lambda: assert_seeds_allowed([21003], namespace="competition", purpose="validate"),
+        "競技の**採用済み検証帯**を測定（validate）に指定")
+    results.append(ok); lines.append(msg)
+    ok, msg = _expect_raise(
+        lambda: assert_seeds_allowed([21003], namespace="competition", purpose="train"),
+        "競技の採用済み検証帯を学習に指定")
     results.append(ok); lines.append(msg)
 
     # --- 追加: 1 個でも混ざれば止まる（全部が凍結帯である必要はない） ---
