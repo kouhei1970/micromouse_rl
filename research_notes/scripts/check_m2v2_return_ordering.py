@@ -104,7 +104,8 @@ CRASH_PROGRESS_ALPHA = 0.5
 
 def returns_for_face(d0_cells: int, steps_per_cell: float, k: float,
                      hp2: float, dT_contain: float, forfeit: bool = False,
-                     alpha: float = CRASH_PROGRESS_ALPHA) -> dict:
+                     alpha: float = CRASH_PROGRESS_ALPHA,
+                     limit_steps: int = TIME_LIMIT_STEPS) -> dict:
     """1 面についての割引後総収益（4 つの挙動）。
 
     `forfeit=True` は**対処案 (a')**: 衝突罰を「稼いだ整形の没収」型
@@ -126,12 +127,14 @@ def returns_for_face(d0_cells: int, steps_per_cell: float, k: float,
     goal = (GAMMA ** Tg_pay * D0 - per_step * S(Tg_pay)
             + GAMMA ** (Tg_pay - 1) * GOAL_BONUS
             + visit_discounted(d0_cells, steps_per_cell))
-    # 探索して時間切れ: 6000 歩・全 36 区画を訪問・終端 Φ は 0 とみなす（保守側）
-    explore = (-per_step * S(TIME_LIMIT_STEPS)
+    # 探索して時間切れ: 上限まで走り・全 36 区画を訪問・終端 Φ は 0 とみなす（保守側）。
+    # ⚠️ 上限 2000 歩でも全 36 区画は幾何的に可能（36 × 18.75 = 675 歩 < 2000）。
+    # 変わるのは時間罰の等比和 S(limit) だけである。
+    explore = (-per_step * S(limit_steps)
                + visit_discounted(N_CELLS_TOTAL, steps_per_cell))
     # 滞留: 動かないので訪問も進捗も無い。**罰は動いたときだけ掛かる**ので c は乗らない
     #（2026-08-11 の誤りの再発防止: 滞留に走行時の滑らかさ罰を適用しない）
-    stay = -TIME_PENALTY * S(TIME_LIMIT_STEPS)
+    stay = -TIME_PENALTY * S(limit_steps)
     # 衝突: 最短経路の α 倍まで進んで当たる（終端の Φ は稼いだ進捗 α·D0）
     Tc = Tg * alpha
     phi_T = D0 * alpha
@@ -374,6 +377,30 @@ def respawn_section(spc: float, dT: float) -> None:
     γΦ(start) − Φ(s_衝突) = **−Φ_c** が 1 度だけ入り、**稼いだ整形をポテンシャル自身が
     取り返す**。しかも**走行中の 1 歩ごとの信号（γΦ(s') − Φ(s)）は一切変わらない**。
     """
+    print("\n" + "=" * 92)
+    print("§5-ter エピソード上限の裁定（2000 歩）と、その感度")
+    print("=" * 92)
+    print("  裁定（2026-08-14）: **v2 のエピソード上限 = 2000 歩**"
+          "（(c) 導入でゴール以外は必ず上限まで走るため、多様性が上限に直結する）")
+    print(f"{'上限[歩]':>10}{'S(上限)':>10}{'探索':>9}{'滞留':>9}"
+          f"{'1 本の迷路数':>14}{'順序が崩れる面':>16}")
+    for lim in (1000, 2000, 6000):
+        r4 = returns_for_face(4, spc, 0.0, MEAN_HP2, dT, limit_steps=lim)
+        n_bad = 0
+        for seed in VALID_SEEDS:
+            m = generate_maze(seed, mode="loop")
+            d0 = int(shortest_distances(m["v_walls"], m["h_walls"])[tuple(m["start"])])
+            if not ordering_ok(returns_for_face(d0, spc, 0.0, MEAN_HP2, dT,
+                                                limit_steps=lim)):
+                n_bad += 1
+        print(f"{lim:>10}{S(lim):>10.2f}{r4['explore']:>9.3f}{r4['stay']:>9.3f}"
+              f"{2_000_000 // lim:>14}{n_bad:>16}")
+    print("\n  ⇒ **時間罰の等比和 S は 1000〜6000 歩でほとんど変わらない**"
+          "（γ の実効地平 200 歩を超えると飽和するため）。")
+    print("  ⇒ **総収益も順序も上限にほぼ不感**であり、**2000 は崖の縁ではない**。")
+    print("  ⇒ **上限が効くのは総収益ではなく「1 本で触れる迷路の数」**である"
+          "（2000 歩なら 1,000 面/本）。")
+
     print("\n" + "=" * 92)
     print("§8 対処案 (c): 衝突リスポーン形（−1.0 を払って開始点へ戻り、継続）")
     print("=" * 92)
