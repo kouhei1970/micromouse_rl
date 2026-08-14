@@ -36,6 +36,7 @@ maze_7837 を 1 面スモークテストに使った**件の再発防止。即�
 |---|---|---|---|---|
 | `maze6` | `eval` | 6000-6019 | `mouse/maze6_env._RESERVED_MAZE_SEEDS`・§9-7 | ❌ gate 専用 |
 | `maze6` | `validation` | 7000-7019 | 同上 | ❌ 日常判断・検証用 |
+| `maze6` | `diagnostic` | 7100-7299 | 同上・§9-7（2026-08-14 追加） | ❌ 学習・調整に使用禁止（`purpose='diagnose'` でのみ可） |
 | `maze6` | `free` | 上記以外（学習は 8000 以降） | — | ✅ |
 | `competition` | `eval` | **manifest の採用 20 seed** | `competition/mazes/eval/manifest.json` の `mazes[].seed` | ❌ gate 専用（reason つきで許可） |
 | `competition` | `validation` | **manifest の採用 20 seed** | `competition/mazes/validation/manifest.json` | ❌ 日常判断・検証用 |
@@ -112,6 +113,9 @@ def _m1_reserved():
 # `_check_consistency_with_sources()` が実装の正本と突き合わせる。
 _M2_EVAL = range(6000, 6020)
 _M2_VALIDATION = range(7000, 7020)
+#: 診断用（2026-08-14 追加・研究計画書 §9-7）。D0 別の層別測定に使う 200 迷路。
+#: **学習・調整には使用禁止**（purpose='train' では 'free' しか許さないので構成上弾かれる）。
+_M2_DIAGNOSTIC = range(7100, 7300)
 _M1_EVAL = range(3000, 3020)
 _M1_VALIDATION = range(5000, 5020)
 
@@ -123,6 +127,7 @@ NAMESPACES = ("maze6", "competition", "corridor")
 _ALLOWED_BY_PURPOSE = {
     "train": ("free",),
     "validate": ("free", "validation"),
+    "diagnose": ("free", "diagnostic"),
     "gate": ("free", "validation", "eval"),
 }
 
@@ -138,7 +143,7 @@ def _check_consistency_with_sources() -> None:
     （`CLAUDE.md`「是正が届かない経路を作らない」）を防ぐための自己検査である。
     """
     m2 = set(_m2_reserved())
-    mine = set(_M2_EVAL) | set(_M2_VALIDATION)
+    mine = set(_M2_EVAL) | set(_M2_VALIDATION) | set(_M2_DIAGNOSTIC)
     if m2 != mine:
         raise AssertionError(
             "common/seed_bands.py の M2 の帯が mouse/maze6_env._RESERVED_MAZE_SEEDS と "
@@ -166,6 +171,8 @@ def classify_seed(seed: int, namespace: str) -> str:
             return "eval"
         if s in _M2_VALIDATION:
             return "validation"
+        if s in _M2_DIAGNOSTIC:
+            return "diagnostic"
         return "free"
     if namespace == "corridor":
         if s in _M1_EVAL:

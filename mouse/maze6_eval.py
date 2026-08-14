@@ -203,7 +203,7 @@ def _mean(xs):
 def evaluate_maze6(policy_fn, maze_dir=EVAL_MAZE_DIR, n_trials=DEFAULT_N_TRIALS,
                    seed=0, gamma=0.995, maze_mode="loop",
                    keep_traces: bool = True, model_sha256: str = "unknown",
-                   env_kwargs: dict = None) -> dict:
+                   env_kwargs: dict = None, env_wrapper=None) -> dict:
     """M2-0 の評価を実行する。
 
     Args:
@@ -211,6 +211,10 @@ def evaluate_maze6(policy_fn, maze_dir=EVAL_MAZE_DIR, n_trials=DEFAULT_N_TRIALS,
             `lambda o: model.predict(o, deterministic=True)[0]`。
         maze_dir: 迷路 npz+xml のディレクトリ（既定は評価帯 6000-6019）。
         n_trials: 迷路あたりの試行数（gate は 20 面 ×5 = 100 試行）。
+        env_wrapper: 構築した `Maze6Env` を包む callable（既定 None = **従来と完全に同じ**）。
+            exp_021 の観測履歴ラッパ（`mouse.obs_history.ObsHistoryWrapper`）を
+            学習側と同一の形で評価にも掛けるための口である。**`policy_fn` の署名は
+            変えない**（履歴はラッパ側が持つので方策は無状態のままでよい）。
         env_kwargs: `Maze6Env` へ追加で渡す引数（既定 None = **従来と完全に同じ**）。
             **環境 v2 の評価は `goal_rule_containment=True` だけを渡す**（裁定 2026-08-14）:
             - **リスポーンは渡さない。**立て直しは**学習の道具**であって競技の規則ではなく、
@@ -235,6 +239,10 @@ def evaluate_maze6(policy_fn, maze_dir=EVAL_MAZE_DIR, n_trials=DEFAULT_N_TRIALS,
         env = Maze6Env(maze_dir=maze_dir, maze_seeds=[ms], max_cache=2,
                        gamma=gamma, mode="fixed", maze_mode=maze_mode,
                        **(env_kwargs or {}))
+        # exp_021: 観測ラッパ（既定 None = **従来と 1 bit も変わらない**）。
+        # 方策の入出力契約は変えない（policy_fn は無状態のまま obs -> action）。
+        if env_wrapper is not None:
+            env = env_wrapper(env)
         trials = [_run_one_trial(env, policy_fn, _trial_seed(seed, ms, t),
                                  keep_trace=keep_traces)
                   for t in range(n_trials)]

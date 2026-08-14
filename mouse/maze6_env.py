@@ -112,8 +112,14 @@ _COLLISION_PENALTY = -1.0
 _VISIT_BONUS = 0.02          # 未訪問区画への初回進入（1 区画 1 回のみ）
 _TIME_LIMIT_STEPS = 6000     # 60 秒（単走。競技の持ち時間 420 秒とは別物）
 
-# 予約 seed（研究計画書 §9-7 の三分割）。学習は 8000 以降を使う。
-_RESERVED_MAZE_SEEDS = frozenset(range(6000, 6020)) | frozenset(range(7000, 7020))
+# 予約 seed（研究計画書 §9-7）。学習は 8000 以降を使う。
+#   6000-6019 … 最終評価用（gate 専用）
+#   7000-7019 … 検証用（日常判断）
+#   7100-7299 … 診断用（2026-08-14 追加・exp_021 起票時の教授裁定）。
+#                検証用 20 迷路は開始距離 D0<=5 が 3 迷路しかなく測定が個体差に縮退するため、
+#                D0 別の層別測定に使う 200 迷路。**学習・調整には使用禁止**
+_RESERVED_MAZE_SEEDS = (frozenset(range(6000, 6020)) | frozenset(range(7000, 7020))
+                        | frozenset(range(7100, 7300)))
 
 _LATERAL_PERTURB_M = 0.02
 _HEADING_PERTURB_DEG = 10.0

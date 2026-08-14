@@ -70,6 +70,7 @@ from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv  # noqa:
 
 from common.seed_bands import assert_seeds_allowed, describe_seeds  # noqa: E402
 from mouse.maze6_env import Maze6Env  # noqa: E402
+from mouse.obs_history import ObsHistoryWrapper, parse_lags  # noqa: E402
 from mouse.maze6_eval import VALIDATION_MAZE_DIR, evaluate_maze6  # noqa: E402
 from mouse.params import RobotParams  # noqa: E402
 
@@ -137,6 +138,11 @@ def make_env(rank: int, gamma: float, log_dir: Path, args):
             # 環境の版（v2 は 3 つを同時に切り替える。既定 v1 では何も渡さないのと同じ）
             **ENV_VERSION_FLAGS[args.env_version],
         )
+        # exp_021: 観測履歴の連結。**渡さなければラップしない**ので、
+        # 履歴なしの経路は exp_019・exp_020 と完全に同一である（カード §2-3）。
+        lags = parse_lags(getattr(args, "obs_history", None))
+        if lags:
+            env = ObsHistoryWrapper(env, lags)
         return Monitor(env, filename=str(log_dir / f"env_{rank}"))
     return _init
 
@@ -333,8 +339,11 @@ class ValidationCallback(BaseCallback):
     def __init__(self, eval_every_steps: int, log_dir: Path, gamma: float,
                  maze_mode: str, n_trials: int = 1, save_on_goal_path: Path = None,
                  fine_updates: int = 4, coarse_k: int = 2,
-                 eval_env_kwargs: dict = None):
+                 eval_env_kwargs: dict = None, env_wrapper=None):
         super().__init__()
+        # exp_021: 学習環境に掛けたのと同じ観測ラッパを評価にも掛ける
+        # （**既定 None = 従来どおり**。学習と評価で観測の形が食い違う事故を防ぐ）
+        self.env_wrapper = env_wrapper
         # 評価環境の版（既定 None = 従来どおり）。上の EVAL_ENV_FLAGS を参照
         self.eval_env_kwargs = dict(eval_env_kwargs or {})
         self.eval_every = int(eval_every_steps)
@@ -378,7 +387,8 @@ class ValidationCallback(BaseCallback):
             lambda o: self.model.predict(o, deterministic=True)[0],
             maze_dir=VALIDATION_MAZE_DIR, n_trials=self.n_trials, seed=0,
             gamma=self.gamma, maze_mode=self.maze_mode,
-            env_kwargs=(self.eval_env_kwargs or None))
+            env_kwargs=(self.eval_env_kwargs or None),
+            env_wrapper=self.env_wrapper)
         rec = dict(total_timesteps=int(self.num_timesteps),
                    goal_rate=s["goal_rate"],
                    # 🔴 どちらの尺で測ったかを記録から復元できるようにする。
@@ -494,6 +504,10 @@ def main(argv=None):
                    help="距離カリキュラム（exp_020）。'400000:4,700000:6,1000000:9' の形で "
                         "「その段の終わりの歩数:その段の D0 上限」を並べる。"
                         "**渡さなければ既定 off ＝ カリキュラム導入前と同一の経路**")
+    p.add_argument("--obs-history", type=str, default=None,
+                   help="観測履歴の連結（exp_021）。'1,2,4,8,16,32,64,128' の形で"
+                        "遅れ［歩］を並べる。制御周期 10 ms なので 128 歩 = 1.28 秒。"
+                        "**渡さなければ既定 off ＝ 履歴導入前と同一の経路**")
     p.add_argument("--fine-updates", type=int, default=4,
                    help="§9-19 の退避: 陽性の直後に押さえる PPO 更新の回数（R51-3）")
     p.add_argument("--no-save-on-goal", action="store_true",
@@ -507,13 +521,27 @@ def main(argv=None):
 
     env_fns = [make_env(i, args.gamma, log_dir, args) for i in range(n_envs)]
     vec_env = DummyVecEnv(env_fns) if n_envs == 1 else SubprocVecEnv(env_fns)
+    # 🔴 内訳は **1 時点ぶんの観測（17 要素）** の説明である。exp_021 の観測履歴を
+    # 有効にすると、この内訳が (1 + 遅れの数) 回くり返されたベクトルになる（下の行で印字）。
     print(f"[train] 観測空間 = {vec_env.observation_space}"
-          f"（距離4 + 差分4 + ジャイロ1 + 加速度2 + 車輪2 + 前回行動2 + ゴール相対2）")
+          f"（1 時点の内訳: 距離4 + 差分4 + ジャイロ1 + 加速度2 + 車輪2 + 前回行動2 + ゴール相対2 = 17）")
     print(f"[train] 迷路モード = {args.maze_mode} / 訪問報酬 = {args.visit_bonus} "
           f"/ 衝突罰 = {args.collision_penalty}")
     print(f"[train] 行動の高周波成分への罰 k = {args.action_highpass_penalty}"
           f"（α = {args.action_highpass_alpha}）")
     print(f"[train] 並列環境数 = {n_envs}")
+    # exp_021: 観測履歴の連結。**評価にも同じラッパを掛ける**（学習と評価で観測の形が
+    # 食い違う事故を防ぐ。exp_019 の「評価だけ v1 の尺だった」欠陥と同じ型を封じる）。
+    _obs_lags = parse_lags(args.obs_history)
+    _obs_wrapper = (lambda e: ObsHistoryWrapper(e, _obs_lags)) if _obs_lags else None
+    if _obs_lags:
+        _n_out = int(vec_env.observation_space.shape[0])
+        _n_base = _n_out // (1 + len(_obs_lags))       # ラッパの定義より割り切れる
+        print(f"[train] 観測履歴の遅れ = {_obs_lags}"
+              f"（観測 {_n_base} → {_n_out} 次元・"
+              f"窓 = {max(_obs_lags)} 歩 = {max(_obs_lags) * 0.01:.2f} 秒）", flush=True)
+    else:
+        print("[train] 観測履歴 = 無効（既定・exp_019 と同一経路）", flush=True)
     # 🔴 帯の明示と安全弁（裁定 R40 条件 4・R11 項目 7）。学習に使う maze seed は
     # TRAIN_BASE_SEED 以降で、環境側が予約帯を決定的に読み飛ばす。**ここでは起点が
     # 凍結帯に入っていないことを明示的に確かめる**（道具の側の歯止め）。
@@ -554,7 +582,8 @@ def main(argv=None):
                                 save_on_goal_path=(None if args.no_save_on_goal
                                                    else Path(args.model_out)),
                                 eval_env_kwargs=EVAL_ENV_FLAGS[args.env_version],
-                                fine_updates=args.fine_updates)
+                                fine_updates=args.fine_updates,
+                                env_wrapper=_obs_wrapper)
     ckpt_cb = CheckpointCallback(save_freq=max(400_000 // n_envs, 1),
                                  save_path=str(log_dir))
 
