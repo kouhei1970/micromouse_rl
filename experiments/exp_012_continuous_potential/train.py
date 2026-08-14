@@ -51,6 +51,7 @@ M1（廊下）は Φ が連続だったため進捗報酬が 100% のステッ�
 import argparse
 import json
 import os
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -92,6 +93,16 @@ CONDITION_FLAGS = {
     "Cp": dict(geodesic_potential=True, geodesic_rho_scale=True),
 }
 
+# 学習環境の版（裁定 2026-08-14。`experiments/env_v2_design.md` が正）。
+#   v1 … 従来（中心方式のゴール判定・衝突で終了・上限 6000 歩）
+#   v2 … **規約終端（機体全体の内包）＋衝突リスポーン＋上限 2000 歩**
+# **報酬の項と係数は両版で同一**（報酬契約は凍結。変えているのは環境の側だけ）。
+ENV_VERSION_FLAGS = {
+    "v1": {},
+    "v2": dict(goal_rule_containment=True, collision_respawn=True,
+               episode_limit_steps=2000),
+}
+
 
 def make_env(rank: int, gamma: float, log_dir: Path, args):
     def _init():
@@ -107,6 +118,8 @@ def make_env(rank: int, gamma: float, log_dir: Path, args):
             action_highpass_alpha=args.action_highpass_alpha,
             # exp_012: exp_010 との差は「Φ の実現方法」1 点のみ
             **CONDITION_FLAGS[args.condition],
+            # 環境の版（v2 は 3 つを同時に切り替える。既定 v1 では何も渡さないのと同じ）
+            **ENV_VERSION_FLAGS[args.env_version],
         )
         return Monitor(env, filename=str(log_dir / f"env_{rank}"))
     return _init
@@ -339,6 +352,9 @@ def main(argv=None):
     p.add_argument("--condition", choices=["E", "C", "Cp"], default="E",
                    help="Φ の実現方法。E=明示式（既定・条件 E）／C=配置空間の測地距離場／"
                         "Cp=C を面ごとの定数 ρ 倍したもの（条件 C'）")
+    p.add_argument("--env-version", choices=["v1", "v2"], default="v1",
+                   help="学習環境の版。v2 = 規約終端（機体全体の内包）＋衝突リスポーン＋"
+                        "エピソード上限 2000 歩（裁定 2026-08-14。既定 v1 は従来どおり）")
     p.add_argument("--no-save-on-goal", action="store_true",
                    help="検証でゴール率が非ゼロになった時点の重み退避（§9-19）を止める")
     args = p.parse_args(argv)
@@ -365,6 +381,15 @@ def main(argv=None):
     assert_seeds_allowed(_train_seeds, namespace="maze6", purpose="train")
     print(f"[train] 条件 = {args.condition}"
           f"（Φ: {CONDITION_FLAGS[args.condition]}）")
+    print(f"[train] 環境の版 = {args.env_version}"
+          f"（{ENV_VERSION_FLAGS[args.env_version] or '従来どおり'}）")
+    # 版の同一性を記録で担保する（exp_019 の条件。申告ではなく記録）
+    try:
+        _git_rev = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True,
+                                  text=True, cwd=REPO_ROOT).stdout.strip()
+    except Exception:  # noqa: BLE001
+        _git_rev = "unknown"
+    print(f"[train] 投入版 git rev = {_git_rev}")
 
     if args.init_model:
         model = PPO.load(args.init_model, env=vec_env, seed=args.seed, verbose=1)
@@ -411,6 +436,9 @@ def main(argv=None):
             action_highpass_alpha=args.action_highpass_alpha,
             init_model=args.init_model, train_base_seed=TRAIN_BASE_SEED,
             condition=args.condition, condition_flags=CONDITION_FLAGS[args.condition],
+            env_version=args.env_version,
+            env_version_flags=ENV_VERSION_FLAGS[args.env_version],
+            git_rev=_git_rev,
             goal_snapshots=val_cb.saved_goal_snapshots,
             elapsed_s=elapsed, steps_per_sec=total_steps / max(elapsed, 1e-9),
             validation_history=val_cb.history, **stats_cb.summary()),
