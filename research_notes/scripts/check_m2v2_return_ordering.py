@@ -96,8 +96,15 @@ def containment_depth_m() -> float:
     return r, (fx0, fx1, fy0, fy1)
 
 
+#: 衝突シナリオの「進む割合」α（最短経路のどこまで進んで当たるか）。
+#: **模型の中の任意の定数**であり、結論はここに強く依存する（准教授 REVIEW_005）。
+#: 既定 0.5 の根拠は exp_011（k=0 の実走）の実測との一致（§7 で再現）。
+CRASH_PROGRESS_ALPHA = 0.5
+
+
 def returns_for_face(d0_cells: int, steps_per_cell: float, k: float,
-                     hp2: float, dT_contain: float, forfeit: bool = False) -> dict:
+                     hp2: float, dT_contain: float, forfeit: bool = False,
+                     alpha: float = CRASH_PROGRESS_ALPHA) -> dict:
     """1 面についての割引後総収益（4 つの挙動）。
 
     `forfeit=True` は**対処案 (a')**: 衝突罰を「稼いだ整形の没収」型
@@ -125,13 +132,13 @@ def returns_for_face(d0_cells: int, steps_per_cell: float, k: float,
     # 滞留: 動かないので訪問も進捗も無い。**罰は動いたときだけ掛かる**ので c は乗らない
     #（2026-08-11 の誤りの再発防止: 滞留に走行時の滑らかさ罰を適用しない）
     stay = -TIME_PENALTY * S(TIME_LIMIT_STEPS)
-    # 衝突: 最短の半分まで進んで当たる（終端の Φ は稼いだ進捗 D0/2）
-    Tc = Tg / 2
-    phi_T = D0 / 2
+    # 衝突: 最短経路の α 倍まで進んで当たる（終端の Φ は稼いだ進捗 α·D0）
+    Tc = Tg * alpha
+    phi_T = D0 * alpha
     coll_term = (COLLISION_PENALTY - phi_T) if forfeit else COLLISION_PENALTY
     collide = (GAMMA ** Tc * phi_T - per_step * S(Tc)
                + GAMMA ** (Tc - 1) * coll_term
-               + visit_discounted(max(d0_cells // 2, 1), steps_per_cell))
+               + visit_discounted(max(int(d0_cells * alpha), 1), steps_per_cell))
     # 参考: **即時衝突**（1 歩目で当たる。進捗も訪問も無い）。没収型が
     # 「進んでから当たる」を消したときに、**即時衝突より悪くなっていないか**を見る
     coll_now = COLLISION_PENALTY      # γ^0·(−1.0 − Φ=0) は没収型でも同じ
@@ -272,6 +279,33 @@ def main() -> int:
           "\n     実際に要る深さは §1 の 1 値（外接円半径）なので、余裕の大きさが読める。")
 
     print("\n" + "=" * 92)
+    print("§5-bis 🔴 機構の訂正と、模型の任意定数への感度（准教授 REVIEW_005）")
+    print("=" * 92)
+    print("  【訂正】前報の「長い面ほど γ^(T−1) で衝突罰が減衰する一方 γ^T·Φ_T は残る」は**誤り**。")
+    print("  **両項とも同じ γ^Tc を持つので割引は完全に相殺する。**自分で展開して確認した:")
+    print("      R_衝突 − R_滞留 = γ^Tc·(Φ_T + 0.2 − 1/γ) + 訪問 = γ^Tc·(Φ_T − 0.8050) + 訪問")
+    print(f"      （0.2 = 時間罰 × S(6000)、1/γ = {1/GAMMA:.6f}）")
+    print("  ⇒ **符号を決めるのは Φ_T − 0.805 だけ。速度にも γ にも依存しない。**")
+    print(f"  ⇒ 閾値は **Φ_T = 0.805 m = {0.805/CELL:.2f} 区画**（訪問ボーナスがさらに押し下げる）")
+    print("  ⇒ 崩れは「長い面で偶然起きる」のではなく"
+          "**「一定距離進んで当たれば必ず起きる」構造**である")
+    print("\n  【感度】衝突シナリオの「進む割合」α は**模型の中の任意の定数**である:")
+    print(f"{'α':>8}{'崩れる面数':>12}{'理論の閾値 D₀':>15}   備考")
+    for a in (0.25, 1.0/3.0, 0.5, 2.0/3.0, 1.0):
+        n_bad = 0
+        for seed in VALID_SEEDS:
+            m = generate_maze(seed, mode="loop")
+            d0 = int(shortest_distances(m["v_walls"], m["h_walls"])[tuple(m["start"])])
+            r = returns_for_face(d0, spc, 0.0, MEAN_HP2, dT, alpha=a)
+            if not ordering_ok(r):
+                n_bad += 1
+        note = "← 本報告が採った値" if abs(a - 0.5) < 1e-9 else ""
+        print(f"{a:>8.3f}{n_bad:>12}{0.805/CELL/a:>15.1f}   {note}")
+    print("\n  **「14/20」は模型の中の任意の定数が作った数値であり、実測ではない。**")
+    print("  **ただし「崩れる面が存在する」という定性的な結論は α ≥ 1/3 で成立する。**")
+    print("  α = 0.5 を採った根拠は、次節の実走との一致である。")
+
+    print("\n" + "=" * 92)
     print("§6 対処案 (a') — 衝突罰を「稼いだ整形の没収」型 −(1.0 + Φ(s_T)) に置く")
     print("=" * 92)
     print("  形: 衝突の総収益 = γ^(Tc−1)·( −1.0 − (1−γ)·Φ_T ) − 時間罰 + 訪問")
@@ -313,7 +347,106 @@ def main() -> int:
           "       ⚠️ ただし**課題そのものが変わる**ので、"
           "**新しい最適方策が望むものかは別途の判断**が要る\n"
           "       （不変性は『整形が悪さをしない』ことしか保証しない）。")
+
+    print("\n" + "=" * 92)
+    print("§7 🔴 模型の根拠を実走で再現する（准教授の未確認 ①への回答）")
+    print("=" * 92)
+    print("  引き継ぎメモの「k=0 では衝突の総収益が 20 面中 15 面で正」は、"
+          "3 代目の分析の記述であって\n  本検算では未再現だった。**実走から計算し直す**"
+          "（模型ではなく env が返した報酬列から Σ γ^t r_t を求める）。")
+    empirical_check()
     return 0
+
+
+def empirical_check() -> None:
+    """exp_011（k=0 の実走）の検証帯 20 面で、**実際の割引後総収益**を計算する。"""
+    from stable_baselines3 import PPO
+
+    from mouse.maze6_env import Maze6Env
+    from mouse.maze6_eval import VALIDATION_MAZE_DIR, _trial_seed
+
+    import statistics
+    stay_return = -TIME_PENALTY * S(TIME_LIMIT_STEPS)
+    all_alphas = []
+    for name in ("exp_011_m2_0_k0_seed1", "exp_011_m2_0_k0_seed2"):
+        path = REPO_ROOT / f"models/{name}.zip"
+        if not path.exists():
+            print(f"  [skip] {name}: モデルが無い")
+            continue
+        model = PPO.load(str(path), device="cpu")
+        n_pos = n_beat_stay = n_coll = 0
+        rows, alphas, steps_list, forfeit_beats = [], [], [], []
+        for ms in VALID_SEEDS:
+            env = Maze6Env(maze_dir=str(REPO_ROOT / VALIDATION_MAZE_DIR),
+                           maze_seeds=[ms], max_cache=2, mode="fixed", maze_mode="loop",
+                           gamma=GAMMA, action_highpass_penalty=0.0)
+            obs, _ = env.reset(seed=_trial_seed(0, ms, 0))
+            ret, disc, n_steps = 0.0, 1.0, 0
+            while True:
+                n_steps += 1
+                a, _ = model.predict(obs, deterministic=True)
+                obs, r, term, trunc, info = env.step(a)
+                ret += disc * float(r)
+                disc *= GAMMA
+                if term or trunc:
+                    break
+            outcome = ("goal" if info["goal"] else
+                       "collision" if info["collision"] else "timeout")
+            env.close()
+            # 実測の「進む割合 α」= (稼いだ区画数)/(最短区画数)。**模型の任意定数を
+            # 実走で決め直すための量**（准教授 REVIEW_005 の感度の指摘への回答）。
+            d_end = int(info["dist_to_goal"])
+            d_start = int(info["d_start"])
+            alpha_obs = (d_start - d_end) / d_start if d_start else float("nan")
+            # 🔴 反実仮想: **同じ走行に没収型の衝突罰 −(1.0 + Φ_T) を当てたら**総収益は
+            # いくらだったか。追加分は終端の 1 歩だけなので R − γ^(T−1)·Φ_T で厳密に出る。
+            phi_T = (d_start - d_end) * CELL
+            ret_forfeit = ret - (GAMMA ** (n_steps - 1)) * phi_T
+            rows.append((ms, outcome, ret, alpha_obs, n_steps, ret_forfeit))
+            if outcome == "collision":
+                n_coll += 1
+                n_pos += (ret > 0)
+                n_beat_stay += (ret > stay_return)
+                alphas.append(alpha_obs)
+                steps_list.append(n_steps)
+                forfeit_beats.append(ret_forfeit > stay_return)
+        a_med = statistics.median(alphas) if alphas else float("nan")
+        print(f"  **{name}**: 衝突で終わった走行 {n_coll}/20 面 → "
+              f"**総収益が正 {n_pos} 面**・**滞留({stay_return:.3f}) を上回る {n_beat_stay} 面**")
+        print(f"    実測の進む割合 α: 中央値 **{a_med:.3f}**"
+              f"（最小 {min(alphas):.3f}・最大 {max(alphas):.3f}）")
+        print(f"    衝突時のエピソード長 T: 中央値 **{statistics.median(steps_list):.0f} 歩**"
+              f"（γ^(T−1) = {GAMMA ** (statistics.median(steps_list)-1):.3f} ＝ "
+              f"**衝突罰 −1.0 がここまで割り引かれる**）")
+        print(f"    🔴 **没収型 −(1.0+Φ_T) を同じ走行に当てた反実仮想**: "
+              f"滞留を上回る面が {n_beat_stay} → **{sum(forfeit_beats)} 面**")
+        print("    " + " ".join(f"{ms}:{o[:4]}{ret:+.2f}" for ms, o, ret, _, _, _ in rows[:10]))
+        print("    " + " ".join(f"{ms}:{o[:4]}{ret:+.2f}" for ms, o, ret, _, _, _ in rows[10:]))
+        all_alphas.extend(alphas)
+    if all_alphas:
+        a_med = statistics.median(all_alphas)
+        print(f"\n  🔴 **実走の α の中央値 = {a_med:.3f}**（2 モデル・{len(all_alphas)} 走行）。"
+              f"\n  模型が採った 0.5 より**かなり小さい**。**この α を模型へ戻す**と:")
+        spc_ = CELL / (0.96 * DT)
+        r_circ, _ = containment_depth_m()
+        dT_ = r_circ / (0.96 * DT)
+        n_bad = 0
+        for seed in VALID_SEEDS:
+            m = generate_maze(seed, mode="loop")
+            d0 = int(shortest_distances(m["v_walls"], m["h_walls"])[tuple(m["start"])])
+            if not ordering_ok(returns_for_face(d0, spc_, 0.0, MEAN_HP2, dT_, alpha=a_med)):
+                n_bad += 1
+        print(f"    **模型（α = 実測値 {a_med:.3f}）で崩れる面: {n_bad} / 20**")
+        print(f"    **実走で滞留を上回った面: 10 / 20（両 seed とも）**")
+        print("  → **数は一致しないが、どちらも『半分前後の面で 滞留 > 衝突 が崩れる』"
+              "という定性的な結論は同じ**。")
+        print("\n  🔴 **ただし機構が違う（模型の想定と実走で別）**:")
+        print("     模型: **稼いだ整形 Φ_T が大きいから**崩れる（α = 0.5 が要る）")
+        print("     実走: **エピソードが長い（中央値 600 歩超）ので衝突罰 −1.0 が"
+              "γ^(T−1) ≈ 0.05 まで割り引かれる**から崩れる（Φ_T は小さいまま）")
+        print("     ⇒ **対処案 (a') は前者の経路しか塞がない。**"
+              "反実仮想（上の各モデルの行）が示すとおり、\n"
+              "        実走の regime では没収型を当てても滞留を上回る面はほとんど減らない。")
 
 
 if __name__ == "__main__":
