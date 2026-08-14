@@ -97,7 +97,7 @@ def main():
                     default="competition.baseline_slalom_e1t_tr_f0b_cal:SlalomE1TTRF0bCalPolicy",
                     help="方策（module:Class）。既定は校正済みの新既定")
     ap.add_argument("--gate-reason", default=None,
-                    help="**凍結された迷路を使う場合のみ**。裁定 R40 の合言葉。"
+                    help="**確保済みの評価用迷路を使う場合のみ**。裁定 R40 の合言葉。"
                          "指定すると purpose='gate' で安全弁を通す（理由は記録される）")
     ap.add_argument("--out", default=None)
     args = ap.parse_args()
@@ -107,8 +107,8 @@ def main():
     seeds = [int(p.stem.split("_")[1]) for p in mazes]
     print(describe_seeds(seeds, "competition"))
     if args.gate_reason:
-        # **凍結された迷路の使用は合言葉つきでのみ許す**（裁定 R40 条件 4）
-        print(f"⚠️ **凍結された迷路を使う**（purpose='gate'）／理由: {args.gate_reason}")
+        # **確保済みの評価用迷路の使用は合言葉つきでのみ許す**（裁定 R40 条件 4）
+        print(f"⚠️ **確保済みの評価用迷路を使う**（purpose='gate'）／理由: {args.gate_reason}")
         assert_seeds_allowed(seeds, namespace="competition", purpose="gate",
                              reason=args.gate_reason)
     else:
