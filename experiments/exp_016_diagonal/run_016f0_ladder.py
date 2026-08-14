@@ -30,17 +30,22 @@ for p in (REPO_ROOT, REPO_ROOT / "experiments" / "exp_016_diagonal",
         sys.path.insert(0, str(p))
 
 import run_016c  # noqa: E402
+from competition.reference_interp import ReferenceInterpMixin  # noqa: E402
 from competition.velocity_loop import VelocityLoopMixin  # noqa: E402
 
 
-def make_policy_class(k_acc_ff: float):
-    """016-C の方策に**速度ループの是正だけ**を混ぜ込んだクラスを作る。"""
+def make_policy_class(k_acc_ff: float, ref_interp: bool = False):
+    """016-C の方策に**速度ループ側の是正だけ**を混ぜ込んだクラスを作る。
 
-    class SegSpeedPolicyF0(VelocityLoopMixin, run_016c.SegSpeedPolicy):
-        """`_wheel_targets_to_voltage` だけが違う。**経路・速度計画・操舵は 016-C のまま。**"""
+    F0 = `_wheel_targets_to_voltage`／F0-b = `_do_drive_control` の**参照の読み方だけ**。
+    **経路・速度計画・操舵の則は 016-C のまま**である。
+    """
 
+    class SegSpeedPolicyF0(ReferenceInterpMixin, VelocityLoopMixin,
+                           run_016c.SegSpeedPolicy):
         def __init__(self, *a, **kw):
             kw.setdefault("k_acc_ff", k_acc_ff)
+            kw.setdefault("ref_interp", ref_interp)
             super().__init__(*a, **kw)
 
     return SegSpeedPolicyF0
@@ -51,18 +56,19 @@ def main():
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--k-acc-ff", type=float, required=True,
                     help="加速度前置補償の係数（0 = 是正前・1.0 = 物理から導いた全量）")
+    ap.add_argument("--ref-interp", action="store_true",
+                    help="参照を弧長で内挿して読む（016-F0-b の是正）")
     ap.add_argument("--out", default=None)
     ap.add_argument("--maze-dir", default="competition/mazes/design_v4")
     args = ap.parse_args()
 
-    out = args.out or str(REPO_ROOT / "outputs" / "exp_016_diagonal" / "016f0"
-                          / f"ladder_k{args.k_acc_ff:g}.json")
+    tag = f"ladder_k{args.k_acc_ff:g}" + ("_ri" if args.ref_interp else "")
+    out = args.out or str(REPO_ROOT / "outputs" / "exp_016_diagonal" / "016f0" / f"{tag}.json")
     Path(out).parent.mkdir(parents=True, exist_ok=True)
 
-    print(f"⚠️ 速度ループの是正: k_acc_ff = {args.k_acc_ff:g}"
-          f"（0 = 是正前・1.0 = 物理から導いた全量）\n")
+    print(f"⚠️ F0: k_acc_ff = {args.k_acc_ff:g}／F0-b: ref_interp = {args.ref_interp}\n")
     # **harness は書き換えず、方策の名前だけ差し替える**
-    run_016c.SegSpeedPolicy = make_policy_class(args.k_acc_ff)
+    run_016c.SegSpeedPolicy = make_policy_class(args.k_acc_ff, args.ref_interp)
     sys.argv = ["run_016c.py", "--maze-dir", args.maze_dir, "--out", out]
     run_016c.main()
 

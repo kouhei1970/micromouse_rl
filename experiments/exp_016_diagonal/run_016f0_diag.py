@@ -69,6 +69,7 @@ from diagonal_model import (DELTA8, DiagonalGridModel, cell_center_node,  # noqa
 from geometry import git_rev  # noqa: E402
 from route_model import connects_true, load_maze  # noqa: E402
 from run_016b import cut_segment, longest_diagonal_run  # noqa: E402
+from competition.reference_interp import ReferenceInterpMixin  # noqa: E402
 from competition.velocity_loop import VelocityLoopMixin  # noqa: E402
 from run_016c import LADDER, R_ARC_M, SegSpeedPolicy  # noqa: E402
 
@@ -81,7 +82,7 @@ KIND_NAME = {0: "直進", 1: "円弧", 2: "斜め"}
 CLASS_NAME = {0: "定常", 1: "加速", 2: "減速"}
 
 
-class ProbedPolicy(VelocityLoopMixin, SegSpeedPolicy):
+class ProbedPolicy(ReferenceInterpMixin, VelocityLoopMixin, SegSpeedPolicy):
     """**016-C の方策そのまま**。`_wheel_targets_to_voltage` を包んで記録するだけ。
 
     親を呼んで返り値をそのまま返すので、**電圧も軌跡も 1 ビットも変わらない**。
@@ -109,7 +110,7 @@ class ProbedPolicy(VelocityLoopMixin, SegSpeedPolicy):
 
 
 def run_one(xml_path, params, nodes, dirs, v_diag, v_walls, h_walls, max_s=40.0,
-            single_cap=False, k_acc_ff=0.0):
+            single_cap=False, k_acc_ff=0.0, ref_interp=False):
     """1 面 1 速度を走らせ、**制御周期ごとの生の記録**を返す。判定はしない。"""
     path, kinds, idxs = build_diagonal_path(nodes, dirs, params.cell_size, R_ARC_M)
     sim = MouseSim(str(xml_path), params=params)
@@ -122,7 +123,7 @@ def run_one(xml_path, params, nodes, dirs, v_diag, v_walls, h_walls, max_s=40.0,
         v_arr = np.full(len(kinds), float(v_diag))
     else:
         v_arr = np.where(kinds == "straight", 1e9, v_diag)   # 016-C と同一（直進は v_cap）
-    pol = ProbedPolicy(path, v_arr, k_acc_ff=k_acc_ff)
+    pol = ProbedPolicy(path, v_arr, k_acc_ff=k_acc_ff, ref_interp=ref_interp)
     pol.bind_sim(sim)
     pol.bind_maze(v_walls, h_walls)
     pol.on_maze_start(dict(width=16, height=16))
@@ -322,6 +323,8 @@ def main():
     ap.add_argument("--speeds", nargs="*", type=float, default=list(LADDER))
     ap.add_argument("--k-acc-ff", type=float, default=0.0,
                     help="加速度前置補償の係数（0 = 是正前・1.0 = 物理から導いた全量）")
+    ap.add_argument("--ref-interp", action="store_true",
+                    help="参照を弧長で内挿して読む（016-F0-b の是正）")
     ap.add_argument("--single-cap", action="store_true",
                     help="経路全体に 1 つの速度上限を掛ける（016-B と同一。カード §0 の診断条件）")
     ap.add_argument("--trace-face", default="maze_41038",
@@ -370,15 +373,15 @@ def main():
         build_diagonal_path(faces[0]["nodes"], faces[0]["dirs"],
                             params.cell_size, R_ARC_M)[0].s)))
     print(f"計画の a_max = {a_max_plan:.3f} m/s^2／経路点の刻み 中央値 {ds_path_med*1000:.2f} mm")
-    if args.k_acc_ff:
-        print(f"⚠️ 加速度前置補償 k_acc_ff = {args.k_acc_ff}（0 なら是正前）\n")
+    if args.k_acc_ff or args.ref_interp:
+        print(f"⚠️ k_acc_ff = {args.k_acc_ff}（F0）／ref_interp = {args.ref_interp}（F0-b）\n")
 
     rows, audit_max = [], 0.0
     for q in faces:
         for v_d in args.speeds:
             rec, collided = run_one(q["xml"], params, q["nodes"], q["dirs"], v_d,
                                     q["v"], q["h"], single_cap=args.single_cap,
-                                    k_acc_ff=args.k_acc_ff)
+                                    k_acc_ff=args.k_acc_ff, ref_interp=args.ref_interp)
             if rec.size == 0:
                 continue
             der = derive(rec, r, dt, voltage_limit)
@@ -439,6 +442,7 @@ def main():
     out = dict(git_rev=git_rev(), maze_dir=args.maze_dir, speeds=list(args.speeds),
                a_max_plan=a_max_plan, ds_path_med=ds_path_med,
                single_cap=bool(args.single_cap), k_acc_ff=float(args.k_acc_ff),
+               ref_interp=bool(args.ref_interp),
                eps_a=EPS_A, hold_s=HOLD_S, wheel_radius=r, control_dt=dt,
                voltage_limit=voltage_limit, audit_a_max_abs=audit_max, rows=rows)
     (out_dir / ("d0_diag_cap1.json" if args.single_cap else "d0_diag.json")).write_text(json.dumps(out, ensure_ascii=False, indent=1),
