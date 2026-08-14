@@ -1,0 +1,805 @@
+{
+  "verdict": "PASS",
+  "tol": 1e-09,
+  "gamma": 0.995,
+  "n_segments": 109,
+  "max_abs_residual": 1.2351231148954867e-15,
+  "maze_seeds": [
+    7000,
+    7001,
+    7002
+  ],
+  "rng_seed": 20260814,
+  "results": [
+    {
+      "maze_seed": 7000,
+      "n_steps": 2000,
+      "n_respawn": 39,
+      "n_segments": 39,
+      "max_residual": 4.579669976578771e-16,
+      "segments": [
+        {
+          "maze_seed": 7000,
+          "start_step": 0,
+          "end_step": 28,
+          "n_steps": 29,
+          "residual": 9.648426452738113e-17
+        },
+        {
+          "maze_seed": 7000,
+          "start_step": 29,
+          "end_step": 54,
+          "n_steps": 26,
+          "residual": 9.794612265121585e-17
+        },
+        {
+          "maze_seed": 7000,
+          "start_step": 55,
+          "end_step": 120,
+          "n_steps": 66,
+          "residual": 8.015128294164465e-17
+        },
+        {
+          "maze_seed": 7000,
+          "start_step": 121,
+          "end_step": 143,
+          "n_steps": 23,
+          "residual": 9.943012976675084e-17
+        },
+        {
+          "maze_seed": 7000,
+          "start_step": 144,
+          "end_step": 225,
+          "n_steps": 82,
+          "residual": 7.397411365330912e-17
+        },
+        {
+          "maze_seed": 7000,
+          "start_step": 226,
+          "end_step": 245,
+          "n_steps": 20,
+          "residual": 1.0093662145910566e-16
+        },
+        {
+          "maze_seed": 7000,
+          "start_step": 246,
+          "end_step": 364,
+          "n_steps": 119,
+          "residual": -4.579669976578771e-16
+        },
+        {
+          "maze_seed": 7000,
+          "start_step": 365,
+          "end_step": 398,
+          "n_steps": 34,
+          "residual": 9.40961586762096e-17
+        },
+        {
+          "maze_seed": 7000,
+          "start_step": 399,
+          "end_step": 421,
+          "n_steps": 23,
+          "residual": 9.943012976675084e-17
+        },
+        {
+          "maze_seed": 7000,
+          "start_step": 422,
+          "end_step": 461,
+          "n_steps": 40,
+          "residual": 9.130832561541884e-17
+        },
+        {
+          "maze_seed": 7000,
+          "start_step": 462,
+          "end_step": 476,
+          "n_steps": 15,
+          "residual": 1.0349833428240417e-16
+        },
+        {
+          "maze_seed": 7000,
+          "start_step": 477,
+          "end_step": 529,
+          "n_steps": 53,
+          "residual": 8.554811185133928e-17
+        },
+        {
+          "maze_seed": 7000,
+          "start_step": 530,
+          "end_step": 642,
+          "n_steps": 113,
+          "residual": -2.419834045637008e-16
+        },
+        {
+          "maze_seed": 7000,
+          "start_step": 643,
+          "end_step": 693,
+          "n_steps": 51,
+          "residual": 8.641005212124874e-17
+        },
+        {
+          "maze_seed": 7000,
+          "start_step": 694,
+          "end_step": 721,
+          "n_steps": 28,
+          "residual": 9.696911007776998e-17
+        },
+        {
+          "maze_seed": 7000,
+          "start_step": 722,
+          "end_step": 774,
+          "n_steps": 53,
+          "residual": 8.554811185133928e-17
+        },
+        {
+          "maze_seed": 7000,
+          "start_step": 775,
+          "end_step": 829,
+          "n_steps": 55,
+          "residual": 8.469476943562217e-17
+        },
+        {
+          "maze_seed": 7000,
+          "start_step": 830,
+          "end_step": 947,
+          "n_steps": 118,
+          "residual": 6.17604820476067e-17
+        },
+        {
+          "maze_seed": 7000,
+          "start_step": 948,
+          "end_step": 974,
+          "n_steps": 27,
+          "residual": 9.745639203795977e-17
+        },
+        {
+          "maze_seed": 7000,
+          "start_step": 975,
+          "end_step": 988,
+          "n_steps": 14,
+          "residual": 1.0401842641447655e-16
+        },
+        {
+          "maze_seed": 7000,
+          "start_step": 989,
+          "end_step": 1024,
+          "n_steps": 36,
+          "residual": 9.31575494934144e-17
+        },
+        {
+          "maze_seed": 7000,
+          "start_step": 1025,
+          "end_step": 1041,
+          "n_steps": 17,
+          "residual": 1.0246593839793718e-16
+        },
+        {
+          "maze_seed": 7000,
+          "start_step": 1042,
+          "end_step": 1061,
+          "n_steps": 20,
+          "residual": 1.0093662145910566e-16
+        },
+        {
+          "maze_seed": 7000,
+          "start_step": 1062,
+          "end_step": 1107,
+          "n_steps": 46,
+          "residual": 8.860308905255297e-17
+        },
+        {
+          "maze_seed": 7000,
+          "start_step": 1108,
+          "end_step": 1144,
+          "n_steps": 37,
+          "residual": 9.269176174594733e-17
+        },
+        {
+          "maze_seed": 7000,
+          "start_step": 1145,
+          "end_step": 1247,
+          "n_steps": 103,
+          "residual": 6.658316968741007e-17
+        },
+        {
+          "maze_seed": 7000,
+          "start_step": 1248,
+          "end_step": 1413,
+          "n_steps": 166,
+          "residual": -1.3877787807814457e-16
+        },
+        {
+          "maze_seed": 7000,
+          "start_step": 1414,
+          "end_step": 1474,
+          "n_steps": 61,
+          "residual": 8.218547594659504e-17
+        },
+        {
+          "maze_seed": 7000,
+          "start_step": 1475,
+          "end_step": 1501,
+          "n_steps": 27,
+          "residual": 9.745639203795977e-17
+        },
+        {
+          "maze_seed": 7000,
+          "start_step": 1502,
+          "end_step": 1533,
+          "n_steps": 32,
+          "residual": 9.50442248187769e-17
+        },
+        {
+          "maze_seed": 7000,
+          "start_step": 1534,
+          "end_step": 1560,
+          "n_steps": 27,
+          "residual": 9.745639203795977e-17
+        },
+        {
+          "maze_seed": 7000,
+          "start_step": 1561,
+          "end_step": 1576,
+          "n_steps": 16,
+          "residual": 1.0298084261099215e-16
+        },
+        {
+          "maze_seed": 7000,
+          "start_step": 1577,
+          "end_step": 1608,
+          "n_steps": 32,
+          "residual": 9.50442248187769e-17
+        },
+        {
+          "maze_seed": 7000,
+          "start_step": 1609,
+          "end_step": 1630,
+          "n_steps": 22,
+          "residual": 9.992977866005109e-17
+        },
+        {
+          "maze_seed": 7000,
+          "start_step": 1631,
+          "end_step": 1710,
+          "n_steps": 80,
+          "residual": 7.47194400679873e-17
+        },
+        {
+          "maze_seed": 7000,
+          "start_step": 1711,
+          "end_step": 1755,
+          "n_steps": 45,
+          "residual": 8.904833070608339e-17
+        },
+        {
+          "maze_seed": 7000,
+          "start_step": 1756,
+          "end_step": 1835,
+          "n_steps": 80,
+          "residual": 7.47194400679873e-17
+        },
+        {
+          "maze_seed": 7000,
+          "start_step": 1836,
+          "end_step": 1868,
+          "n_steps": 33,
+          "residual": 9.456900369468301e-17
+        },
+        {
+          "maze_seed": 7000,
+          "start_step": 1869,
+          "end_step": 1890,
+          "n_steps": 22,
+          "residual": 9.992977866005109e-17
+        }
+      ]
+    },
+    {
+      "maze_seed": 7001,
+      "n_steps": 2000,
+      "n_respawn": 37,
+      "n_segments": 37,
+      "max_residual": 1.2351231148954867e-15,
+      "segments": [
+        {
+          "maze_seed": 7001,
+          "start_step": 0,
+          "end_step": 27,
+          "n_steps": 28,
+          "residual": 9.696911007776998e-17
+        },
+        {
+          "maze_seed": 7001,
+          "start_step": 28,
+          "end_step": 165,
+          "n_steps": 138,
+          "residual": 5.586917932707739e-17
+        },
+        {
+          "maze_seed": 7001,
+          "start_step": 166,
+          "end_step": 177,
+          "n_steps": 12,
+          "residual": 1.0506646439683497e-16
+        },
+        {
+          "maze_seed": 7001,
+          "start_step": 178,
+          "end_step": 219,
+          "n_steps": 42,
+          "residual": 9.039752506740505e-17
+        },
+        {
+          "maze_seed": 7001,
+          "start_step": 220,
+          "end_step": 282,
+          "n_steps": 63,
+          "residual": 8.136567582402775e-17
+        },
+        {
+          "maze_seed": 7001,
+          "start_step": 283,
+          "end_step": 352,
+          "n_steps": 70,
+          "residual": 7.856023994970608e-17
+        },
+        {
+          "maze_seed": 7001,
+          "start_step": 353,
+          "end_step": 456,
+          "n_steps": 104,
+          "residual": 6.625025383897302e-17
+        },
+        {
+          "maze_seed": 7001,
+          "start_step": 457,
+          "end_step": 518,
+          "n_steps": 62,
+          "residual": 8.177454856686206e-17
+        },
+        {
+          "maze_seed": 7001,
+          "start_step": 519,
+          "end_step": 544,
+          "n_steps": 26,
+          "residual": 9.794612265121585e-17
+        },
+        {
+          "maze_seed": 7001,
+          "start_step": 545,
+          "end_step": 591,
+          "n_steps": 47,
+          "residual": 8.81600736072902e-17
+        },
+        {
+          "maze_seed": 7001,
+          "start_step": 592,
+          "end_step": 608,
+          "n_steps": 17,
+          "residual": 1.0246593839793718e-16
+        },
+        {
+          "maze_seed": 7001,
+          "start_step": 609,
+          "end_step": 677,
+          "n_steps": 69,
+          "residual": 7.895501502483024e-17
+        },
+        {
+          "maze_seed": 7001,
+          "start_step": 678,
+          "end_step": 714,
+          "n_steps": 37,
+          "residual": 9.269176174594733e-17
+        },
+        {
+          "maze_seed": 7001,
+          "start_step": 715,
+          "end_step": 744,
+          "n_steps": 30,
+          "residual": 9.600184320474422e-17
+        },
+        {
+          "maze_seed": 7001,
+          "start_step": 745,
+          "end_step": 800,
+          "n_steps": 56,
+          "residual": 8.427129558844406e-17
+        },
+        {
+          "maze_seed": 7001,
+          "start_step": 801,
+          "end_step": 814,
+          "n_steps": 14,
+          "residual": 1.0401842641447655e-16
+        },
+        {
+          "maze_seed": 7001,
+          "start_step": 815,
+          "end_step": 964,
+          "n_steps": 150,
+          "residual": 5.2607693457965223e-17
+        },
+        {
+          "maze_seed": 7001,
+          "start_step": 965,
+          "end_step": 1002,
+          "n_steps": 38,
+          "residual": 9.22283029372176e-17
+        },
+        {
+          "maze_seed": 7001,
+          "start_step": 1003,
+          "end_step": 1031,
+          "n_steps": 29,
+          "residual": 9.648426452738113e-17
+        },
+        {
+          "maze_seed": 7001,
+          "start_step": 1032,
+          "end_step": 1095,
+          "n_steps": 64,
+          "residual": -3.0531133177191805e-16
+        },
+        {
+          "maze_seed": 7001,
+          "start_step": 1096,
+          "end_step": 1107,
+          "n_steps": 12,
+          "residual": 1.0506646439683497e-16
+        },
+        {
+          "maze_seed": 7001,
+          "start_step": 1108,
+          "end_step": 1131,
+          "n_steps": 24,
+          "residual": 9.893297911791708e-17
+        },
+        {
+          "maze_seed": 7001,
+          "start_step": 1132,
+          "end_step": 1155,
+          "n_steps": 24,
+          "residual": 9.893297911791708e-17
+        },
+        {
+          "maze_seed": 7001,
+          "start_step": 1156,
+          "end_step": 1175,
+          "n_steps": 20,
+          "residual": 1.0093662145910566e-16
+        },
+        {
+          "maze_seed": 7001,
+          "start_step": 1176,
+          "end_step": 1250,
+          "n_steps": 75,
+          "residual": 7.661577605590617e-17
+        },
+        {
+          "maze_seed": 7001,
+          "start_step": 1251,
+          "end_step": 1458,
+          "n_steps": 208,
+          "residual": -1.2351231148954867e-15
+        },
+        {
+          "maze_seed": 7001,
+          "start_step": 1459,
+          "end_step": 1485,
+          "n_steps": 27,
+          "residual": 9.745639203795977e-17
+        },
+        {
+          "maze_seed": 7001,
+          "start_step": 1486,
+          "end_step": 1557,
+          "n_steps": 72,
+          "residual": 7.777660155620776e-17
+        },
+        {
+          "maze_seed": 7001,
+          "start_step": 1558,
+          "end_step": 1597,
+          "n_steps": 40,
+          "residual": 9.130832561541884e-17
+        },
+        {
+          "maze_seed": 7001,
+          "start_step": 1598,
+          "end_step": 1654,
+          "n_steps": 57,
+          "residual": 8.384993911050184e-17
+        },
+        {
+          "maze_seed": 7001,
+          "start_step": 1655,
+          "end_step": 1713,
+          "n_steps": 59,
+          "residual": 8.301353596787458e-17
+        },
+        {
+          "maze_seed": 7001,
+          "start_step": 1714,
+          "end_step": 1767,
+          "n_steps": 54,
+          "residual": 8.512037129208258e-17
+        },
+        {
+          "maze_seed": 7001,
+          "start_step": 1768,
+          "end_step": 1794,
+          "n_steps": 27,
+          "residual": 9.745639203795977e-17
+        },
+        {
+          "maze_seed": 7001,
+          "start_step": 1795,
+          "end_step": 1870,
+          "n_steps": 76,
+          "residual": -2.498001805406602e-16
+        },
+        {
+          "maze_seed": 7001,
+          "start_step": 1871,
+          "end_step": 1887,
+          "n_steps": 17,
+          "residual": 1.0246593839793718e-16
+        },
+        {
+          "maze_seed": 7001,
+          "start_step": 1888,
+          "end_step": 1926,
+          "n_steps": 39,
+          "residual": 9.17671614225315e-17
+        },
+        {
+          "maze_seed": 7001,
+          "start_step": 1927,
+          "end_step": 1941,
+          "n_steps": 15,
+          "residual": 1.0349833428240417e-16
+        }
+      ]
+    },
+    {
+      "maze_seed": 7002,
+      "n_steps": 2000,
+      "n_respawn": 33,
+      "n_segments": 33,
+      "max_residual": 7.91033905045424e-16,
+      "segments": [
+        {
+          "maze_seed": 7002,
+          "start_step": 0,
+          "end_step": 89,
+          "n_steps": 90,
+          "residual": 7.106641639139282e-17
+        },
+        {
+          "maze_seed": 7002,
+          "start_step": 90,
+          "end_step": 114,
+          "n_steps": 25,
+          "residual": 9.84383142223275e-17
+        },
+        {
+          "maze_seed": 7002,
+          "start_step": 115,
+          "end_step": 140,
+          "n_steps": 26,
+          "residual": 9.794612265121585e-17
+        },
+        {
+          "maze_seed": 7002,
+          "start_step": 141,
+          "end_step": 174,
+          "n_steps": 34,
+          "residual": 9.40961586762096e-17
+        },
+        {
+          "maze_seed": 7002,
+          "start_step": 175,
+          "end_step": 194,
+          "n_steps": 20,
+          "residual": 1.0093662145910566e-16
+        },
+        {
+          "maze_seed": 7002,
+          "start_step": 195,
+          "end_step": 282,
+          "n_steps": 88,
+          "residual": 7.178244629316717e-17
+        },
+        {
+          "maze_seed": 7002,
+          "start_step": 283,
+          "end_step": 375,
+          "n_steps": 93,
+          "residual": 7.000574124344923e-17
+        },
+        {
+          "maze_seed": 7002,
+          "start_step": 376,
+          "end_step": 513,
+          "n_steps": 138,
+          "residual": -2.914335439641036e-16
+        },
+        {
+          "maze_seed": 7002,
+          "start_step": 514,
+          "end_step": 546,
+          "n_steps": 33,
+          "residual": 9.456900369468301e-17
+        },
+        {
+          "maze_seed": 7002,
+          "start_step": 547,
+          "end_step": 580,
+          "n_steps": 34,
+          "residual": 9.40961586762096e-17
+        },
+        {
+          "maze_seed": 7002,
+          "start_step": 581,
+          "end_step": 688,
+          "n_steps": 108,
+          "residual": -5.412337245047638e-16
+        },
+        {
+          "maze_seed": 7002,
+          "start_step": 689,
+          "end_step": 722,
+          "n_steps": 34,
+          "residual": 9.40961586762096e-17
+        },
+        {
+          "maze_seed": 7002,
+          "start_step": 723,
+          "end_step": 947,
+          "n_steps": 225,
+          "residual": -4.163336342344337e-16
+        },
+        {
+          "maze_seed": 7002,
+          "start_step": 948,
+          "end_step": 991,
+          "n_steps": 44,
+          "residual": 8.949580975485768e-17
+        },
+        {
+          "maze_seed": 7002,
+          "start_step": 992,
+          "end_step": 1070,
+          "n_steps": 79,
+          "residual": 7.509491464119327e-17
+        },
+        {
+          "maze_seed": 7002,
+          "start_step": 1071,
+          "end_step": 1105,
+          "n_steps": 35,
+          "residual": 9.362567788282855e-17
+        },
+        {
+          "maze_seed": 7002,
+          "start_step": 1106,
+          "end_step": 1120,
+          "n_steps": 15,
+          "residual": 1.0349833428240417e-16
+        },
+        {
+          "maze_seed": 7002,
+          "start_step": 1121,
+          "end_step": 1187,
+          "n_steps": 67,
+          "residual": 7.975052652693643e-17
+        },
+        {
+          "maze_seed": 7002,
+          "start_step": 1188,
+          "end_step": 1238,
+          "n_steps": 51,
+          "residual": 8.641005212124874e-17
+        },
+        {
+          "maze_seed": 7002,
+          "start_step": 1239,
+          "end_step": 1340,
+          "n_steps": 102,
+          "residual": 6.691775847980911e-17
+        },
+        {
+          "maze_seed": 7002,
+          "start_step": 1341,
+          "end_step": 1426,
+          "n_steps": 86,
+          "residual": -3.851661190604773e-17
+        },
+        {
+          "maze_seed": 7002,
+          "start_step": 1427,
+          "end_step": 1451,
+          "n_steps": 25,
+          "residual": 9.84383142223275e-17
+        },
+        {
+          "maze_seed": 7002,
+          "start_step": 1452,
+          "end_step": 1548,
+          "n_steps": 97,
+          "residual": -4.579669976578771e-16
+        },
+        {
+          "maze_seed": 7002,
+          "start_step": 1549,
+          "end_step": 1563,
+          "n_steps": 15,
+          "residual": 1.0349833428240417e-16
+        },
+        {
+          "maze_seed": 7002,
+          "start_step": 1564,
+          "end_step": 1640,
+          "n_steps": 77,
+          "residual": 7.58515336897485e-17
+        },
+        {
+          "maze_seed": 7002,
+          "start_step": 1641,
+          "end_step": 1659,
+          "n_steps": 19,
+          "residual": 1.0144384066241776e-16
+        },
+        {
+          "maze_seed": 7002,
+          "start_step": 1660,
+          "end_step": 1687,
+          "n_steps": 28,
+          "residual": 9.696911007776998e-17
+        },
+        {
+          "maze_seed": 7002,
+          "start_step": 1688,
+          "end_step": 1869,
+          "n_steps": 182,
+          "residual": -7.91033905045424e-16
+        },
+        {
+          "maze_seed": 7002,
+          "start_step": 1870,
+          "end_step": 1904,
+          "n_steps": 35,
+          "residual": 9.362567788282855e-17
+        },
+        {
+          "maze_seed": 7002,
+          "start_step": 1905,
+          "end_step": 1930,
+          "n_steps": 26,
+          "residual": 9.794612265121585e-17
+        },
+        {
+          "maze_seed": 7002,
+          "start_step": 1931,
+          "end_step": 1944,
+          "n_steps": 14,
+          "residual": 1.0401842641447655e-16
+        },
+        {
+          "maze_seed": 7002,
+          "start_step": 1945,
+          "end_step": 1971,
+          "n_steps": 27,
+          "residual": 9.745639203795977e-17
+        },
+        {
+          "maze_seed": 7002,
+          "start_step": 1972,
+          "end_step": 1988,
+          "n_steps": 17,
+          "residual": 1.0246593839793718e-16
+        }
+      ]
+    }
+  ]
+}
