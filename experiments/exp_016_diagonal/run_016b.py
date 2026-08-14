@@ -37,6 +37,8 @@ for p in (REPO_ROOT, REPO_ROOT / "experiments" / "exp_016_diagonal",
 import mujoco  # noqa: E402
 
 from competition.baseline_slalom import SlalomPolicy, build_speed_profile  # noqa: E402
+from common.seed_bands import (assert_seeds_allowed,  # noqa: E402
+                                describe_seeds)
 from competition.baseline_slalom_e1_tr import load_time_model  # noqa: E402
 from competition.route_planner import value_field  # noqa: E402
 from mouse.mjcf import build_maze_robot_xml  # noqa: E402
@@ -237,6 +239,13 @@ def main():
     ap.add_argument("--out", default=str(REPO_ROOT / "outputs" / "exp_016_diagonal"
                                           / "016b" / "run.json"))
     args = ap.parse_args()
+
+    # **帯の安全弁**（裁定 R40 条件 4）。本スクリプトは**設計帯専用**であり、
+    # 凍結帯の seed が混ざったら走らせない（purpose='validate' 固定）。
+    _seeds = [int(q.stem.split('_')[1])
+              for q in sorted((REPO_ROOT / args.maze_dir).glob('maze_*.npz'))]
+    print(describe_seeds(_seeds, 'competition'))
+    assert_seeds_allowed(_seeds, namespace='competition', purpose='validate')
 
     a, b = load_time_model()
     params = RobotParams()

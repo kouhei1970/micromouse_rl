@@ -39,6 +39,8 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from common.seed_bands import (assert_seeds_allowed,  # noqa: E402
+                                describe_seeds)
 from competition.evaluator import CompetitionEvaluator  # noqa: E402
 from competition.explore_cost import true_shortest  # noqa: E402
 from mouse.params import RobotParams  # noqa: E402
@@ -102,6 +104,11 @@ def main():
     ap.add_argument("--policy", required=True)
     ap.add_argument("--maze-dir", default="competition/mazes/eval")
     ap.add_argument("--out-root", default=None, help="既定は outputs/exp_014_e1_integration")
+    # --- 帯の安全弁（裁定 R40 条件 4。`common/seed_bands.py` の共通ヘルパ） ---
+    ap.add_argument("--purpose", default="validate", choices=("train", "validate", "gate"),
+                    help="既定 validate。**評価帯を使うには gate と --reason が要る**")
+    ap.add_argument("--reason", default=None,
+                    help="--purpose gate のときに必須（何の判定でこの帯を使うのか）")
     args = ap.parse_args()
 
     cell = RobotParams().cell_size
@@ -110,7 +117,21 @@ def main():
     traj_dir.mkdir(parents=True, exist_ok=True)
     mazes = sorted((REPO_ROOT / args.maze_dir).glob("maze_*.npz"),
                    key=lambda p: int(p.stem.split("_")[1]))
-    print(f"[{args.arm}] {args.policy} / {len(mazes)} 面 / {args.maze_dir}", flush=True)
+    # **帯を明示し、許されない帯なら走らせない**（裁定 R40 条件 4）。
+    # ⚠️ **2026-08-14 時点の既知の制約**: `common/seed_bands.py` は competition の
+    # 候補プール [1000,40999] を一律 'pool' と分類し、**どの purpose も 'pool' を
+    # 許さない**。したがって**凍結帯の gate 走行（本トラックの最終 1 回）は
+    # `--purpose gate --reason ...` を付けても現状では拒否される**。
+    # 教授へ報告済み（採用 20 面を 'pool' と別の帯に分類するか、gate に 'pool' を
+    # 許すかの裁定待ち）。**回避策は書かない** — 安全弁を骨抜きにしないため。
+    # 規律を文書ではなく実装で保証する（§9-7）。凍結帯は
+    # `--purpose gate --reason "…"` を明示しない限り拒否される。
+    seeds = [int(m.stem.split("_")[1]) for m in mazes]
+    print(describe_seeds(seeds, "competition"), flush=True)
+    assert_seeds_allowed(seeds, namespace="competition",
+                         purpose=args.purpose, reason=args.reason)
+    print(f"[{args.arm}] {args.policy} / {len(mazes)} 面 / {args.maze_dir}"
+          f" / purpose={args.purpose}", flush=True)
 
     detail = []
     for m in mazes:
