@@ -201,6 +201,62 @@ n=20 なので 10 番目と 11 番目の平均 =（14.24 + 15.14）/ 2 = 14.6900
 **🧭 教授側の台帳にも「監査所見の対象箇所を一次確認せずに発注へ引き写した」が登録された。**
 **指摘は、出した側と受けた側の両方で一次確認されて初めて確定する。**
 
+---
+
+#### 🟢 3-2-ter. 是正版の確認（`dbac09a`・2026-08-14）— **合格**
+
+**学生A の是正（`run_016cal.py` 側）を確認した。全項目合格・追加の指摘なし。**
+
+| # | 検査 | 結果 |
+|---|---|---|
+| **1** | **作法 17 の全列挙**（今度は正しく適用した） | **(d) をラベルにして値を報告する箇所を全部数えた。`run_016cal.py` が唯一の欠陥箇所だった** |
+| **2** | 写しが元の定義と一致するか | **意味的に完全一致**（下記） |
+| **3** | 写しのずれを検出する仕組み | **1 迷路ごとに評価器の `best_time` と突き合わせ、食い違えば例外で停止**（`run_016cal.py`:176-185） |
+| **4** | 単体テスト | **5 件すべて PASS**（`tests/test_run_016cal_d_metric.py`） |
+| **5** | 退行 | **無し。C2 = 0.75 のまま**（集計器の再実行で確認） |
+| **6** | **確定基準表の 20 値が動かないか** | **動かない。既に §4-1 で直接検証済み**（下記） |
+
+**1. 作法 17 の全列挙**（**私が §3-2 で怠ったこと**）:
+
+| 箇所 | (d) の位置で使っている量 | 判定 |
+|---|---|---|
+| `competition/evaluator.py`:745 | `best_time`（完走走行の最速値） | 🟢 条文どおり |
+| `competition/evaluator.py`:425-442 | `d_best_time`（(d)）と `fast_time`（(b)）を**別々に**集計 | 🟢 区別できている |
+| `experiments/exp_007_maze_reeval/aggregate.py` | `d_best_time` / `best_times` | 🟢 |
+| `experiments/exp_014_e1_integration/aggregate.py`:161 | `("(d) 最速タイム [s]", "best_time", …)` | 🟢 |
+| `experiments/exp_015_time_optimal_route/aggregate.py`:282 | 同上 | 🟢 |
+| `experiments/exp_013_band_v4_reeval/run_arm.py`:150 | `r["best_time"]`（**旧基準表の測定経路**） | 🟢 |
+| **`experiments/exp_016_diagonal/run_016cal.py`** | **`maze_kpi(...)["fast_time"]`（(b) 型）** | **🔴 唯一の欠陥箇所 → 是正済み** |
+
+**→ 教授・学生A の切り分け（是正対象は `run_016cal.py` のみ）は正しい。他に同じ欠陥は無い。**
+
+**2. 写しの忠実性**（逐語で突き合わせた）:
+
+```
+evaluator.py:744-745  goal_runs = [r for r in runs
+                                   if r["outcome"] == "goal" and r.get("run_time") is not None]
+                      best_time = min((r["run_time"] for r in goal_runs), default=None)
+
+run_016cal.py:129-131 ts = [float(r["run_time"]) for r in runs
+                            if r.get("outcome") == "goal" and r.get("run_time") is not None]
+                      return min(ts) if ts else None
+```
+
+**フィルタ条件・最小値の取り方・空のときの返り値がすべて一致**（`float()` の型変換のみ差）。
+
+**6. 確定基準表が動かないことの直接の根拠**:
+**再測定は不要である。**`AUDIT_039` §4-1 の第 2 層で、**軌跡から (d) を
+「条文どおり（完走走行の最速値）」と「実装どおり（初回ゴール後に開始した走行の最速値）」の
+両方で計算し、20/20 の迷路で同値**であることを既に確認している
+（`audit_m5_from_traj.py` の「自前(条文)」列と「自前(実装)」列）。
+**是正後の定義でも確定基準表の 20 値は同じである。**
+
+**記録のみ（是正不要）**: 016-cal の既存 10 水準の記録は**是正前の (b) 型の数値**なので、
+**C3（最速タイムの冪）の判定は (b) についてのもの**である。
+**集計器がこれを「(d) 最速タイムの出どころ: `fast_time_median`（是正前の記録）」と
+明示表示するようになった**ので、**追跡可能性は確保されている**。
+**C3 は gate に効かず、判定は是正の前後とも「外れ」なので、60 迷路 × 10 水準の再測定は要らない。**
+
 ### 3-3 要記載 — `wilson_lower` の docstring が自分の返す値と違う
 
 `experiments/exp_016_diagonal/run_016cal.py`:79-81:
