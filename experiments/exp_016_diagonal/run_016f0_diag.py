@@ -145,7 +145,10 @@ def run_one(xml_path, params, nodes, dirs, v_diag, v_walls, h_walls, max_s=40.0,
         (v_cmd, omega_cmd, wl_des, wr_des, wl_act, wr_act, vl_r, vr_r) = pol._probe
         rec.append((sim.sim_time, x, y, yaw, v_act, wz, v_ref, v_cmd, omega_cmd,
                     wl_des, wr_des, wl_act, wr_act, vl_r, vr_r,
-                    KIND_CODE[str(kinds[k])], float(path.curvature[pol._cursor])))
+                    KIND_CODE[str(kinds[k])], float(path.curvature[pol._cursor]),
+                    # D1（016-F0-b）: カーソルの添字と、そこまでの弧長。
+                    # **d v_cmd/dt = (dv/ds)·(ds_cursor/dt) の右因子**を測るために要る
+                    float(pol._cursor), float(path.s[pol._cursor])))
         out = sim.step_control(vl, vr)
         if out.get("collision"):
             collided = True
@@ -156,7 +159,8 @@ def run_one(xml_path, params, nodes, dirs, v_diag, v_walls, h_walls, max_s=40.0,
 
 
 COLS = ("t", "x", "y", "yaw", "v_act", "omega_z", "v_ref", "v_cmd", "omega_cmd",
-        "wl_des", "wr_des", "wl_act", "wr_act", "volt_l", "volt_r", "kind", "kappa")
+        "wl_des", "wr_des", "wl_act", "wr_act", "volt_l", "volt_r", "kind", "kappa",
+        "cursor", "s_cur")
 COL = {c: i for i, c in enumerate(COLS)}
 
 
@@ -186,8 +190,36 @@ def derive(rec, r, dt, voltage_limit):
         run = run + 1 if q else 0
         steady[i] = run >= hold
     cls = np.where(steady, 0, np.where(d > 0.0, 1, 2))
+
+    # ---- D1（016-F0-b）: 参照の時間微分を 2 因子へ分ける ----
+    #     d v_cmd/dt = (dv/ds) · (ds_cursor/dt)
+    #     **計画が保証しているのは左だけ。右は誰も保証していない**（カード §1）
+    s_cur = rec[:, COL["s_cur"]]
+    ds_cursor = np.zeros_like(s_cur)
+    ds_cursor[1:] = s_cur[1:] - s_cur[:-1]
+    ds_travel = np.zeros_like(s_cur)
+    ds_travel[1:] = np.hypot(np.diff(rec[:, COL["x"]]), np.diff(rec[:, COL["y"]]))
+
+    # ---- 終端の窓（カード §4-2。**D1 の前に固定した定義**） ----
+    #     k_end = min{ k : v_ref[k] = 0 }（無ければ ∞）／W_end = { k : k >= k_end }
+    v_ref = rec[:, COL["v_ref"]]
+    zero = np.where(v_ref == 0.0)[0]
+    k_end = int(zero[0]) if zero.size else len(v_ref)
+    in_end = np.arange(len(v_ref)) >= k_end
+
+    # ---- 区分の境目（H_jump の徴候を見るため。±2 ティック） ----
+    kind = rec[:, COL["kind"]]
+    chg = np.zeros(len(kind), dtype=bool)
+    chg[1:] = kind[1:] != kind[:-1]
+    near = chg.copy()
+    for sh in (1, 2):
+        near[sh:] |= chg[:-sh]
+        near[:-sh] |= chg[sh:]
+
     return dict(layer_k=layer_k, layer_w=layer_w, e_omega=e_omega, audit_a=audit_a,
-                sat=sat, cls=cls, excess=v_act - v_cmd, dvdt=d)
+                sat=sat, cls=cls, excess=v_act - v_cmd, dvdt=d,
+                excess_ref=v_act - v_ref, ds_cursor=ds_cursor, ds_travel=ds_travel,
+                k_end=k_end, in_end=in_end, near_boundary=near)
 
 
 def _stats(v):
@@ -219,6 +251,53 @@ def summarize(rec, der):
                 sat_rate=float(np.mean(der["sat"][m])),
             )
     return out
+
+
+def summarize_d1(rec, der, a_max, ds_path):
+    """D1（016-F0-b）の量。**窓の定義はカード §4-2 で D1 の前に固定済み。**"""
+    n = len(rec)
+    dvdt = np.abs(der["dvdt"])
+    straight = rec[:, COL["kind"]] == 0
+    ex = der["excess_ref"]                       # 実速度 − 参照（G2 / B3 の量）
+    body = ~der["in_end"]
+
+    # 停止性能（**判定には使わない参考記録**。カード §4-4）
+    k_end, stop = der["k_end"], {}
+    if k_end < n:
+        va = np.abs(rec[k_end:, COL["v_act"]])
+        below = np.where(va < 0.01)[0]
+        if below.size:
+            j = int(below[0])
+            stop = dict(t_stop=float(rec[k_end + j, COL["t"]] - rec[k_end, COL["t"]]),
+                        d_stop=float(np.sum(der["ds_travel"][k_end + 1:k_end + j + 1])),
+                        v_end_max=float(va.max()), stopped=True)
+        else:
+            stop = dict(t_stop=None, d_stop=float(np.sum(der["ds_travel"][k_end + 1:])),
+                        v_end_max=float(va.max()), stopped=False)
+
+    # ds_cursor は経路点の刻みで数えると読みやすい（1 点 / 2 点の交番が見える）
+    mv = der["ds_travel"][1:] > 1e-9
+    pts = der["ds_cursor"][1:][mv] / ds_path
+    ratio = der["ds_cursor"][1:][mv] / der["ds_travel"][1:][mv]
+    nb = der["near_boundary"][1:][mv]
+
+    return dict(
+        n_ticks=int(n), k_end=(int(k_end) if k_end < n else None),
+        # 参照の時間微分（B1・B2 の量）
+        dvdt_p99=float(np.percentile(dvdt, 99)), dvdt_max=float(dvdt.max()),
+        dvdt_p99_over_amax=float(np.percentile(dvdt, 99) / a_max),
+        # 2 つの量に別の名前を付ける（カード §4-3・R39-3 の族）
+        excess_with_end=(float(ex[straight].max()) if straight.any() else None),
+        excess_no_end=(float(ex[straight & body].max()) if (straight & body).any() else None),
+        # 右因子: カーソルが 1 ティックに進む弧長
+        cursor_pts_med=float(np.median(pts)), cursor_pts_p99=float(np.percentile(pts, 99)),
+        cursor_pts_max=float(pts.max()),
+        cursor_over_travel_med=float(np.median(ratio)),
+        cursor_over_travel_p99=float(np.percentile(ratio, 99)),
+        # H_jump: 区分の境目とそれ以外で分布が違うか
+        cursor_pts_p99_boundary=(float(np.percentile(pts[nb], 99)) if nb.any() else None),
+        cursor_pts_p99_elsewhere=(float(np.percentile(pts[~nb], 99)) if (~nb).any() else None),
+        stop=stop)
 
 
 def main():
@@ -269,6 +348,13 @@ def main():
     voltage_limit = ProbedPolicy(build_diagonal_path(faces[0]["nodes"], faces[0]["dirs"],
                                                      params.cell_size, R_ARC_M)[0],
                                  np.array([0.3])).voltage_limit
+    _probe0 = ProbedPolicy(build_diagonal_path(faces[0]["nodes"], faces[0]["dirs"],
+                                               params.cell_size, R_ARC_M)[0], np.array([0.3]))
+    a_max_plan = _probe0.a_max            # = a_max_measured × 安全率（方策から読む）
+    ds_path_med = float(np.median(np.diff(
+        build_diagonal_path(faces[0]["nodes"], faces[0]["dirs"],
+                            params.cell_size, R_ARC_M)[0].s)))
+    print(f"計画の a_max = {a_max_plan:.3f} m/s^2／経路点の刻み 中央値 {ds_path_med*1000:.2f} mm")
     if args.k_acc_ff:
         print(f"⚠️ 加速度前置補償 k_acc_ff = {args.k_acc_ff}（0 なら是正前）\n")
 
@@ -283,7 +369,8 @@ def main():
             der = derive(rec, r, dt, voltage_limit)
             audit_max = max(audit_max, float(np.max(np.abs(der["audit_a"]))))
             rows.append(dict(maze=q["maze"], v_diag=float(v_d), collided=bool(collided),
-                             n_ticks=int(rec.shape[0]), by_class=summarize(rec, der)))
+                             n_ticks=int(rec.shape[0]), by_class=summarize(rec, der),
+                             d1=summarize_d1(rec, der, a_max_plan, ds_path_med)))
             if q["maze"] == args.trace_face:
                 tag = "_cap1" if args.single_cap else ""
                 np.savez_compressed(out_dir / f"trace_{q['maze']}_v{v_d:g}{tag}.npz",
@@ -318,7 +405,24 @@ def main():
               f"{wm('e_omega','med'):>8.3f} "
               f"{float(np.median([s['sat_rate'] for s in ss])):>7.3f}")
 
+    # ---- D1 の表（016-F0-b） ----
+    print("\n【D1】参照の時間微分と、その右因子（カーソルが 1 ティックに進む弧長）")
+    print(f"{'v指令':>6}{'|dv/dt| p99':>12}{'÷a_max':>8}{'進み 中央値':>12}{'進み p99':>10}"
+          f"{'境目 p99':>10}{'境目以外 p99':>13}{'超過(終端込)':>13}{'超過(終端抜)':>13}")
+    for v_d in args.speeds:
+        rs = [r["d1"] for r in rows if r["v_diag"] == v_d]
+        if not rs:
+            continue
+        def M(key):
+            vals = [r[key] for r in rs if r.get(key) is not None]
+            return float(np.median(vals)) if vals else float("nan")
+        print(f"{v_d:>6.2f}{M('dvdt_p99'):>12.3f}{M('dvdt_p99_over_amax'):>8.2f}"
+              f"{M('cursor_pts_med'):>12.2f}{M('cursor_pts_p99'):>10.2f}"
+              f"{M('cursor_pts_p99_boundary'):>10.2f}{M('cursor_pts_p99_elsewhere'):>13.2f}"
+              f"{M('excess_with_end'):>13.4f}{M('excess_no_end'):>13.4f}")
+
     out = dict(git_rev=git_rev(), maze_dir=args.maze_dir, speeds=list(args.speeds),
+               a_max_plan=a_max_plan, ds_path_med=ds_path_med,
                single_cap=bool(args.single_cap), k_acc_ff=float(args.k_acc_ff),
                eps_a=EPS_A, hold_s=HOLD_S, wheel_radius=r, control_dt=dt,
                voltage_limit=voltage_limit, audit_a_max_abs=audit_max, rows=rows)
