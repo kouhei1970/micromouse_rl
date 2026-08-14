@@ -62,13 +62,14 @@ def _run_one_trial(env: CorridorEnv, policy_fn, trial_seed: int,
             **電流の再計算には `action` と `wheel_omega` の両方が要る**ので両方持つ。
 
     2026-08-11 追加（新キーのみ。既存キーの意味・型は変えない）:
-      n_turns, hf_ratio, i_rms, i_dc, i_ac, min_wall_clearance_m
+      n_turns_reset45, hf_ratio, i_rms, i_dc, i_ac, min_wall_clearance_m
     追加の計算は評価ループ内で既に手に入る量だけを使うので、実測で走行あたり
     +3〜5% の時間しかかからない（最小壁余裕の幾何計算が主）。
 
     2026-08-12 追加（新キーのみ）: total_yaw_rad（|dyaw| の単純積算。リセットなし）。
-    **n_turns は教授裁定 2026-08-11-R4 により方式間比較・対外報告に使用禁止**
-    （§実装コメント参照）。回転量が要る場合は total_yaw_rad を使うこと。
+    **n_turns_reset45（2026-08-14 まで `n_turns` という名前だった。計算式は不変なので
+    旧記録の `n_turns` と同じ量）は教授裁定 2026-08-11-R4 により方式間比較・対外報告に
+    使用禁止**（§実装コメント参照）。回転量が要る場合は total_yaw_rad を使うこと。
     """
     obs, info = env.reset(seed=trial_seed)
     prev_action = None
@@ -192,8 +193,16 @@ def _run_one_trial(env: CorridorEnv, policy_fn, trial_seed: int,
         lateral_max_m=lat_max,
         lateral_rms_m=math.sqrt(lat_sq_sum / max(lat_count, 1)),
         # --- 以下 2026-08-11 追加（新キーのみ）---------------------------
-        # n_turns は方式間比較・対外報告に使用禁止（教授裁定 2026-08-11-R4。上記コメント参照）
-        n_turns=int(n_turns),
+        # 🔴 2026-08-14（R11 バッチ項目 9）: `n_turns` → `n_turns_reset45` へ改名した。
+        # **計算式は 1 文字も変えていない**ので、**旧記録の `n_turns` はこの
+        # `n_turns_reset45` と同じ量**である（±45° リセットあり定義）。
+        # 改名の理由: 同じ `n_turns` という名前が、学生A の実験（exp_013/014/015/018）と
+        # `competition/route_planner.py` では**裁定 R4 の正本定義（区画列の進行方向変化・
+        # 180° 転回 = 2）**を指しており、**同じ名前で別の量**になっていた
+        # （`research_notes/note_015_same_name_different_quantity.md`）。
+        # `mouse/maze6_eval.py` は同日の項目 2 で先に改名済み（両者を揃える）。
+        # 方式間比較・対外報告には使用禁止（裁定 R4）。回転量は total_yaw_rad を使う。
+        n_turns_reset45=int(n_turns),
         # 2026-08-12 追加: リセットなしの総ヨー角 [rad]。回転量が要る場合はこちらを使う
         total_yaw_rad=float(total_yaw_rad),
         hf_ratio=float(hf_energy_ratio(acts)) if acts else None,
