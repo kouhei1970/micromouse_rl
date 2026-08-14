@@ -98,6 +98,18 @@ class ReferenceInterpMixin:
         return math.sqrt(max(0.0, v_sq))
 
     # ------------------------------------------------------------------
+    def _reference_speed(self, idx: int, x: float, y: float) -> float:
+        """**参照速度を読む唯一の口**（2026-08-14 新設・016-F との協調のため）。
+
+        `ref_interp` が偽なら**格子点の値そのもの**を返す（＝親と同じ）。
+        **`_do_drive_control` を差し替える別の混ぜ込み（016-F の `TwoDofControlMixin`）も
+        必ずこの口を通す**ことで、**F0-b が静かに無効化される事故を防ぐ**。
+        """
+        if not self.ref_interp:
+            return float(self._path.speed[idx])
+        return self._speed_at(idx, x, y)
+
+    # ------------------------------------------------------------------
     def _do_drive_control(self, obs, x: float, y: float, yaw: float):
         # **既定（ref_interp = False）は親へそのまま委譲する** — 1 ビットも変わらない
         if not self.ref_interp:
@@ -108,7 +120,7 @@ class ReferenceInterpMixin:
         px, py = float(path.x[idx]), float(path.y[idx])
         phead = float(path.heading[idx])
         pcurv = float(path.curvature[idx])
-        v_target = self._speed_at(idx, x, y)      # ← 差し替えたのはここだけ
+        v_target = self._reference_speed(idx, x, y)   # ← 差し替えたのはここだけ
 
         # 速度指令のレートリミット（親と同一。上げ方向のみ）
         if self._v_setpoint < v_target:

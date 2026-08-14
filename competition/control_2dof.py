@@ -61,12 +61,25 @@ class TwoDofControlMixin:
 
     # ------------------------------------------------------------------
     def _do_drive_control(self, obs, x: float, y: float, yaw: float):
-        """親と同じ構造のまま、**FF を前方注視へ差し替え、レート項を足す**。"""
+        """親と同じ構造のまま、**FF を前方注視へ差し替え、レート項を足す**。
+
+        **既定（`tau_la` = `k_r` = 0）は親へそのまま委譲する**（2026-08-14 是正）。
+        **これで「既定なら 1 ビットも変わらない」が構成上保証される**
+        （写しの一致をテストで担保する形より強い）。
+        """
+        if self.tau_la == 0.0 and self.k_r == 0.0:
+            return super()._do_drive_control(obs, x, y, yaw)
+
         path = self._path
         idx = self._cursor
         px, py = float(path.x[idx]), float(path.y[idx])
         phead = float(path.heading[idx])
-        v_target = float(path.speed[idx])
+        # 🔴 **参照速度は必ず `_reference_speed` を通す**（2026-08-14 是正）。
+        # **016-F0-b の `ReferenceInterpMixin` も `_do_drive_control` を差し替える**ので、
+        # ここで `path.speed[idx]` を直に読むと **F0-b が静かに無効化される**。
+        # 混ぜ込みが無い構成では `path.speed[idx]` に落ちる。
+        _ref = getattr(self, "_reference_speed", None)
+        v_target = _ref(idx, x, y) if _ref is not None else float(path.speed[idx])
 
         # 速度指令のレートリミット（親と同一。上げ方向のみ）
         if self._v_setpoint < v_target:
