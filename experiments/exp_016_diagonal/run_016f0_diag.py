@@ -71,6 +71,7 @@ from route_model import connects_true, load_maze  # noqa: E402
 from run_016b import cut_segment, longest_diagonal_run  # noqa: E402
 from competition.reference_interp import ReferenceInterpMixin  # noqa: E402
 from competition.velocity_loop import VelocityLoopMixin  # noqa: E402
+from competition.control_2dof import TwoDofControlMixin  # noqa: E402
 from run_016c import LADDER, R_ARC_M, SegSpeedPolicy  # noqa: E402
 
 # 標本の層別（**結論とは独立な量＝指令の時間微分**で切る）
@@ -82,7 +83,8 @@ KIND_NAME = {0: "直進", 1: "円弧", 2: "斜め"}
 CLASS_NAME = {0: "定常", 1: "加速", 2: "減速"}
 
 
-class ProbedPolicy(ReferenceInterpMixin, VelocityLoopMixin, SegSpeedPolicy):
+class ProbedPolicy(TwoDofControlMixin, ReferenceInterpMixin, VelocityLoopMixin,
+                   SegSpeedPolicy):
     """**016-C の方策そのまま**。`_wheel_targets_to_voltage` を包んで記録するだけ。
 
     親を呼んで返り値をそのまま返すので、**電圧も軌跡も 1 ビットも変わらない**。
@@ -110,7 +112,8 @@ class ProbedPolicy(ReferenceInterpMixin, VelocityLoopMixin, SegSpeedPolicy):
 
 
 def run_one(xml_path, params, nodes, dirs, v_diag, v_walls, h_walls, max_s=40.0,
-            single_cap=False, k_acc_ff=0.0, ref_interp=False):
+            single_cap=False, k_acc_ff=0.0, ref_interp=False,
+            tau_la=0.0, k_r=0.0):
     """1 面 1 速度を走らせ、**制御周期ごとの生の記録**を返す。判定はしない。"""
     path, kinds, idxs = build_diagonal_path(nodes, dirs, params.cell_size, R_ARC_M)
     sim = MouseSim(str(xml_path), params=params)
@@ -123,7 +126,8 @@ def run_one(xml_path, params, nodes, dirs, v_diag, v_walls, h_walls, max_s=40.0,
         v_arr = np.full(len(kinds), float(v_diag))
     else:
         v_arr = np.where(kinds == "straight", 1e9, v_diag)   # 016-C と同一（直進は v_cap）
-    pol = ProbedPolicy(path, v_arr, k_acc_ff=k_acc_ff, ref_interp=ref_interp)
+    pol = ProbedPolicy(path, v_arr, k_acc_ff=k_acc_ff, ref_interp=ref_interp,
+                       tau_la=tau_la, k_r=k_r)
     pol.bind_sim(sim)
     pol.bind_maze(v_walls, h_walls)
     pol.on_maze_start(dict(width=16, height=16))
@@ -147,6 +151,9 @@ def run_one(xml_path, params, nodes, dirs, v_diag, v_walls, h_walls, max_s=40.0,
         rec.append((sim.sim_time, x, y, yaw, v_act, wz, v_ref, v_cmd, omega_cmd,
                     wl_des, wr_des, wl_act, wr_act, vl_r, vr_r,
                     KIND_CODE[str(kinds[k])], float(path.curvature[pol._cursor]),
+                    # 016-F の E6 用: **制御が実際に潰している横偏差**（親と同じ式）
+                    ((x - float(path.x[pol._cursor])) * (-math.sin(float(path.heading[pol._cursor])))
+                     + (y - float(path.y[pol._cursor])) * math.cos(float(path.heading[pol._cursor]))),
                     # D1（016-F0-b）: カーソルの添字と、そこまでの弧長。
                     # **d v_cmd/dt = (dv/ds)·(ds_cursor/dt) の右因子**を測るために要る
                     float(pol._cursor), float(path.s[pol._cursor])))
@@ -161,7 +168,7 @@ def run_one(xml_path, params, nodes, dirs, v_diag, v_walls, h_walls, max_s=40.0,
 
 COLS = ("t", "x", "y", "yaw", "v_act", "omega_z", "v_ref", "v_cmd", "omega_cmd",
         "wl_des", "wr_des", "wl_act", "wr_act", "volt_l", "volt_r", "kind", "kappa",
-        "cursor", "s_cur")
+        "e_y_cursor", "cursor", "s_cur")
 COL = {c: i for i, c in enumerate(COLS)}
 
 
@@ -217,8 +224,18 @@ def derive(rec, r, dt, voltage_limit):
         near[sh:] |= chg[:-sh]
         near[:-sh] |= chg[sh:]
 
+    # ---- E8（016-F）: 円弧出口からの弧長。斜め標本で「持ち越し」が減衰するかを見る ----
+    s_since_exit = np.full(len(kind), np.nan)
+    last_exit = None
+    for i in range(len(kind)):
+        if i > 0 and kind[i - 1] == KIND_CODE["arc"] and kind[i] != KIND_CODE["arc"]:
+            last_exit = s_cur[i]
+        if last_exit is not None and kind[i] == KIND_CODE["diagonal"]:
+            s_since_exit[i] = s_cur[i] - last_exit
+
     return dict(layer_k=layer_k, layer_w=layer_w, e_omega=e_omega, audit_a=audit_a,
                 sat=sat, cls=cls, excess=v_act - v_cmd, dvdt=d,
+                s_since_exit=s_since_exit,
                 excess_ref=v_act - v_ref, ds_cursor=ds_cursor, ds_travel=ds_travel,
                 k_end=k_end, in_end=in_end, near_boundary=near)
 
@@ -249,6 +266,7 @@ def summarize(rec, der):
                 v_cmd=_stats(rec[m, COL["v_cmd"]]),
                 v_act=_stats(rec[m, COL["v_act"]]),
                 a_lat=_stats(rec[m, COL["v_act"]] ** 2 * np.abs(rec[m, COL["kappa"]])),
+                e_y_abs=_stats(np.abs(rec[m, COL["e_y_cursor"]])),
                 sat_rate=float(np.mean(der["sat"][m])),
             )
     return out
@@ -296,9 +314,21 @@ def summarize_d1(rec, der, a_max, ds_path):
                                   med=float(np.median(dvdt[sel] / a_max)),
                                   max=float((dvdt[sel] / a_max).max()))
 
+    # ---- E8（016-F）: 斜め標本で |e_y| が円弧出口からの距離に対して減衰するか ----
+    diag = (rec[:, COL["kind"]] == KIND_CODE["diagonal"]) & np.isfinite(der["s_since_exit"])
+    e8 = {}
+    if diag.sum() >= 5:
+        xx = der["s_since_exit"][diag]
+        yy = np.abs(rec[diag, COL["e_y_cursor"]])
+        if np.ptp(xx) > 1e-6:
+            sl, ic = np.polyfit(xx, yy, 1)
+            r = float(np.corrcoef(xx, yy)[0, 1])
+            e8 = dict(n=int(diag.sum()), slope_m_per_m=float(sl), intercept_m=float(ic),
+                      corr=r, span_m=float(np.ptp(xx)))
+
     return dict(
         n_ticks=int(n), k_end=(int(k_end) if k_end < n else None),
-        dvdt_by_advance=strat,
+        dvdt_by_advance=strat, e8_decay=e8,
         # 参照の時間微分（B1・B2 の量）
         dvdt_p99=float(np.percentile(dvdt, 99)), dvdt_max=float(dvdt.max()),
         dvdt_p99_over_amax=float(np.percentile(dvdt, 99) / a_max),
@@ -325,6 +355,10 @@ def main():
                     help="加速度前置補償の係数（0 = 是正前・1.0 = 物理から導いた全量）")
     ap.add_argument("--ref-interp", action="store_true",
                     help="参照を弧長で内挿して読む（016-F0-b の是正）")
+    ap.add_argument("--tau-la", type=float, default=0.0,
+                    help="前方注視時間 [s]（016-F）")
+    ap.add_argument("--k-r", type=float, default=0.0,
+                    help="レートダンピングの係数（016-F）")
     ap.add_argument("--single-cap", action="store_true",
                     help="経路全体に 1 つの速度上限を掛ける（016-B と同一。カード §0 の診断条件）")
     ap.add_argument("--trace-face", default="maze_41038",
@@ -381,7 +415,8 @@ def main():
         for v_d in args.speeds:
             rec, collided = run_one(q["xml"], params, q["nodes"], q["dirs"], v_d,
                                     q["v"], q["h"], single_cap=args.single_cap,
-                                    k_acc_ff=args.k_acc_ff, ref_interp=args.ref_interp)
+                                    k_acc_ff=args.k_acc_ff, ref_interp=args.ref_interp,
+                                    tau_la=args.tau_la, k_r=args.k_r)
             if rec.size == 0:
                 continue
             der = derive(rec, r, dt, voltage_limit)
@@ -443,6 +478,7 @@ def main():
                a_max_plan=a_max_plan, ds_path_med=ds_path_med,
                single_cap=bool(args.single_cap), k_acc_ff=float(args.k_acc_ff),
                ref_interp=bool(args.ref_interp),
+               tau_la=float(args.tau_la), k_r=float(args.k_r),
                eps_a=EPS_A, hold_s=HOLD_S, wheel_radius=r, control_dt=dt,
                voltage_limit=voltage_limit, audit_a_max_abs=audit_max, rows=rows)
     (out_dir / ("d0_diag_cap1.json" if args.single_cap else "d0_diag.json")).write_text(json.dumps(out, ensure_ascii=False, indent=1),
