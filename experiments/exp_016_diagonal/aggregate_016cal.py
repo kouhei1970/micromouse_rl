@@ -31,8 +31,8 @@ import numpy as np
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 LOWER95_TARGET = 0.95      # REQ_001 §2-3 の判定規則
-C2_BAND = (0.75, 0.90)     # C2 の予測帯
-C3_BAND = (-1.3, -0.7)     # C3 の予測帯（−1.0 ± 0.3）
+C2_RANGE = (0.75, 0.90)    # C2（校正後の安全率の予測）の予測の範囲
+C3_RANGE = (-1.3, -0.7)    # C3（最速タイムの安全率依存）の予測の範囲（−1.0 ± 0.3）
 C5_TOP3_SHARE = 0.50       # C5: 最初に落ちる 3 迷路が全失敗の 50% 未満
 
 
@@ -100,7 +100,7 @@ def main():
     cal = max(ok) if ok else None
     if cal is None:
         c2, why = False, "**どの安全率も下限 0.95 を満たさない → F-2 の族**"
-    elif C2_BAND[0] - 1e-9 <= cal <= C2_BAND[1] + 1e-9:
+    elif C2_RANGE[0] - 1e-9 <= cal <= C2_RANGE[1] + 1e-9:
         c2, why = True, ""
     elif cal == 0.70:
         c2, why = False, "**= 0.70。現行が既に最適だった**（未校正だが偶然正しかった）"
@@ -109,16 +109,16 @@ def main():
     else:
         c2, why = False, "**> 0.90 → F-1: 物理限界の実測値そのものを疑う**"
     print(f"\n【C2】判定を満たす最大の安全率 = {cal}"
-          f"（予測帯 {C2_BAND[0]}〜{C2_BAND[1]}）: {'的中' if c2 else '外れ'} {why}")
+          f"（予測の範囲 {C2_RANGE[0]}〜{C2_RANGE[1]}）: {'的中' if c2 else '外れ'} {why}")
 
     # ---- C3: 最速タイムの冪（**2 通り出す**） ----
     ft_all = [s["fast_time_median"] for s in S]
     n_all = power_fit(sfs, ft_all)
     idx = [i for i, s in enumerate(S) if s["completion_rate"] >= 0.90]
     n_sub = power_fit([sfs[i] for i in idx], [ft_all[i] for i in idx])
-    c3 = C3_BAND[0] <= n_all <= C3_BAND[1]
+    c3 = C3_RANGE[0] <= n_all <= C3_RANGE[1]
     print(f"\n【C3】最速タイムの冪（**判定は条文どおり全水準**）: n = {n_all:+.3f}"
-          f"（予測帯 {C3_BAND[0]}〜{C3_BAND[1]}）: {'的中' if c3 else '外れ'}")
+          f"（予測の範囲 {C3_RANGE[0]}〜{C3_RANGE[1]}）: {'的中' if c3 else '外れ'}")
     print(f"    参考（完走率 ≥90% の {len(idx)} 水準に限る）: n = {n_sub:+.3f}")
     ns = [s["n_fast"] for s in S]
     print(f"    最速タイムを持つ迷路の数（各水準）: {ns}"
