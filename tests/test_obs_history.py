@@ -325,6 +325,85 @@ def t8_set_d0_max_forwarded() -> bool:
 
 
 # ======================================================================
+def t9_vectorized_env_placement() -> bool:
+    """学習で実際に使う経路（DummyVecEnv ＋ Monitor 越し）でも履歴の配置が同じか。
+
+    🔴 准教授 AUDIT_044 の未確認 2 への回答として学生B が追加（2026-08-15）。
+    T1〜T8 は**素の Maze6Env にラッパを掛けた形**しか検査しておらず、
+    **学習は `DummyVecEnv([Monitor(ObsHistoryWrapper(env))])` の形で回る**。
+    **不活性の bit 一致検証はラッパを無効にして走らせるので、この経路は覆っていない。**
+
+    あわせて**エピソード終端の自動リセットで履歴が持ち越されないか**も検査する
+    （**持ち越すと、前のエピソードの観測が次のエピソードの文脈に混ざる**）。
+    """
+    print("\n[T9] ベクトル化環境（DummyVecEnv ＋ Monitor）越しでも履歴の配置が同じか")
+    from stable_baselines3.common.monitor import Monitor
+    from stable_baselines3.common.vec_env import DummyVecEnv
+
+    base_seed, seed = 8070, 31
+    LIMIT = 40                      # 自動リセットを短時間で跨ぐため上限を小さくする
+    action = np.array([0.8, 0.8], dtype=np.float32)
+
+    def _mk():
+        return Monitor(ObsHistoryWrapper(make_env(base_seed, episode_limit_steps=LIMIT), LAGS))
+
+    vec = DummyVecEnv([_mk])
+    vec.seed(seed)
+    o_vec = vec.reset()[0]
+    ref = make_env(base_seed, episode_limit_steps=LIMIT)
+    o_ref, _ = ref.reset(seed=seed)
+    n = ref.observation_space.shape[0]
+
+    # 起点が一致していること（ここがずれていたら以降の照合は無意味）
+    start_ok = np.array_equal(np.asarray(o_ref, dtype=np.float32), o_vec[:n])
+    print(f"  reset 直後: ベクトル化側の先頭ブロックが素の観測と一致 = {start_ok}")
+
+    hist = [np.asarray(o_ref, dtype=np.float32)]
+    K = max(LAGS) + 5
+    diffs = []
+    for _t in range(K):
+        o_vec = vec.step(np.array([action]))[0][0]
+        o_ref, _r, term, trunc, _i = ref.step(action)
+        o_ref = np.asarray(o_ref, dtype=np.float32)
+        hist.append(o_ref)
+        diffs.append(float(np.max(np.abs(hist[-1] - hist[-2]))))
+        if term or trunc:
+            break
+    last_t = len(hist) - 1
+    # 空振り防止: 観測が毎歩変化していること
+    min_diff = min(diffs) if diffs else 0.0
+    print(f"  隣接歩の差の最大値の最小 = {min_diff:.3e}（0 なら空振り）")
+
+    lag_ok = [np.array_equal(o_vec[:n], hist[last_t])]
+    for j, lag in enumerate(LAGS):
+        idx = last_t - lag
+        ok = idx >= 0 and np.array_equal(o_vec[(j + 1) * n:(j + 2) * n], hist[idx])
+        lag_ok.append(ok)
+        print(f"  遅れ{lag}: ベクトル化側のブロック{j + 1} が {lag} 歩前と一致 = {ok}")
+
+    # 自動リセットを跨いでも履歴が持ち越されないこと（全ブロックが新しい観測と同値）。
+    # 🔴 **終端の歩をきっかり捕まえる**（歩数を数えて当てにいくと 1 歩ずれる。
+    # 終端の歩で DummyVecEnv が返すのが「自動リセット後の最初の観測」である）。
+    o_vec, done_seen = None, False
+    for _t in range(LIMIT + 5):
+        o_vec, _r, dones, _i = vec.step(np.array([action]))
+        o_vec = o_vec[0]
+        if dones[0]:
+            done_seen = True
+            break
+    blocks = [o_vec[i * n:(i + 1) * n] for i in range(1 + len(LAGS))]
+    fresh_ok = done_seen and all(np.array_equal(b, blocks[0]) for b in blocks)
+    print(f"  終端の歩を捕まえたか = {done_seen}")
+    # 空振り防止: 実際に新しいエピソードへ入っていること（観測が定数でないこと）
+    nonconst = float(np.max(blocks[0]) - np.min(blocks[0])) > 0
+    print(f"  自動リセット直後: 全 {len(blocks)} ブロックが同値（持ち越しなし）= {fresh_ok}"
+          f" / 観測が定数でない = {nonconst}")
+
+    vec.close()
+    ref.close()
+    return start_ok and (min_diff > 0.0) and all(lag_ok) and fresh_ok and nonconst
+
+
 def main() -> int:
     print("=" * 78)
     print("mouse/obs_history.py（観測履歴の連結・exp_021）の単体テスト")
@@ -338,6 +417,7 @@ def main() -> int:
         ("T6 sim の同一オブジェクト性", t6_sim_identity),
         ("T7 np_random を消費しない", t7_no_rng_consumption),
         ("T8 set_d0_max の転送", t8_set_d0_max_forwarded),
+        ("T9 ベクトル化環境越しの履歴の配置と自動リセット", t9_vectorized_env_placement),
     ]
     results = []
     for name, fn in tests:
