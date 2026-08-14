@@ -174,6 +174,22 @@ def main():
                         rel_diff=r, e_prime_control=ea, e_prime_treat=eb,
                         a_control=bool(ka["goal_reached"]), a_treat=bool(kb["goal_reached"])))
 
+    # ---- 🔴 判定の前に全数の存在検査（教授指示・B1 の教訓）------------
+    # **欠測が黙って「良い側の値」に化ける型**を防ぐ。
+    # 例: (d) が None の迷路が落ちると、n が減ったまま中央値が出てしまう
+    print("\n【全数の存在検査】**判定の前に、記録が全迷路ぶん揃っているかを確かめる**")
+    holes = []
+    for key, lab in (("d_control", "対照の (d)"), ("d_treat", "処理の (d)"),
+                     ("rel_diff", "対応差"), ("e_prime_treat", "処理の (e′)")):
+        n_miss = sum(1 for q in per if q[key] is None)
+        print(f"  {lab:<14} 欠測 {n_miss} / {len(per)} 迷路")
+        if n_miss and key != "e_prime_treat":
+            holes.append(lab)
+    if holes:
+        print(f"  → 🔴 **判定不能**（{'・'.join(holes)} に欠測がある）")
+        return 1
+    print(f"  → ✅ **(d) と対応差は 20/20 迷路そろっている**（判定に進んでよい）")
+
     print(f"\n【P1】(d) の同じ迷路どうしの対応差")
     if rel:
         med = float(np.median(rel))
