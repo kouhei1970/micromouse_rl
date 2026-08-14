@@ -85,6 +85,18 @@ _ENV_KWARGS = dict(
 )
 
 
+def _model_name(path: Path) -> str:
+    """集計キーに使う一意な呼び名。
+
+    🔴 **ファイル名だけでは一意にならない。**退避重みは 6 seed とも
+    `logs/exp_019_v2_seed{N}/rl_model_800000_steps.zip` で**ファイル名が同一**なので、
+    `Path.stem` を鍵にすると辞書が上書きされ、**6 seed の中央値が 1 本の値になる**
+    （2026-08-14 に実際に踏んだ。ログに同じ呼び名が並んで気づいた）。
+    親ディレクトリ名を前置して区別する。
+    """
+    return f"{path.parent.name}/{path.stem}"
+
+
 def _load_policy(model_path: Path):
     """方策を読み込み、(obs -> action の関数, 実歩数) を返す（方策は**無状態**）。"""
     model = PPO.load(str(model_path), device="cpu")
@@ -244,9 +256,16 @@ def main() -> None:
     print(f"[measure] 呼び名 = {args.label} / 観測履歴の遅れ = {lags or '（なし）'}"
           f" / 迷路 {len(maze_seeds)} 本 / 方策 {len(args.models)} 本", flush=True)
 
+    # 🔴 呼び名が一意であることを**先に**確かめる（衝突すると黙って上書きされ、
+    # 「6 seed の中央値」が 1 本の値になる。空振りを構成上検出する）。
+    names = [_model_name(Path(m)) for m in args.models]
+    if len(set(names)) != len(names):
+        dup = sorted({n for n in names if names.count(n) > 1})
+        raise SystemExit(f"モデルの呼び名が衝突している（集計が壊れる）: {dup}")
+
     per_seed, model_info = {}, []
     for m in args.models:
-        name = Path(m).stem
+        name = _model_name(Path(m))
         policy_fn, n_ts = _load_policy(Path(m))
         eps = [_run_episode(maze_dir, ms, policy_fn, lags) for ms in maze_seeds]
         mets = [_episode_metrics(e) for e in eps]
