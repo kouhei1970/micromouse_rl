@@ -1,0 +1,231 @@
+{
+  "3": [
+    {
+      "step": 2000000,
+      "kind": "first_goal",
+      "goal_rate": 0.05,
+      "goal_rate_center_rule": 0.05,
+      "goal_faces": [
+        7017
+      ],
+      "n_failed": 19,
+      "dist": null,
+      "n_changed": null,
+      "prev_step": null
+    },
+    {
+      "step": 2000200,
+      "kind": "fine",
+      "goal_rate": 0.05,
+      "goal_rate_center_rule": 0.05,
+      "goal_faces": [
+        7017
+      ],
+      "n_failed": 19,
+      "dist": 0.0,
+      "n_changed": 0,
+      "prev_step": 2000000
+    },
+    {
+      "step": 2000400,
+      "kind": "fine",
+      "goal_rate": 0.05,
+      "goal_rate_center_rule": 0.05,
+      "goal_faces": [
+        7017
+      ],
+      "n_failed": 19,
+      "dist": 0.0,
+      "n_changed": 0,
+      "prev_step": 2000200
+    },
+    {
+      "step": 2000600,
+      "kind": "fine",
+      "goal_rate": 0.05,
+      "goal_rate_center_rule": 0.05,
+      "goal_faces": [
+        7017
+      ],
+      "n_failed": 19,
+      "dist": 0.0,
+      "n_changed": 0,
+      "prev_step": 2000400
+    },
+    {
+      "step": 2000800,
+      "kind": "fine",
+      "goal_rate": 0.05,
+      "goal_rate_center_rule": 0.05,
+      "goal_faces": [
+        7017
+      ],
+      "n_failed": 19,
+      "dist": 0.0,
+      "n_changed": 0,
+      "prev_step": 2000600
+    },
+    {
+      "step": 2000896,
+      "kind": "eval",
+      "goal_rate": 0.0,
+      "goal_rate_center_rule": 0.0,
+      "goal_faces": [],
+      "n_failed": 20,
+      "dist": 0.3592924475669861,
+      "n_changed": 38021,
+      "prev_step": 2000800
+    }
+  ],
+  "4": [
+    {
+      "step": 1900000,
+      "kind": "first_goal",
+      "goal_rate": 0.05,
+      "goal_rate_center_rule": 0.05,
+      "goal_faces": [
+        7011
+      ],
+      "n_failed": 19,
+      "dist": null,
+      "n_changed": null,
+      "prev_step": null
+    },
+    {
+      "step": 1900200,
+      "kind": "fine",
+      "goal_rate": 0.05,
+      "goal_rate_center_rule": 0.05,
+      "goal_faces": [
+        7011
+      ],
+      "n_failed": 19,
+      "dist": 0.0,
+      "n_changed": 0,
+      "prev_step": 1900000
+    },
+    {
+      "step": 1900400,
+      "kind": "fine",
+      "goal_rate": 0.05,
+      "goal_rate_center_rule": 0.05,
+      "goal_faces": [
+        7011
+      ],
+      "n_failed": 19,
+      "dist": 0.0,
+      "n_changed": 0,
+      "prev_step": 1900200
+    },
+    {
+      "step": 1900600,
+      "kind": "fine",
+      "goal_rate": 0.0,
+      "goal_rate_center_rule": 0.0,
+      "goal_faces": [],
+      "n_failed": 20,
+      "dist": 0.635144054889679,
+      "n_changed": 38021,
+      "prev_step": 1900400
+    },
+    {
+      "step": 1900800,
+      "kind": "fine",
+      "goal_rate": 0.0,
+      "goal_rate_center_rule": 0.0,
+      "goal_faces": [],
+      "n_failed": 20,
+      "dist": 0.0,
+      "n_changed": 0,
+      "prev_step": 1900600
+    },
+    {
+      "step": 1901000,
+      "kind": "fine",
+      "goal_rate": 0.0,
+      "goal_rate_center_rule": 0.0,
+      "goal_faces": [],
+      "n_failed": 20,
+      "dist": 0.0,
+      "n_changed": 0,
+      "prev_step": 1900800
+    },
+    {
+      "step": 1901200,
+      "kind": "fine",
+      "goal_rate": 0.0,
+      "goal_rate_center_rule": 0.0,
+      "goal_faces": [],
+      "n_failed": 20,
+      "dist": 0.0,
+      "n_changed": 0,
+      "prev_step": 1901000
+    },
+    {
+      "step": 1901400,
+      "kind": "fine",
+      "goal_rate": 0.0,
+      "goal_rate_center_rule": 0.0,
+      "goal_faces": [],
+      "n_failed": 20,
+      "dist": 0.0,
+      "n_changed": 0,
+      "prev_step": 1901200
+    },
+    {
+      "step": 1901600,
+      "kind": "fine",
+      "goal_rate": 0.0,
+      "goal_rate_center_rule": 0.0,
+      "goal_faces": [],
+      "n_failed": 20,
+      "dist": 0.0,
+      "n_changed": 0,
+      "prev_step": 1901400
+    },
+    {
+      "step": 1901800,
+      "kind": "fine",
+      "goal_rate": 0.0,
+      "goal_rate_center_rule": 0.0,
+      "goal_faces": [],
+      "n_failed": 20,
+      "dist": 0.0,
+      "n_changed": 0,
+      "prev_step": 1901600
+    },
+    {
+      "step": 1902000,
+      "kind": "fine",
+      "goal_rate": 0.0,
+      "goal_rate_center_rule": 0.0,
+      "goal_faces": [],
+      "n_failed": 20,
+      "dist": 0.0,
+      "n_changed": 0,
+      "prev_step": 1901800
+    },
+    {
+      "step": 2000000,
+      "kind": "eval",
+      "goal_rate": 0.0,
+      "goal_rate_center_rule": 0.0,
+      "goal_faces": [],
+      "n_failed": 20,
+      "dist": 2.971595048904419,
+      "n_changed": 38021,
+      "prev_step": 1902000
+    },
+    {
+      "step": 2000896,
+      "kind": "eval",
+      "goal_rate": 0.0,
+      "goal_rate_center_rule": 0.0,
+      "goal_faces": [],
+      "n_failed": 20,
+      "dist": 0.40592968463897705,
+      "n_changed": 37988,
+      "prev_step": 2000000
+    }
+  ]
+}

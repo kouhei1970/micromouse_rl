@@ -1,0 +1,32 @@
+{
+  "3": {
+    "maze": 7017,
+    "before": {
+      "step": 2000800,
+      "outcome": "goal",
+      "n": 267
+    },
+    "after": {
+      "step": 2000896,
+      "outcome": "collision",
+      "n": 4593
+    },
+    "first_action_diff": 0,
+    "first_cell_diff": 79
+  },
+  "4": {
+    "maze": 7011,
+    "before": {
+      "step": 1900400,
+      "outcome": "goal",
+      "n": 4622
+    },
+    "after": {
+      "step": 1900600,
+      "outcome": "collision",
+      "n": 5751
+    },
+    "first_action_diff": 1,
+    "first_cell_diff": 24
+  }
+}

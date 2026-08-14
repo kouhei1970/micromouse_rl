@@ -143,6 +143,55 @@ def stage_T1() -> int:
     return 0
 
 
+
+
+def stage_T3() -> int:
+    """T3: ゴール面で、離脱の前後の重みの軌跡がどこで分かれるか。"""
+    from stable_baselines3 import PPO
+    from mouse.maze6_env import Maze6Env
+    from mouse.maze6_eval import _trial_seed
+    CASES = [(3, 7017, 2000800, 2000896), (4, 7011, 1900400, 1900600)]
+
+    def trace(path, ms):
+        model = PPO.load(str(path), device="cpu")
+        env = Maze6Env(maze_dir=VALIDATION_MAZE_DIR, maze_seeds=[ms], max_cache=2,
+                       gamma=GAMMA, mode="fixed", maze_mode="loop", **EVAL_KWARGS)
+        obs, info = env.reset(seed=_trial_seed(0, ms, 0))
+        cells, acts = [info["cell"]], []
+        while True:
+            a = model.predict(obs, deterministic=True)[0]
+            acts.append(np.asarray(a, dtype=float).copy())
+            obs, _r, term, trunc, info = env.step(a)
+            cells.append(info["cell"])
+            if term or trunc:
+                return cells, acts, ("goal" if info["goal"] else
+                                     "collision" if info["collision"] else "timeout")
+
+    print("=" * 78)
+    print("T3: ゴール面での軌跡の分岐（離脱の前 対 後）")
+    print("=" * 78)
+    out = {}
+    for seed, ms, s_ok, s_ng in CASES:
+        c1, a1, o1 = trace(Path(f"models/exp_019_v2_seed{seed}_after_goal_fine_{s_ok}.zip")
+                           if s_ok % 2000000 else
+                           Path(f"models/exp_019_v2_seed{seed}_first_goal_{s_ok}.zip"), ms)
+        c2, a2, o2 = trace(Path(f"models/exp_019_v2_seed{seed}_after_goal_eval_{s_ng}.zip")
+                           if s_ng == 2000896 else
+                           Path(f"models/exp_019_v2_seed{seed}_after_goal_fine_{s_ng}.zip"), ms)
+        da = next((i for i, (x, y) in enumerate(zip(a1, a2)) if not np.allclose(x, y)), None)
+        dc = next((i for i, (x, y) in enumerate(zip(c1, c2)) if x != y), None)
+        print(f"  seed{seed} 面 {ms}: {s_ok:,}（{o1}・{len(a1)} 歩） → "
+              f"{s_ng:,}（{o2}・{len(a2)} 歩）")
+        print(f"    行動が最初に食い違う歩 = {da}   区画が最初に食い違う歩 = {dc}")
+        out[seed] = dict(maze=ms, before=dict(step=s_ok, outcome=o1, n=len(a1)),
+                         after=dict(step=s_ng, outcome=o2, n=len(a2)),
+                         first_action_diff=da, first_cell_diff=dc)
+    Path("verification/out/exp019_decay_T3.json").write_text(
+        json.dumps(out, ensure_ascii=False, indent=2))
+    print("\n出力: verification/out/exp019_decay_T3.json")
+    return 0
+
+
 if __name__ == "__main__":
     stage = sys.argv[1] if len(sys.argv) > 1 else "T0"
-    raise SystemExit(stage_T0() if stage == "T0" else stage_T1())
+    raise SystemExit({"T0": stage_T0, "T1": stage_T1, "T3": stage_T3}[stage]())
