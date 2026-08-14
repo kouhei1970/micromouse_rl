@@ -102,6 +102,11 @@ MACRO_DELTA, MACRO_THETA = 4, 3
 # K=1 19% / K=2 41% / K>=3 41% を 20 面に割り当てたもの。
 # **最大化ではなく分布一致**（R について教授が示した方針と同じ）。
 K_TARGETS = {1: 4, 2: 8, 3: 8}
+# ⚠️ **K_TARGETS は絶対数であり、合計 20 が帯の面数の上限になる**
+# （大会の実測比率 19% / 41% / 41% を **20 面**へ割り当てたもの）。
+# **より大きな帯が要る場合は `--k-scale` で比率を保ったまま倍にする**
+# （**契約は「大会の実測比率の維持」であって絶対数ではない**。裁定 R43-2・2026-08-14）。
+# **K_TARGETS そのものは変更しない** — 変えると凍結帯 eval_v4 を再生成できなくなる。
 
 CONTEST_DIR = os.path.join(_REPO_ROOT, "competition", "reference_mazes", "contest")
 
@@ -338,6 +343,8 @@ def main():
     ap.add_argument("--recompute-bands", action="store_true",
                     help="層の境界を参照迷路から測り直して使う（既定値の検算）")
     ap.add_argument("--dry-run", action="store_true", help="npz/XML を書かずに集計だけ")
+    ap.add_argument("--k-scale", type=int, default=1,
+                    help="K 階級の目標面数の倍率（**比率は保つ**。既定 1 = 従来と同一。裁定 R43-2）")
     ap.add_argument("--no-k-strat", action="store_true",
                     help="候補経路の本数 K の層別を行わない（R だけで層別）")
     args = ap.parse_args()
@@ -352,7 +359,9 @@ def main():
 
     print(f"[maze_gen_v3] seed {args.seed_from}〜{args.seed_to}、"
           f"層ごと {args.n_per_band} 面、除去目標 {args.extra_open}")
-    k_targets = None if args.no_k_strat else K_TARGETS
+    # **既定（--k-scale 1）では K_TARGETS と等しい辞書**になるので、従来と挙動は変わらない
+    k_targets = (None if args.no_k_strat
+                 else {k: v * args.k_scale for k, v in K_TARGETS.items()})
     if k_targets:
         print(f"  K の階級ごとの目標面数: {k_targets}"
               f"（Δ={MACRO_DELTA}, θ={MACRO_THETA}）")
