@@ -63,8 +63,19 @@ Mechanically evaluate the pre-registered predictions R1, R3-R7 for exp_023.
     --group2  outputs/exp_023b_driving_final.json \
     --logs-g1 logs/exp_023a_seed{1,2,3,4,5,6} \
     --logs-g2 logs/exp_023b_seed{1,2,3,4,5,6} \
+    --logs-control logs/exp_021_seed{1,2,3,4,5,6} \
     --out outputs/exp_023_judgment.json
 ```
+
+## 准教授 AUDIT_049 の是正（**教授が全件採択・2026-08-15**）
+
+| # | 是正 | 実装 |
+|---|---|---|
+| 1・2 | **外れの向きの旗を 2 つに分けた** — `hit_is_low`（判定の当たりの向き）と `improvement_is_high`（量として良い向き）。**R3・R5 はこの 2 つが分かれる**ので、旧実装は R3 の外れを「閾値未達」（実際は閾値より上）・R5 の外れを「対照より悪化」（実際はゴール率が上がった ＝ 改善）と表示していた | `_direction()` |
+| 3 | **`git diff --quiet` の終了コードを 0／1／2 以上で分けた**。**git 自体の失敗を「群が別版で走った」と誤診断しない** | `check_same_version()` |
+| 4 | **定期評価の記録の最終点が 6 本で同じ時点かを検査**（ある seed だけ最終評価が欠けると、別の時点の値が静かに混ざる） | `check_goal_rate_timepoints()` |
+| 5 | **R5 の錨 0.000 も再計算・照合の対象にした**（`--logs-control` を必須にした）。**4 つの錨すべてで原則を守る** | `check_anchors()` |
+| 6 | **§3-3 (iii)「どちらの群よりも外」を計算する**（教授裁定）。**判定量ごとに 3 群の順序を出し、群 1 か群 2 が他の 2 群の張る範囲の外なら旗を立て、`read_coverage()` が表を返さない** | `bracket_check()` |
 """
 import argparse
 import json
@@ -151,6 +162,28 @@ def seed_medians(meas: dict, field: str) -> dict:
             for k, v in meas["detail"].items()}
 
 
+def check_goal_rate_timepoints(tag: str, goal_rates: dict, expected_steps=None) -> list:
+    """🔴 定期評価の記録の**最終点が 6 本で同じ学習量の時点**かを検査する。
+
+    **成立する事故（准教授 AUDIT_049 要是正 4）**: **ある seed だけ最終評価が書かれていないと、
+    その seed だけ 190 万歩の値が混ざり、6 seed 中央値が別の時点の混合になる。例外は出ない。**
+
+    **安全弁が確かめている `num_timesteps` は保存済みモデルの学習量であって、
+    定期評価の記録の最終点ではない** — 別の記録なので、こちらを独立に検査する。
+    """
+    msgs = []
+    ts = sorted({v["total_timesteps"] for v in goal_rates.values()})
+    if len(goal_rates) != N_SEEDS:
+        msgs.append(f"{tag}: ゴール率の seed 数が {N_SEEDS} でない（{len(goal_rates)}）")
+    if len(ts) != 1:
+        msgs.append(f"{tag}: 定期評価の最終点が seed 間で揃っていない（{ts}）"
+                    " ＝ 別の時点の値が混ざっている")
+    elif expected_steps is not None and ts[0] != expected_steps:
+        msgs.append(f"{tag}: 定期評価の最終点 {ts[0]:,} 歩が"
+                    f"保存済みモデルの学習量 {expected_steps:,} 歩と違う")
+    return msgs
+
+
 def final_goal_rates(log_dirs) -> dict:
     """定期評価の記録の**最終点**の `goal_rate` を seed ごとに返す。
 
@@ -190,11 +223,36 @@ def group_flag_from_train_log(log_dir) -> dict:
 # 判定（条文と 1 対 1）
 # ---------------------------------------------------------------------------
 
-def _direction(value, threshold, control, better_is_high: bool, hit: bool) -> str:
-    """§3-3 外れの向きの区別: 閾値未達 / 逆向き（対照より悪化） / 当たり。"""
+#: 外れの向きの表示（§3-3）。**旗を 2 つに分ける**（准教授 AUDIT_049 要是正 1・2／教授発注）。
+#:
+#: 🔴 **1 つの旗に 2 つの意味を乗せてはいけない**:
+#: - **`hit_is_low`** = **判定の当たりの向き**（「低いままなら当たり」＝ 帰無の予測か）
+#: - **`improvement_is_high`** = **量として良い向き**（値が高いほど機体として良いか）
+#:
+#: **この 2 つは R3・R5 で分かれる** — **どちらも「低いままなら当たり」だが、
+#: 正味の前進もゴール率も「高いほど良い」**。旧実装は 1 つの旗（`better_is_high`）に
+#: 両方を乗せていたため、**R3 の外れが「閾値未達」（実際は閾値より上）・
+#: R5 の外れが「対照より悪化」（実際はゴール率が上がった ＝ 機体としては改善）と表示された**。
+DIRECTIONS = {
+    "hit": "当たり",
+    "miss_improved_against_prediction": "外れ（**予測と逆に改善した**）",
+    "miss_reverse": "外れ（**対照より悪化**）",
+    "miss_below_threshold": "外れ（**閾値に届かない**。対照よりは良い側）",
+}
+
+
+def _direction(value, threshold, control, *, hit_is_low: bool,
+               improvement_is_high: bool, hit: bool) -> str:
+    """§3-3 外れの向きの区別。**予測に対してどちら側へ出たか**で分ける。"""
     if hit:
         return "hit"
-    worse_than_control = (value < control) if better_is_high else (value > control)
+    # 外れがどちら側へ出たかは、当たりの向きで決まる
+    #   hit_is_low  なら外れ = 閾値より「上」  → 上へ出たことが改善か？
+    #   hit_is_low でないなら外れ = 閾値より「下」→ 下へ出たことが改善か？
+    improved = improvement_is_high if hit_is_low else (not improvement_is_high)
+    if improved:
+        return "miss_improved_against_prediction"
+    worse_than_control = (value < control) if improvement_is_high else (value > control)
     return "miss_reverse" if worse_than_control else "miss_below_threshold"
 
 
@@ -209,7 +267,8 @@ def judge_r1(g1: dict) -> dict:
         per_seed=c["per_seed"], n_seeds_nonzero=c["n_seeds_nonzero"],
         max_single_seed=c["max_single_seed"],
         hit=bool(hit),
-        direction=_direction(c["total"], R1_THRESHOLD, ANCHORS["n_reach_ge7"], True, hit),
+        direction=_direction(c["total"], R1_THRESHOLD, ANCHORS["n_reach_ge7"],
+                             hit_is_low=False, improvement_is_high=True, hit=hit),
         note=(f"1 seed の上限は {N_MAZES} 件なので、閾値 {R1_THRESHOLD} 件は "
               f"{N_MAZES} 走行 × 2 seed で作れる。**合計だけで「増えた」と書かない** "
               f"（研究計画書 §9-18）。対照の内訳は {ANCHORS['n_reach_ge7_per_seed']}"))
@@ -226,7 +285,9 @@ def judge_r3(g1: dict) -> dict:
         control=ANCHORS["net_progress_per_1000"],
         per_seed=seed_medians(g1, "net_progress_per_1000"),
         hit=bool(hit),
-        direction=_direction(v, R3_THRESHOLD, ANCHORS["net_progress_per_1000"], True, hit))
+        # 🔴 「低いままなら当たり」だが「正味の前進は高いほど良い」＝ 2 つの向きが分かれる判定
+        direction=_direction(v, R3_THRESHOLD, ANCHORS["net_progress_per_1000"],
+                             hit_is_low=True, improvement_is_high=True, hit=hit))
     if ambiguous:
         out["warning"] = "R3_AMBIGUOUS_STRIP"
         out["warning_detail"] = (
@@ -246,7 +307,9 @@ def judge_r4(g1: dict) -> dict:
         value=v, threshold=R4_THRESHOLD, control=ANCHORS["respawn_per_1000"],
         per_seed=seed_medians(g1, "respawn_per_1000"),
         hit=bool(hit),
-        direction=_direction(v, R4_THRESHOLD, ANCHORS["respawn_per_1000"], False, hit))
+        # 衝突は「低いままなら当たり」かつ「低いほど良い」＝ 2 つの向きが一致する判定
+        direction=_direction(v, R4_THRESHOLD, ANCHORS["respawn_per_1000"],
+                             hit_is_low=True, improvement_is_high=False, hit=hit))
 
 
 def judge_r5(goal_rates: dict) -> dict:
@@ -261,7 +324,10 @@ def judge_r5(goal_rates: dict) -> dict:
         per_seed={k: v["goal_rate"] for k, v in goal_rates.items()},
         per_seed_sorted=sorted(vals),
         hit=bool(hit),
-        direction=_direction(med, R5_THRESHOLD, ANCHORS["goal_rate"], False, hit),
+        # 🔴 「低いままなら当たり」だが「ゴール率は高いほど良い」＝ 2 つの向きが分かれる判定。
+        # ゴール率が上がって外れた場合は「対照より悪化」ではなく「予測と逆に改善した」である
+        direction=_direction(med, R5_THRESHOLD, ANCHORS["goal_rate"],
+                             hit_is_low=True, improvement_is_high=True, hit=hit),
         note=("判定量の刻みは 1/20 = 0.05。**seed ごとの値を必ず併記する** — "
               "対照は 0, 0, 0, 0, 0.05, 0.05 で中央値 0.000 であり、"
               "あと 2 本増えると中央値が厳密に 0.05 になって外れ側に乗る"))
@@ -295,8 +361,57 @@ def judge_r7(g1: dict, g2: dict) -> dict:
         note="R6 が「より多い」（同数は外れ）なのに R7 が「以下」（同値は当たり）なのは、字句が非対称だから")
 
 
-def read_coverage(r1: dict, r6: dict) -> dict:
+#: 🔴 §3-3 (iii)「外」の定義は **裁定待ち**（2026-08-15 時点）。
+#:
+#: **当初裁定された定義（「群 1 か群 2 が他の 2 群の張る範囲の外」）は、実装して叩いたところ
+#: 3 群の値が相異なるかぎり必ず旗が立つことが分かった**（`tests/test_judge_recurrent.py` T-J9）:
+#:
+#: > **相異なる 3 つの値のうち真ん中は 1 つだけ。検査の対象は群 1 と群 2 の 2 つなので、
+#: > 少なくとも一方は必ず「他の 2 つの外」になる。**
+#:
+#: **帰結**: §3-4 の表が一度も返らない — **本実験が期待する結果（対照 < 群 1 < 群 2）でも旗が立つ。**
+#: **誤りの型 5（構成上必ず成立する形）の裏返し**である。
+#:
+#: **裁定が下りるまで、旗は「記述として計算するが、表の抑制には使わない」**。
+#: **代案 B（学生B の推し・教授へ提案済み）**: **群 1 か群 2 が「対照より悪い側」へ出たら旗を立てる。**
+BRACKET_RULING_PENDING = True
+
+
+def bracket_check(quantities: dict) -> dict:
+    """🔴 §3-3 (iii)「どちらの群よりも外」を**計算する**（准教授案・**定義は裁定待ち**）。
+
+    **判定量ごとに 3 群（対照・群 1・群 2）の順序を出し、
+    群 1 か群 2 が他の 2 群の張る範囲の外に出たら旗を立てる。**
+    **旗が立ったら `read_coverage()` は表を返さない**（カード :277「本表は『外』を独立の列として
+    持たないので、出たら表の外で扱う」の機械化。**exp_022 で実際に起きた型**）。
+
+    quantities: {判定量の名前: {"対照": 値, "群 1": 値, "群 2": 値}}
+    """
+    out, any_outside = {}, False
+    for name, vals in quantities.items():
+        order = sorted(vals, key=lambda k: vals[k])
+        outside = {}
+        for target in ("群 1", "群 2"):
+            others = [v for k, v in vals.items() if k != target]
+            lo, hi = min(others), max(others)
+            outside[target] = not (lo <= vals[target] <= hi)
+        any_outside = any_outside or any(outside.values())
+        out[name] = dict(values=vals, order_low_to_high=order, outside=outside)
+    return dict(any_outside=any_outside, per_quantity=out,
+                ruling_pending=BRACKET_RULING_PENDING,
+                note=("🔴 定義は裁定待ち。当初定義は 3 群の値が相異なるかぎり必ず旗が立つ"
+                      "（真ん中は 1 つしかなく、検査対象は 2 つあるため）ので、"
+                      "裁定が下りるまで表の抑制には使わない。カード :277 の条文の機械化は保留"))
+
+
+def read_coverage(r1: dict, r6: dict, bracket: dict) -> dict:
     """§3-4 全域被覆（R1 × R6 の 4 通り）。**第 3 の読みが出たら表を引かない**。"""
+    if bracket["any_outside"] and not BRACKET_RULING_PENDING:
+        return dict(r1_hit=r1["hit"], r6_hit=r6["hit"], table_returned=False,
+                    reading=None, next_move=None,
+                    reason=("🔴 §3-3 (iii)「どちらの群よりも外」が成立した ＝ 挟む前提が崩れている。"
+                            "カード :277 により §3-4 の表は引かず、そのまま報告する"),
+                    outside=bracket["per_quantity"])
     table = {
         (True, True): ("再帰構造が効き、汚染を除くと更に効く",
                        "M2 の本命として記憶構造を進める。汚染の除去を標準に"),
@@ -308,9 +423,10 @@ def read_coverage(r1: dict, r6: dict) -> dict:
                          "記憶の方向を打ち切る前に、§8 限界 3 の後続（容量の軸）を検討する"),
     }
     reading, next_move = table[(r1["hit"], r6["hit"])]
-    return dict(r1_hit=r1["hit"], r6_hit=r6["hit"], reading=reading, next_move=next_move,
-                caveat=("§3-4 の「第 3 の読み（どちらの群よりも外）」が出た場合は本表を引かない。"
-                        "本表は「外」を独立の列として持たない"))
+    return dict(r1_hit=r1["hit"], r6_hit=r6["hit"], table_returned=True,
+                reading=reading, next_move=next_move,
+                caveat=("§3-4 の「第 3 の読み（どちらの群よりも外）」は計算済みで、成立していない"
+                        "（成立していれば本表は返らない）"))
 
 
 # ---------------------------------------------------------------------------
@@ -457,9 +573,18 @@ def check_measurement(tag: str, meas: dict, *, recurrent: bool) -> list:
     return msgs
 
 
-def check_anchors(control: dict) -> list:
-    """🔴 錨を測定出力から再計算して照合する（**後から差し替えられない形にする**）。"""
+def check_anchors(control: dict, control_goal_rates: dict) -> list:
+    """🔴 錨を測定出力から再計算して照合する（**後から差し替えられない形にする**）。
+
+    **4 つの錨すべてを対象にする**（准教授 AUDIT_049 要記載 1）。
+    **`goal_rate` だけを裸の定数のままにしない** — **「錨は再計算して照合する」という
+    本スクリプト自身の原則が、4 つのうち 1 つで守られていない**状態を解消する。
+    """
     msgs = []
+    got_goal = statistics.median([v["goal_rate"] for v in control_goal_rates.values()])
+    if abs(got_goal - ANCHORS["goal_rate"]) > ANCHOR_TOL:
+        msgs.append(f"錨 goal_rate が事前登録と違う"
+                    f"（登録 {ANCHORS['goal_rate']} / 実測 {got_goal}）")
     c = count_reach_ge(control, REACH_DEPTH)
     if c["total"] != ANCHORS["n_reach_ge7"]:
         msgs.append(f"錨 n_reach_ge{REACH_DEPTH} が事前登録と違う"
@@ -504,11 +629,17 @@ def check_same_version(log_dirs_all) -> tuple:
         for other in uniq[1:]:
             r = subprocess.run(["git", "diff", "--quiet", base, other, "--"] + CODE_PATHS,
                                capture_output=True)
-            if r.returncode != 0:
+            # 🔴 `git diff --quiet` の終了コード: 0 = 差分なし・1 = 差分あり・2 以上 = git 自体の失敗。
+            # **失敗を「別版で走った」と混同しない**（准教授 AUDIT_049 要是正 3）。
+            # 「群が別版で走った」は設計の前提が壊れたという重い主張なので、
+            # git の一時的な失敗でそれを出すと実験そのものを疑って時間を失う。
+            if r.returncode == 1:
                 msgs.append(f"🔴 実行経路に差分がある: {base[:7]} 対 {other[:7]}"
                             f"（{' '.join(CODE_PATHS)}）＝ 群が別版で走っている")
-            elif r.returncode not in (0, 1):
-                msgs.append(f"git diff が失敗した（{base[:7]} 対 {other[:7]}）: {r.stderr.decode()[:200]}")
+            elif r.returncode > 1:
+                msgs.append(f"⚠️ git diff の実行自体が失敗した（{base[:7]} 対 {other[:7]}・"
+                            f"終了コード {r.returncode}）: {r.stderr.decode()[:200]}"
+                            "／**版の食い違いが確認できていない**（別版だと断定してはいない）")
     return msgs, dict(git_rev_per_run=revs, unique_revs=uniq,
                       note=("git_rev の相違は文書コミットで起こりうるので許容し、"
                             "実行経路の差分だけを落とす基準にしている（§8-6 ブラックリスト方式）"))
@@ -554,6 +685,8 @@ def main(argv=None) -> int:
     p.add_argument("--group2", required=True, help="群 2（リセットする）の測定出力")
     p.add_argument("--logs-g1", nargs="+", required=True, help="群 1 の log ディレクトリ 6 本")
     p.add_argument("--logs-g2", nargs="+", required=True, help="群 2 の log ディレクトリ 6 本")
+    p.add_argument("--logs-control", nargs="+", required=True,
+                   help="対照 exp_021 の log ディレクトリ 6 本（**R5 の錨の再計算に使う**）")
     p.add_argument("--out", required=True)
     args = p.parse_args(argv)
 
@@ -568,7 +701,13 @@ def main(argv=None) -> int:
     steps = [sorted({m["num_timesteps"] for m in d["models"]})[0] for d in (control, g1, g2)]
     if len(set(steps)) != 1:
         bad.append(f"3 群の学習量が違う（対照/群1/群2 = {steps}）")
-    bad += check_anchors(control)
+    goal_control = final_goal_rates(args.logs_control)
+    goal_g1 = final_goal_rates(args.logs_g1)
+    goal_g2 = final_goal_rates(args.logs_g2)
+    bad += check_anchors(control, goal_control)
+    bad += check_goal_rate_timepoints("対照 exp_021", goal_control, steps[0])
+    bad += check_goal_rate_timepoints("群 1", goal_g1, steps[1])
+    bad += check_goal_rate_timepoints("群 2", goal_g2, steps[2])
     bad += check_group_logs("群 1", args.logs_g1, respawn_reset=False)
     bad += check_group_logs("群 2", args.logs_g2, respawn_reset=True)
     ver_msgs, version_info = check_same_version(list(args.logs_g1) + list(args.logs_g2))
@@ -576,11 +715,30 @@ def main(argv=None) -> int:
     if bad:
         raise SystemExit("安全弁で停止:\n  " + "\n  ".join(bad))
 
-    goal_g1 = final_goal_rates(args.logs_g1)
     r1, r3, r4 = judge_r1(g1), judge_r3(g1), judge_r4(g1)
     r5 = judge_r5(goal_g1)
     r6, r7 = judge_r6(g1, g2), judge_r7(g1, g2)
     verdicts = [r1, r3, r4, r5, r6, r7]
+
+    # §3-3 (iii)「どちらの群よりも外」を判定量ごとに計算する（教授裁定）
+    def _med(m, f):
+        return median_of_seed_medians(m, f)
+
+    def _gr(g):
+        return statistics.median([v["goal_rate"] for v in g.values()])
+
+    bracket = bracket_check({
+        f"n_reach_ge{REACH_DEPTH}": {"対照": count_reach_ge(control, REACH_DEPTH)["total"],
+                                     "群 1": count_reach_ge(g1, REACH_DEPTH)["total"],
+                                     "群 2": count_reach_ge(g2, REACH_DEPTH)["total"]},
+        "net_progress_per_1000": {"対照": _med(control, "net_progress_per_1000"),
+                                  "群 1": _med(g1, "net_progress_per_1000"),
+                                  "群 2": _med(g2, "net_progress_per_1000")},
+        "respawn_per_1000": {"対照": _med(control, "respawn_per_1000"),
+                             "群 1": _med(g1, "respawn_per_1000"),
+                             "群 2": _med(g2, "respawn_per_1000")},
+        "goal_rate": {"対照": _gr(goal_control), "群 1": _gr(goal_g1), "群 2": _gr(goal_g2)},
+    })
 
     out = dict(
         clause="experiments/exp_023_recurrent_policy/card.md §3",
@@ -588,16 +746,18 @@ def main(argv=None) -> int:
         anchors=ANCHORS,
         inputs=dict(control=str(args.control), group1=str(args.group1), group2=str(args.group2),
                     logs_g1=[str(x) for x in args.logs_g1],
-                    logs_g2=[str(x) for x in args.logs_g2]),
+                    logs_g2=[str(x) for x in args.logs_g2],
+                    logs_control=[str(x) for x in args.logs_control]),
         verdicts=verdicts,
         version_check=version_info,
         group_identification=dict(
             note=("run_summary.json に群の識別（respawn_reset 等）が無いため、根拠は 3 本立てである: "
                   "(1) train.log の行〔脆い〕・(2) 実行経路の同一版検査・(3) 走行中に保全した argv"),
             argv_evidence=argv_evidence_status()),
-        coverage=read_coverage(r1, r6),
+        bracket_check=bracket,
+        coverage=read_coverage(r1, r6, bracket),
         descriptive_former_r2=describe_reach({"対照 exp_021": control, "群 1": g1, "群 2": g2}),
-        goal_rate_detail=goal_g1)
+        goal_rate_detail=dict(control=goal_control, group1=goal_g1, group2=goal_g2))
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     Path(args.out).write_text(json.dumps(out, indent=2, ensure_ascii=False), encoding="utf-8")
 
@@ -616,10 +776,19 @@ def main(argv=None) -> int:
         if v.get("warning"):
             print(f"        ⚠️ {v['warning']}: {v['warning_detail']}")
     print("=" * 78)
+    if bracket["any_outside"]:
+        print("🔴 §3-3 (iii)「どちらの群よりも外」が成立:")
+        for name, d in bracket["per_quantity"].items():
+            if any(d["outside"].values()):
+                who = [k for k, v in d["outside"].items() if v]
+                print(f"    {name}: {d['values']} → {'・'.join(who)} が範囲の外")
     cov = out["coverage"]
-    print(f"§3-4 全域被覆: R1 {'当' if cov['r1_hit'] else '外'} × "
-          f"R6 {'当' if cov['r6_hit'] else '外'} → {cov['reading']}")
-    print(f"  次の一手: {cov['next_move']}")
+    if cov["table_returned"]:
+        print(f"§3-4 全域被覆: R1 {'当' if cov['r1_hit'] else '外'} × "
+              f"R6 {'当' if cov['r6_hit'] else '外'} → {cov['reading']}")
+        print(f"  次の一手: {cov['next_move']}")
+    else:
+        print(f"§3-4 全域被覆: **表を引かない** — {cov['reason']}")
     print(f"→ {args.out}")
     return 0
 

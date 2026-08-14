@@ -133,16 +133,18 @@ check("seed ごとの内訳が全 6 本ある", len(j["per_seed"]) == 6, str(lis
 
 # ---------------------------------------------------------------------------
 print("\n[T-J4] 錨が事前登録と違えば安全弁が落とす")
+GOAL_ANCHOR = {f"seed{i}": dict(total_timesteps=2000896, goal_rate=v)
+               for i, v in enumerate([0.0, 0.0, 0.05, 0.0, 0.0, 0.05], 1)}   # 中央値 0.000
 good_control = const_meas([0, 0, 0, 2, 5, 5], J.ANCHORS["net_progress_per_1000"],
                           J.ANCHORS["respawn_per_1000"], recurrent=False)
-check("正しい錨なら安全弁は通る", J.check_anchors(good_control) == [],
-      str(J.check_anchors(good_control)))
+check("正しい錨なら安全弁は通る", J.check_anchors(good_control, GOAL_ANCHOR) == [],
+      str(J.check_anchors(good_control, GOAL_ANCHOR)))
 bad_control = const_meas([0, 0, 0, 2, 5, 6], J.ANCHORS["net_progress_per_1000"],
                          J.ANCHORS["respawn_per_1000"], recurrent=False)   # 13 件
-msgs = J.check_anchors(bad_control)
+msgs = J.check_anchors(bad_control, GOAL_ANCHOR)
 check("錨の件数が違えば落ちる", len(msgs) >= 1, str(msgs[:1]))
 bad_net = const_meas([0, 0, 0, 2, 5, 5], 1.5, J.ANCHORS["respawn_per_1000"], recurrent=False)
-check("錨の中央値が違えば落ちる", len(J.check_anchors(bad_net)) >= 1)
+check("錨の中央値が違えば落ちる", len(J.check_anchors(bad_net, GOAL_ANCHOR)) >= 1)
 
 # ---------------------------------------------------------------------------
 print("\n[T-J5] 測定のフラグの取り違えを安全弁が落とす")
@@ -184,8 +186,8 @@ j1, j3, j4 = J.judge_r1(worse), J.judge_r3(worse), J.judge_r4(worse)
 check("R1 が 0 件なら外れる", j1["hit"] is False)
 check("R3 が改善（2.0）なら外れる", j3["hit"] is False, f"値 {j3['value']}")
 check("R4 が悪化（3.0）なら外れる", j4["hit"] is False, f"値 {j4['value']}")
-check("R3 の外れの向きが「逆向き（改善した）」でなく「閾値未達」でもなく判別できる",
-      j3["direction"] in ("miss_below_threshold", "miss_reverse"), j3["direction"])
+check("R3 の外れの向きが「予測と逆に改善した」と出る（AUDIT_049 要是正 1）",
+      j3["direction"] == "miss_improved_against_prediction", j3["direction"])
 check("R4 の外れの向きが逆向きと分かる", j4["direction"] == "miss_reverse", j4["direction"])
 better = const_meas([0, 0, 0, 0, 0, 0], 1.0, 1.0)
 check("R4 が対照より少なければ当たる", J.judge_r4(better)["hit"] is True)
@@ -218,6 +220,75 @@ check("要約と再計算の食い違いを安全弁が検出する",
                                      "across_seeds_median": {"net_progress_per_1000": 99.0,
                                                              "respawn_per_1000": 1.0}}},
           recurrent=True)))
+
+# ---------------------------------------------------------------------------
+print("\n[T-J9] 准教授 AUDIT_049 の是正 6 件の再発検出")
+
+# 是正 1 — R3 の外れは「閾値より上」。**「閾値未達」と表示してはいけない**
+for v in (1.75, 2.50):
+    d = J.judge_r3(const_meas([0] * 6, v, 1.0))
+    check(f"是正1 R3 の外れ（値 {v}）が「予測と逆に改善した」と出る",
+          d["direction"] == "miss_improved_against_prediction", d["direction"])
+d = J.judge_r3(const_meas([0] * 6, 1.0, 1.0))
+check("是正1 R3 が当たるときは hit", d["direction"] == "hit")
+
+# 是正 2 — R5 の外れは「対照より悪化」ではない（ゴール率が上がるのは機体としては改善）
+for v in (0.05, 0.10, 0.20):
+    gr = {f"seed{i}": dict(total_timesteps=2000896, goal_rate=v) for i in range(1, 7)}
+    d = J.judge_r5(gr)
+    check(f"是正2 R5 の外れ（ゴール率 {v}）が「予測と逆に改善した」と出る",
+          d["direction"] == "miss_improved_against_prediction", d["direction"])
+# R1・R4 は旧来どおりであること（是正が別の判定を壊していない）
+check("是正1・2 の巻き添えなし: R1 の 6 件は miss_reverse",
+      J.judge_r1(const_meas([1, 1, 1, 1, 1, 1], 1.0, 1.0))["direction"] == "miss_reverse")
+check("是正1・2 の巻き添えなし: R1 の 18 件は miss_below_threshold",
+      J.judge_r1(const_meas([3, 3, 3, 3, 3, 3], 1.0, 1.0))["direction"] == "miss_below_threshold")
+check("是正1・2 の巻き添えなし: R4 の 3.0 は miss_reverse",
+      J.judge_r4(const_meas([0] * 6, 1.0, 3.0))["direction"] == "miss_reverse")
+
+# 是正 4 — 定期評価の最終点が seed 間で揃っていなければ落とす
+gr_ok = {f"seed{i}": dict(total_timesteps=2000896, goal_rate=0.0) for i in range(1, 7)}
+check("是正4 最終点が揃っていれば通る",
+      J.check_goal_rate_timepoints("群 1", gr_ok, 2000896) == [])
+gr_bad = dict(gr_ok, seed3=dict(total_timesteps=1900000, goal_rate=0.0))
+msgs = J.check_goal_rate_timepoints("群 1", gr_bad, 2000896)
+check("是正4 1 本だけ 190 万歩なら落ちる", any("揃っていない" in x for x in msgs), str(msgs[:1]))
+check("是正4 保存済みモデルの学習量と違えば落ちる",
+      any("違う" in x for x in J.check_goal_rate_timepoints("群 1", gr_ok, 1900000)))
+check("是正4 seed 数が 6 でなければ落ちる",
+      any("seed 数" in x for x in J.check_goal_rate_timepoints(
+          "群 1", {k: v for k, v in list(gr_ok.items())[:5]}, 2000896)))
+
+# 是正 5 — R5 の錨も再計算・照合の対象
+ctrl = const_meas([0, 0, 0, 2, 5, 5], J.ANCHORS["net_progress_per_1000"],
+                  J.ANCHORS["respawn_per_1000"], recurrent=False)
+gr_anchor = {f"seed{i}": dict(total_timesteps=2000896, goal_rate=v)
+             for i, v in enumerate([0.0, 0.0, 0.05, 0.0, 0.0, 0.05], 1)}
+check("是正5 正しい R5 の錨なら通る", J.check_anchors(ctrl, gr_anchor) == [],
+      str(J.check_anchors(ctrl, gr_anchor)))
+gr_anchor_bad = {f"seed{i}": dict(total_timesteps=2000896, goal_rate=0.10) for i in range(1, 7)}
+check("是正5 R5 の錨が違えば落ちる",
+      any("goal_rate" in x for x in J.check_anchors(ctrl, gr_anchor_bad)),
+      str(J.check_anchors(ctrl, gr_anchor_bad)[:1]))
+
+# 是正 6 — 🔴 当初定義は「常に旗が立つ」。**この欠陥自体を検査する**（裁定が下りるまでの回帰防止）
+import itertools  # noqa: E402
+always = all(J.bracket_check({"q": dict(zip(["対照", "群 1", "群 2"], v))})["any_outside"]
+             for v in itertools.permutations([10, 20, 30]))
+check("是正6 当初定義は 3 群が相異なる全 6 通りで必ず旗が立つ（＝ 判別力が無い）", always is True,
+      "真ん中は 1 つだけ・検査対象は 2 つなので必ず一方が外に出る")
+check("是正6 定義が裁定待ちであることが出力に出る",
+      J.bracket_check({"q": {"対照": 12, "群 1": 20, "群 2": 30}})["ruling_pending"] is True)
+# 裁定待ちの間は、旗が立っても表を抑制しない（抑制すると表が一度も返らないため）
+r1_hit = J.judge_r1(const_meas([4] * 6, 1.0, 1.0))
+r6_hit = J.judge_r6(const_meas([2] * 6, 1.0, 1.0), const_meas([3] * 6, 1.0, 1.0))
+flagged = J.bracket_check({"q": {"対照": 12, "群 1": 20, "群 2": 30}})
+cov = J.read_coverage(r1_hit, r6_hit, flagged)
+check("是正6 裁定待ちの間は旗が立っても表を返す（期待される結果でも旗が立つため）",
+      cov["table_returned"] is True and bool(cov["reading"]), str(cov.get("reading")))
+check("是正6 順序そのものは記述として出る",
+      flagged["per_quantity"]["q"]["order_low_to_high"] == ["対照", "群 1", "群 2"],
+      str(flagged["per_quantity"]["q"]["order_low_to_high"]))
 
 # ---------------------------------------------------------------------------
 print("\n" + "=" * 78)
