@@ -76,6 +76,15 @@ def const_meas(reach_counts, net, respawn, *, recurrent=True, n_mazes=N_MAZES):
 results = []
 
 
+def _raises(fn) -> bool:
+    """呼ぶと例外が出ることを確かめる（**黙って通らないこと**の検査）。"""
+    try:
+        fn()
+    except Exception:
+        return True
+    return False
+
+
 def check(name, cond, detail=""):
     results.append((name, bool(cond), detail))
     print(f"  {'✅' if cond else '❌'} {name}" + (f" — {detail}" if detail else ""))
@@ -271,37 +280,61 @@ check("是正5 R5 の錨が違えば落ちる",
       any("goal_rate" in x for x in J.check_anchors(ctrl, gr_anchor_bad)),
       str(J.check_anchors(ctrl, gr_anchor_bad)[:1]))
 
-# 是正 6 — 🔴 当初定義は「常に旗が立つ」。**この欠陥自体を検査する**（裁定が下りるまでの回帰防止）
+# 是正 6 — 代案 B（教授裁定）: 群 1 か群 2 が「対照より悪い側」へ出たら旗を立てる
 import itertools  # noqa: E402
-always = all(J.bracket_check({"q": dict(zip(["対照", "群 1", "群 2"], v))})["any_outside"]
-             for v in itertools.permutations([10, 20, 30]))
-check("是正6 当初定義は 3 群が相異なる全 6 通りで必ず旗が立つ（＝ 判別力が無い）", always is True,
-      "真ん中は 1 つだけ・検査対象は 2 つなので必ず一方が外に出る")
-check("是正6 定義が裁定待ちであることが出力に出る",
-      J.bracket_check({"q": {"対照": 12, "群 1": 20, "群 2": 30}})["ruling_pending"] is True)
-# 裁定待ちの間は、旗が立っても表を抑制しない（抑制すると表が一度も返らないため）
+KEY = f"n_reach_ge{J.REACH_DEPTH}"
 r1_hit = J.judge_r1(const_meas([4] * 6, 1.0, 1.0))
 r6_hit = J.judge_r6(const_meas([2] * 6, 1.0, 1.0), const_meas([3] * 6, 1.0, 1.0))
-flagged = J.bracket_check({"q": {"対照": 12, "群 1": 20, "群 2": 30}})
-cov = J.read_coverage(r1_hit, r6_hit, flagged)
-check("是正6 裁定待ちの間は旗が立っても表を返す（期待される結果でも旗が立つため）",
-      cov["table_returned"] is True and bool(cov["reading"]), str(cov.get("reading")))
-check("是正6 順序そのものは記述として出る",
-      flagged["per_quantity"]["q"]["order_low_to_high"] == ["対照", "群 1", "群 2"],
-      str(flagged["per_quantity"]["q"]["order_low_to_high"]))
 
-# 🔴 AUDIT_049 §10 — 旗が立っているのに「成立していない」と書かない
-check("§10 旗が立って表を返すときは「立っている・裁定待ち」と書く",
-      flagged["any_outside"] is True and "立っている" in cov["caveat"], cov["caveat"][:40])
-check("§10 その状態が真偽値でも出る",
-      cov["bracket_flag_raised"] is True and cov["bracket_ruling_pending"] is True)
-# 旗が立たない場合（3 群の値が同一なら「外」は無い）は従来の文面
-same = J.bracket_check({"q": {"対照": 12, "群 1": 12, "群 2": 12}})
-cov_same = J.read_coverage(r1_hit, r6_hit, same)
-check("§10 旗が立たないときは「成立していない」と書く",
-      same["any_outside"] is False and "成立していない" in cov_same["caveat"],
-      cov_same["caveat"][:40])
-check("§10 旗が立たないときの真偽値", cov_same["bracket_flag_raised"] is False)
+# 🔴 全 6 順序で叩く（棄却された当初定義は全順序で立った。代案 B は立つ順序と立たない順序が分かれる）
+fired = {}
+for v in itertools.permutations([10, 20, 30]):
+    d = dict(zip(["対照", "群 1", "群 2"], v))
+    fired[v] = J.bracket_check({KEY: d})["any_flag"]
+check("是正6 全 6 順序のうち旗が立たない順序が存在する（＝ 当初定義の欠陥が消えた）",
+      not all(fired.values()), f"立った順序 {sum(fired.values())} / 6")
+check("是正6 期待の結果（対照 10 < 群1 20 < 群2 30）で旗が立たない",
+      fired[(10, 20, 30)] is False)
+check("是正6 群 2 だけ対照より深い（対照 10 < 群2 20・群1 は 30）でも旗は立たない",
+      fired[(10, 30, 20)] is False, "どちらも対照より良い側なので悪化ではない")
+check("是正6 群 1 が対照より浅い（対照 20 > 群1 10）と旗が立つ", fired[(20, 10, 30)] is True)
+check("是正6 群 2 が対照より浅い（対照 20 > 群2 10）と旗が立つ", fired[(20, 30, 10)] is True)
+check("是正6 両群とも対照より浅い（対照 30）と旗が立つ",
+      fired[(30, 10, 20)] is True and fired[(30, 20, 10)] is True)
+
+# 🔴 教授裁定 ① — 「良い向き」は判定量ごと。予測の向きと混同しない
+low_good = J.bracket_check({"respawn_per_1000": {"対照": 2.125, "群 1": 3.0, "群 2": 1.0}})
+check("裁定① 衝突は低いほど良い: 群 1 が対照より多いと旗が立つ",
+      low_good["per_quantity"]["respawn_per_1000"]["worse_than_control"]["群 1"] is True)
+check("裁定① 衝突は低いほど良い: 群 2 が対照より少なければ旗は立たない",
+      low_good["per_quantity"]["respawn_per_1000"]["worse_than_control"]["群 2"] is False)
+goal = J.bracket_check({"goal_rate": {"対照": 0.0, "群 1": 0.20, "群 2": 0.0}})
+check("裁定① ゴール率が上がるのは（R5 は外れでも）悪化ではないので旗は立たない",
+      goal["any_flag"] is False,
+      "「高いほど良い」と「低いままだと予測」を混同しない")
+check("裁定① 良い向きが未登録の判定量は例外で落ちる",
+      _raises(lambda: J.bracket_check({"unknown_metric": {"対照": 1, "群 1": 2, "群 2": 3}})))
+
+# 🔴 教授裁定 ② — 表を抑止するのは表の構成量の旗だけ
+sup = J.bracket_check({KEY: {"対照": 20, "群 1": 10, "群 2": 30}})
+cov_sup = J.read_coverage(r1_hit, r6_hit, sup)
+check("裁定② 表の構成量で旗が立てば表を返さない",
+      sup["suppress_table"] is True and cov_sup["table_returned"] is False)
+check("裁定② 表を返さないときは理由に構成量の名前が出る", KEY in cov_sup["reason"], cov_sup["reason"][:60])
+other = J.bracket_check({KEY: {"対照": 10, "群 1": 20, "群 2": 30},
+                         "respawn_per_1000": {"対照": 2.0, "群 1": 3.0, "群 2": 3.0}})
+cov_other = J.read_coverage(r1_hit, r6_hit, other)
+check("裁定② 無関係な量（衝突）の悪化では表を消さない",
+      other["any_flag"] is True and other["suppress_table"] is False
+      and cov_other["table_returned"] is True)
+check("裁定② そのとき「別の判定量で立っている」と書く（AUDIT_049 §10 の型）",
+      "別の判定量" in cov_other["caveat"], cov_other["caveat"][:40])
+check("裁定② 真偽値でも出る", cov_other["bracket_flag_raised"] is True)
+none = J.bracket_check({KEY: {"対照": 10, "群 1": 20, "群 2": 30}})
+cov_none = J.read_coverage(r1_hit, r6_hit, none)
+check("裁定② どこにも旗が立たなければ「成立していない」と書く",
+      none["any_flag"] is False and "成立していない" in cov_none["caveat"]
+      and cov_none["bracket_flag_raised"] is False)
 
 # ---------------------------------------------------------------------------
 print("\n" + "=" * 78)

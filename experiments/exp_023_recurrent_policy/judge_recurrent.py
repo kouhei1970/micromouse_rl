@@ -361,55 +361,74 @@ def judge_r7(g1: dict, g2: dict) -> dict:
         note="R6 が「より多い」（同数は外れ）なのに R7 が「以下」（同値は当たり）なのは、字句が非対称だから")
 
 
-#: 🔴 §3-3 (iii)「外」の定義は **裁定待ち**（2026-08-15 時点）。
+#: 🔴 判定量ごとの「**量として良い向き**」（**予測の向きとは別**。教授裁定 2026-08-15 の追加 ①）。
 #:
-#: **当初裁定された定義（「群 1 か群 2 が他の 2 群の張る範囲の外」）は、実装して叩いたところ
-#: 3 群の値が相異なるかぎり必ず旗が立つことが分かった**（`tests/test_judge_recurrent.py` T-J9）:
-#:
-#: > **相異なる 3 つの値のうち真ん中は 1 つだけ。検査の対象は群 1 と群 2 の 2 つなので、
-#: > 少なくとも一方は必ず「他の 2 つの外」になる。**
-#:
-#: **帰結**: §3-4 の表が一度も返らない — **本実験が期待する結果（対照 < 群 1 < 群 2）でも旗が立つ。**
-#: **誤りの型 5（構成上必ず成立する形）の裏返し**である。
-#:
-#: **裁定が下りるまで、旗は「記述として計算するが、表の抑制には使わない」**。
-#: **代案 B（学生B の推し・教授へ提案済み）**: **群 1 か群 2 が「対照より悪い側」へ出たら旗を立てる。**
-BRACKET_RULING_PENDING = True
+#: **`direction` の実装で踏んだ罠と同じもの**である — **ゴール率は「高いほど良い」が
+#: 「低いままだと予測した」量**なので、**この 2 つを 1 つの旗にまとめてはいけない。**
+#: **本表は「良い向き」だけを持ち、予測の向き（`hit_is_low`）は各 `judge_*()` が持つ。**
+QUANTITY_IMPROVEMENT_IS_HIGH = {
+    "n_reach_ge7": True,              # 深くまで到達するほど良い
+    "net_progress_per_1000": True,    # 正味の前進は大きいほど良い
+    "respawn_per_1000": False,        # 衝突（立て直し）は少ないほど良い
+    "goal_rate": True,                # ゴール率は高いほど良い
+}
+
+#: §3-4 の全域被覆表を抑止しうる判定量（教授裁定の追加 ②）。
+#: **表の構成量（R1・R6 が使う `n_reach_ge7`）の旗だけが表を消す。**
+#: **無関係な量の悪化で表を消さない。**
+TABLE_SUPPRESSING_QUANTITY = f"n_reach_ge{REACH_DEPTH}"
 
 
 def bracket_check(quantities: dict) -> dict:
-    """🔴 §3-3 (iii)「どちらの群よりも外」を**計算する**（准教授案・**定義は裁定待ち**）。
+    """🔴 §3-3 (iii)「どちらの群よりも外」を計算する（**代案 B**・教授裁定 2026-08-15）。
 
-    **判定量ごとに 3 群（対照・群 1・群 2）の順序を出し、
-    群 1 か群 2 が他の 2 群の張る範囲の外に出たら旗を立てる。**
-    **旗が立ったら `read_coverage()` は表を返さない**（カード :277「本表は『外』を独立の列として
-    持たないので、出たら表の外で扱う」の機械化。**exp_022 で実際に起きた型**）。
+    **定義: 群 1 か群 2 が「対照より悪い側」へ出たら旗を立てる。**
+
+    **当初裁定された定義（「群 1 か群 2 が他の 2 群の張る範囲の外」）は棄却された** —
+    **実装して 3 群の全 6 通りの順序で叩いたところ、値が相異なるかぎり必ず旗が立つ**ことが
+    分かったため（**相異なる 3 つの値のうち真ん中は 1 つだけで、検査の対象は 2 つあるから**）。
+    **その定義では §3-4 の表が一度も返らず、期待する結果（対照 < 群 1 < 群 2）でも旗が立つ。**
+    **誤りの型 5（構成上必ず成立する形）の裏返しだった。**
+
+    **代案 B が拾うのは「§3-4 の 4 通りの表が表現できない事象」＝ 悪化**である。
+    表の「外」の行は**「閾値に届かない」**を意味しており、**「対照より悪くなった」は別の事象**
+    （この区別は `direction` の `miss_reverse` としても計算している）。
 
     quantities: {判定量の名前: {"対照": 値, "群 1": 値, "群 2": 値}}
     """
-    out, any_outside = {}, False
+    out, any_flag = {}, False
     for name, vals in quantities.items():
-        order = sorted(vals, key=lambda k: vals[k])
-        outside = {}
+        if name not in QUANTITY_IMPROVEMENT_IS_HIGH:
+            raise KeyError(f"判定量 {name!r} の「良い向き」が事前登録されていない")
+        high_is_good = QUANTITY_IMPROVEMENT_IS_HIGH[name]
+        control = vals["対照"]
+        worse = {}
         for target in ("群 1", "群 2"):
-            others = [v for k, v in vals.items() if k != target]
-            lo, hi = min(others), max(others)
-            outside[target] = not (lo <= vals[target] <= hi)
-        any_outside = any_outside or any(outside.values())
-        out[name] = dict(values=vals, order_low_to_high=order, outside=outside)
-    return dict(any_outside=any_outside, per_quantity=out,
-                ruling_pending=BRACKET_RULING_PENDING,
-                note=("🔴 定義は裁定待ち。当初定義は 3 群の値が相異なるかぎり必ず旗が立つ"
-                      "（真ん中は 1 つしかなく、検査対象は 2 つあるため）ので、"
-                      "裁定が下りるまで表の抑制には使わない。カード :277 の条文の機械化は保留"))
+            v = vals[target]
+            worse[target] = (v < control) if high_is_good else (v > control)
+        any_flag = any_flag or any(worse.values())
+        out[name] = dict(values=vals,
+                         order_low_to_high=sorted(vals, key=lambda k: vals[k]),
+                         improvement_is_high=high_is_good,
+                         worse_than_control=worse,
+                         flag=any(worse.values()))
+    suppress = bool(out.get(TABLE_SUPPRESSING_QUANTITY, {}).get("flag"))
+    return dict(any_flag=any_flag, suppress_table=suppress, per_quantity=out,
+                suppressing_quantity=TABLE_SUPPRESSING_QUANTITY,
+                note=("群 1 か群 2 が『対照より悪い側』へ出たら旗を立てる（代案 B・教授裁定）。"
+                      "旗は判定量ごとに立てて全部報告するが、"
+                      f"§3-4 の表を抑止するのは表の構成量 {TABLE_SUPPRESSING_QUANTITY} の旗だけ"
+                      "（無関係な量の悪化で表を消さない）"))
 
 
 def read_coverage(r1: dict, r6: dict, bracket: dict) -> dict:
     """§3-4 全域被覆（R1 × R6 の 4 通り）。**第 3 の読みが出たら表を引かない**。"""
-    if bracket["any_outside"] and not BRACKET_RULING_PENDING:
+    if bracket["suppress_table"]:
         return dict(r1_hit=r1["hit"], r6_hit=r6["hit"], table_returned=False,
                     reading=None, next_move=None,
-                    reason=("🔴 §3-3 (iii)「どちらの群よりも外」が成立した ＝ 挟む前提が崩れている。"
+                    bracket_flag_raised=True, suppressing_quantity=bracket["suppressing_quantity"],
+                    reason=("🔴 §3-3 (iii) が成立した ＝ **表の構成量 "
+                            f"{bracket['suppressing_quantity']} で群 1 か群 2 が対照より悪い側へ出た**。"
                             "カード :277 により §3-4 の表は引かず、そのまま報告する"),
                     outside=bracket["per_quantity"])
     table = {
@@ -426,16 +445,17 @@ def read_coverage(r1: dict, r6: dict, bracket: dict) -> dict:
     # 🔴 旗が立っているのに表を返す（裁定待ち）のと、旗が立たないから表を返すのは別の状態である。
     # **同じ説明文を出すと、前者で「成立していない」という偽の文が判定文書に載る**
     # （准教授 AUDIT_049 §10）。
-    if bracket["any_outside"]:
-        caveat = ("🔴 §3-3 (iii) の旗は**立っている**が、定義が裁定待ち"
-                  "（BRACKET_RULING_PENDING）のため表の抑制には使っていない。"
-                  "旗の中身は bracket_check を見ること")
+    if bracket["any_flag"]:
+        flagged = [k for k, v in bracket["per_quantity"].items() if v["flag"]]
+        caveat = ("🔴 §3-3 (iii) の旗が**別の判定量で立っている**"
+                  f"（{'・'.join(flagged)}）が、**表の構成量 "
+                  f"{bracket['suppressing_quantity']} では立っていない**ので表は返す"
+                  "（教授裁定: 無関係な量の悪化で表を消さない）。旗の中身は bracket_check を見ること")
     else:
-        caveat = "§3-3 (iii) は計算済みで、成立していない"
+        caveat = "§3-3 (iii) は計算済みで、どの判定量でも成立していない"
     return dict(r1_hit=r1["hit"], r6_hit=r6["hit"], table_returned=True,
                 reading=reading, next_move=next_move,
-                bracket_flag_raised=bool(bracket["any_outside"]),
-                bracket_ruling_pending=bool(bracket.get("ruling_pending")),
+                bracket_flag_raised=bool(bracket["any_flag"]),
                 caveat=caveat)
 
 
@@ -786,12 +806,12 @@ def main(argv=None) -> int:
         if v.get("warning"):
             print(f"        ⚠️ {v['warning']}: {v['warning_detail']}")
     print("=" * 78)
-    if bracket["any_outside"]:
-        print("🔴 §3-3 (iii)「どちらの群よりも外」が成立:")
+    if bracket["any_flag"]:
+        print("🔴 §3-3 (iii)「対照より悪い側へ出た」が成立:")
         for name, d in bracket["per_quantity"].items():
-            if any(d["outside"].values()):
-                who = [k for k, v in d["outside"].items() if v]
-                print(f"    {name}: {d['values']} → {'・'.join(who)} が範囲の外")
+            if d["flag"]:
+                who = [k for k, v in d["worse_than_control"].items() if v]
+                print(f"    {name}: {d['values']} → {'・'.join(who)} が対照より悪い側")
     cov = out["coverage"]
     if cov["table_returned"]:
         print(f"§3-4 全域被覆: R1 {'当' if cov['r1_hit'] else '外'} × "
