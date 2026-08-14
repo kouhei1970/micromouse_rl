@@ -10,7 +10,23 @@
 - **完走**（**カード §5-2 の操作的定義**）:
   **(a) ゴール到達が真 かつ その迷路の全走行で outcome ∈ {goal, timeout}**
   （＝ **collision / tipover / stuck が 0 回**）
-- 最速タイム（(b) の走行のうち最速。**指標の定義は凍結ハーネスの `maze_kpi` をそのまま呼ぶ**）
+- **(d) 最速タイム = 完走走行の最速値**（研究計画書 §2。**探索走行も完走すれば算入する**）
+- **(b) の最短走行タイム**（初回ゴールより後に開始した走行のうち最速）も**分けて記録する**
+  （条文「探索走行タイムと最短走行タイムも分けて記録する」）。
+  **指標の定義は凍結ハーネスの `maze_kpi` / `evaluate_maze` をそのまま呼ぶ**
+
+  > ### 🔴 **2026-08-14 是正**（准教授の監査 AUDIT_039 §3-2・教授裁定）
+  > **本スクリプトは (b) の最短走行タイム `fast_time` を
+  > 「最速タイム」＝ (d) の位置で報告していた。**
+  > **(d) は「完走走行の最速値」なので、探索走行が最速だった迷路では食い違う。**
+  >
+  > **影響**: **古典方策では両定義が一致する**（**確保済みの評価用 20 迷路で 20/20**。
+  > 学生A が maze_1018 = 18.57999999956064 で実測・准教授も確認）。
+  > **したがって M5 の確定基準表の 20 値は動かない。**
+  > **食い違いうるのは、探索走行が最速になる方策**（RL 方策で起こりうる）である。
+  >
+  > **⚠️ 凍結評価ハーネス `competition/evaluator.py` は正しかったので触っていない**
+  > （`:378-387` は (b) の定義・`:745` の `best_time` が (d)）。
 - **横偏差 最大 / RMS**（**方策を包んで記録するだけ**。電圧も軌跡も変えない）
 - 失敗様式（迷路 ID つき）
 
@@ -97,6 +113,23 @@ def wilson_lower(k: int, n: int, z: float = 1.645) -> float:
     return max(0.0, (c - r) / d)
 
 
+def best_time_of(runs) -> float:
+    """**(d) 最速タイム = 完走走行の最速値** [s]（研究計画書 §2）。1 本も無ければ None。
+
+    **`competition/evaluator.py:745` と同じ定義の写しである。**
+    **写しがずれると気づけない**ので、`main()` は評価器が返す `best_time` と
+    **1 走行ごとに突き合わせる**（食い違ったら例外で止まる）。
+    ここに写しを置くのは、**シミュレータを回さずに単体検査できるようにするため**
+    （`tests/test_run_016cal_d_metric.py`）。
+
+    ⚠️ **(b) の `fast_time`（初回ゴールより後に開始した走行のうち最速）とは別物。**
+    **探索走行が最速だった迷路では食い違う。**
+    """
+    ts = [float(r["run_time"]) for r in runs
+          if r.get("outcome") == "goal" and r.get("run_time") is not None]
+    return min(ts) if ts else None
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -140,12 +173,24 @@ def main():
         outs = [q["outcome"] for q in r["runs"]]
         broken = [o for o in outs if o not in OK_OUTCOMES]
         ey = np.abs(np.asarray(pol._ey, dtype=float)) if pol._ey else np.array([0.0])
+        # **(d) 最速タイム**（条文 = 完走走行の最速値）。**写しが凍結ハーネスから
+        # ずれていないことを 1 迷路ごとに突き合わせる**
+        best = best_time_of(r["runs"])
+        if r.get("best_time") is not None or best is not None:
+            if not (best is not None and r.get("best_time") is not None
+                    and best == float(r["best_time"])):
+                raise SystemExit(
+                    f"{r['maze_id']}: (d) の写しが凍結ハーネスと食い違う "
+                    f"（写し={best} / 評価器={r.get('best_time')}）")
         rows.append(dict(
             maze=r["maze_id"], n_runs=len(outs), outcomes=outs,
             # **完走の操作的定義**（カード §5-2）
             completed=bool(kpi["goal_reached"] and not broken),
             goal_reached=bool(kpi["goal_reached"]),
             n_broken=len(broken), broken_kinds=sorted(set(broken)),
+            # 🔴 **(d) 最速タイム**（2026-08-14 是正。ここが判定に使う量）
+            best_time=best,
+            # **(b) の最短走行タイム**（条文「分けて記録する」。**(d) ではない**）
             fast_time=kpi["fast_time"], explore_time=kpi["explore_time"],
             fast_run_done=bool(kpi["fast_run_done"]),
             e_y_max_m=float(ey.max()), e_y_rms_m=float(np.sqrt(np.mean(ey ** 2))),
@@ -153,17 +198,23 @@ def main():
         c = rows[-1]
         print(f"  {c['maze']}: {'完走' if c['completed'] else '**未完走**'}"
               f" 走行 {c['n_runs']} 本 {outs}"
-              f" 最速 {c['fast_time'] if c['fast_time'] else '-'}"
+              f" (d)最速 {c['best_time'] if c['best_time'] else '-'}"
+              f" (b)最短走行 {c['fast_time'] if c['fast_time'] else '-'}"
               f" e_y最大 {c['e_y_max_m']*1000:.2f} mm", flush=True)
 
     n = len(rows)
     k = sum(1 for c in rows if c["completed"])
+    best = [c["best_time"] for c in rows if c["best_time"]]
     fast = [c["fast_time"] for c in rows if c["fast_time"]]
     eymax = [c["e_y_max_m"] for c in rows]
     eyrms = [c["e_y_rms_m"] for c in rows]
     summ = dict(safety_factor=args.safety, n=n, n_completed=k,
                 completion_rate=k / n if n else float("nan"),
                 completion_lower95=wilson_lower(k, n),
+                # 🔴 **(d) 最速タイム**（2026-08-14 是正。判定はこちらを使う）
+                best_time_median=(float(np.median(best)) if best else None),
+                n_best=len(best),
+                # **(b) の最短走行タイム**（分けて記録する。**(d) ではない**）
                 fast_time_median=(float(np.median(fast)) if fast else None),
                 n_fast=len(fast),
                 e_y_max_median_m=float(np.median(eymax)),
@@ -173,7 +224,10 @@ def main():
                 failure_kinds=sorted({x for c in rows for x in c["broken_kinds"]}))
     print(f"\n【安全率 {args.safety:g}】完走 {k}/{n} = {summ['completion_rate']*100:.1f}%"
           f"／**片側 95% 下限 {summ['completion_lower95']:.3f}**")
-    print(f"  最速タイム 中央値 {summ['fast_time_median']}（n={summ['n_fast']}）")
+    print(f"  **(d) 最速タイム（完走走行の最速値）中央値 {summ['best_time_median']}**"
+          f"（n={summ['n_best']}）")
+    print(f"  (b) 最短走行タイム 中央値 {summ['fast_time_median']}（n={summ['n_fast']}）"
+          f"{'  ← (d) と同値' if summ['best_time_median'] == summ['fast_time_median'] else '  ← **(d) と食い違う**'}")
     print(f"  横偏差 最大の中央値 {summ['e_y_max_median_m']*1000:.2f} mm"
           f"／最悪 {summ['e_y_max_max_m']*1000:.2f} mm"
           f"／RMS 中央値 {summ['e_y_rms_median_m']*1000:.2f} mm")

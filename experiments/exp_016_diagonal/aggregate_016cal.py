@@ -54,6 +54,24 @@ def power_fit(sfs, times):
     return float(np.polyfit(x, y, 1)[0])
 
 
+def d_time_median(summ):
+    """**(d) 最速タイム（完走走行の最速値）の中央値**を取り出す。
+
+    🔴 **2026-08-14 是正**（准教授の監査 AUDIT_039 §3-2・教授裁定）。
+    **`run_016cal.py` は (b) の最短走行タイム `fast_time` を (d) の位置で報告していた。**
+    是正後の記録は `best_time_median` を持つので**そちらを使う**。
+
+    **是正前に作られた記録には `best_time_median` が無い**ので、
+    **`fast_time_median` へ落とし、どちらを使ったかを呼び出し側が報告できるよう
+    (値, 使ったフィールド名) を返す。**
+    **古典方策では両者は一致する**（確保済みの評価用 20 迷路で 20/20 実測確認済み）ので、
+    **016-cal の確定済みの判定は落としても変わらない。**
+    """
+    if summ.get("best_time_median") is not None:
+        return summ["best_time_median"], "best_time_median"
+    return summ.get("fast_time_median"), "fast_time_median（是正前の記録）"
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -75,7 +93,7 @@ def main():
     print(f"{'安全率':>7}{'完走':>9}{'完走率':>9}{'片側95%下限':>13}{'最速中央値':>12}"
           f"{'n(最速)':>9}{'e_y最大 中央値':>15}{'e_y最大 最悪':>13}{'e_y RMS 中央値':>15}")
     for s in S:
-        ft = s["fast_time_median"]
+        ft, _src = d_time_median(s)
         print(f"{s['safety_factor']:>7.2f}{s['n_completed']:>6}/{s['n']:<3}"
               f"{s['completion_rate']*100:>8.1f}%{s['completion_lower95']:>13.3f}"
               f"{(ft if ft else float('nan')):>12.2f}{s['n_fast']:>9}"
@@ -112,7 +130,9 @@ def main():
           f"（予測の範囲 {C2_RANGE[0]}〜{C2_RANGE[1]}）: {'的中' if c2 else '外れ'} {why}")
 
     # ---- C3: 最速タイムの冪（**2 通り出す**） ----
-    ft_all = [s["fast_time_median"] for s in S]
+    ft_all = [d_time_median(s)[0] for s in S]
+    _srcs = sorted({d_time_median(s)[1] for s in S})
+    print(f"\n（(d) 最速タイムの出どころ: {'／'.join(_srcs)}）")
     n_all = power_fit(sfs, ft_all)
     idx = [i for i, s in enumerate(S) if s["completion_rate"] >= 0.90]
     n_sub = power_fit([sfs[i] for i in idx], [ft_all[i] for i in idx])
