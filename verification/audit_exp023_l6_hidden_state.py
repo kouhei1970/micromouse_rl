@@ -79,20 +79,23 @@ def run_sequence(policy_fn, maze_dir, seeds, reset_between):
     """迷路を `seeds` の順に走らせ、迷路 seed → 結果 の辞書を返す。
 
     reset_between=False は**否定対照**（本番の配管ではない）。
+
+    🔴 **どちらの条件でも、列の先頭で必ず 1 回リセットする。**
+    そうしないと、否定対照の 2 本（順 A・順 B）が
+    **「順序が違う」ことに加えて「列に入る前の隠れ状態が違う」ことでも変わってしまい、
+    食い違いの原因を順序に帰属できない。**
+    先頭でだけ揃えれば、**2 本の唯一の違いが提示順になる。**
     """
     out = {}
-    for s in seeds:
-        if reset_between:
-            # 本番の配管と同じ（_run_episode が内部で reset を呼ぶ）
+    policy_fn.reset()                      # 列の先頭で揃える（両条件で共通）
+    saved = policy_fn.reset
+    if not reset_between:
+        policy_fn.reset = lambda: None     # 迷路の切り替わりでのリセットだけを殺す
+    try:
+        for s in seeds:
             out[s] = episode_key(MD._run_episode(maze_dir, s, policy_fn, LAGS))
-        else:
-            # reset を無効化して同じことをする（否定対照）
-            saved = policy_fn.reset
-            policy_fn.reset = lambda: None
-            try:
-                out[s] = episode_key(MD._run_episode(maze_dir, s, policy_fn, LAGS))
-            finally:
-                policy_fn.reset = saved
+    finally:
+        policy_fn.reset = saved
     return out
 
 
@@ -151,13 +154,23 @@ def main():
     if first_a:
         print(f"  最初の食い違い: {first_a}")
 
-    print("\n--- L6-b: 否定対照（リセットを外す）で順 A と順 B ---")
+    print("\n--- L6-b: 否定対照（迷路の切り替わりでのリセットを外す）で順 A と順 B ---")
     b1 = run_sequence(policy_fn, maze_dir, seeds, reset_between=False)
     b2 = run_sequence(policy_fn, maze_dir, order_b, reset_between=False)
     n_diff_b, first_b = diff_count(b1, b2)
-    ok_b = (n_diff_b > 0)
-    print(f"  食い違い {n_diff_b} / {len(seeds)} 件 → "
+
+    # 🔴 「前の迷路」が両方の順で同じ迷路は、リセットを外しても入る隠れ状態が同じなので
+    #    構成上一致する。判別力を測る母集団は「前の迷路が変わった迷路」だけである。
+    def prev_of(order):
+        return {s: (order[i - 1] if i > 0 else None) for i, s in enumerate(order)}
+    pa, pb = prev_of(seeds), prev_of(order_b)
+    changed = [s for s in seeds if pa[s] != pb[s]]
+    n_diff_changed = sum(1 for s in changed if b1[s] != b2[s])
+    ok_b = (n_diff_changed > 0)
+    print(f"  食い違い {n_diff_b} / {len(seeds)} 件（全体）")
+    print(f"  **前の迷路が変わった {len(changed)} 件のうち {n_diff_changed} 件が食い違い** → "
           f"{'🟢 合格（検査に判別力がある）' if ok_b else '🔴 空振り'}")
+    print(f"  （前の迷路が両方の順で同じ迷路は、構成上一致するので母集団から外す）")
     if first_b:
         print(f"  最初の食い違い: {first_b}")
 
@@ -179,6 +192,8 @@ def main():
         json.dump({"model": args.model, "num_timesteps": nsteps,
                    "order_a": seeds, "order_b": order_b,
                    "L6a_diff": n_diff_a, "L6b_diff": n_diff_b,
+                   "L6b_prev_changed": len(changed),
+                   "L6b_diff_among_changed": n_diff_changed,
                    "verdict": "pass" if (ok_a and ok_b) else
                               ("no_power" if ok_a else "fail")},
                   open(args.out, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
