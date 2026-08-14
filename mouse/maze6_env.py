@@ -271,7 +271,8 @@ class Maze6Env(gym.Env):
                  action_highpass_alpha: float = 0.5,
                  continuous_potential: bool = False,
                  geodesic_potential: bool = False,
-                 geodesic_rho_scale: bool = False):
+                 geodesic_rho_scale: bool = False,
+                 episode_limit_steps: int = _TIME_LIMIT_STEPS):
         super().__init__()
         if mode not in ("fixed", "generate"):
             raise ValueError(f"mode は 'fixed' か 'generate': {mode!r}")
@@ -309,6 +310,16 @@ class Maze6Env(gym.Env):
         # 揃える。geodesic_potential=True のときだけ効く（単独指定は設計の取り違えなので
         # 弾く）。既定 False では ρ = 1 ＝ 条件 C と bit 単位で同じ。
         self.geodesic_rho_scale = bool(geodesic_rho_scale)
+        # エピソード上限 [歩]（環境 v2 の設計値は 2000。裁定 2026-08-14）。
+        # 既定は従来の 6000 なので、**渡さなければ挙動は bit 単位で変わらない**。
+        # 🔴 上限が決めるのは総試行回数ではなく**配分**である（准教授 AUDIT_022 指摘 2）:
+        # 1 セグメント（開始→衝突）は実測 157 歩なので、200 万歩で作れるセグメントは
+        # **どの上限でも約 12,700 本**。上限 6000 なら 333 面 × 38.2 回、
+        # 上限 2000 なら 1,000 面 × 12.7 回になる。**リスポーン（v2）の狙いは
+        # 「同じ面で立て直す経験」なので、後者の配分が (c) の効果の本体**である。
+        if int(episode_limit_steps) <= 0:
+            raise ValueError(f"episode_limit_steps は正の整数: {episode_limit_steps!r}")
+        self.episode_limit_steps = int(episode_limit_steps)
         if self.geodesic_rho_scale and not self.geodesic_potential:
             raise ValueError(
                 "geodesic_rho_scale=True は geodesic_potential=True のときだけ有効です"
@@ -1043,7 +1054,7 @@ class Maze6Env(gym.Env):
         self._prev_potential = potential
 
         terminated = bool(goal_reached or physical_fail)
-        truncated = bool((not terminated) and self._step_count >= _TIME_LIMIT_STEPS)
+        truncated = bool((not terminated) and self._step_count >= self.episode_limit_steps)
         self._prev_action = np.asarray(action, dtype=np.float32)
 
         obs = self._make_observation()
