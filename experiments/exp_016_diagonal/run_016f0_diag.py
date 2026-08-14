@@ -281,8 +281,23 @@ def summarize_d1(rec, der, a_max, ds_path):
     ratio = der["ds_cursor"][1:][mv] / der["ds_travel"][1:][mv]
     nb = der["near_boundary"][1:][mv]
 
+    # **反証テスト（H_quant）**: カーソルが m 点進んだティックの |dv/dt| ÷ a_max。
+    # H_quant が真なら m にほぼ比例し、偽なら m によらず一定になる。
+    # **終端の窓は除く**（そこは参照が構成上 0 へ落ちる別の機構）
+    strat = {}
+    mv2 = (der["ds_travel"] > 1e-9) & (~der["in_end"]) & (dvdt > 1e-9)
+    mv2[0] = False
+    pts_all = np.rint(der["ds_cursor"] / ds_path).astype(int)
+    for mm in (0, 1, 2, 3):
+        sel = mv2 & (pts_all == mm)
+        if sel.sum() >= 3:
+            strat[str(mm)] = dict(n=int(sel.sum()),
+                                  med=float(np.median(dvdt[sel] / a_max)),
+                                  max=float((dvdt[sel] / a_max).max()))
+
     return dict(
         n_ticks=int(n), k_end=(int(k_end) if k_end < n else None),
+        dvdt_by_advance=strat,
         # 参照の時間微分（B1・B2 の量）
         dvdt_p99=float(np.percentile(dvdt, 99)), dvdt_max=float(dvdt.max()),
         dvdt_p99_over_amax=float(np.percentile(dvdt, 99) / a_max),
