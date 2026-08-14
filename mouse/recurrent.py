@@ -77,6 +77,16 @@ class RespawnFlagCallback(BaseCallback):
     ここで置いた旗は同じ歩の setter が拾う。
     """
 
+    def _on_training_start(self) -> None:
+        # 🔴 素の `RecurrentPPO` に付けても、`_pending_respawn` がただのインスタンス属性に
+        # なるだけで**例外も出ず黙って無害化される** ＝ **群 1 と群 2 の取り違えに気づけない**。
+        # 投入前検証で見つかった型なので、ここで落とす（2026-08-15）。
+        if not isinstance(self.model, RespawnResetRecurrentPPO):
+            raise TypeError(
+                "RespawnFlagCallback は RespawnResetRecurrentPPO とだけ使える"
+                f"（渡されたのは {type(self.model).__name__}）。"
+                "素の RecurrentPPO に付けても旗は混ざらず、群 1 を群 2 と取り違える")
+
     def _on_step(self) -> bool:
         infos = self.locals.get("infos", None)
         if infos is not None:
