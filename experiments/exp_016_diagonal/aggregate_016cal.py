@@ -154,7 +154,8 @@ def main():
     print(f"\n【C6】安全率 0.60 の完走率 = "
           f"{(s60['completion_rate']*100 if s60 else float('nan')):.1f}%"
           f": {'的中' if c6 else '外れ'}"
-          + ("" if c6 else " → **F-2: 安全率以外に律速がある。校正では解けない**"))
+          + ("" if c6 else " → **F-2: 安全率以外にボトルネックがある（経路生成・追従制御）。"
+             "校正では解けない**"))
 
     verd = dict(C1=c1, C2=c2, C3=c3, C4=c4, C5=c5, C6=c6)
     print(f"\n**的中 {sum(verd.values())} / 外れ {len(verd)-sum(verd.values())}**"
