@@ -159,18 +159,25 @@ def main():
     b2 = run_sequence(policy_fn, maze_dir, order_b, reset_between=False)
     n_diff_b, first_b = diff_count(b1, b2)
 
-    # 🔴 「前の迷路」が両方の順で同じ迷路は、リセットを外しても入る隠れ状態が同じなので
-    #    構成上一致する。判別力を測る母集団は「前の迷路が変わった迷路」だけである。
-    def prev_of(order):
-        return {s: (order[i - 1] if i > 0 else None) for i, s in enumerate(order)}
-    pa, pb = prev_of(seeds), prev_of(order_b)
+    # 🔴 判別力を測る母集団は「**その迷路より前に走った列（prefix）が変わった迷路**」である。
+    #
+    # ⚠️ 当初これを「**直前の 1 本**が変わった迷路」と書いていたが、**実測で誤りと分かった**
+    #    （2026-08-15・40 万歩の退避重みでの試し打ち）。
+    #    リセットを外すと隠れ状態は**列の先頭から積み上がる**ので、
+    #    **直前が同じでも、その前が違えば入る状態は違う。**
+    #    実測: 順 A=[7000,7001,7002]・順 B=[7001,7002,7000] で 7002 は直前がどちらも 7001 だが、
+    #    A では 7000→7001 の 2 本、B では 7001 の 1 本を経ており、**結果は食い違った**。
+    #    「直前」で数えると母集団 2 件・実際に食い違ったのは 3 件で、**判別力を過小に見積もる**。
+    def prefix_of(order):
+        return {s: tuple(order[:i]) for i, s in enumerate(order)}
+    pa, pb = prefix_of(seeds), prefix_of(order_b)
     changed = [s for s in seeds if pa[s] != pb[s]]
     n_diff_changed = sum(1 for s in changed if b1[s] != b2[s])
     ok_b = (n_diff_changed > 0)
     print(f"  食い違い {n_diff_b} / {len(seeds)} 件（全体）")
-    print(f"  **前の迷路が変わった {len(changed)} 件のうち {n_diff_changed} 件が食い違い** → "
+    print(f"  **前に走った列が変わった {len(changed)} 件のうち {n_diff_changed} 件が食い違い** → "
           f"{'🟢 合格（検査に判別力がある）' if ok_b else '🔴 空振り'}")
-    print(f"  （前の迷路が両方の順で同じ迷路は、構成上一致するので母集団から外す）")
+    print(f"  （その迷路より前に走った列が両方の順で同一なら構成上一致するので母集団から外す）")
     if first_b:
         print(f"  最初の食い違い: {first_b}")
 
@@ -192,7 +199,7 @@ def main():
         json.dump({"model": args.model, "num_timesteps": nsteps,
                    "order_a": seeds, "order_b": order_b,
                    "L6a_diff": n_diff_a, "L6b_diff": n_diff_b,
-                   "L6b_prev_changed": len(changed),
+                   "L6b_prefix_changed": len(changed),
                    "L6b_diff_among_changed": n_diff_changed,
                    "verdict": "pass" if (ok_a and ok_b) else
                               ("no_power" if ok_a else "fail")},
