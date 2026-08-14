@@ -149,8 +149,13 @@ def build_maze_robot_xml(v_walls, h_walls, out_path, model_name="micromouse_v2_m
     # 柱（post）。friction は壁と同じ μ_wall=0.4 を明示（U4 是正）。
     for x in range(width + 1):
         for y in range(height + 1):
-            if center_goal and width == 16 and height == 16 and x == 8 and y == 8:
-                continue  # 16x16 迷路の中央柱は生成しない（common/maze_generator.py と同じ流儀）
+            # 🔴 2026-08-14 是正（環境 v2 項目 5・裁定 R34）: ゴール中央の柱を落とす条件が
+            # **16x16 専用**に書かれていたため、**6x6 のゴール 2x2 の中心に柱 post_3_3 が
+            # 立っていた**（`mouse/maze6_gen.py` 冒頭の「内壁も柱もない広場」という規格と
+            # 食い違っていた）。**寸法によらずゴール中央の柱を生成しない**よう一般化する。
+            # 16x16 では (8,8) = (width//2, height//2) なので**従来と同一**（XML は不変）。
+            if center_goal and x == width // 2 and y == height // 2:
+                continue  # 中央 2x2 ゴールの中心柱は生成しない（規格どおりの広場にする）
             px = x * cell_size
             py = y * cell_size
             ET.SubElement(worldbody, 'geom', {

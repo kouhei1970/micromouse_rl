@@ -409,7 +409,13 @@ class Maze6Env(gym.Env):
             build_maze_robot_xml(
                 m["v_walls"], m["h_walls"], tmp, model_name=f"maze6_{maze_seed}",
                 mouse_pos=f"{sx * cs + cs / 2} {sy * cs + cs / 2} 0.002",
-                mouse_euler=f"0 0 {heading}", center_goal=False, params=self.params)
+                # 🔴 2026-08-14 是正（環境 v2 項目 5）: ここは **center_goal=False** だった。
+                # 当時は柱を落とす条件が 16x16 専用だったので 6x6 では**無意味な引数**であり、
+                # False でも True でも同じ XML が出ていた。**mjcf 側を一般化した結果、
+                # この引数が初めて効くようになった**ので True にする。
+                # → ゴール 2x2 の中心の柱 `post_3_3` が生成されなくなり、
+                #   `mouse/maze6_gen.py` 冒頭の規格（内壁も柱もない広場）と一致する。
+                mouse_euler=f"0 0 {heading}", center_goal=True, params=self.params)
             self.sim = MouseSim(tmp, params=self.params)
         finally:
             if os.path.exists(tmp):
