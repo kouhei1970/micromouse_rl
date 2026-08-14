@@ -76,7 +76,11 @@ def _relative_position(sham, control, treat) -> float:
     denom = math.log(treat / control)
     if denom == 0:
         raise ValueError("2 つの錨が同じ値なので r が定義できない")
-    return math.log(sham / control) / denom
+    # 🔴 `+ 0.0` は符号つきゼロの正規化（准教授 AUDIT の指摘）。
+    # sham == control のとき分子は +0.0・分母は負になりうるので r が -0.0 になり、
+    # 「-0.000」と表示されて「わずかに対照側へ寄っている」向きがあるように読める。
+    # 実際には向きはなく錨と厳密に同値なので、+0.0 を足して 0.0 に正規化する。
+    return math.log(sham / control) / denom + 0.0
 
 
 def judge_one(key: str, spec: dict, sham_summary: dict) -> dict:
