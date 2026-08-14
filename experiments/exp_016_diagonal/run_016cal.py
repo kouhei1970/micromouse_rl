@@ -38,33 +38,39 @@ if str(REPO_ROOT) not in sys.path:
 
 from common.seed_bands import (assert_seeds_allowed,  # noqa: E402
                                 describe_seeds)
-from competition.baseline_slalom_e1t_tr_f0b import SlalomE1TTRF0bPolicy  # noqa: E402
+import importlib  # noqa: E402
+
 from competition.evaluator import CompetitionEvaluator, maze_kpi  # noqa: E402
 
 # 走行が「壊れていない」とみなす outcome（カード §5-2）
 OK_OUTCOMES = {"goal", "timeout"}
 
 
-class ProbedCalPolicy(SlalomE1TTRF0bPolicy):
-    """**新既定（F0＋F0-b 系）そのまま**。横偏差を記録するだけ。
+def make_probed(policy_spec: str):
+    """**任意の方策を包んで横偏差だけ記録する**クラスを作る（**挙動は変えない**）。
 
     `_do_drive_control` は**親を呼んで返り値をそのまま返す**ので、
     **電圧も軌跡も 1 ビットも変わらない**。横偏差は**親と同じ式**で再計算している
     （親は `e_y = (x−p_x)(−sin ψ) + (y−p_y) cos ψ` を使う）。
     """
+    mod, _, cls = policy_spec.partition(":")
+    base = getattr(importlib.import_module(mod), cls)
 
-    def __init__(self, *a, **kw):
-        super().__init__(*a, **kw)
-        self._ey = []
+    class ProbedCalPolicy(base):
+        def __init__(self, *a, **kw):
+            super().__init__(*a, **kw)
+            self._ey = []
 
-    def _do_drive_control(self, obs, x, y, yaw):
-        out = super()._do_drive_control(obs, x, y, yaw)
-        path, i = self._path, self._cursor
-        if path is not None:
-            psi = float(path.heading[i])
-            self._ey.append((x - float(path.x[i])) * (-math.sin(psi))
-                            + (y - float(path.y[i])) * math.cos(psi))
-        return out
+        def _do_drive_control(self, obs, x, y, yaw):
+            out = super()._do_drive_control(obs, x, y, yaw)
+            path, i = self._path, self._cursor
+            if path is not None:
+                psi = float(path.heading[i])
+                self._ey.append((x - float(path.x[i])) * (-math.sin(psi))
+                                + (y - float(path.y[i])) * math.cos(psi))
+            return out
+
+    return ProbedCalPolicy
 
 
 def wilson_lower(k: int, n: int, z: float = 1.645) -> float:
@@ -87,6 +93,12 @@ def main():
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--safety", type=float, required=True)
     ap.add_argument("--maze-dir", default="competition/mazes/cal_v4")
+    ap.add_argument("--policy",
+                    default="competition.baseline_slalom_e1t_tr_f0b_cal:SlalomE1TTRF0bCalPolicy",
+                    help="方策（module:Class）。既定は校正済みの新既定")
+    ap.add_argument("--gate-reason", default=None,
+                    help="**凍結された迷路を使う場合のみ**。裁定 R40 の合言葉。"
+                         "指定すると purpose='gate' で安全弁を通す（理由は記録される）")
     ap.add_argument("--out", default=None)
     args = ap.parse_args()
 
@@ -94,16 +106,24 @@ def main():
                    key=lambda p: int(p.stem.split("_")[1]))
     seeds = [int(p.stem.split("_")[1]) for p in mazes]
     print(describe_seeds(seeds, "competition"))
-    assert_seeds_allowed(seeds, namespace="competition", purpose="validate")
+    if args.gate_reason:
+        # **凍結された迷路の使用は合言葉つきでのみ許す**（裁定 R40 条件 4）
+        print(f"⚠️ **凍結された迷路を使う**（purpose='gate'）／理由: {args.gate_reason}")
+        assert_seeds_allowed(seeds, namespace="competition", purpose="gate",
+                             reason=args.gate_reason)
+    else:
+        assert_seeds_allowed(seeds, namespace="competition", purpose="validate")
 
     out = Path(args.out or (REPO_ROOT / "outputs" / "exp_016_diagonal" / "016cal"
                             / f"sf{args.safety:g}.json"))
     out.parent.mkdir(parents=True, exist_ok=True)
-    print(f"安全率 {args.safety:g}／{len(mazes)} 迷路／{args.maze_dir}\n", flush=True)
+    print(f"安全率 {args.safety:g}／{len(mazes)} 迷路／{args.maze_dir}"
+          f"／方策 {args.policy}\n", flush=True)
+    Probed = make_probed(args.policy)
 
     rows = []
     for m in mazes:
-        pol = ProbedCalPolicy(safety_factor=args.safety)
+        pol = Probed(safety_factor=args.safety)
         ev = CompetitionEvaluator(maze_dir=args.maze_dir,
                                   out_dir=str(out.parent / f"sf{args.safety:g}_traj"))
         r = ev.evaluate_maze(m, pol)
@@ -151,7 +171,8 @@ def main():
     if summ["failed_faces"]:
         print(f"  未完走の迷路: {summ['failed_faces']}／様式 {summ['failure_kinds']}")
 
-    json.dump(dict(summary=summ, rows=rows, maze_dir=args.maze_dir),
+    json.dump(dict(summary=summ, rows=rows, maze_dir=args.maze_dir,
+                   policy=args.policy, gate_reason=args.gate_reason),
               open(out, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     print(f"\n→ {out}")
     return 0
