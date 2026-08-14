@@ -388,6 +388,16 @@ def _next_maze_seed(self) -> int:
 6. **6 seed・6×6・検証帯 20 面**の範囲での判定である（exp_019 と同じ）
 7. **$D_0 \le 3$ の段は作れない**（**学習帯に 1 面も存在しない** — §3-2）。
    **したがって「もっと易しくする」方向の余地は、この迷路生成器では無い**
+8. **🔴 6 seed は「迷路の引き」については独立していない**（2026-08-14 の投入前確認で判明）。
+   **学習迷路の `base_seed` は `TRAIN_BASE_SEED + rank × WORKER_SEED_STRIDE` で決まり、
+   `--seed`（PPO 本体の乱数 seed）に依存しない**ので、
+   **`n_envs`=1 の本実験では 6 本とも同じ迷路列を走る**
+   （**exp_019 でも同じ**であることを実測で確認した — 6 本とも先頭が `8000, 8001, …`）。
+   - **exp_019 と exp_020 で共通の性質**なので、**条件間の比較の公平さは保たれる**
+   - **seed 間のばらつきが表すのは「方策の初期化と PPO の乱数」だけ**であり、
+     **迷路の引きのばらつきではない**。**6 seed を「6 通りの迷路標本」と読んではならない**
+   - **これは統制として働く面もある**（迷路を揃えて方策の乱数だけを変えている）が、
+     **一般化の主張には使えない**
 
 ---
 
@@ -400,4 +410,54 @@ def _next_maze_seed(self) -> int:
 3-bis. **投入前チェック（カリキュラム有効の経路）**: **段 1 の最初の 100 エピソードの
    `maze_seed` がすべて $D_0 \le 4$ であることを確認する**（限界 3）。**満たさなければ投入しない**
 4. 投入時に**投入版のコミットハッシュを記録**（exp_019 §8-6 と同じ形）
-5. 完走後: **Q1〜Q5 の判定**・監視 5 件・機構表・准教授の独立再計算
+5. 完走後: **Q1〜Q5 の判定**・監視 8 件・機構表・准教授の独立再計算
+
+---
+
+## 10. 投入手順（**GO 後にそのまま使う**）
+
+```bash
+cd /Users/kouhei/tmp/github/micromouse_rl
+git rev-parse HEAD          # 投入版として記録する（§8-6 と同じ形）
+for N in 1 2 3 4 5 6; do
+  mkdir -p logs/exp_020_seed$N
+  OMP_NUM_THREADS=1 nohup .venv/bin/python \
+    experiments/exp_012_continuous_potential/train.py --condition E --env-version v2 \
+    --action-highpass-penalty 0 --seed $N \
+    --d0-schedule "400000:4,700000:6,1000000:9" \
+    --log-dir logs/exp_020_seed$N --model-out models/exp_020_seed$N.zip \
+    > logs/exp_020_seed$N/train.log 2>&1 &
+done
+```
+
+**⚠️ この呼び出しに待ちを入れない**（exp_019 の 10:20:42 は、同じ呼び出しに `sleep` を入れて
+**時間切れで `nohup` の子ごと落ちた**）。**投入と確認は別の呼び出しに分ける。**
+
+**投入後**（別々の呼び出しで）:
+
+1. `ps` で 6 本の生存を確認し、**PID を記録**
+2. **各 `train.log` の設定出力の同一確認** — 6 本とも次が出ていること:
+   - `[train] 環境の版 = v2（{'goal_rule_containment': True, 'collision_respawn': True, 'episode_limit_steps': 2000}）`
+   - `[train] 評価環境の版 = v2（{'goal_rule_containment': True}）`
+   - `[train] 距離カリキュラム = [(400000, 4), (700000, 6), (1000000, 9)]（最後の段以降は上限なし）`
+   - `[curriculum] t=0 → D0 上限 = 4`
+3. `caffeinate -i -w <PID>` を 6 本（§9-20）
+4. **投入前チェック 3-bis の実データでの確認**（下記）
+5. **准教授へ版通知**（異議方式）→ **教授へ投入成立の報告**
+
+**投入前チェック 3-bis（実データ版）**:
+
+```bash
+.venv/bin/python -c "
+import json,sys; sys.path.insert(0,'.')
+from mouse.maze6_gen import generate_maze, shortest_distances
+d0=lambda s:(lambda m:int(shortest_distances(m['v_walls'],m['h_walls'])[tuple(m['start'])]))(generate_maze(s,mode='loop'))
+r=[json.loads(l) for l in open('logs/exp_020_seed1/episode_seeds.jsonl')][:100]
+ds=[d0(x['maze_seed']) for x in r]
+print(f'{len(r)} 本の D0 最大 = {max(ds)} → 合格 = {max(ds)<=4}')"
+```
+
+**🟢 先取りの確認（2026-08-14・投入前）**: **`base_seed`=8000・上限 4 で最初の 100 面を
+決定的に生成したところ、$D_0$ の最大は 4** だった（**合格**）。
+**100 面を得るのに seed を 811 個消費する**（該当率 12.7% と整合）。
+**実データでの確認は投入後に改めて行う。**
