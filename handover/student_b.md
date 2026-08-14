@@ -1,60 +1,74 @@
 # 引き継ぎメモ: 学生B（強化学習担当）
 
-## 🔴🔴 いま走っているもの（2026-08-15 00:49:50 JST 投入・**exp_022**）
+## ⏸⏸ 停止時点の状態（2026-08-15・ユーザ指示による全セッション停止）
 
-**exp_022（にせ履歴・帰無の原因の分離）を 6 本並列で走行中。**
+### 実行中のプロセス: **無し**（学習 0 本・測定 0 本）。**未コミット変更: 無し**
 
-| 項目 | 内容 |
+**exp_021（観測履歴の連結）・exp_022（にせ履歴）はどちらも完走・判定確定・
+准教授の独立再計算まで完了。停止して失うものは無い。**
+
+---
+
+## 🔴 次の担当の最初の仕事 — **exp_023（再帰型方策）の投入**
+
+**教授 GO 済み・准教授監査済み（要是正 1・要記載 2 は反映済み）・投入前検証 5/5 PASS 済み。**
+**残るのは「准教授の反映確認の受領」と「投入」だけ。**
+
+| 項目 | 状態 |
 |---|---|
-| **投入** | **2026-08-15 00:49:50 JST**・**PID 21620 / 21622 / 21624 / 21626 / 21628 / 21630**（seed 1〜6） |
-| **投入版** | **`987ad40399e1eac2f7b21b4f00af83f3979ba5ed`**（6 本一致） |
-| **完走見込み** | **2026-08-15 02:05〜02:15 JST**（01:08 の実測で更新） |
-| **記録先** | `logs/exp_022_seed{1..6}/` ／ モデルは `models/exp_022_seed{N}.zip` |
-| **`caffeinate`** | 6 本とも付与済み |
-| **投入コマンド** | カード §8（`--obs-history "1,2,4,8,16,32,64,128" --obs-history-sham`） |
+| カード | `experiments/exp_023_recurrent_policy/card.md`（版 `a54d8b3`） |
+| 教授検収 | **✅ 合格・GO 済み** |
+| 准教授の投入前監査 | **✅ 完了**（AUDIT_047・要是正 1 件と要記載 2 件は `a54d8b3` で反映済み） |
+| **准教授の反映確認** | ⬜ **受領待ち**（**これが届いてから投入**） |
+| 実装 | **✅ 完了**（`mouse/recurrent.py`・`train.py`・`maze6_eval.py`・`measure_driving.py`） |
+| **投入前検証** | **✅ T-R1（既存 30 項目）＋ T-R2〜T-R6（5 項目）すべて PASS** |
+| `sb3-contrib` | **✅ 2.9.0 導入済み**（`aede039`。既存パッケージの版は不動） |
 
-### 🔴 完走後にやること（順番）
+### 🔴 投入コマンド（**群 1 → 群 2 の逐次連結・1 スクリプトで・ポーリング禁止**）
 
-1. **報告トリガー**（§4-2）: 80 万歩の退避重みを測り、**`net_progress_per_1000` の
-   6 seed 中央値が 0.625 以下なら教授へ即報告**
-2. **🔴 3 群すべてを同一版の `measure_driving.py` で測り直す**（カード §6 手順 5）。
-   **P2・P3 の判定量（`n_reach_ge5`・`n_goal_rollout`）は exp_022 の起票時に新設したもので、
-   exp_019・exp_021 の既存の測定出力には入っていない**
-   ```bash
-   # 対照群 exp_019（履歴なし）
-   .venv/bin/python experiments/exp_021_observation_history/measure_driving.py \
-     --models models/exp_019_v2_seed{1,2,3,4,5,6}.zip \
-     --label exp_019_final --out outputs/exp_021_driving_control_final.json
-   # 参照群 exp_021（履歴あり）
-   .venv/bin/python experiments/exp_021_observation_history/measure_driving.py \
-     --models models/exp_021_seed{1,2,3,4,5,6}.zip --history-lags "1,2,4,8,16,32,64,128" \
-     --label exp_021_final --out outputs/exp_021_driving_treat_final.json
-   # にせ履歴群 exp_022
-   .venv/bin/python experiments/exp_021_observation_history/measure_driving.py \
-     --models models/exp_022_seed{1,2,3,4,5,6}.zip --history-lags "1,2,4,8,16,32,64,128" \
-     --history-sham --label exp_022_final --out outputs/exp_022_driving_sham_final.json
-   ```
-3. **P1〜P4 の機械的判定**:
-   ```bash
-   .venv/bin/python experiments/exp_022_sham_history/judge_sham.py \
-     --control outputs/exp_021_driving_control_final.json \
-     --treat outputs/exp_021_driving_treat_final.json \
-     --sham outputs/exp_022_driving_sham_final.json \
-     --out outputs/exp_022_judgment.json
-   ```
-4. **重み 12 本の保全**（§9-21 (c)）＋ **測定出力の保全**（§9-21 (a)・`slim_output.py`）
-5. 判定文書 → 教授検収 → 准教授の独立再計算
+```bash
+cd /Users/kouhei/tmp/github/micromouse_rl
+# 群 1（リセットしない）→ 完走後に群 2（リセットする）を続けて投入する 1 本のスクリプト
+cat > /tmp/exp023_launch.sh <<'SH'
+cd /Users/kouhei/tmp/github/micromouse_rl
+for N in 1 2 3 4 5 6; do
+  mkdir -p logs/exp_023a_seed$N
+  OMP_NUM_THREADS=1 .venv/bin/python experiments/exp_012_continuous_potential/train.py     --condition E --env-version v2 --action-highpass-penalty 0 --seed $N     --obs-history "1,2,4,8,16,32,64,128" --recurrent --lstm-hidden 32     --log-dir logs/exp_023a_seed$N --model-out models/exp_023a_seed$N.zip     > logs/exp_023a_seed$N/train.log 2>&1 &
+done
+wait
+for N in 1 2 3 4 5 6; do
+  mkdir -p logs/exp_023b_seed$N
+  OMP_NUM_THREADS=1 .venv/bin/python experiments/exp_012_continuous_potential/train.py     --condition E --env-version v2 --action-highpass-penalty 0 --seed $N     --obs-history "1,2,4,8,16,32,64,128" --recurrent --lstm-hidden 32 --respawn-reset     --log-dir logs/exp_023b_seed$N --model-out models/exp_023b_seed$N.zip     > logs/exp_023b_seed$N/train.log 2>&1 &
+done
+wait
+SH
+nohup bash /tmp/exp023_launch.sh > /tmp/exp023_launch.log 2>&1 &
+```
 
-### 🟢 事前登録した錨（**判定スクリプトが定数として持ち、食い違えば落ちる**）
+**⚠️ 投入と確認は別の呼び出しに分ける**（同じ呼び出しに待ちを入れると時間切れで子ごと落ちる）。
+**投入後に `caffeinate -i -w <PID>` を 6 本**（**群 2 が始まったら改めて 6 本**）。
 
-| # | 判定量 | 対照 exp_019 | 参照 exp_021 | 境界（r=0.5） |
-|---|---|---|---|---|
-| **P1**（主） | 衝突の頻度 | 0.500 | 2.125 | **1.031** |
-| **P2** | 5 区画以上到達の走行数 | 3 | 26 | **8.8 件** |
-| P3（弱） | rollout のゴール件数 | 0 | 4 | 比が定義できない |
-| P4（弱） | 正味の前進 | 1.500 | 1.250 | **1.369** |
+**見込み: 約 6.4 時間**（1 群 3.2 時間 × 2。**RecurrentPPO は PPO の 2.8 倍遅い**という実測から）。
 
-**r < 0.5 → (A/C) 情報／汚染の説／r ≥ 0.5 → (B) 次元の説／r < 0 か r > 1 → どちらの錨よりも外。**
+### 🔴 完走後の手順
+
+1. **80 万歩の報告トリガーを各群で**（対照 = **exp_021 の 80 万歩の退避重み**・中央値 1.125・
+   **発火線 0.5625**）
+2. **判定は両群完走後に一括**（教授裁定の条件 2。途中のつまみ食いの防止）
+3. **3 群（対照 exp_021・群 1・群 2）を同一版の `measure_driving.py` で測り直す**
+   （**`--recurrent` を付ける**）
+4. **R1・R3〜R7 の判定**（**R2 は §3-1-bis で判定から外した**。記述として報告する）
+5. **重み 12 本 × 2 群と測定出力の保全**（研究計画書 §9-21 (a)(c)）
+
+### 🟢 事前登録した閾値（**対照 = exp_021**）
+
+| # | 判定量 | 対照 exp_021 | 閾値 |
+|---|---|---|---|
+| **R1**（主） | 7 区画以上到達の走行数 | **12 / 120** | **≥ 24 件** |
+| R3 | 正味の前進 | 1.250 | **< 1.563**（改善しないことを予測） |
+| R4 | 衝突の頻度 | 2.125 | **≤ 2.125** |
+| R5 | ゴール率 | 0.000 | **< 0.05**（厳密に 0.05 なら外れ） |
+| **R6・R7** | 群 2 対 群 1 | — | **群 2 が群 1 より深く・衝突が少ない** |
 
 ---
 
