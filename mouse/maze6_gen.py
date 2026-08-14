@@ -323,7 +323,11 @@ def save_maze(maze: dict, out_dir, params: RobotParams = None):
     build_maze_robot_xml(
         maze["v_walls"], maze["h_walls"], str(xml_path), model_name=f"maze6_{seed}",
         mouse_pos=f"{sx * cs + cs / 2} {sy * cs + cs / 2} 0.002",
-        mouse_euler=f"0 0 {heading}", center_goal=False, params=params)
+        # 🔴 2026-08-14 是正（環境 v2 項目 5）: ここも `center_goal=False` だった。
+        # `mouse/maze6_env.py` の呼び出し側と同じ理由（当時は柱を落とす条件が 16x16 専用で
+        # 6x6 では無意味な引数だった）。**mjcf を一般化した結果この引数が効くようになった**
+        # ので True にする。**環境（実走）と事前生成 XML の仕様を一致させる**ため。
+        mouse_euler=f"0 0 {heading}", center_goal=True, params=params)
     return npz_path, xml_path
 
 

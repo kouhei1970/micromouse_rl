@@ -50,7 +50,6 @@
     <geom name="post_3_0" type="box" size="0.006 0.006 0.025" pos="0.54 0.0 0.025" material="mat_post" friction="0.4 0.005 1e-4"/>
     <geom name="post_3_1" type="box" size="0.006 0.006 0.025" pos="0.54 0.18 0.025" material="mat_post" friction="0.4 0.005 1e-4"/>
     <geom name="post_3_2" type="box" size="0.006 0.006 0.025" pos="0.54 0.36 0.025" material="mat_post" friction="0.4 0.005 1e-4"/>
-    <geom name="post_3_3" type="box" size="0.006 0.006 0.025" pos="0.54 0.54 0.025" material="mat_post" friction="0.4 0.005 1e-4"/>
     <geom name="post_3_4" type="box" size="0.006 0.006 0.025" pos="0.54 0.72 0.025" material="mat_post" friction="0.4 0.005 1e-4"/>
     <geom name="post_3_5" type="box" size="0.006 0.006 0.025" pos="0.54 0.8999999999999999 0.025" material="mat_post" friction="0.4 0.005 1e-4"/>
     <geom name="post_3_6" type="box" size="0.006 0.006 0.025" pos="0.54 1.08 0.025" material="mat_post" friction="0.4 0.005 1e-4"/>
