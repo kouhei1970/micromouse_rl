@@ -353,6 +353,8 @@ def main() -> int:
 
     respawn_section(spc, dT)
 
+    v2_final_section()
+
     print("\n" + "=" * 92)
     print("§7 🔴 模型の根拠を実走で再現する（准教授の未確認 ①への回答）")
     print("=" * 92)
@@ -502,6 +504,49 @@ def respawn_section(spc: float, dT: float) -> None:
     print("       - **この仕様でよいかは裁定事項**（リスポーンごとに `_visited` を"
           "リセットする設計も可能だが、\n         その場合は報酬ポンプの検査が要る）")
     return None
+
+
+def v2_final_section() -> None:
+    """§9 環境 v2 の**確定仕様**での順序（⑥ の再実行。実装後の実測値を入力にする）。
+
+    v2 の確定仕様:
+      - $k$ = 0（行動の高周波成分への罰なし）
+      - **規約終端**（機体全体の内包）。**ΔT は実装で実測した 7 歩**を使う
+        （模型の 6.8 歩ではなく実測値。深さの実測 56.9 mm は上界 65.3 mm の内側）
+      - **(c) 衝突リスポーン**（衝突で終わらず開始点へ戻る）
+      - **エピソード上限 2000 歩**（裁定 2026-08-14）
+    """
+    print("\n" + "=" * 92)
+    print("§9 🔴 環境 v2 の確定仕様での順序（⑥ の再実行・実装の実測値を入力にする）")
+    print("=" * 92)
+    LIMIT = 2000
+    dT_meas = 7.0            # 実装で実測（3 面とも 7 歩・深さ 56.9 mm）
+    spc = CELL / (0.96 * DT)
+    print(f"  仕様: k=0／規約終端（**ΔT = {dT_meas:.0f} 歩・実装で実測**）／"
+          f"(c) リスポーン／上限 {LIMIT} 歩")
+    print(f"{'面':>6}{'D₀':>4}{'ゴール':>9}{'探索':>9}{'滞留':>9}"
+          f"{'衝突×N→上限':>14}{'N':>4}   順序")
+    n_ok = 0
+    for seed in VALID_SEEDS:
+        m = generate_maze(seed, mode="loop")
+        d0 = int(shortest_distances(m["v_walls"], m["h_walls"])[tuple(m["start"])])
+        r = returns_for_face(d0, spc, 0.0, MEAN_HP2, dT_meas, limit_steps=LIMIT)
+        # (c): 実走 regime（衝突まで約 608 歩）で上限 2000 なら N ≈ 3 回
+        T_obs, alpha_obs, visit_obs = 608.0, 0.133, 0.055
+        phi_c = alpha_obs * d0 * CELL
+        n_crash = int(LIMIT // T_obs)
+        crash_cost = sum(GAMMA ** (i * T_obs - 1) * (1.0 + phi_c)
+                         for i in range(1, n_crash + 1))
+        crashes = -TIME_PENALTY * S(LIMIT) - crash_cost + visit_obs
+        ok = (r["goal"] > r["explore"] > r["stay"] > crashes)
+        n_ok += ok
+        print(f"{seed:>6}{d0:>4}{r['goal']:>9.3f}{r['explore']:>9.3f}{r['stay']:>9.3f}"
+              f"{crashes:>14.3f}{n_crash:>4}   {'✅' if ok else '🔴'}")
+    print(f"\n  **順序が成立した面: {n_ok} / {len(VALID_SEEDS)}**")
+    print("  （比較: 現行仕様〈終端衝突・上限 6000〉では 6/20 だった）")
+    print("  ⚠️ 衝突シナリオは**実走 regime の実測値**（T≈608 歩・α≈0.133・訪問 +0.055）を"
+          "入力にした半実証の模型である\n"
+          "     — (a') のときと違い**厳密な反実仮想は作れない**（軌道が変わるため）。")
 
 
 def empirical_check() -> None:
