@@ -63,6 +63,7 @@ if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
 
 from stable_baselines3 import PPO  # noqa: E402
+from sb3_contrib import RecurrentPPO  # noqa: E402
 from stable_baselines3.common.callbacks import BaseCallback, CheckpointCallback  # noqa: E402
 from stable_baselines3.common.logger import configure  # noqa: E402
 from stable_baselines3.common.monitor import Monitor  # noqa: E402
@@ -71,6 +72,8 @@ from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv  # noqa:
 from common.seed_bands import assert_seeds_allowed, describe_seeds  # noqa: E402
 from mouse.maze6_env import Maze6Env  # noqa: E402
 from mouse.obs_history import ObsHistoryWrapper, parse_lags  # noqa: E402
+from mouse.recurrent import (DEFAULT_LSTM_HIDDEN, RecurrentPolicyFn,  # noqa: E402
+                             RespawnFlagCallback, RespawnResetRecurrentPPO)
 from mouse.maze6_eval import VALIDATION_MAZE_DIR, evaluate_maze6  # noqa: E402
 from mouse.params import RobotParams  # noqa: E402
 
@@ -340,8 +343,10 @@ class ValidationCallback(BaseCallback):
     def __init__(self, eval_every_steps: int, log_dir: Path, gamma: float,
                  maze_mode: str, n_trials: int = 1, save_on_goal_path: Path = None,
                  fine_updates: int = 4, coarse_k: int = 2,
-                 eval_env_kwargs: dict = None, env_wrapper=None):
+                 eval_env_kwargs: dict = None, env_wrapper=None, recurrent: bool = False):
         super().__init__()
+        # exp_023: 再帰型方策のとき、評価で隠れ状態を持ち回り、試行ごとに捨てる
+        self.recurrent = bool(recurrent)
         # exp_021: 学習環境に掛けたのと同じ観測ラッパを評価にも掛ける
         # （**既定 None = 従来どおり**。学習と評価で観測の形が食い違う事故を防ぐ）
         self.env_wrapper = env_wrapper
@@ -384,12 +389,17 @@ class ValidationCallback(BaseCallback):
 
     def _evaluate(self):
         t0 = time.time()
+        if self.recurrent:
+            pf = RecurrentPolicyFn(self.model, deterministic=True)
+            policy_fn, reset_fn = pf, pf.reset
+        else:
+            policy_fn, reset_fn = (lambda o: self.model.predict(o, deterministic=True)[0]), None
         s = evaluate_maze6(
-            lambda o: self.model.predict(o, deterministic=True)[0],
+            policy_fn,
             maze_dir=VALIDATION_MAZE_DIR, n_trials=self.n_trials, seed=0,
             gamma=self.gamma, maze_mode=self.maze_mode,
             env_kwargs=(self.eval_env_kwargs or None),
-            env_wrapper=self.env_wrapper)
+            env_wrapper=self.env_wrapper, policy_reset_fn=reset_fn)
         rec = dict(total_timesteps=int(self.num_timesteps),
                    goal_rate=s["goal_rate"],
                    # 🔴 どちらの尺で測ったかを記録から復元できるようにする。
@@ -513,6 +523,16 @@ def main(argv=None):
                    help="にせ履歴（exp_022）。遅れの位置に**現在の観測を複製**する。"
                         "次元もパラメータ数も同じまま履歴の情報だけがゼロになる。"
                         "**--obs-history と併用する**（渡さなければ既定 off ＝ exp_021 と同一）")
+    p.add_argument("--recurrent", action="store_true",
+                   help="再帰型方策（exp_023）。RecurrentPPO（LSTM）を使う。"
+                        "**渡さなければ既定 off ＝ exp_021・exp_022 と同一経路**")
+    p.add_argument("--lstm-hidden", type=int, default=DEFAULT_LSTM_HIDDEN,
+                   help=f"LSTM の隠れ状態の大きさ（既定 {DEFAULT_LSTM_HIDDEN}）。"
+                        "**sb3-contrib の既定 256 は使わない** — 方策のパラメータが対照の "
+                        "12.92 倍になり、容量だけで裾が動く（exp_022 の実証）")
+    p.add_argument("--respawn-reset", action="store_true",
+                   help="リスポーンの歩でも LSTM の隠れ状態をリセットする（exp_023 群 2）。"
+                        "**--recurrent と併用する**")
     p.add_argument("--fine-updates", type=int, default=4,
                    help="§9-19 の退避: 陽性の直後に押さえる PPO 更新の回数（R51-3）")
     p.add_argument("--no-save-on-goal", action="store_true",
@@ -577,6 +597,22 @@ def main(argv=None):
     if args.init_model:
         model = PPO.load(args.init_model, env=vec_env, seed=args.seed, verbose=1)
         print(f"[train] 初期重みを {args.init_model} から読み込み（微調整）")
+    elif args.recurrent:
+        # exp_023: 再帰型方策。**ハイパーパラメータは PPO 側と完全に同一**にし、
+        # 変えるのは「再帰構造であること」と「参照できる過去の長さ」だけにする（カード §2-2-bis）。
+        # 🔴 隠れ状態の大きさは既定 32（sb3-contrib の既定 256 は使わない。カード §0-2）。
+        _cls = RespawnResetRecurrentPPO if args.respawn_reset else RecurrentPPO
+        model = _cls("MlpLstmPolicy", vec_env,
+                     learning_rate=3e-4, n_steps=2048, batch_size=256, n_epochs=10,
+                     gamma=args.gamma, gae_lambda=0.95, ent_coef=0.0,
+                     policy_kwargs=dict(net_arch=[128, 128],
+                                        lstm_hidden_size=int(args.lstm_hidden)),
+                     seed=args.seed, verbose=1)
+        _n_par = sum(q.numel() for q in model.policy.parameters())
+        print(f"[train] 方策 = RecurrentPPO（LSTM 隠れ {args.lstm_hidden}・"
+              f"パラメータ {_n_par:,}）", flush=True)
+        print(f"[train] リスポーンで隠れ状態をリセット = "
+              f"{'有効（群 2）' if args.respawn_reset else '無効（群 1・既定）'}", flush=True)
     else:
         # ハイパーパラメータは M1（exp_003〜006）・exp_010 と同一。1 実験 1 変更を守る
         model = PPO("MlpPolicy", vec_env,
@@ -584,6 +620,7 @@ def main(argv=None):
                     gamma=args.gamma, gae_lambda=0.95, ent_coef=0.0,
                     policy_kwargs=dict(net_arch=[128, 128]),
                     seed=args.seed, verbose=1)
+        print("[train] 方策 = PPO（前向き・既定）", flush=True)
     model.set_logger(configure(str(log_dir), ["stdout", "csv", "tensorboard"]))
 
     stats_cb = EpisodeStatsCallback(n_envs=n_envs,
@@ -594,7 +631,8 @@ def main(argv=None):
                                                    else Path(args.model_out)),
                                 eval_env_kwargs=EVAL_ENV_FLAGS[args.env_version],
                                 fine_updates=args.fine_updates,
-                                env_wrapper=_obs_wrapper)
+                                env_wrapper=_obs_wrapper,
+                                recurrent=bool(args.recurrent))
     ckpt_cb = CheckpointCallback(save_freq=max(400_000 // n_envs, 1),
                                  save_path=str(log_dir))
 
@@ -602,6 +640,9 @@ def main(argv=None):
     # **カリキュラム導入前と経路が完全に同一**になる（カード §2-3「不活性の bit 一致」）。
     d0_schedule = parse_d0_schedule(args.d0_schedule)
     callbacks = [ckpt_cb, stats_cb, val_cb]
+    if args.recurrent and args.respawn_reset:
+        # 群 2: 毎歩 info["respawned"] を拾って方策側へ渡す（mouse/recurrent.py）
+        callbacks.insert(0, RespawnFlagCallback())
     if d0_schedule is not None:
         callbacks.insert(0, CurriculumCallback(d0_schedule, log_dir))
         print(f"[train] 距離カリキュラム = {d0_schedule}（最後の段以降は上限なし）", flush=True)

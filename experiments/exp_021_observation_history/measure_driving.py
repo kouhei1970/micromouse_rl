@@ -66,6 +66,7 @@ from mouse.maze6_env import Maze6Env  # noqa: E402
 # 🔴 `_trial_seed` は**既存の評価規約をそのまま使う**（条文の指定。再定義しない）
 from mouse.maze6_eval import VALIDATION_MAZE_DIR, _trial_seed  # noqa: E402
 from mouse.obs_history import ObsHistoryWrapper, parse_lags  # noqa: E402
+from mouse.recurrent import RecurrentPolicyFn  # noqa: E402
 
 GAMMA = 0.995
 
@@ -97,8 +98,18 @@ def _model_name(path: Path) -> str:
     return f"{path.parent.name}/{path.stem}"
 
 
-def _load_policy(model_path: Path):
-    """方策を読み込み、(obs -> action の関数, 実歩数) を返す（方策は**無状態**）。"""
+def _load_policy(model_path: Path, recurrent: bool = False):
+    """方策を読み込み、(呼び出し口, 実歩数) を返す。
+
+    **前向きの方策は無状態**（`lambda o: ...`）。
+    **再帰型方策（exp_023）は隠れ状態を持つ**ので `RecurrentPolicyFn` を返す —
+    **エピソードの切り替わりで `reset()` を呼ばないと、前のエピソードの文脈を引き継ぐ**
+    （**例外も出ず次元も合い、値だけが誤る**）。
+    """
+    if recurrent:
+        from sb3_contrib import RecurrentPPO
+        model = RecurrentPPO.load(str(model_path), device="cpu")
+        return RecurrentPolicyFn(model, deterministic=True), int(model.num_timesteps)
     model = PPO.load(str(model_path), device="cpu")
     return (lambda o: model.predict(o, deterministic=True)[0],
             int(model.num_timesteps))
@@ -116,6 +127,9 @@ def _run_episode(maze_dir: Path, maze_seed: int, policy_fn, lags, sham=False) ->
         # exp_022: sham=True で「にせ履歴」（遅れの位置に現在の観測を複製）
         env = ObsHistoryWrapper(env, lags, sham=sham)
     tseed = _trial_seed(_SEED_BASE, maze_seed, _TRIAL_IDX)
+    # 🔴 再帰型方策は 1 エピソードごとに隠れ状態を捨てる（exp_023）
+    if hasattr(policy_fn, "reset"):
+        policy_fn.reset()
     obs, info = env.reset(seed=tseed)
     d0 = int(info["dist_to_goal"])          # D_0 = 開始区画のゴール距離［区画数］
     if d0 < 0:
@@ -252,6 +266,9 @@ def main() -> None:
     p.add_argument("--history-lags", type=str, default=None,
                    help="観測履歴の遅れ（例 '1,2,4,8,16,32,64,128'）。"
                         "**対照群（履歴なしの方策）では渡さない**")
+    p.add_argument("--recurrent", action="store_true",
+                   help="再帰型方策（exp_023）。RecurrentPPO として読み込み、"
+                        "**エピソードごとに隠れ状態を捨てる**")
     p.add_argument("--history-sham", action="store_true",
                    help="にせ履歴（exp_022）。遅れの位置に現在の観測を複製する。"
                         "**学習時と同じ設定にすること**")
@@ -284,7 +301,7 @@ def main() -> None:
     per_seed, model_info = {}, []
     for m in args.models:
         name = _model_name(Path(m))
-        policy_fn, n_ts = _load_policy(Path(m))
+        policy_fn, n_ts = _load_policy(Path(m), recurrent=args.recurrent)
         eps = [_run_episode(maze_dir, ms, policy_fn, lags, sham=args.history_sham)
                for ms in maze_seeds]
         mets = [_episode_metrics(e) for e in eps]
@@ -312,6 +329,7 @@ def main() -> None:
         # 🔴 測定条件を出力に残す（verify_bit_identity.py で「どのファイルを照合したか」が
         # 記録されず別実験の結果と見分けがつかなかった件の教訓。R11 候補として登録済み）
         models=model_info, history_lags=list(lags), history_sham=bool(args.history_sham),
+        recurrent=bool(args.recurrent),
         seed_rule=dict(fn="mouse.maze6_eval._trial_seed", base=_SEED_BASE,
                        trial_idx=_TRIAL_IDX),
         env_kwargs=_ENV_KWARGS, maze_dir=str(maze_dir), maze_seeds=maze_seeds,
