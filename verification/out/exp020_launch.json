@@ -1,0 +1,24 @@
+{
+  "bit_identity": {
+    "n": 51,
+    "mismatch": 0,
+    "only_new": [
+      "cell_entries",
+      "min_d_since_respawn",
+      "path_len_m",
+      "visit_steps"
+    ],
+    "only_ref": [],
+    "n_goal": 2,
+    "n_respawn": 50
+  },
+  "version": {
+    "diff": "",
+    "transferable": true
+  },
+  "q2": {
+    "dispersion": 4.008695652173913,
+    "p_poisson": 0.0034436241319957925,
+    "p_nb": 0.03165072210605407
+  }
+}
