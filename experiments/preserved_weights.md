@@ -86,6 +86,28 @@
 
 **合計 12 本・10.45 MB。****最終方策 6 本はすべて 2,000,896 歩・退避重み 6 本はすべて 800,000 歩で完全に揃っている。****対照群（exp_019）と学習量が厳密に一致している**（`n_steps` = 2048 の粒度による決定的な超過）。
 
+
+### exp_022（にせ履歴・帰無の原因の分離）の重み — 2026-08-15 追加
+
+**判定での用途**: exp_022 の P1〜P4 の判定（最終方策）／報告トリガーの実行記録（80 万歩）
+
+| パス | 実歩数 | 大きさ | SHA-256 |
+|---|---|---|---|
+| `models/exp_022_seed1.zip` | 2,000,896 | 892 KB | `6862fada8d3af7ed95bbcb8bb0856247c557f545f646745e1c5ab3aa9091ac68` |
+| `models/exp_022_seed2.zip` | 2,000,896 | 892 KB | `b50bf7eeef419e2c36790e2f7921e3d7a84c110d6e31e0853212835f44dc8ef8` |
+| `models/exp_022_seed3.zip` | 2,000,896 | 892 KB | `2d04683b2e3e5c16d2ac8d9497d4c34326d1c0885772d6eb77207b6d63930113` |
+| `models/exp_022_seed4.zip` | 2,000,896 | 892 KB | `80eda1822a622df46f11eceaa5451ed637af5d0176467f4149f6bc65a2005edb` |
+| `models/exp_022_seed5.zip` | 2,000,896 | 892 KB | `ce75b2f28a9f0c0c77cdaf80b11b29667316e69a0ac807872a9cfe1db6daa7e1` |
+| `models/exp_022_seed6.zip` | 2,000,896 | 892 KB | `4d2a5c05d8bc803c069bfb9c43dd15010aeed5dca6a0cee2023a617b0f521ff9` |
+| `logs/exp_022_seed1/rl_model_800000_steps.zip` | 800,000 | 892 KB | `7e91ea33cb1fa304ab0034250bb48ca2e5904656b2b0a7e0036c7f52e025d370` |
+| `logs/exp_022_seed2/rl_model_800000_steps.zip` | 800,000 | 892 KB | `da53ac03f677c08bf2aec776ee24f2d1f665aa8dc986b7a6158f4b6c658e41c3` |
+| `logs/exp_022_seed3/rl_model_800000_steps.zip` | 800,000 | 892 KB | `66a40f4e1791c657e28b5d656a55a79e24d4b7c201d75c06d53bc3fe9f208fe0` |
+| `logs/exp_022_seed4/rl_model_800000_steps.zip` | 800,000 | 892 KB | `abcb4d484f9d73d64ba3759463515a0b2f7550f8a088c2375321727abc2cb704` |
+| `logs/exp_022_seed5/rl_model_800000_steps.zip` | 800,000 | 892 KB | `33345c660c1c46aaa5fbe4d47714ee8055496bd07074ed9d820803c8920e8a5c` |
+| `logs/exp_022_seed6/rl_model_800000_steps.zip` | 800,000 | 892 KB | `5745fb1fb1c03dbee0da15bdad03c1b2c9c6c58087d448b28bcb192768d50620` |
+
+**合計 12 本・10.45 MB。****最終方策 6 本はすべて 2,000,896 歩・退避重み 6 本はすべて 800,000 歩で完全に揃っている**（**exp_019・exp_021 とも厳密に一致 ＝ 3 群の学習量が揃っている**）。
+
 ## 2. 未実施（R11 へ登録）
 
 - **exp_012 以前の実験の重みの棚卸し**。**判定が現役でないもの**なので今回は入れていない。**過去の判定文書が値を引いている重みが失われていないか**を、R11 バッチで確認する
