@@ -270,3 +270,38 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
+
+
+# ---------------------------------------------------------------------------
+# 追記（2026-08-15）: 順位和検定は正確な並べ替え検定で行う（作法 40）
+#
+# 当初この監査は正規近似（同順位補正つき）で p を出したが、n = 6 対 6 で
+# 同順位が多い場面では近似が当てにならない。学生B の指摘で確定した誤りである。
+#   にせ履歴 対 参照: 近似 0.0120 / 正確 0.0087
+#   にせ履歴 対 対照: 近似 0.0512 / 正確 0.1017  ← 「境界的」と「検出されない」を取り違えた
+# ---------------------------------------------------------------------------
+def exact_rank_sum_p(a, b):
+    """2 標本の順位和検定を、全ての並べ替えを数えて厳密に行う（両側）。
+
+    同順位は 0.5 として数える（中間順位と同値）。
+    n1 + n2 が小さいとき（C(n1+n2, n1) が数えられる規模）にのみ使う。
+    """
+    from itertools import combinations
+    n1, n2 = len(a), len(b)
+    allv = list(a) + list(b)
+
+    def U(x, y):
+        return sum(sum(1.0 if q < p else (0.5 if q == p else 0.0) for q in y) for p in x)
+
+    u_obs = U(a, b)
+    u_obs = min(u_obs, n1 * n2 - u_obs)
+    cnt = tot = 0
+    for idx in combinations(range(n1 + n2), n1):
+        s = set(idx)
+        g1 = [allv[i] for i in idx]
+        g2 = [allv[i] for i in range(n1 + n2) if i not in s]
+        u = U(g1, g2)
+        u = min(u, n1 * n2 - u)
+        tot += 1
+        cnt += (u <= u_obs + 1e-12)
+    return cnt / tot, u_obs, tot
