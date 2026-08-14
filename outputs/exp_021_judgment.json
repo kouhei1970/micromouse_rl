@@ -1,0 +1,249 @@
+{
+  "clause": "experiments/exp_021_observation_history/card.md §5",
+  "num_timesteps": 2000896,
+  "history_lags": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128
+  ],
+  "control": "outputs/exp_021_driving_control_final.json",
+  "treat": "outputs/exp_021_driving_treat_final.json",
+  "results": [
+    {
+      "name": "Q1 正味の前進",
+      "control_per_seed": [
+        1.25,
+        1.25,
+        1.5,
+        1.5,
+        1.5,
+        1.5
+      ],
+      "control_median": 1.5,
+      "treat_per_seed": [
+        0.5,
+        0.5,
+        1.0,
+        1.5,
+        2.0,
+        2.25
+      ],
+      "treat_median": 1.25,
+      "threshold": 1.875,
+      "ratio": 0.8333333333333334,
+      "hit": false,
+      "clause": "介入群の中央値 >= 対照群の中央値 × 1.25"
+    },
+    {
+      "name": "Q2 衝突の頻度",
+      "control_per_seed": [
+        0.0,
+        0.0,
+        0.5,
+        0.5,
+        0.5,
+        1.0
+      ],
+      "control_median": 0.5,
+      "treat_per_seed": [
+        1.5,
+        1.5,
+        2.0,
+        2.25,
+        3.25,
+        3.5
+      ],
+      "treat_median": 2.125,
+      "threshold": 0.4,
+      "ratio": 4.25,
+      "guard_threshold": 1.35,
+      "treat_net_progress": 1.25,
+      "cond_respawn_ok": false,
+      "cond_progress_not_degraded": false,
+      "hit": false,
+      "clause": "リスポーンが対照の 0.8 倍以下 かつ 前進が対照の 0.9 倍を下回らない"
+    },
+    {
+      "name": "Q3 ゴール率は床のまま",
+      "per_seed": {
+        "exp_021_seed1": {
+          "total_timesteps": 2000896,
+          "goal_rate": 0.0
+        },
+        "exp_021_seed2": {
+          "total_timesteps": 2000896,
+          "goal_rate": 0.0
+        },
+        "exp_021_seed3": {
+          "total_timesteps": 2000896,
+          "goal_rate": 0.05
+        },
+        "exp_021_seed4": {
+          "total_timesteps": 2000896,
+          "goal_rate": 0.0
+        },
+        "exp_021_seed5": {
+          "total_timesteps": 2000896,
+          "goal_rate": 0.0
+        },
+        "exp_021_seed6": {
+          "total_timesteps": 2000896,
+          "goal_rate": 0.05
+        }
+      },
+      "per_seed_sorted": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.05,
+        0.05
+      ],
+      "median": 0.0,
+      "threshold": 0.05,
+      "hit": true,
+      "clause": "最終評価の goal_rate の 6 seed 中央値 < 0.05（**厳密に 0.05 なら外れ**。境界は投入前に固定）"
+    },
+    {
+      "name": "Q4 立て直しの維持",
+      "verdict": "P5_holds",
+      "per_seed": {
+        "models/exp_021_seed1": 0.65,
+        "models/exp_021_seed2": 0.9,
+        "models/exp_021_seed3": 1.0,
+        "models/exp_021_seed4": 0.5263157894736842,
+        "models/exp_021_seed5": 0.3888888888888889,
+        "models/exp_021_seed6": 0.7368421052631579
+      },
+      "n_denominator": {
+        "models/exp_021_seed1": 20,
+        "models/exp_021_seed2": 20,
+        "models/exp_021_seed3": 18,
+        "models/exp_021_seed4": 19,
+        "models/exp_021_seed5": 18,
+        "models/exp_021_seed6": 19
+      },
+      "excluded_seeds": [],
+      "median": 0.6934210526315789,
+      "threshold": 0.5,
+      "hit": true,
+      "clause": "立て直しの成立割合の 6 seed 中央値 >= 0.5"
+    },
+    {
+      "name": "Q5 打ち切り条文の発火",
+      "per_seed": {
+        "exp_021_seed1": {
+          "points": {
+            "100000": 0.0,
+            "200000": 0.0,
+            "300000": 0.0,
+            "400000": 0.0,
+            "500000": 0.0,
+            "600000": 0.0,
+            "700000": 0.0,
+            "800000": 0.0,
+            "900000": 0.0,
+            "1000000": 0.0
+          },
+          "missing": [],
+          "fired": true,
+          "max_rate": 0.0
+        },
+        "exp_021_seed2": {
+          "points": {
+            "100000": 0.0,
+            "200000": 0.0,
+            "300000": 0.0,
+            "400000": 0.0,
+            "500000": 0.0,
+            "600000": 0.0,
+            "700000": 0.0,
+            "800000": 0.0,
+            "900000": 0.0,
+            "1000000": 0.0
+          },
+          "missing": [],
+          "fired": true,
+          "max_rate": 0.0
+        },
+        "exp_021_seed3": {
+          "points": {
+            "100000": 0.0,
+            "200000": 0.0,
+            "300000": 0.0,
+            "400000": 0.0,
+            "500000": 0.0,
+            "600000": 0.0,
+            "700000": 0.0,
+            "800000": 0.0,
+            "900000": 0.0,
+            "1000000": 0.0
+          },
+          "missing": [],
+          "fired": true,
+          "max_rate": 0.0
+        },
+        "exp_021_seed4": {
+          "points": {
+            "100000": 0.0,
+            "200000": 0.0,
+            "300000": 0.0,
+            "400000": 0.0,
+            "500000": 0.0,
+            "600000": 0.0,
+            "700000": 0.0,
+            "800000": 0.0,
+            "900000": 0.0,
+            "1000000": 0.0
+          },
+          "missing": [],
+          "fired": true,
+          "max_rate": 0.0
+        },
+        "exp_021_seed5": {
+          "points": {
+            "100000": 0.0,
+            "200000": 0.0,
+            "300000": 0.0,
+            "400000": 0.0,
+            "500000": 0.0,
+            "600000": 0.0,
+            "700000": 0.0,
+            "800000": 0.0,
+            "900000": 0.0,
+            "1000000": 0.0
+          },
+          "missing": [],
+          "fired": true,
+          "max_rate": 0.0
+        },
+        "exp_021_seed6": {
+          "points": {
+            "100000": 0.0,
+            "200000": 0.0,
+            "300000": 0.0,
+            "400000": 0.0,
+            "500000": 0.0,
+            "600000": 0.0,
+            "700000": 0.05,
+            "800000": 0.0,
+            "900000": 0.0,
+            "1000000": 0.0
+          },
+          "missing": [],
+          "fired": false,
+          "max_rate": 0.05
+        }
+      },
+      "n_fired": 5,
+      "threshold": 6,
+      "hit": false,
+      "clause": "10 万〜100 万歩の 10 点すべてでゴール率 < 0.05 を満たす seed が 6 本（5 本以下なら外れ）"
+    }
+  ]
+}

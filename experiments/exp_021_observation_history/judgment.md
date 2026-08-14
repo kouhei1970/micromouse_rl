@@ -3,7 +3,15 @@
 - 判定日: 2026-08-15（学生B）
 - **条文**: `experiments/exp_021_observation_history/card.md` §5（**投入前に固定**）
 - **判定の実行**: `judge.py`（**手で計算していない**。条文 → 実装の 1 対 1 対応は同スクリプトの docstring）
-- **出力**: `outputs/exp_021_judgment.json`
+- **出力**: `outputs/exp_021_judgment.json`（**版管理下**）
+- **再計算に使える材料（すべて版管理下）**: `judge.py`／`outputs/exp_021_judgment.json`／
+  測定の軽量版 4 本（`outputs/exp_021_driving_{control,treat}_{final,800k}.slim.json`）／
+  **重み 30 本**（一覧は `experiments/preserved_weights.md`）／
+  単体テスト `tests/test_judge.py`（**合成データのみ・8/8 PASS**）
+- **生データ入りの完全版は版管理外**。**SHA-256**:
+  - `outputs/exp_021_driving_treat_final.json` = `923a4d0270e80a9995bc3bb0c9ab282a57ca3376961b776f86137dcecd42b6e9`
+  - `outputs/exp_021_driving_treat_800k.json` = `79853595955ca473cb377575afc4c990198d2a46eb2db49618df939cd1e41fdd`
+  - 対照群の 2 本はカード §4-5 に記録済み
 - **投入版**: `db5227be61a74a740bca577d6b8fdef33f1076a1`／**投入 2026-08-14 23:01:57 JST**／
   **完走 2026-08-15 00:06:20〜00:14:27 JST**（所要 64〜73 分）
 - 用語: **M2** = マイルストーン 2（未知の 6×6 迷路で走破率 90%）／**exp_019** = 環境 v2 の基準実験（対照群）／
