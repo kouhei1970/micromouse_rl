@@ -148,6 +148,51 @@ def main():
           f" → {'余裕あり' if statistics.median(ok) > Q4_LINE else '境界近傍'}")
 
     # ---------------------------------------------------------------
+    # L5: 軌跡から判定量を自分で再構成する（生データが残っている場合のみ）
+    # ---------------------------------------------------------------
+    print("\n=== L5. 軌跡から判定量を自分で再構成（AUDIT_042_PREREG §4 の核心） ===")
+    has_raw = all("raw" in blk for d in docs.values() for blk in d["detail"].values())
+    if not has_raw:
+        print("  🔴 毎歩の記録（raw）が出力に無い → L5 は実行不能。")
+        print("     L2〜L4 の一致をもって「判定量が正しい」と書いてはならない（AUDIT_039 §3-1 と同じ限界）")
+    else:
+        for tag, d in docs.items():
+            n = q1 = q2 = 0
+            p5_ok = p5_den = bnd = 0
+            for blk in d["detail"].values():
+                raw = {r["maze_seed"]: r for r in blk["raw"]}
+                for m in blk["metrics"]:
+                    r = raw[m["maze_seed"]]
+                    dh, rh = r["d_hist"], r["resp_hist"]
+                    n += 1
+                    # カード §4-1 の条文から自分で書く（相手のコードは見ていない）
+                    q1 += abs((r["d0"] - min(dh)) / len(dh) * 1000.0
+                              - m["net_progress_per_1000"]) <= 1e-9
+                    q2 += abs(sum(1 for x in rh if x) / len(dh) * 1000.0
+                              - m["respawn_per_1000"]) <= 1e-9
+                # Q4: 窓（最後のリスポーン以降）を自分で切る
+                p5 = {j["maze_seed"]: j for j in blk["p5"]}
+                for ms, r in raw.items():
+                    dh, rh = r["d_hist"], r["resp_hist"]
+                    idx = [i for i, x in enumerate(rh) if x]
+                    if not idx:
+                        continue                     # 母集団 = リスポーン 1 回以上
+                    p5_den += 1
+                    last = idx[-1]
+                    inc = min(dh[last:])
+                    exc = min(dh[last + 1:]) if last + 1 < len(dh) else inc
+                    # 境界を含む/含まないで判定が変わるか（R51 の「含む側で実装」の検査）
+                    bnd += (inc <= r["d0"] - 1) != (exc <= r["d0"] - 1)
+                    j = p5.get(ms)
+                    if j is not None:
+                        p5_ok += (inc == j["min_d_after_last_respawn"]
+                                  and (inc <= r["d0"] - 1) == j["advanced"])
+            print(f"  [{tag}] min_d の再構成 {q1}/{n} ・ 立て直し回数 {q2}/{n} ・ "
+                  f"Q4 の窓 {p5_ok}/{p5_den}（境界で判定が変わる {bnd} 件）")
+            if q1 != n or q2 != n or p5_ok != p5_den:
+                fails.append(f"{tag}: L5 の再構成に不一致")
+
+    # ---------------------------------------------------------------
     print("\n" + "=" * 68)
     print(f"総括: 不合格 {len(fails)} 件" + ("" if not fails else f" → {fails}"))
     print("""
