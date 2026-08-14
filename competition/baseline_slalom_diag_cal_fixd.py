@@ -1,36 +1,49 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""**是正 (D) を載せた方策 2 種**（`experiments/exp_016_diagonal/card_016diag_fixD.md` §1-3）。
+"""**斜め方策の最終形**（`experiments/exp_016_diagonal/card_016diag_fixD.md`）。
 
-**教授指示「(D) 単独で判定 → その後 (C) を載せる」に合わせ、切り分けられる形にしてある。**
-
-| クラス | 中身 | 用途 |
+| 段階 | 中身 | 出どころ |
 |---|---|---|
-| **`SlalomDiagCalFixDPolicy`** | (A) ＋ (B) ＋ **(D)** | **(D) 単独の判定**（(C) は載っていない） |
-| **`SlalomDiagCalFixCDPolicy`** | (A) ＋ (B) ＋ (C) ＋ **(D)** | **最終形**（P1〜P5 の測り直しに使う） |
+| **(B)** | 斜めへ入る前の向き合わせ（180° 折返しで逆向きの経路を張らない） | `baseline_slalom_diag_cal_fixb.py` |
+| **(A)** | 走行をまたぐ「探索済み」の印 | `baseline_slalom_diag_cal_fixab.py` |
+| **(D)** | 速度計画の防御 3 点（親から写した） | `terminal_speed_guard.py` |
 
-- **(A)** 走行をまたぐ「探索済み」の印（`baseline_slalom_diag_cal_fixab.py`）
-- **(B)** 斜めへ入る前の向き合わせ（`baseline_slalom_diag_cal_fixb.py`）
-- **(C)** 回収の後も先読みの長さを保つ（`baseline_slalom_diag_cal_fixc.py`）
-- **(D)** 速度計画の防御 3 点（`terminal_speed_guard.py`）
+**最終形 = `SlalomDiagCalFixDPolicy`（(A) ＋ (B) ＋ (D)）。**
 
-**作法 1 に従い、既存の方策ファイルは 1 行も変更していない。**
+--------------------------------------------------------------------------
+🔴 **是正 (C) は撤去した**（2026-08-15 教授裁定 (乙)）
+--------------------------------------------------------------------------
+**(C)「係員回収の後も先読みの長さを保つ」は、実効が無いことが実測で分かったので外した。**
+
+**理由**（`card_016diag_fixC.md` §6-2-1）:
+
+> **有害だった短い経路は「親の 2 区画の先読み」ではなく「斜めの分岐が張った経路」だった。**
+> **親が張る短い経路は必ず `v_uncertain` 以下である**（斜めなしの対照で
+> **196 点未満の経路 104430 ティックのうち、計画速度が $v_\text{cap}$ のものは 0 件**）。
+> **(C) が伸ばそうとしていたのは親の先読みであり、狙う相手を間違えていた。**
+> **人工的に係員回収を起こしても、(C) あり・なしで経路は 37 点のまま同じだった。**
+
+**⇒ 実効が無いと実測で分かった部品を、検証手段も無いまま残さない。**
+
+--------------------------------------------------------------------------
+⚠️ **記録として残す事実**（コードでは表せないので、ここに書く）
+--------------------------------------------------------------------------
+1. **`_explored_once` は「走行水準の状態」であって「迷路水準の知識」ではない。**
+   **係員回収（`on_retrieval` → `_reset_run_state`）で偽に戻る。**
+   **`_use_diag()` はこれを「この迷路を探索し終えたか」の意味で使っていたので、
+   是正 (A) で迷路水準の印を別に足した。**
+   **一方、親の先読み長 `max_cells` がこれを見るのは正しい**（走行ごとの状態でよい）。
+2. **有害な短い経路は、斜めの分岐が張るものであり、親の先読みとは別物である。**
+   **親の短い経路には防御があり、危険ではない。**
 
 **混ぜ込みは一番外側に置く** — **防御は最後に掛かるべき**だからである
 （内側の実装が上限を決めた後で、その上限を頭打ちにする）。
 """
 from competition.baseline_slalom_diag_cal_fixab import SlalomDiagCalFixABPolicy
-from competition.baseline_slalom_diag_cal_fixc import SlalomDiagCalFixCPolicy
 from competition.terminal_speed_guard import TerminalSpeedGuardMixin
 
 
 class SlalomDiagCalFixDPolicy(TerminalSpeedGuardMixin, SlalomDiagCalFixABPolicy):
-    """(A) ＋ (B) ＋ **(D)**。**(C) は載っていない**（(D) 単独の判定用）。"""
+    """**斜め方策の最終形** — (A) ＋ (B) ＋ (D)。"""
 
     name = "L0-c+DIAG+F0+F0b+cal0.75+clothoid45+alignB+mazeA+guardD"
-
-
-class SlalomDiagCalFixCDPolicy(TerminalSpeedGuardMixin, SlalomDiagCalFixCPolicy):
-    """(A) ＋ (B) ＋ (C) ＋ **(D)** — **最終形**。"""
-
-    name = "L0-c+DIAG+F0+F0b+cal0.75+clothoid45+alignB+mazeA+horizonC+guardD"

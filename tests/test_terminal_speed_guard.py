@@ -32,7 +32,7 @@ for p in (REPO_ROOT, REPO_ROOT / "experiments" / "exp_016_diagonal",
 from competition.baseline_slalom_diag_cal_fixab import (  # noqa: E402
     SlalomDiagCalFixABPolicy)
 from competition.baseline_slalom_diag_cal_fixd import (  # noqa: E402
-    SlalomDiagCalFixCDPolicy, SlalomDiagCalFixDPolicy)
+    SlalomDiagCalFixDPolicy)
 
 V_DIAG = 0.45
 
@@ -138,15 +138,17 @@ def test_guard_can_be_disabled():
 
 
 def test_class_composition():
-    """**(D) 単独と最終形の 2 つが、意図した組み合わせになっている**。"""
+    """**最終形が意図した組み合わせになっている**（(A)+(B)+(D)）。
+
+    🔴 **是正 (C) は 2026-08-15 の教授裁定 (乙) で撤去した**
+    （実効が無いことが実測で分かったため。`card_016diag_fixC.md` §6-2-1）。
+    **ここで「(C) が混ざっていないこと」も確かめる。**
+    """
     d = SlalomDiagCalFixDPolicy()
-    cd = SlalomDiagCalFixCDPolicy()
-    assert d.terminal_guard and not hasattr(d, "keep_horizon"), \
-        "(D) 単独の版に (C) が混ざっている"
-    assert cd.terminal_guard and cd.keep_horizon, "最終形に (C) か (D) が欠けている"
-    for p in (d, cd):
-        assert p.align_check and p.use_maze_flag, "(A) か (B) が欠けている"
-        assert p.safety_factor == 0.75 and p.ref_interp and p.k_acc_ff == 1.0
+    assert d.terminal_guard, "(D) が欠けている"
+    assert not hasattr(d, "keep_horizon"), "撤去したはずの (C) が混ざっている"
+    assert d.align_check and d.use_maze_flag, "(A) か (B) が欠けている"
+    assert d.safety_factor == 0.75 and d.ref_interp and d.k_acc_ff == 1.0
     # 混ぜ込みは一番外側（防御が最後に掛かる）
-    mro = [c.__name__ for c in type(cd).__mro__]
-    assert mro.index("TerminalSpeedGuardMixin") < mro.index("SlalomDiagCalFixCPolicy")
+    mro = [c.__name__ for c in type(d).__mro__]
+    assert mro.index("TerminalSpeedGuardMixin") < mro.index("SlalomDiagCalFixABPolicy")
