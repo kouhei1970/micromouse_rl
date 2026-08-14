@@ -85,6 +85,10 @@ class Probe:
         self._sim = None
         self.rec = []
         self.n_retrieval = 0        # 係員回収の回数（**読むだけ**。挙動に影響しない）
+        # 経路が張り替わった回数。**同じ経路オブジェクトかどうかで数える**
+        # （`id()` の使い回しを避けるため、直前の経路への参照を保持する）
+        self._prev_path = None
+        self._epoch = 0
 
     def on_retrieval(self):
         self.n_retrieval += 1
@@ -108,12 +112,23 @@ class Probe:
             v, w = self._sim.privileged_velocity()
             path = getattr(self._inner, "_path", None)
             i = int(getattr(self._inner, "_cursor", 0))
+            # 🔴 2026-08-15 追加（原因究明・**記録だけ。挙動は 1 ビットも変えない**）
+            # 経路が張り替わったか = **同一オブジェクトかどうか**で数える
+            # （直前の経路への参照を保持するので `id()` の使い回しは起きない）
+            if path is not self._prev_path:
+                self._epoch += 1
+                self._prev_path = path
             if path is not None and 0 <= i < len(path.x):
                 kap = float(path.curvature[i])
                 hd = float(path.heading[i])
+                rx, ry = float(path.x[i]), float(path.y[i])   # カーソルの位置
+                vp = (float(path.speed[i]) if getattr(path, "speed", None) is not None
+                      else float("nan"))                      # 参照の計画速度
+                plen = float(len(path.s))
             else:
-                kap, hd = float("nan"), float("nan")
-            self.rec.append((self._sim.sim_time, x, y, yaw, v, w, kap, hd))
+                kap = hd = rx = ry = vp = plen = float("nan")
+            self.rec.append((self._sim.sim_time, x, y, yaw, v, w, kap, hd,
+                             rx, ry, vp, float(i), plen, float(self._epoch)))
         return out
 
 
@@ -159,6 +174,12 @@ def main():
             t=rec[:, 0], x=rec[:, 1].astype(np.float32), y=rec[:, 2].astype(np.float32),
             yaw=rec[:, 3], v=rec[:, 4].astype(np.float32), w=rec[:, 5].astype(np.float32),
             ref_curvature=rec[:, 6].astype(np.float32), ref_heading=rec[:, 7],
+            # 🔴 2026-08-15 追加（原因究明。**記録だけ**）
+            ref_x=rec[:, 8].astype(np.float32), ref_y=rec[:, 9].astype(np.float32),
+            ref_v_plan=rec[:, 10].astype(np.float32),
+            cursor_idx=rec[:, 11].astype(np.int32),
+            path_len=rec[:, 12].astype(np.int32),
+            path_epoch=rec[:, 13].astype(np.int32),
             run_index=np.array([q["index"] for q in r["runs"]], dtype=np.int32),
             run_t_start=np.array([q["t_start"] for q in r["runs"]], dtype=np.float64),
             run_t_end=np.array([q["t_end"] for q in r["runs"]], dtype=np.float64),
