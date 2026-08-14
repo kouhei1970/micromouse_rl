@@ -1,0 +1,90 @@
+{
+  "clause": "experiments/exp_022_sham_history/card.md §3",
+  "num_timesteps": 2000896,
+  "history_lags": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128
+  ],
+  "anchors": {
+    "P1": {
+      "control": 0.5,
+      "treat": 2.125
+    },
+    "P2": {
+      "control": 3,
+      "treat": 26
+    },
+    "P4": {
+      "control": 1.5,
+      "treat": 1.25
+    },
+    "P3": {
+      "control": 0,
+      "treat": 4
+    }
+  },
+  "inputs": {
+    "control": "outputs/exp_021_driving_control_final.json",
+    "treat": "outputs/exp_021_driving_treat_final.json",
+    "sham": "outputs/exp_022_driving_sham_final.json"
+  },
+  "primary": [
+    {
+      "key": "P1",
+      "name": "P1 衝突の頻度",
+      "field": "respawn_per_1000",
+      "sham": 1.0,
+      "control": 0.5,
+      "treat": 2.125,
+      "boundary": 1.0307764064044151,
+      "r": 0.47905044355233856,
+      "verdict": "A_or_C",
+      "reading": "対照群の側 →（A/C）情報／汚染の説"
+    },
+    {
+      "key": "P2",
+      "name": "P2 5 区画以上到達の走行数",
+      "field": "n_reach_ge5",
+      "sham": 28,
+      "control": 3,
+      "treat": 26,
+      "boundary": 8.831760866327846,
+      "r": 1.0343174404610327,
+      "verdict": "outside",
+      "reading": "参照群より外側（exp_021 よりも悪い）"
+    }
+  ],
+  "secondary": [
+    {
+      "key": "P3",
+      "name": "P3 rollout のゴール件数",
+      "field": "n_goal_rollout",
+      "sham": 1,
+      "control": 0,
+      "treat": 4,
+      "boundary": null,
+      "r": null,
+      "verdict": "B",
+      "reading": "1 件 →（B）寄り",
+      "note": "対照が 0 件なので比が定義できず r は計算しない。分離能が弱く（錨の差自体が両側 Fisher で p = 0.122）、P1・P2 と食い違ったら P1・P2 を採る（投入前に固定）"
+    },
+    {
+      "key": "P4",
+      "name": "P4 正味の前進",
+      "field": "net_progress_per_1000",
+      "sham": 1.5,
+      "control": 1.5,
+      "treat": 1.25,
+      "boundary": 1.3693063937629153,
+      "r": -0.0,
+      "verdict": "A_or_C",
+      "reading": "対照群の側 →（A/C）情報／汚染の説"
+    }
+  ]
+}

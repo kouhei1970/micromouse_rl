@@ -43,6 +43,7 @@
     64,
     128
   ],
+  "history_sham": false,
   "seed_rule": {
     "fn": "mouse.maze6_eval._trial_seed",
     "base": 0,
@@ -178,6 +179,24 @@
       },
       "excluded_seeds": [],
       "verdict": "P5_holds"
+    },
+    "n_runs": 120,
+    "n_reach_ge5": 26,
+    "n_goal_rollout": 4,
+    "reach_hist": {
+      "0": 3,
+      "1": 41,
+      "2": 21,
+      "3": 13,
+      "4": 16,
+      "5": 9,
+      "6": 5,
+      "7": 1,
+      "8": 5,
+      "9": 2,
+      "10": 1,
+      "11": 1,
+      "12": 2
     },
     "note": "集約は迷路 20 本の中央値 → seed の中央値。プール集計はしない。Q1 = net_progress_per_1000（大きいほど良い）・Q2 = respawn_per_1000（小さいほど良い）。steps_per_entry と entries_per_distinct_cell は監視のみ。"
   },

@@ -32,6 +32,9 @@ outputs/**
 # 置かず、SHA-256 を experiments/exp_021_observation_history/card.md に記録する。
 # 准教授 AUDIT_042 §3 の (2)(3)・2026-08-14 採択。生成は同ディレクトリの slim_output.py
 !outputs/exp_021_driving_*.slim.json
+# exp_022（にせ履歴）も同じ扱い（判定が乗っている値だけの軽量版を版管理下へ）
+!outputs/exp_022_driving_*.slim.json
+!outputs/exp_022_judgment.json
 
 # legacy/models/ の学習済みチェックポイントは凍結成果物として追跡する
 # Checkpoints under legacy/models/ are frozen artifacts and must remain tracked
