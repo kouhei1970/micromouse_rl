@@ -1,0 +1,58 @@
+{
+  "total": 2,
+  "expected": 6.2,
+  "n_trials": 10,
+  "band": "(b) は部分的にしか効かない",
+  "per_seed": [
+    {
+      "seed": 1,
+      "n_ep": 200,
+      "n_goal": 0,
+      "hits": []
+    },
+    {
+      "seed": 2,
+      "n_ep": 200,
+      "n_goal": 1,
+      "hits": [
+        {
+          "maze": 7011,
+          "d0": 9,
+          "trial": 0,
+          "steps": 2715
+        }
+      ]
+    },
+    {
+      "seed": 3,
+      "n_ep": 200,
+      "n_goal": 0,
+      "hits": []
+    },
+    {
+      "seed": 4,
+      "n_ep": 200,
+      "n_goal": 0,
+      "hits": []
+    },
+    {
+      "seed": 5,
+      "n_ep": 200,
+      "n_goal": 0,
+      "hits": []
+    },
+    {
+      "seed": 6,
+      "n_ep": 200,
+      "n_goal": 1,
+      "hits": [
+        {
+          "maze": 7017,
+          "d0": 4,
+          "trial": 1,
+          "steps": 501
+        }
+      ]
+    }
+  ]
+}
