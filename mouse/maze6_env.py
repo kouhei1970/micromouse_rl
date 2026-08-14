@@ -272,7 +272,8 @@ class Maze6Env(gym.Env):
                  continuous_potential: bool = False,
                  geodesic_potential: bool = False,
                  geodesic_rho_scale: bool = False,
-                 episode_limit_steps: int = _TIME_LIMIT_STEPS):
+                 episode_limit_steps: int = _TIME_LIMIT_STEPS,
+                 collision_respawn: bool = False):
         super().__init__()
         if mode not in ("fixed", "generate"):
             raise ValueError(f"mode は 'fixed' か 'generate': {mode!r}")
@@ -320,6 +321,17 @@ class Maze6Env(gym.Env):
         if int(episode_limit_steps) <= 0:
             raise ValueError(f"episode_limit_steps は正の整数: {episode_limit_steps!r}")
         self.episode_limit_steps = int(episode_limit_steps)
+        # 🔴 衝突リスポーン（環境 v2 の対処案 (c)。裁定 2026-08-14。既定 False で従来どおり）。
+        # 衝突・転倒で **collision_penalty を払って開始点へ戻し、エピソードは継続**する。
+        # 終わるのは**ゴール成立か上限到達のときだけ**になる。
+        #
+        # 機構: ポテンシャル整形の恒等式 Σγ^t(γΦ(s')−Φ(s)) = γ^T·Φ(s_T) − Φ(s_0) は
+        # **終端の Φ だけで決まる**ので、開始点へ戻る遷移で γΦ(start) − Φ_c = −Φ_c が
+        # 1 度入り、**稼いだ整形をポテンシャル自身が取り返す**。
+        # **報酬契約には一切触れない没収**であり、**走行中の 1 歩ごとの信号は変わらない**。
+        # 訪問済み `_visited` は**エピソード単位で維持**する（裁定済み）ので、
+        # 「衝突 → 戻る → 同じ区画で稼ぐ」報酬ポンプは**構成上作れない**。
+        self.collision_respawn = bool(collision_respawn)
         if self.geodesic_rho_scale and not self.geodesic_potential:
             raise ValueError(
                 "geodesic_rho_scale=True は geodesic_potential=True のときだけ有効です"
@@ -350,6 +362,9 @@ class Maze6Env(gym.Env):
         # **その迷路の ρ ではない**: 条件 C では常に 1.0 が入る（同じ迷路の ρ が 1.4 でも）。
         # 面の ρ が要るときは info["geo_inv_rho"] の逆数を使う。
         self._geo_rho_applied = 1.0    # 条件 C' で適用する面ごとの定数（条件 C では 1.0）
+        self._episode_seed = 0         # リスポーンの擾乱を決定的に導く種（v2）
+        self._respawn_count = 0        # 同一エピソード内のリスポーン回数 k（v2）
+        self._start_heading = 0.0      # 開始点の方位 [deg]（リスポーンで再利用）
         # 規約判定（機体全体の内包）の記録用（裁定 R42-4）。評価ハーネスの実装を
         # 呼ぶので、ここでは導出結果のキャッシュだけを持つ（初回のゴール時に埋まる）。
         self._goal_footprint = None
@@ -955,27 +970,19 @@ class Maze6Env(gym.Env):
         self._dist_map = shortest_distances(self.maze["v_walls"], self.maze["h_walls"])
         start = tuple(self.maze["start"])
         self._d_start = self._dist_map[start]
+        self._start_heading = float(heading)
+        # リスポーンの擾乱を決定的に導く種（v2）。**seed が渡されればそれを使う**ので、
+        # 同じ seed の走行はリスポーンを含めて完全に再現できる。
+        self._episode_seed = int(seed) if seed is not None else int(
+            self.np_random.integers(0, 2 ** 31 - 1))
+        self._respawn_count = 0
+        lateral_reset = float(self.np_random.uniform(-_LATERAL_PERTURB_M, _LATERAL_PERTURB_M))
+        dh_reset = float(self.np_random.uniform(-_HEADING_PERTURB_DEG, _HEADING_PERTURB_DEG))
         if self.geodesic_potential:
             self._geo_field = self._compute_geodesic_field()
 
         self.sim.full_reset(cell=start, heading_deg=heading)
-        cs = self.params.cell_size
-        cx_m, cy_m = start[0] * cs + cs / 2, start[1] * cs + cs / 2
-        hr = math.radians(heading)
-        lateral = float(self.np_random.uniform(-_LATERAL_PERTURB_M, _LATERAL_PERTURB_M))
-        dh = float(self.np_random.uniform(-_HEADING_PERTURB_DEG, _HEADING_PERTURB_DEG))
-        x = cx_m + lateral * (-math.sin(hr))
-        y = cy_m + lateral * math.cos(hr)
-        nh = math.radians(heading + dh)
-        root_jid = mujoco.mj_name2id(self.sim.model, mujoco.mjtObj.mjOBJ_JOINT, "root")
-        qadr = self.sim.model.jnt_qposadr[root_jid]
-        self.sim.data.qpos[qadr] = x
-        self.sim.data.qpos[qadr + 1] = y
-        self.sim.data.qpos[qadr + 3] = math.cos(nh / 2.0)
-        self.sim.data.qpos[qadr + 4] = 0.0
-        self.sim.data.qpos[qadr + 5] = 0.0
-        self.sim.data.qpos[qadr + 6] = math.sin(nh / 2.0)
-        mujoco.mj_forward(self.sim.model, self.sim.data)
+        self._place_at_start(start, heading, lateral=lateral_reset, heading_delta=dh_reset)
 
         # オドメトリの初期値は**擾乱後の真の姿勢**にする。実機はスタート区画で機体を
         # 壁に押し当てて位置と向きを出してから走り出すので、始点では自分の姿勢を
@@ -1015,6 +1022,52 @@ class Maze6Env(gym.Env):
         obs = self._make_observation()
         return obs, self._make_info(start, False, False, self.sim.sim_time)
 
+    def _place_at_start(self, start, heading_deg: float,
+                        lateral: float, heading_delta: float) -> None:
+        """開始点へ機体を置く（reset とリスポーンで**同じ手続き**を使う）。"""
+        cs = self.params.cell_size
+        cx_m, cy_m = start[0] * cs + cs / 2, start[1] * cs + cs / 2
+        hr = math.radians(heading_deg)
+        x = cx_m + lateral * (-math.sin(hr))
+        y = cy_m + lateral * math.cos(hr)
+        nh = math.radians(heading_deg + heading_delta)
+        root_jid = mujoco.mj_name2id(self.sim.model, mujoco.mjtObj.mjOBJ_JOINT, "root")
+        qadr = self.sim.model.jnt_qposadr[root_jid]
+        self.sim.data.qpos[qadr] = x
+        self.sim.data.qpos[qadr + 1] = y
+        self.sim.data.qpos[qadr + 3] = math.cos(nh / 2.0)
+        self.sim.data.qpos[qadr + 4] = 0.0
+        self.sim.data.qpos[qadr + 5] = 0.0
+        self.sim.data.qpos[qadr + 6] = math.sin(nh / 2.0)
+        # 速度も落とす（衝突直後の速度を引き継がない ＝ 係員が置き直すのと同じ）
+        self.sim.data.qvel[:] = 0.0
+        mujoco.mj_forward(self.sim.model, self.sim.data)
+
+    def _respawn_to_start(self) -> None:
+        """衝突リスポーン（v2 の対処案 (c)）。開始点へ戻し、エピソードは継続する。
+
+        🔴 **擾乱は `(episode_seed, k)` から決定的に導く**（k = そのエピソードでの
+        リスポーン回数。`corridor_eval._trial_seed` と同じ流儀。准教授 AUDIT_022）。
+        **環境の乱数列を消費しない**ので、**乱数の消費順序への依存が消え、
+        同じ seed の走行はリスポーンを含めて bit 単位で再現できる。**
+
+        **`_visited` は消さない**（裁定済み。報酬ポンプを構成上作れなくするため）。
+        """
+        k = self._respawn_count
+        self._respawn_count += 1
+        rng = np.random.default_rng((int(self._episode_seed), int(k)))
+        lateral = float(rng.uniform(-_LATERAL_PERTURB_M, _LATERAL_PERTURB_M))
+        dh = float(rng.uniform(-_HEADING_PERTURB_DEG, _HEADING_PERTURB_DEG))
+        start = tuple(self.maze["start"])
+        self._place_at_start(start, self._start_heading, lateral, dh)
+        # 区画の状態を開始点へ戻す（c_prev は reset と同じく「直前の区画が無い」状態）
+        self._cell = start
+        self._prev_cell = None
+        # オドメトリは reset と同じ規約（係員が置き直した後は自分の姿勢を知っている）
+        tx, ty, tyaw = self.sim.privileged_pose()
+        self._odo_x, self._odo_y, self._odo_yaw = tx, ty, tyaw
+        self._prev_dist_raw = None      # センサ差分は 1 歩ぶん未定義にする（reset と同じ）
+
     def step(self, action):
         action = np.clip(np.asarray(action, dtype=np.float64), -1.0, 1.0)
         result = self.sim.step_control(float(action[0]) * self.params.voltage_limit,
@@ -1032,15 +1085,30 @@ class Maze6Env(gym.Env):
         goal_reached = cell in GOAL_CELLS
         physical_fail = bool(result["collision"] or result["tipped"])
 
+        # 訪問報酬は**衝突した区画（＝この歩で居た区画）**に対して判定する。
+        # リスポーンより先に評価するので、v1 と v2 で判定対象は同じである。
+        visit_gain = 0.0
+        if cell not in self._visited:
+            self._visited.add(cell)
+            visit_gain = self.visit_bonus
+
+        # 🔴 衝突リスポーン（v2）: **整形を計算する前に**開始点へ戻す。
+        # こうすると Φ(s') = Φ(start) = 0 になり、**稼いだ整形をポテンシャル自身が
+        # 取り返す**（−Φ_c が 1 度だけ入る）。報酬契約には触れていない。
+        respawned = False
+        if physical_fail and self.collision_respawn and not goal_reached:
+            self._respawn_to_start()
+            respawned = True
+            x, y, _yaw2 = self.sim.privileged_pose()
+            cell = self._cell
+
         potential = self._potential(cell, self._prev_cell, x, y)
         reward = self.gamma * potential - self._prev_potential - _TIME_PENALTY
         if goal_reached:
             reward += _GOAL_BONUS
         elif physical_fail:
             reward += self.collision_penalty
-        if cell not in self._visited:
-            self._visited.add(cell)
-            reward += self.visit_bonus
+        reward += visit_gain
         if self.action_smooth_penalty != 0.0:
             d = action - self._prev_action
             reward -= self.action_smooth_penalty * float(np.dot(d, d))
@@ -1053,12 +1121,16 @@ class Maze6Env(gym.Env):
             reward -= self.action_highpass_penalty * float(np.dot(hp, hp))
         self._prev_potential = potential
 
-        terminated = bool(goal_reached or physical_fail)
+        # v2（リスポーン）では**衝突で終わらない**。終わるのはゴール成立か上限だけ。
+        terminated = bool(goal_reached or (physical_fail and not respawned))
         truncated = bool((not terminated) and self._step_count >= self.episode_limit_steps)
         self._prev_action = np.asarray(action, dtype=np.float32)
 
         obs = self._make_observation()
         info = self._make_info(cell, physical_fail, goal_reached, result["sim_time"])
+        if self.collision_respawn:
+            info["respawned"] = bool(respawned)
+            info["n_respawn"] = int(self._respawn_count)
         return obs, float(reward), terminated, truncated, info
 
     def render(self):
