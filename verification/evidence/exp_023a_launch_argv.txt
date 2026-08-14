@@ -1,0 +1,21 @@
+# exp_023 群 1 の投入時設定の保全（准教授が独立に観測・2026-08-15）
+#
+# 目的: run_summary.json は recurrent / respawn_reset / obs_history / lstm_hidden を
+#       記録していない（学生B が発見・教授裁定で是正は両群完走後）。したがって
+#       「この重みが群 1 か群 2 か」の機械可読な記録は train.log の日本語 1 行しかない。
+#       走行中のプロセスの argv は機械が保持する一次証拠だが、完走すると消える。
+#       作法 20（消える証拠は気づいた時点で即時保全）＋ 作法 39（保全は測定前にしか通らない）。
+#
+# 観測者: 准教授セッション（9 代目）。学生B の申告の転記ではなく、自分で ps を叩いた出力。
+# 観測時刻: 2026-08-15 08:02:40 JST
+# 投入版: 8ac0994（実行経路の差分が空であることを准教授が独立に確認済み）
+
+  PID  PPID STARTED                      ELAPSED COMMAND
+30522 30519 土  8/15 07:53:36 2026        09:04 .venv/bin/python experiments/exp_012_continuous_potential/train.py --condition E --env-version v2 --action-highpass-penalty 0 --seed 1 --obs-history 1,2,4,8,16,32,64,128 --recurrent --lstm-hidden 32 --log-dir logs/exp_023a_seed1 --model-out models/exp_023a_seed1.zip
+30524 30519 土  8/15 07:53:36 2026        09:04 .venv/bin/python experiments/exp_012_continuous_potential/train.py --condition E --env-version v2 --action-highpass-penalty 0 --seed 2 --obs-history 1,2,4,8,16,32,64,128 --recurrent --lstm-hidden 32 --log-dir logs/exp_023a_seed2 --model-out models/exp_023a_seed2.zip
+30526 30519 土  8/15 07:53:36 2026        09:04 .venv/bin/python experiments/exp_012_continuous_potential/train.py --condition E --env-version v2 --action-highpass-penalty 0 --seed 3 --obs-history 1,2,4,8,16,32,64,128 --recurrent --lstm-hidden 32 --log-dir logs/exp_023a_seed3 --model-out models/exp_023a_seed3.zip
+30528 30519 土  8/15 07:53:36 2026        09:04 .venv/bin/python experiments/exp_012_continuous_potential/train.py --condition E --env-version v2 --action-highpass-penalty 0 --seed 4 --obs-history 1,2,4,8,16,32,64,128 --recurrent --lstm-hidden 32 --log-dir logs/exp_023a_seed4 --model-out models/exp_023a_seed4.zip
+30530 30519 土  8/15 07:53:36 2026        09:04 .venv/bin/python experiments/exp_012_continuous_potential/train.py --condition E --env-version v2 --action-highpass-penalty 0 --seed 5 --obs-history 1,2,4,8,16,32,64,128 --recurrent --lstm-hidden 32 --log-dir logs/exp_023a_seed5 --model-out models/exp_023a_seed5.zip
+30532 30519 土  8/15 07:53:36 2026        09:04 .venv/bin/python experiments/exp_012_continuous_potential/train.py --condition E --env-version v2 --action-highpass-penalty 0 --seed 6 --obs-history 1,2,4,8,16,32,64,128 --recurrent --lstm-hidden 32 --log-dir logs/exp_023a_seed6 --model-out models/exp_023a_seed6.zip
+
+# --respawn-reset の混入件数（群 1 では 0 でなければならない）: 0
