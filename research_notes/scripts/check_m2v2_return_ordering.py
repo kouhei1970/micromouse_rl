@@ -97,8 +97,19 @@ def containment_depth_m() -> float:
 
 
 def returns_for_face(d0_cells: int, steps_per_cell: float, k: float,
-                     hp2: float, dT_contain: float) -> dict:
-    """1 面についての割引後総収益（4 つの挙動）。"""
+                     hp2: float, dT_contain: float, forfeit: bool = False) -> dict:
+    """1 面についての割引後総収益（4 つの挙動）。
+
+    `forfeit=True` は**対処案 (a')**: 衝突罰を「稼いだ整形の没収」型
+    **−(1.0 + Φ(s_T))** に置く（教授の追検算指示 2026-08-14）。
+    このとき衝突の総収益は
+
+        γ^Tc·Φ_T + γ^(Tc−1)·(−1.0 − Φ_T) − 時間罰
+        = γ^(Tc−1)·( −1.0 − (1−γ)·Φ_T ) − 時間罰 + 訪問
+
+    となり、**稼いだ整形 γ^Tc·Φ_T が構成上打ち消される**（残るのは
+    −(1−γ)Φ_T の小さな負項なので、**進んでから当たるほど僅かに損**になる）。
+    """
     c = k * hp2                       # 1 歩あたりの滑らかさ罰
     per_step = TIME_PENALTY + c
     D0 = d0_cells * CELL
@@ -114,13 +125,18 @@ def returns_for_face(d0_cells: int, steps_per_cell: float, k: float,
     # 滞留: 動かないので訪問も進捗も無い。**罰は動いたときだけ掛かる**ので c は乗らない
     #（2026-08-11 の誤りの再発防止: 滞留に走行時の滑らかさ罰を適用しない）
     stay = -TIME_PENALTY * S(TIME_LIMIT_STEPS)
-    # 衝突: 最短の半分まで進んで当たる
+    # 衝突: 最短の半分まで進んで当たる（終端の Φ は稼いだ進捗 D0/2）
     Tc = Tg / 2
-    collide = (GAMMA ** Tc * (D0 / 2) - per_step * S(Tc)
-               + GAMMA ** (Tc - 1) * COLLISION_PENALTY
+    phi_T = D0 / 2
+    coll_term = (COLLISION_PENALTY - phi_T) if forfeit else COLLISION_PENALTY
+    collide = (GAMMA ** Tc * phi_T - per_step * S(Tc)
+               + GAMMA ** (Tc - 1) * coll_term
                + visit_discounted(max(d0_cells // 2, 1), steps_per_cell))
+    # 参考: **即時衝突**（1 歩目で当たる。進捗も訪問も無い）。没収型が
+    # 「進んでから当たる」を消したときに、**即時衝突より悪くなっていないか**を見る
+    coll_now = COLLISION_PENALTY      # γ^0·(−1.0 − Φ=0) は没収型でも同じ
     return dict(goal=goal, explore=explore, stay=stay, collide=collide,
-                Tg=Tg, Tg_pay=Tg_pay)
+                collide_now=coll_now, Tg=Tg, Tg_pay=Tg_pay)
 
 
 def ordering_ok(r: dict) -> bool:
@@ -254,6 +270,49 @@ def main() -> int:
         print(f"{d0:>5}{lo:>13.0f}{lo*DT:>12.2f}{lo*v*DT:>17.3f}   {bind}{note}")
     print("\n  ※ 「進入深さ換算」は速度 0.96 m/s で ΔT 歩ぶん走る距離。"
           "\n     実際に要る深さは §1 の 1 値（外接円半径）なので、余裕の大きさが読める。")
+
+    print("\n" + "=" * 92)
+    print("§6 対処案 (a') — 衝突罰を「稼いだ整形の没収」型 −(1.0 + Φ(s_T)) に置く")
+    print("=" * 92)
+    print("  形: 衝突の総収益 = γ^(Tc−1)·( −1.0 − (1−γ)·Φ_T ) − 時間罰 + 訪問")
+    print("      → **稼いだ整形 γ^Tc·Φ_T が構成上打ち消される**")
+    print(f"{'面':>6}{'D₀':>4}{'ゴール':>9}{'探索':>9}{'滞留':>9}"
+          f"{'衝突(現行)':>12}{'衝突(没収型)':>13}{'即時衝突':>10}   順序(没収型)")
+    n_ok2, tally2 = 0, {}
+    for seed in VALID_SEEDS:
+        m = generate_maze(seed, mode="loop")
+        d0 = int(shortest_distances(m["v_walls"], m["h_walls"])[tuple(m["start"])])
+        r_old = returns_for_face(d0, spc, 0.0, MEAN_HP2, dT, forfeit=False)
+        r_new = returns_for_face(d0, spc, 0.0, MEAN_HP2, dT, forfeit=True)
+        ok = ordering_ok(r_new)
+        n_ok2 += ok
+        bad, _ = failing_pairs(r_new)
+        for b in bad:
+            tally2[b] = tally2.get(b, 0) + 1
+        print(f"{seed:>6}{d0:>4}{r_new['goal']:>9.3f}{r_new['explore']:>9.3f}"
+              f"{r_new['stay']:>9.3f}{r_old['collide']:>12.3f}{r_new['collide']:>13.3f}"
+              f"{r_new['collide_now']:>10.3f}"
+              f"   {'✅ 成立' if ok else '🔴 ' + '・'.join(bad)}")
+    print(f"\n  **順序が成立した面: {n_ok2} / {len(VALID_SEEDS)}**"
+          f"（現行の衝突罰では 6 / 20 だった）")
+    print("  崩れた不等式の内訳: "
+          + ("／".join(f"{k}: {v} 面" for k, v in sorted(tally2.items())) if tally2 else "**なし**"))
+
+    print("\n  --- 確認点 ---")
+    print("  (i)  滞留 > 衝突: "
+          + ("**全面で回復**" if "滞留>衝突" not in tally2
+             else f"🔴 {tally2['滞留>衝突']} 面で未回復"))
+    print("  (ii) 既成立部分（ゴール>探索・探索>滞留）: "
+          + ("**壊れていない**" if not ({"ゴール>探索", "探索>滞留"} & set(tally2))
+             else "🔴 壊れた"))
+    print("  (iii) 方策不変性（Ng ら 1999）: **崩れない**。"
+          "\n       不変性が主張するのは**整形項 F = γΦ(s\') − Φ(s) を足しても最適方策が"
+          "変わらない**ことであり、\n       本案が変えるのは**元の課題報酬（衝突罰）の側**である。"
+          "整形項には手を触れていないので、\n       「新しい課題報酬 ＋ 同じ整形項」の MDP は"
+          "「新しい課題報酬だけ」の MDP と同じ最適方策を持つ。\n"
+          "       ⚠️ ただし**課題そのものが変わる**ので、"
+          "**新しい最適方策が望むものかは別途の判断**が要る\n"
+          "       （不変性は『整形が悪さをしない』ことしか保証しない）。")
     return 0
 
 
