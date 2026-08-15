@@ -100,7 +100,7 @@ def drive_and_record(xml_path, params, nodes, dirs, v_diag, v_walls, h_walls,
         # step_control の**後**で読むと、記録の omega_act が 1 ティック先の値になり、
         # 遅れの推定が 1 ティックぶん詰まる（2026-08-15 に自分のハーネスで踏んだ誤り）。
         x, y, yaw = sim.privileged_pose()
-        _v, w_act = sim.privileged_velocity()
+        v_act, w_act = sim.privileged_velocity()
         cur = int(getattr(pol, "_cursor", 0))
         k = int(np.argmin((px - x) ** 2 + (py - y) ** 2))
         head = float(path.heading[cur])
@@ -108,14 +108,14 @@ def drive_and_record(xml_path, params, nodes, dirs, v_diag, v_walls, h_walls,
                + (y - float(path.y[cur])) * math.cos(head))
         rec.append((sim.sim_time, pol._omega_cmd, w_act, e_y,
                     KIND[str(kinds[k])], float(path.s[cur]),
-                    float(path.curvature[cur])))
+                    float(path.curvature[cur]), v_act))
         out = sim.step_control(vl, vr)
         if out.get("collision"):
             collided = True
             break
         if pol.finished:
             break
-    cols = ("t", "omega_des", "omega_act", "e_y", "kind", "s", "kappa")
+    cols = ("t", "omega_des", "omega_act", "e_y", "kind", "s", "kappa", "v_act")
     return dict(zip(cols, np.asarray(rec, dtype=float).T)), collided
 
 
@@ -236,10 +236,20 @@ def main():
             continue
         lag = d1_lag(r, dt)
         tau = d1_tau(r, dt)
+        m_arc = r["kind"] == KIND["arc"]
+        arc_v = float(np.median(r["v_act"][m_arc])) if m_arc.any() else float("nan")
+        _al = np.abs(r["v_act"][m_arc] * r["omega_act"][m_arc]) if m_arc.any() else np.array([np.nan])
+        arc_alat = float(np.median(_al))
+        arc_alat_p95 = float(np.percentile(_al, 95))
+        arc_alat_max = float(np.max(_al))
+        arc_v_max = float(np.max(r["v_act"][m_arc])) if m_arc.any() else float("nan")
         pr = d2_pairs(r, dt)
         pairs += pr
         rows.append(dict(maze=f.stem, collided=bool(collided), n_ticks=int(len(r["t"])),
-                         d1=lag, d1_tau=tau, n_arcs=len(pr)))
+                         d1=lag, d1_tau=tau, n_arcs=len(pr),
+                         arc_v_med=arc_v, arc_alat_med=arc_alat,
+                         arc_alat_p95=arc_alat_p95, arc_alat_max=arc_alat_max,
+                         arc_v_max=arc_v_max))
         print(f"{f.stem}: 円弧 {len(pr)} 本／"
               + (f"遅れ {lag['lag_ticks']} ティック = {lag['lag_s']*1000:.0f} ms "
                  f"(相関 {lag['peak_corr']:.3f})" if lag else "D1 は標本不足"), flush=True)
@@ -257,6 +267,15 @@ def main():
     else:
         print("【D1】判定不能（標本不足）")
 
+    av=[x["arc_v_med"] for x in rows if x.get("arc_v_med")==x.get("arc_v_med")]
+    aa=[x["arc_alat_med"] for x in rows if x.get("arc_alat_med")==x.get("arc_alat_med")]
+    if av:
+        p95 = np.median([x["arc_alat_p95"] for x in rows])
+        mx = np.median([x["arc_alat_max"] for x in rows])
+        vmx = np.median([x["arc_v_max"] for x in rows])
+        print(f"\n【円弧の実測】速度 中央値 {np.median(av):.3f}／最大 {vmx:.3f} m/s（指令 {args.v_diag:g}）")
+        print(f"  横加速度 中央値 {np.median(aa):.3f}／p95 {p95:.3f}／最大 {mx:.3f} m/s²"
+              f"  = 物理限界 6.200 の {np.median(aa)/6.2*100:.0f} / {p95/6.2*100:.0f} / {mx/6.2*100:.0f} %")
     print("\n【D1-tau】一次遅れの時定数（相互相関より細かい測り方。層別）")
     for name in ("円弧ぜんぶ", "クロソイド", "定曲率"):
         vals = [x["d1_tau"][name]["tau_s"] for x in rows
