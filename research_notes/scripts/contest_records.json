@@ -1,6 +1,7 @@
 {
- "purpose": "大会の走行記録（優勝タイム・上位）を、対応する迷路の理想タイムと突き合わせるための収集物。note_025 第 0 章。",
+ "purpose": "大会の走行記録（優勝タイム・上位）を、対応する迷路の理想タイムと突き合わせるための収集物。note_025 第 0 章・§2-2。",
  "collected": "2026-08-15 学生A セッション",
+ "competition": "全日本マイクロマウス大会 マイクロマウスクラシック競技 エキスパートクラス 決勝（ファイル名の CX に対応）",
  "confidence_scale": {
   "official": "主催者（公益財団法人ニューテクノロジー振興財団）が公開する大会記録ページ",
   "press": "報道・二次的なまとめ",
@@ -9,46 +10,45 @@
  "caveat": [
   "実機と本プロジェクトのロボットモデルは車体性能がまったく違う（実機の上位はサクションファンで路面へ吸い付き、実効的な摩擦係数が本モデルの mu=1.0 をはるかに超える）。",
   "したがって『実機タイム ÷ 本モデルの理想タイム』は【参考値】であり、実機の物理限界に対する比ではない。実機の物理限界は不明である。",
-  "その年のクラシック競技で実際に使われた迷路が、対応する npz と同一であることは未確認（迷路データの出所と大会記録の出所が別のため）。"
+  "その年の競技で実際に使われた迷路が、対応する npz と同一であることは【未確認】（迷路データの出所と大会記録の出所が別のため）。比較を使う箇所には必ずこの注記を添える。",
+  "タイム表記 00:MM:SSS / 00:MM.SSS は 分:秒.ミリ秒 と読んだ（いずれも 10 秒未満なので秒として解釈して曖昧さはない）。"
  ],
  "records": [
-  {
-   "year": 2019,
-   "event": "第40回全日本マイクロマウス大会 クラシックマウス競技",
-   "maze": "16MM2019CX",
-   "rank": 1,
-   "machine": "華金",
-   "operator": "浅川 英慶",
-   "time_s": 4.143,
-   "confidence": "official",
-   "source": "https://www.ntf.or.jp/mouse/micromouse2019/recode2019.html",
-   "runners_up": [
-    {"rank": 2, "machine": "赤い彗星", "operator": "宇都宮 正和", "time_s": 4.274},
-    {"rank": 3, "machine": "ExiaAlter", "operator": "平松 直人", "time_s": 4.342},
-    {"rank": 4, "machine": "Gerbera", "operator": "瀬谷 勇太", "time_s": 4.445},
-    {"rank": 5, "machine": "Diu-Gow 4", "operator": "Cai, Xin-Han", "time_s": 4.469}
-   ],
-   "note": "エントリー 77 台・出走 71 台・完走 56 台。決勝という段階分けは無く単一の競技結果、と主催者ページに記載。"
-  },
-  {
-   "year": 2018,
-   "event": "第39回全日本マイクロマウス大会 クラシックマウス競技",
-   "maze": "16MM2018CX",
-   "rank": 1,
-   "machine": "ExiaAlter",
-   "operator": "平松 直人",
-   "team": "Mice Busters",
-   "time_s": 4.939,
-   "confidence": "official",
+  {"year": 2013, "maze": "16MM2013CX", "rank": 1, "machine": "Tetra", "operator": "加藤 雄資", "time_s": 7.939, "confidence": "official",
+   "source": "https://www.ntf.or.jp/mouse/micromouse2013/mm2013result01.html",
+   "runners_up": [{"rank": 2, "machine": "さくらねずみ5", "operator": "佐倉 俊祐", "time_s": 8.655},
+                  {"rank": 3, "machine": "Diu-Gow", "operator": "CAI, XIN-HAN / WU, YU-CHENG", "time_s": 9.034}]},
+  {"year": 2014, "maze": "16MM2014CX", "rank": 1, "machine": "紫電改", "operator": "宇都宮 正和", "time_s": 6.574, "confidence": "official",
+   "source": "https://www.ntf.or.jp/mouse/micromouse2014/MM2014recode01.html",
+   "runners_up": [{"rank": 2, "machine": "ハセシュマウス ver.3.0", "operator": "長谷川 峻（東京理科大学 Mice）", "time_s": 7.195},
+                  {"rank": 3, "machine": "Dao-Hu", "operator": "Ho, Tsung-Chun / Chen, Chao-Wei", "time_s": 7.392}]},
+  {"year": 2015, "maze": "16MM2015CX", "rank": 1, "machine": "Diu-Gow", "operator": "Cai, Xin-Han / Lin, Yu-chih", "time_s": 6.301, "confidence": "official",
+   "source": "https://www.ntf.or.jp/mouse/micromouse2015/MM2015recode01.html",
+   "runners_up": [{"rank": 2, "machine": "Que", "operator": "竹本 裕太（Mice Busters）", "time_s": 6.307},
+                  {"rank": 3, "machine": "Dritte", "operator": "今井 康博（東京理科大学 Mice）", "time_s": 7.739}]},
+  {"year": 2016, "maze": "16MM2016CX", "rank": 1, "machine": "Diu-Gow 4", "operator": "Cai, Xin-Han / Wu, Zhao-Yi", "time_s": 4.655, "confidence": "official",
+   "source": "https://www.ntf.or.jp/mouse/micromouse2016/MM2016recode01.html",
+   "runners_up": [{"rank": 2, "machine": "赤い彗星", "operator": "宇都宮 正和", "time_s": 4.739},
+                  {"rank": 3, "machine": "Exia", "operator": "平松 直人", "time_s": 4.924}]},
+  {"year": 2017, "maze": "16MM2017CX", "rank": 1, "machine": "赤い彗星", "operator": "宇都宮 正和", "time_s": 7.284, "confidence": "official",
+   "source": "https://www.ntf.or.jp/mouse/micromouse2017/MM2017recode.html",
+   "runners_up": [{"rank": 2, "machine": "Decimus 5", "operator": "Peter Harrison", "time_s": 7.415},
+                  {"rank": 3, "machine": "黒椿", "operator": "赤尾 健太（福井大学 からくり工房I.Sys）", "time_s": 8.306}]},
+  {"year": 2018, "maze": "16MM2018CX", "rank": 1, "machine": "ExiaAlter", "operator": "平松 直人（Mice Busters）", "time_s": 4.939, "confidence": "official",
    "source": "https://www.ntf.or.jp/mouse/micromouse2018/recode2018.html",
-   "runners_up": [
-    {"rank": 2, "machine": "赤い彗星", "operator": "宇都宮 正和", "team": "D-The-Star", "time_s": 5.105},
-    {"rank": 3, "machine": "Diu-Gow 5", "operator": "Xin-Han Cai", "time_s": 5.210}
-   ]
-  }
+   "runners_up": [{"rank": 2, "machine": "赤い彗星", "operator": "宇都宮 正和（D-The-Star）", "time_s": 5.105},
+                  {"rank": 3, "machine": "Diu-Gow 5", "operator": "Xin-Han Cai", "time_s": 5.210}]},
+  {"year": 2019, "maze": "16MM2019CX", "rank": 1, "machine": "華金", "operator": "浅川 英慶", "time_s": 4.143, "confidence": "official",
+   "source": "https://www.ntf.or.jp/mouse/micromouse2019/recode2019.html",
+   "runners_up": [{"rank": 2, "machine": "赤い彗星", "operator": "宇都宮 正和", "time_s": 4.274},
+                  {"rank": 3, "machine": "ExiaAlter", "operator": "平松 直人", "time_s": 4.342},
+                  {"rank": 4, "machine": "Gerbera", "operator": "瀬谷 勇太", "time_s": 4.445},
+                  {"rank": 5, "machine": "Diu-Gow 4", "operator": "Cai, Xin-Han", "time_s": 4.469}],
+   "note": "エントリー 77 台・出走 71 台・完走 56 台。決勝という段階分けは無く単一の競技結果、と主催者ページに記載。"}
  ],
- "not_yet_collected": {
-  "years": [2012, 2013, 2014, 2015, 2016, 2017, 2020, 2021],
-  "reason": "主催者サイトの記録ページの URL 規則が年度で揃っておらず、recode<year>.html が 2017・2020 では 404 だった。年度ごとに入口ページから辿る必要がある。"
- }
+ "not_collected": [
+  {"year": 2012, "maze": "16MM2012CX", "reason": "主催者サイトの 2012 年の結果ページの URL が特定できなかった（mm2012result01.html は 404）。"},
+  {"year": 2020, "maze": "16MM2020CX", "reason": "記録集は PDF（MM2020_Records_v101.pdf）で提供されており、本文の抽出ができなかった。**この年はオンライン大会**（エントリー締切 2021-02-14・オンラインイベント 2021-02-27）であり、通常の会場開催ではない点にも注意。"},
+  {"maze": "16MM2017CX_pre", "reason": "大会前の練習用迷路と見られ、対応する競技記録が存在しない。"}
+ ]
 }
