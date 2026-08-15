@@ -1,0 +1,1338 @@
+{
+  "clause": "experiments/exp_023_recurrent_policy/card.md §3",
+  "num_timesteps": 2000896,
+  "history_lags": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128
+  ],
+  "anchors": {
+    "n_reach_ge7": 12,
+    "n_reach_ge7_per_seed": [
+      0,
+      0,
+      0,
+      2,
+      5,
+      5
+    ],
+    "net_progress_per_1000": 1.25,
+    "respawn_per_1000": 2.125,
+    "goal_rate": 0.0
+  },
+  "inputs": {
+    "control": "outputs/exp_021_driving_final_samever.json",
+    "group1": "outputs/exp_023a_driving_final.json",
+    "group2": "outputs/exp_023b_driving_final.json",
+    "logs_g1": [
+      "logs/exp_023a_seed1",
+      "logs/exp_023a_seed2",
+      "logs/exp_023a_seed3",
+      "logs/exp_023a_seed4",
+      "logs/exp_023a_seed5",
+      "logs/exp_023a_seed6"
+    ],
+    "logs_g2": [
+      "logs/exp_023b_seed1",
+      "logs/exp_023b_seed2",
+      "logs/exp_023b_seed3",
+      "logs/exp_023b_seed4",
+      "logs/exp_023b_seed5",
+      "logs/exp_023b_seed6"
+    ],
+    "logs_control": [
+      "logs/exp_021_seed1",
+      "logs/exp_021_seed2",
+      "logs/exp_021_seed3",
+      "logs/exp_021_seed4",
+      "logs/exp_021_seed5",
+      "logs/exp_021_seed6"
+    ]
+  },
+  "verdicts": [
+    {
+      "key": "R1",
+      "primary": true,
+      "name": "R1 7 区画以上に到達した走行数",
+      "clause": "120 走行の件数 ≥ 24（同値は当たり）",
+      "value": 0,
+      "threshold": 24,
+      "control": 12,
+      "per_seed": {
+        "models/exp_023a_seed1": 0,
+        "models/exp_023a_seed2": 0,
+        "models/exp_023a_seed3": 0,
+        "models/exp_023a_seed4": 0,
+        "models/exp_023a_seed5": 0,
+        "models/exp_023a_seed6": 0
+      },
+      "n_seeds_nonzero": 0,
+      "max_single_seed": 0,
+      "hit": false,
+      "direction": "miss_reverse",
+      "note": "1 seed の上限は 20 件なので、閾値 24 件は 20 走行 × 2 seed で作れる。**合計だけで「増えた」と書かない** （研究計画書 §9-18）。対照の内訳は [0, 0, 0, 2, 5, 5]"
+    },
+    {
+      "key": "R3",
+      "primary": false,
+      "name": "R3 正味の前進は改善しない",
+      "clause": "net_progress_per_1000 の 6 seed 中央値 < 1.563（同値は外れ）",
+      "value": 1.0,
+      "threshold": 1.563,
+      "derived_threshold": 1.5625,
+      "control": 1.25,
+      "per_seed": {
+        "models/exp_023a_seed1": 0.75,
+        "models/exp_023a_seed2": 1.5,
+        "models/exp_023a_seed3": 1.0,
+        "models/exp_023a_seed4": 1.0,
+        "models/exp_023a_seed5": 1.0,
+        "models/exp_023a_seed6": 1.0
+      },
+      "hit": true,
+      "direction": "hit"
+    },
+    {
+      "key": "R4",
+      "primary": false,
+      "name": "R4 衝突は対照より増えない",
+      "clause": "respawn_per_1000 の 6 seed 中央値 ≤ 2.125（同値は当たり）",
+      "value": 7.25,
+      "threshold": 2.125,
+      "control": 2.125,
+      "per_seed": {
+        "models/exp_023a_seed1": 3.0,
+        "models/exp_023a_seed2": 4.25,
+        "models/exp_023a_seed3": 4.25,
+        "models/exp_023a_seed4": 10.25,
+        "models/exp_023a_seed5": 15.25,
+        "models/exp_023a_seed6": 11.25
+      },
+      "hit": false,
+      "direction": "miss_reverse"
+    },
+    {
+      "key": "R5",
+      "primary": false,
+      "name": "R5 ゴール率は床のまま",
+      "clause": "定期評価の記録の**最終点**の goal_rate の 6 seed 中央値 < 0.05（厳密に 0.05 は外れ）",
+      "value": 0.0,
+      "threshold": 0.05,
+      "control": 0.0,
+      "per_seed": {
+        "exp_023a_seed1": 0.0,
+        "exp_023a_seed2": 0.0,
+        "exp_023a_seed3": 0.0,
+        "exp_023a_seed4": 0.0,
+        "exp_023a_seed5": 0.0,
+        "exp_023a_seed6": 0.0
+      },
+      "per_seed_sorted": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "hit": true,
+      "direction": "hit",
+      "note": "判定量の刻みは 1/20 = 0.05。**seed ごとの値を必ず併記する** — 対照は 0, 0, 0, 0, 0.05, 0.05 で中央値 0.000 であり、あと 2 本増えると中央値が厳密に 0.05 になって外れ側に乗る"
+    },
+    {
+      "key": "R6",
+      "primary": true,
+      "name": "R6 群 2（リセットする）は群 1 より深く入る",
+      "clause": "群 2 の n_reach_ge7 が群 1 より多い（同数は外れ）",
+      "value": 9,
+      "reference": 0,
+      "per_seed_g2": {
+        "models/exp_023b_seed1": 6,
+        "models/exp_023b_seed2": 0,
+        "models/exp_023b_seed3": 0,
+        "models/exp_023b_seed4": 3,
+        "models/exp_023b_seed5": 0,
+        "models/exp_023b_seed6": 0
+      },
+      "per_seed_g1": {
+        "models/exp_023a_seed1": 0,
+        "models/exp_023a_seed2": 0,
+        "models/exp_023a_seed3": 0,
+        "models/exp_023a_seed4": 0,
+        "models/exp_023a_seed5": 0,
+        "models/exp_023a_seed6": 0
+      },
+      "hit": true,
+      "direction": "hit",
+      "note": "群ごとの seed の内訳を必ず併記する。**同数は外れ**（投入前に確定）"
+    },
+    {
+      "key": "R7",
+      "primary": false,
+      "name": "R7 群 2 は群 1 より衝突が少ない",
+      "clause": "群 2 の respawn_per_1000 の 6 seed 中央値が群 1 以下（同値は当たり）",
+      "value": 11.625,
+      "reference": 7.25,
+      "per_seed_g2": {
+        "models/exp_023b_seed1": 12.25,
+        "models/exp_023b_seed2": 11.0,
+        "models/exp_023b_seed3": 23.0,
+        "models/exp_023b_seed4": 6.25,
+        "models/exp_023b_seed5": 16.5,
+        "models/exp_023b_seed6": 11.0
+      },
+      "per_seed_g1": {
+        "models/exp_023a_seed1": 3.0,
+        "models/exp_023a_seed2": 4.25,
+        "models/exp_023a_seed3": 4.25,
+        "models/exp_023a_seed4": 10.25,
+        "models/exp_023a_seed5": 15.25,
+        "models/exp_023a_seed6": 11.25
+      },
+      "hit": false,
+      "direction": "miss_reverse",
+      "note": "R6 が「より多い」（同数は外れ）なのに R7 が「以下」（同値は当たり）なのは、字句が非対称だから"
+    }
+  ],
+  "version_check": {
+    "git_rev_per_run": {
+      "exp_023a_seed1": "8ac0994e7a25748dc12de448efab86e3b6868417",
+      "exp_023a_seed2": "8ac0994e7a25748dc12de448efab86e3b6868417",
+      "exp_023a_seed3": "8ac0994e7a25748dc12de448efab86e3b6868417",
+      "exp_023a_seed4": "8ac0994e7a25748dc12de448efab86e3b6868417",
+      "exp_023a_seed5": "8ac0994e7a25748dc12de448efab86e3b6868417",
+      "exp_023a_seed6": "8ac0994e7a25748dc12de448efab86e3b6868417",
+      "exp_023b_seed1": "63b24557940c690d6f8cb13c0a5916319d181e11",
+      "exp_023b_seed2": "63b24557940c690d6f8cb13c0a5916319d181e11",
+      "exp_023b_seed3": "63b24557940c690d6f8cb13c0a5916319d181e11",
+      "exp_023b_seed4": "63b24557940c690d6f8cb13c0a5916319d181e11",
+      "exp_023b_seed5": "63b24557940c690d6f8cb13c0a5916319d181e11",
+      "exp_023b_seed6": "63b24557940c690d6f8cb13c0a5916319d181e11"
+    },
+    "unique_revs": [
+      "63b24557940c690d6f8cb13c0a5916319d181e11",
+      "8ac0994e7a25748dc12de448efab86e3b6868417"
+    ],
+    "note": "git_rev の相違は文書コミットで起こりうるので許容し、実行経路の差分だけを落とす基準にしている（§8-6 ブラックリスト方式）"
+  },
+  "group_identification": {
+    "note": "run_summary.json に群の識別（respawn_reset 等）が無いため、根拠は 3 本立てである: (1) train.log の行〔脆い〕・(2) 実行経路の同一版検査・(3) 走行中に保全した argv",
+    "argv_evidence": {
+      "群 1": {
+        "path": "verification/evidence/exp_023a_launch_argv.txt",
+        "exists": true,
+        "n_lines": 21
+      },
+      "群 2": {
+        "path": "verification/evidence/exp_023b_launch_argv.txt",
+        "exists": true,
+        "n_lines": 21
+      }
+    }
+  },
+  "bracket_check": {
+    "any_flag": true,
+    "suppress_table": true,
+    "per_quantity": {
+      "n_reach_ge7": {
+        "values": {
+          "対照": 12,
+          "群 1": 0,
+          "群 2": 9
+        },
+        "order_low_to_high": [
+          "群 1",
+          "群 2",
+          "対照"
+        ],
+        "improvement_is_high": true,
+        "worse_than_control": {
+          "群 1": true,
+          "群 2": true
+        },
+        "flag": true
+      },
+      "net_progress_per_1000": {
+        "values": {
+          "対照": 1.25,
+          "群 1": 1.0,
+          "群 2": 0.5
+        },
+        "order_low_to_high": [
+          "群 2",
+          "群 1",
+          "対照"
+        ],
+        "improvement_is_high": true,
+        "worse_than_control": {
+          "群 1": true,
+          "群 2": true
+        },
+        "flag": true
+      },
+      "respawn_per_1000": {
+        "values": {
+          "対照": 2.125,
+          "群 1": 7.25,
+          "群 2": 11.625
+        },
+        "order_low_to_high": [
+          "対照",
+          "群 1",
+          "群 2"
+        ],
+        "improvement_is_high": false,
+        "worse_than_control": {
+          "群 1": true,
+          "群 2": true
+        },
+        "flag": true
+      },
+      "goal_rate": {
+        "values": {
+          "対照": 0.0,
+          "群 1": 0.0,
+          "群 2": 0.0
+        },
+        "order_low_to_high": [
+          "対照",
+          "群 1",
+          "群 2"
+        ],
+        "improvement_is_high": true,
+        "worse_than_control": {
+          "群 1": false,
+          "群 2": false
+        },
+        "flag": false
+      }
+    },
+    "suppressing_quantity": "n_reach_ge7",
+    "note": "群 1 か群 2 が『対照より悪い側』へ出たら旗を立てる（代案 B・教授裁定）。旗は判定量ごとに立てて全部報告するが、§3-4 の表を抑止するのは表の構成量 n_reach_ge7 の旗だけ（無関係な量の悪化で表を消さない）"
+  },
+  "coverage": {
+    "r1_hit": false,
+    "r6_hit": true,
+    "table_returned": false,
+    "reading": null,
+    "next_move": null,
+    "bracket_flag_raised": true,
+    "suppressing_quantity": "n_reach_ge7",
+    "reason": "🔴 §3-3 (iii) が成立した ＝ **表の構成量 n_reach_ge7 で群 1 か群 2 が対照より悪い側へ出た**。カード :277 により §3-4 の表は引かず、そのまま報告する",
+    "outside": {
+      "n_reach_ge7": {
+        "values": {
+          "対照": 12,
+          "群 1": 0,
+          "群 2": 9
+        },
+        "order_low_to_high": [
+          "群 1",
+          "群 2",
+          "対照"
+        ],
+        "improvement_is_high": true,
+        "worse_than_control": {
+          "群 1": true,
+          "群 2": true
+        },
+        "flag": true
+      },
+      "net_progress_per_1000": {
+        "values": {
+          "対照": 1.25,
+          "群 1": 1.0,
+          "群 2": 0.5
+        },
+        "order_low_to_high": [
+          "群 2",
+          "群 1",
+          "対照"
+        ],
+        "improvement_is_high": true,
+        "worse_than_control": {
+          "群 1": true,
+          "群 2": true
+        },
+        "flag": true
+      },
+      "respawn_per_1000": {
+        "values": {
+          "対照": 2.125,
+          "群 1": 7.25,
+          "群 2": 11.625
+        },
+        "order_low_to_high": [
+          "対照",
+          "群 1",
+          "群 2"
+        ],
+        "improvement_is_high": false,
+        "worse_than_control": {
+          "群 1": true,
+          "群 2": true
+        },
+        "flag": true
+      },
+      "goal_rate": {
+        "values": {
+          "対照": 0.0,
+          "群 1": 0.0,
+          "群 2": 0.0
+        },
+        "order_low_to_high": [
+          "対照",
+          "群 1",
+          "群 2"
+        ],
+        "improvement_is_high": true,
+        "worse_than_control": {
+          "群 1": false,
+          "群 2": false
+        },
+        "flag": false
+      }
+    }
+  },
+  "descriptive_former_r2": {
+    "note": "🔴 判定には使わない（§3-1-bis・§8 限界 6）。研究計画書 §9-18 により、走行水準の p は条件比較の p として解釈できない",
+    "seed_representative": "その seed の 20 走行の到達区画数の中央値",
+    "counts": {
+      "対照 exp_021": {
+        "ge5": {
+          "total": 26,
+          "per_seed": {
+            "models/exp_021_seed1": 0,
+            "models/exp_021_seed2": 7,
+            "models/exp_021_seed3": 10,
+            "models/exp_021_seed4": 0,
+            "models/exp_021_seed5": 0,
+            "models/exp_021_seed6": 9
+          },
+          "per_seed_counts": [
+            0,
+            7,
+            10,
+            0,
+            0,
+            9
+          ],
+          "n_seeds_nonzero": 3,
+          "max_single_seed": 10
+        },
+        "ge6": {
+          "total": 17,
+          "per_seed": {
+            "models/exp_021_seed1": 0,
+            "models/exp_021_seed2": 5,
+            "models/exp_021_seed3": 6,
+            "models/exp_021_seed4": 0,
+            "models/exp_021_seed5": 0,
+            "models/exp_021_seed6": 6
+          },
+          "per_seed_counts": [
+            0,
+            5,
+            6,
+            0,
+            0,
+            6
+          ],
+          "n_seeds_nonzero": 3,
+          "max_single_seed": 6
+        },
+        "ge7": {
+          "total": 12,
+          "per_seed": {
+            "models/exp_021_seed1": 0,
+            "models/exp_021_seed2": 2,
+            "models/exp_021_seed3": 5,
+            "models/exp_021_seed4": 0,
+            "models/exp_021_seed5": 0,
+            "models/exp_021_seed6": 5
+          },
+          "per_seed_counts": [
+            0,
+            2,
+            5,
+            0,
+            0,
+            5
+          ],
+          "n_seeds_nonzero": 3,
+          "max_single_seed": 5
+        },
+        "ge8": {
+          "total": 11,
+          "per_seed": {
+            "models/exp_021_seed1": 0,
+            "models/exp_021_seed2": 2,
+            "models/exp_021_seed3": 5,
+            "models/exp_021_seed4": 0,
+            "models/exp_021_seed5": 0,
+            "models/exp_021_seed6": 4
+          },
+          "per_seed_counts": [
+            0,
+            2,
+            5,
+            0,
+            0,
+            4
+          ],
+          "n_seeds_nonzero": 3,
+          "max_single_seed": 5
+        },
+        "ge10": {
+          "total": 4,
+          "per_seed": {
+            "models/exp_021_seed1": 0,
+            "models/exp_021_seed2": 1,
+            "models/exp_021_seed3": 1,
+            "models/exp_021_seed4": 0,
+            "models/exp_021_seed5": 0,
+            "models/exp_021_seed6": 2
+          },
+          "per_seed_counts": [
+            0,
+            1,
+            1,
+            0,
+            0,
+            2
+          ],
+          "n_seeds_nonzero": 3,
+          "max_single_seed": 2
+        }
+      },
+      "群 1": {
+        "ge5": {
+          "total": 4,
+          "per_seed": {
+            "models/exp_023a_seed1": 0,
+            "models/exp_023a_seed2": 0,
+            "models/exp_023a_seed3": 4,
+            "models/exp_023a_seed4": 0,
+            "models/exp_023a_seed5": 0,
+            "models/exp_023a_seed6": 0
+          },
+          "per_seed_counts": [
+            0,
+            0,
+            4,
+            0,
+            0,
+            0
+          ],
+          "n_seeds_nonzero": 1,
+          "max_single_seed": 4
+        },
+        "ge6": {
+          "total": 0,
+          "per_seed": {
+            "models/exp_023a_seed1": 0,
+            "models/exp_023a_seed2": 0,
+            "models/exp_023a_seed3": 0,
+            "models/exp_023a_seed4": 0,
+            "models/exp_023a_seed5": 0,
+            "models/exp_023a_seed6": 0
+          },
+          "per_seed_counts": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "n_seeds_nonzero": 0,
+          "max_single_seed": 0
+        },
+        "ge7": {
+          "total": 0,
+          "per_seed": {
+            "models/exp_023a_seed1": 0,
+            "models/exp_023a_seed2": 0,
+            "models/exp_023a_seed3": 0,
+            "models/exp_023a_seed4": 0,
+            "models/exp_023a_seed5": 0,
+            "models/exp_023a_seed6": 0
+          },
+          "per_seed_counts": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "n_seeds_nonzero": 0,
+          "max_single_seed": 0
+        },
+        "ge8": {
+          "total": 0,
+          "per_seed": {
+            "models/exp_023a_seed1": 0,
+            "models/exp_023a_seed2": 0,
+            "models/exp_023a_seed3": 0,
+            "models/exp_023a_seed4": 0,
+            "models/exp_023a_seed5": 0,
+            "models/exp_023a_seed6": 0
+          },
+          "per_seed_counts": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "n_seeds_nonzero": 0,
+          "max_single_seed": 0
+        },
+        "ge10": {
+          "total": 0,
+          "per_seed": {
+            "models/exp_023a_seed1": 0,
+            "models/exp_023a_seed2": 0,
+            "models/exp_023a_seed3": 0,
+            "models/exp_023a_seed4": 0,
+            "models/exp_023a_seed5": 0,
+            "models/exp_023a_seed6": 0
+          },
+          "per_seed_counts": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "n_seeds_nonzero": 0,
+          "max_single_seed": 0
+        }
+      },
+      "群 2": {
+        "ge5": {
+          "total": 13,
+          "per_seed": {
+            "models/exp_023b_seed1": 8,
+            "models/exp_023b_seed2": 0,
+            "models/exp_023b_seed3": 0,
+            "models/exp_023b_seed4": 5,
+            "models/exp_023b_seed5": 0,
+            "models/exp_023b_seed6": 0
+          },
+          "per_seed_counts": [
+            8,
+            0,
+            0,
+            5,
+            0,
+            0
+          ],
+          "n_seeds_nonzero": 2,
+          "max_single_seed": 8
+        },
+        "ge6": {
+          "total": 11,
+          "per_seed": {
+            "models/exp_023b_seed1": 8,
+            "models/exp_023b_seed2": 0,
+            "models/exp_023b_seed3": 0,
+            "models/exp_023b_seed4": 3,
+            "models/exp_023b_seed5": 0,
+            "models/exp_023b_seed6": 0
+          },
+          "per_seed_counts": [
+            8,
+            0,
+            0,
+            3,
+            0,
+            0
+          ],
+          "n_seeds_nonzero": 2,
+          "max_single_seed": 8
+        },
+        "ge7": {
+          "total": 9,
+          "per_seed": {
+            "models/exp_023b_seed1": 6,
+            "models/exp_023b_seed2": 0,
+            "models/exp_023b_seed3": 0,
+            "models/exp_023b_seed4": 3,
+            "models/exp_023b_seed5": 0,
+            "models/exp_023b_seed6": 0
+          },
+          "per_seed_counts": [
+            6,
+            0,
+            0,
+            3,
+            0,
+            0
+          ],
+          "n_seeds_nonzero": 2,
+          "max_single_seed": 6
+        },
+        "ge8": {
+          "total": 5,
+          "per_seed": {
+            "models/exp_023b_seed1": 4,
+            "models/exp_023b_seed2": 0,
+            "models/exp_023b_seed3": 0,
+            "models/exp_023b_seed4": 1,
+            "models/exp_023b_seed5": 0,
+            "models/exp_023b_seed6": 0
+          },
+          "per_seed_counts": [
+            4,
+            0,
+            0,
+            1,
+            0,
+            0
+          ],
+          "n_seeds_nonzero": 2,
+          "max_single_seed": 4
+        },
+        "ge10": {
+          "total": 1,
+          "per_seed": {
+            "models/exp_023b_seed1": 1,
+            "models/exp_023b_seed2": 0,
+            "models/exp_023b_seed3": 0,
+            "models/exp_023b_seed4": 0,
+            "models/exp_023b_seed5": 0,
+            "models/exp_023b_seed6": 0
+          },
+          "per_seed_counts": [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "n_seeds_nonzero": 1,
+          "max_single_seed": 1
+        }
+      }
+    },
+    "per_seed_depths": {
+      "対照 exp_021": {
+        "models/exp_021_seed1": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          2,
+          1,
+          1,
+          1,
+          1,
+          2,
+          2,
+          1,
+          1,
+          1,
+          1,
+          2,
+          1,
+          1
+        ],
+        "models/exp_021_seed2": [
+          2,
+          3,
+          6,
+          6,
+          8,
+          4,
+          3,
+          4,
+          5,
+          4,
+          1,
+          5,
+          12,
+          2,
+          6,
+          2,
+          3,
+          4,
+          1,
+          3
+        ],
+        "models/exp_021_seed3": [
+          2,
+          3,
+          8,
+          10,
+          8,
+          5,
+          5,
+          4,
+          4,
+          9,
+          1,
+          5,
+          8,
+          5,
+          6,
+          2,
+          3,
+          1,
+          1,
+          2
+        ],
+        "models/exp_021_seed4": [
+          0,
+          0,
+          3,
+          1,
+          4,
+          4,
+          1,
+          4,
+          4,
+          4,
+          1,
+          4,
+          4,
+          2,
+          2,
+          1,
+          3,
+          1,
+          1,
+          1
+        ],
+        "models/exp_021_seed5": [
+          1,
+          1,
+          1,
+          1,
+          2,
+          4,
+          0,
+          1,
+          3,
+          3,
+          1,
+          4,
+          4,
+          2,
+          1,
+          1,
+          2,
+          1,
+          1,
+          1
+        ],
+        "models/exp_021_seed6": [
+          2,
+          2,
+          3,
+          2,
+          8,
+          5,
+          3,
+          7,
+          5,
+          11,
+          1,
+          9,
+          12,
+          3,
+          6,
+          2,
+          5,
+          1,
+          1,
+          2
+        ]
+      },
+      "群 1": {
+        "models/exp_023a_seed1": [
+          1,
+          1,
+          3,
+          1,
+          2,
+          2,
+          1,
+          1,
+          2,
+          2,
+          1,
+          2,
+          2,
+          1,
+          3,
+          2,
+          3,
+          1,
+          1,
+          1
+        ],
+        "models/exp_023a_seed2": [
+          3,
+          3,
+          4,
+          4,
+          3,
+          3,
+          4,
+          2,
+          3,
+          2,
+          2,
+          3,
+          3,
+          4,
+          3,
+          4,
+          4,
+          2,
+          3,
+          4
+        ],
+        "models/exp_023a_seed3": [
+          2,
+          1,
+          3,
+          2,
+          4,
+          5,
+          1,
+          3,
+          5,
+          3,
+          1,
+          5,
+          5,
+          2,
+          2,
+          2,
+          3,
+          2,
+          1,
+          2
+        ],
+        "models/exp_023a_seed4": [
+          3,
+          3,
+          3,
+          2,
+          2,
+          2,
+          3,
+          1,
+          2,
+          1,
+          1,
+          2,
+          2,
+          1,
+          2,
+          1,
+          2,
+          3,
+          2,
+          3
+        ],
+        "models/exp_023a_seed5": [
+          3,
+          3,
+          4,
+          2,
+          2,
+          2,
+          2,
+          4,
+          2,
+          2,
+          1,
+          2,
+          4,
+          3,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "models/exp_023a_seed6": [
+          2,
+          2,
+          3,
+          2,
+          2,
+          2,
+          3,
+          2,
+          1,
+          2,
+          1,
+          2,
+          1,
+          1,
+          2,
+          1,
+          1,
+          2,
+          2,
+          3
+        ]
+      },
+      "群 2": {
+        "models/exp_023b_seed1": [
+          2,
+          2,
+          3,
+          4,
+          9,
+          6,
+          3,
+          7,
+          7,
+          10,
+          1,
+          8,
+          8,
+          6,
+          3,
+          3,
+          3,
+          3,
+          2,
+          2
+        ],
+        "models/exp_023b_seed2": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          1,
+          1,
+          2,
+          1,
+          0,
+          1,
+          1,
+          1,
+          0,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "models/exp_023b_seed3": [
+          2,
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "models/exp_023b_seed4": [
+          2,
+          2,
+          5,
+          2,
+          3,
+          4,
+          3,
+          2,
+          5,
+          3,
+          2,
+          8,
+          7,
+          1,
+          7,
+          2,
+          3,
+          1,
+          2,
+          2
+        ],
+        "models/exp_023b_seed5": [
+          2,
+          1,
+          1,
+          2,
+          0,
+          0,
+          2,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          2,
+          1,
+          2,
+          2,
+          1,
+          1
+        ],
+        "models/exp_023b_seed6": [
+          1,
+          1,
+          1,
+          1,
+          0,
+          0,
+          1,
+          1,
+          1,
+          1,
+          0,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          0,
+          1
+        ]
+      }
+    },
+    "p_values": {
+      "対照 exp_021 対 群 1": {
+        "seed_level": {
+          "method": "exact_permutation",
+          "u": 20.5,
+          "n1": 6,
+          "n2": 6,
+          "p_two_sided": 0.7121212121212122,
+          "n_permutations": 924,
+          "tie_handling": "平均順位法",
+          "two_sided_definition": "|U − n₁n₂/2| が観測以上の割合"
+        },
+        "run_level": {
+          "method": "normal_approx",
+          "u": 7667.5,
+          "n1": 120,
+          "n2": 120,
+          "z": 0.8934652455768236,
+          "p_two_sided": 0.3716080758168276,
+          "tie_handling": "平均順位法＋同順位補正",
+          "continuity_correction": true,
+          "two_sided_definition": "片側の 2 倍（正規近似）"
+        },
+        "seed_representatives": {
+          "対照 exp_021": [
+            1.0,
+            4.0,
+            4.5,
+            2.0,
+            1.0,
+            3.0
+          ],
+          "群 1": [
+            1.5,
+            3.0,
+            2.0,
+            2.0,
+            2.0,
+            2.0
+          ]
+        }
+      },
+      "対照 exp_021 対 群 2": {
+        "seed_level": {
+          "method": "exact_permutation",
+          "u": 25.5,
+          "n1": 6,
+          "n2": 6,
+          "p_two_sided": 0.24242424242424243,
+          "n_permutations": 924,
+          "tie_handling": "平均順位法",
+          "two_sided_definition": "|U − n₁n₂/2| が観測以上の割合"
+        },
+        "run_level": {
+          "method": "normal_approx",
+          "u": 9520.5,
+          "n1": 120,
+          "n2": 120,
+          "z": 4.49242431863109,
+          "p_two_sided": 7.041694592235197e-06,
+          "tie_handling": "平均順位法＋同順位補正",
+          "continuity_correction": true,
+          "two_sided_definition": "片側の 2 倍（正規近似）"
+        },
+        "seed_representatives": {
+          "対照 exp_021": [
+            1.0,
+            4.0,
+            4.5,
+            2.0,
+            1.0,
+            3.0
+          ],
+          "群 2": [
+            3.0,
+            1.0,
+            1.0,
+            2.5,
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "群 1 対 群 2": {
+        "seed_level": {
+          "method": "exact_permutation",
+          "u": 25.5,
+          "n1": 6,
+          "n2": 6,
+          "p_two_sided": 0.24891774891774893,
+          "n_permutations": 924,
+          "tie_handling": "平均順位法",
+          "two_sided_definition": "|U − n₁n₂/2| が観測以上の割合"
+        },
+        "run_level": {
+          "method": "normal_approx",
+          "u": 9826.0,
+          "n1": 120,
+          "n2": 120,
+          "z": 5.077322538144009,
+          "p_two_sided": 3.827907521843685e-07,
+          "tie_handling": "平均順位法＋同順位補正",
+          "continuity_correction": true,
+          "two_sided_definition": "片側の 2 倍（正規近似）"
+        },
+        "seed_representatives": {
+          "群 1": [
+            1.5,
+            3.0,
+            2.0,
+            2.0,
+            2.0,
+            2.0
+          ],
+          "群 2": [
+            3.0,
+            1.0,
+            1.0,
+            2.5,
+            1.0,
+            1.0
+          ]
+        }
+      }
+    }
+  },
+  "goal_rate_detail": {
+    "control": {
+      "exp_021_seed1": {
+        "total_timesteps": 2000896,
+        "goal_rate": 0.0
+      },
+      "exp_021_seed2": {
+        "total_timesteps": 2000896,
+        "goal_rate": 0.0
+      },
+      "exp_021_seed3": {
+        "total_timesteps": 2000896,
+        "goal_rate": 0.05
+      },
+      "exp_021_seed4": {
+        "total_timesteps": 2000896,
+        "goal_rate": 0.0
+      },
+      "exp_021_seed5": {
+        "total_timesteps": 2000896,
+        "goal_rate": 0.0
+      },
+      "exp_021_seed6": {
+        "total_timesteps": 2000896,
+        "goal_rate": 0.05
+      }
+    },
+    "group1": {
+      "exp_023a_seed1": {
+        "total_timesteps": 2000896,
+        "goal_rate": 0.0
+      },
+      "exp_023a_seed2": {
+        "total_timesteps": 2000896,
+        "goal_rate": 0.0
+      },
+      "exp_023a_seed3": {
+        "total_timesteps": 2000896,
+        "goal_rate": 0.0
+      },
+      "exp_023a_seed4": {
+        "total_timesteps": 2000896,
+        "goal_rate": 0.0
+      },
+      "exp_023a_seed5": {
+        "total_timesteps": 2000896,
+        "goal_rate": 0.0
+      },
+      "exp_023a_seed6": {
+        "total_timesteps": 2000896,
+        "goal_rate": 0.0
+      }
+    },
+    "group2": {
+      "exp_023b_seed1": {
+        "total_timesteps": 2000896,
+        "goal_rate": 0.0
+      },
+      "exp_023b_seed2": {
+        "total_timesteps": 2000896,
+        "goal_rate": 0.0
+      },
+      "exp_023b_seed3": {
+        "total_timesteps": 2000896,
+        "goal_rate": 0.0
+      },
+      "exp_023b_seed4": {
+        "total_timesteps": 2000896,
+        "goal_rate": 0.0
+      },
+      "exp_023b_seed5": {
+        "total_timesteps": 2000896,
+        "goal_rate": 0.0
+      },
+      "exp_023b_seed6": {
+        "total_timesteps": 2000896,
+        "goal_rate": 0.0
+      }
+    }
+  }
+}
