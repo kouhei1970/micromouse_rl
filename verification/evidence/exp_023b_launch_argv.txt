@@ -1,0 +1,21 @@
+# exp_023 群 2 の投入時設定の保全（准教授が独立に観測・2026-08-15）
+#
+# 目的: run_summary.json は recurrent / respawn_reset / obs_history / lstm_hidden を記録して
+#       いないため、「この重みが群 1 か群 2 か」の機械可読な記録が train.log の 1 行しかない。
+#       走行中の argv は機械が保持する一次証拠だが、完走すると消える。
+#       群 1 の対応する記録は exp_023a_launch_argv.txt。
+#
+# 観測者: 准教授セッション（9 代目）。学生B の申告の転記ではなく、自分で ps を叩いた出力。
+# 観測時刻: 2026-08-15 10:24:24 JST
+# 群 1 との違いは --respawn-reset の 1 点のみであることを、下の argv で確認できる。
+
+  PID  PPID STARTED                      ELAPSED COMMAND
+41509 30519 土  8/15 10:23:38 2026        00:46 .venv/bin/python experiments/exp_012_continuous_potential/train.py --condition E --env-version v2 --action-highpass-penalty 0 --seed 1 --obs-history 1,2,4,8,16,32,64,128 --recurrent --lstm-hidden 32 --respawn-reset --log-dir logs/exp_023b_seed1 --model-out models/exp_023b_seed1.zip
+41511 30519 土  8/15 10:23:38 2026        00:46 .venv/bin/python experiments/exp_012_continuous_potential/train.py --condition E --env-version v2 --action-highpass-penalty 0 --seed 2 --obs-history 1,2,4,8,16,32,64,128 --recurrent --lstm-hidden 32 --respawn-reset --log-dir logs/exp_023b_seed2 --model-out models/exp_023b_seed2.zip
+41513 30519 土  8/15 10:23:38 2026        00:46 .venv/bin/python experiments/exp_012_continuous_potential/train.py --condition E --env-version v2 --action-highpass-penalty 0 --seed 3 --obs-history 1,2,4,8,16,32,64,128 --recurrent --lstm-hidden 32 --respawn-reset --log-dir logs/exp_023b_seed3 --model-out models/exp_023b_seed3.zip
+41516 30519 土  8/15 10:23:38 2026        00:46 .venv/bin/python experiments/exp_012_continuous_potential/train.py --condition E --env-version v2 --action-highpass-penalty 0 --seed 4 --obs-history 1,2,4,8,16,32,64,128 --recurrent --lstm-hidden 32 --respawn-reset --log-dir logs/exp_023b_seed4 --model-out models/exp_023b_seed4.zip
+41518 30519 土  8/15 10:23:38 2026        00:46 .venv/bin/python experiments/exp_012_continuous_potential/train.py --condition E --env-version v2 --action-highpass-penalty 0 --seed 5 --obs-history 1,2,4,8,16,32,64,128 --recurrent --lstm-hidden 32 --respawn-reset --log-dir logs/exp_023b_seed5 --model-out models/exp_023b_seed5.zip
+41520 30519 土  8/15 10:23:38 2026        00:46 .venv/bin/python experiments/exp_012_continuous_potential/train.py --condition E --env-version v2 --action-highpass-penalty 0 --seed 6 --obs-history 1,2,4,8,16,32,64,128 --recurrent --lstm-hidden 32 --respawn-reset --log-dir logs/exp_023b_seed6 --model-out models/exp_023b_seed6.zip
+
+# --respawn-reset を持つプロセス数（群 2 では 6 でなければならない）: 6
+# 群 1 のプロセスが残っていないか（0 であるべき）: 0
