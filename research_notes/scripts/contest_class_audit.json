@@ -1,0 +1,590 @@
+[
+ {
+  "name": "16MM2012CX",
+  "klass": "CX",
+  "spec": "classic",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": true,
+  "d_true": 69,
+  "detour": 4.928571428571429
+ },
+ {
+  "name": "16MM2013CX",
+  "klass": "CX",
+  "spec": "classic",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": true,
+  "d_true": 105,
+  "detour": 7.5
+ },
+ {
+  "name": "16MM2014CX",
+  "klass": "CX",
+  "spec": "classic",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": true,
+  "d_true": 104,
+  "detour": 7.428571428571429
+ },
+ {
+  "name": "16MM2015CX",
+  "klass": "CX",
+  "spec": "classic",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": true,
+  "d_true": 85,
+  "detour": 6.071428571428571
+ },
+ {
+  "name": "16MM2015C_Chubu",
+  "klass": "C",
+  "spec": "classic",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": true,
+  "d_true": 54,
+  "detour": 3.857142857142857
+ },
+ {
+  "name": "16MM2016CX",
+  "klass": "CX",
+  "spec": "classic",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": true,
+  "d_true": 74,
+  "detour": 5.285714285714286
+ },
+ {
+  "name": "16MM2016C_Chubu",
+  "klass": "C",
+  "spec": "classic",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": true,
+  "d_true": 85,
+  "detour": 6.071428571428571
+ },
+ {
+  "name": "16MM2016C_Kyushu",
+  "klass": "C",
+  "spec": "classic",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": true,
+  "d_true": 63,
+  "detour": 4.5
+ },
+ {
+  "name": "16MM2016H_Kansai",
+  "klass": "H",
+  "spec": "half",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": false,
+  "d_true": 40,
+  "detour": 1.8181818181818181
+ },
+ {
+  "name": "16MM2017CX",
+  "klass": "CX",
+  "spec": "classic",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": true,
+  "d_true": 99,
+  "detour": 7.071428571428571
+ },
+ {
+  "name": "16MM2017CX_pre",
+  "klass": "CX",
+  "spec": "classic",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": true,
+  "d_true": 47,
+  "detour": 3.357142857142857
+ },
+ {
+  "name": "16MM2017C_Chubu",
+  "klass": "C",
+  "spec": "classic",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": true,
+  "d_true": 115,
+  "detour": 8.214285714285714
+ },
+ {
+  "name": "16MM2017C_East",
+  "klass": "C",
+  "spec": "classic",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": true,
+  "d_true": 70,
+  "detour": 5.0
+ },
+ {
+  "name": "16MM2017C_student",
+  "klass": "C",
+  "spec": "classic",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": true,
+  "d_true": 103,
+  "detour": 7.357142857142857
+ },
+ {
+  "name": "16MM2017HX_pre",
+  "klass": "HX",
+  "spec": "half",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": false,
+  "d_true": 54,
+  "detour": 6.75
+ },
+ {
+  "name": "16MM2017H_Chubu",
+  "klass": "H",
+  "spec": "half",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": false,
+  "d_true": 191,
+  "detour": 17.363636363636363
+ },
+ {
+  "name": "16MM2017H_Kansai",
+  "klass": "H",
+  "spec": "half",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": false,
+  "d_true": 43,
+  "detour": 3.909090909090909
+ },
+ {
+  "name": "16MM2017H_Tashiro",
+  "klass": "H",
+  "spec": "half",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": true,
+  "d_true": 231,
+  "detour": 16.5
+ },
+ {
+  "name": "16MM2017H_student",
+  "klass": "H",
+  "spec": "half",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": false,
+  "d_true": 59,
+  "detour": 5.363636363636363
+ },
+ {
+  "name": "16MM2018CX",
+  "klass": "CX",
+  "spec": "classic",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": true,
+  "d_true": 84,
+  "detour": 6.0
+ },
+ {
+  "name": "16MM2018C_student",
+  "klass": "C",
+  "spec": "classic",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": true,
+  "d_true": 48,
+  "detour": 3.4285714285714284
+ },
+ {
+  "name": "16MM2018H_Chubu",
+  "klass": "H",
+  "spec": "half",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": false,
+  "d_true": 52,
+  "detour": 2.888888888888889
+ },
+ {
+  "name": "16MM2018H_Kansai",
+  "klass": "H",
+  "spec": "half",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": false,
+  "d_true": 48,
+  "detour": 2.6666666666666665
+ },
+ {
+  "name": "16MM2018H_Tashiro",
+  "klass": "H",
+  "spec": "half",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": true,
+  "d_true": 249,
+  "detour": 17.785714285714285
+ },
+ {
+  "name": "16MM2018H_semi",
+  "klass": "H",
+  "spec": "half",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": false,
+  "d_true": 74,
+  "detour": 3.0833333333333335
+ },
+ {
+  "name": "16MM2018H_student",
+  "klass": "H",
+  "spec": "half",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": false,
+  "d_true": 50,
+  "detour": 2.7777777777777777
+ },
+ {
+  "name": "16MM2019CX",
+  "klass": "CX",
+  "spec": "classic",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": true,
+  "d_true": 75,
+  "detour": 5.357142857142857
+ },
+ {
+  "name": "16MM2019C_student",
+  "klass": "C",
+  "spec": "classic",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": true,
+  "d_true": 60,
+  "detour": 4.285714285714286
+ },
+ {
+  "name": "16MM2019H_Chubu",
+  "klass": "H",
+  "spec": "half",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": false,
+  "d_true": 57,
+  "detour": 3.8
+ },
+ {
+  "name": "16MM2019H_East",
+  "klass": "H",
+  "spec": "half",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": false,
+  "d_true": 51,
+  "detour": 3.4
+ },
+ {
+  "name": "16MM2019H_Hokuriku",
+  "klass": "H",
+  "spec": "half",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": false,
+  "d_true": 63,
+  "detour": 4.2
+ },
+ {
+  "name": "16MM2019H_Kanazawa",
+  "klass": "H",
+  "spec": "half",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": false,
+  "d_true": 59,
+  "detour": 3.933333333333333
+ },
+ {
+  "name": "16MM2019H_Kansai",
+  "klass": "H",
+  "spec": "half",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": false,
+  "d_true": 50,
+  "detour": 3.3333333333333335
+ },
+ {
+  "name": "16MM2019H_Kyushu",
+  "klass": "H",
+  "spec": "half",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": false,
+  "d_true": 41,
+  "detour": 2.7333333333333334
+ },
+ {
+  "name": "16MM2019H_Tashiro",
+  "klass": "H",
+  "spec": "half",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": false,
+  "d_true": 75,
+  "detour": 5.0
+ },
+ {
+  "name": "16MM2019H_semi",
+  "klass": "H",
+  "spec": "half",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": false,
+  "d_true": 78,
+  "detour": 5.2
+ },
+ {
+  "name": "16MM2019H_student",
+  "klass": "H",
+  "spec": "half",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": false,
+  "d_true": 43,
+  "detour": 2.8666666666666667
+ },
+ {
+  "name": "16MM2020CX",
+  "klass": "CX",
+  "spec": "classic",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": true,
+  "d_true": 41,
+  "detour": 2.9285714285714284
+ },
+ {
+  "name": "16MM2020C_student",
+  "klass": "C",
+  "spec": "classic",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": true,
+  "d_true": 70,
+  "detour": 5.0
+ },
+ {
+  "name": "16MM2020H_student",
+  "klass": "H",
+  "spec": "half",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": false,
+  "d_true": 56,
+  "detour": 9.333333333333334
+ },
+ {
+  "name": "16MM2021H_Kansai",
+  "klass": "H",
+  "spec": "half",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": true,
+  "d_true": 58,
+  "detour": 4.142857142857143
+ },
+ {
+  "name": "16MM2021H_semi",
+  "klass": "H",
+  "spec": "half",
+  "M": 16,
+  "start": [
+   0,
+   0
+  ],
+  "n_goal": 4,
+  "center2x2": false,
+  "d_true": 70,
+  "detour": 4.666666666666667
+ }
+]
