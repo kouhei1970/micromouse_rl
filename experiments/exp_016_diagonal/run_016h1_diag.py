@@ -96,7 +96,9 @@ def drive_and_record(xml_path, params, nodes, dirs, v_diag, v_walls, h_walls,
                 collided = True
                 break
             continue
-        out = sim.step_control(vl, vr)
+        # 🔴 **指令と同時刻の状態を取る**（`run_016f0_diag` と同じ作法）。
+        # step_control の**後**で読むと、記録の omega_act が 1 ティック先の値になり、
+        # 遅れの推定が 1 ティックぶん詰まる（2026-08-15 に自分のハーネスで踏んだ誤り）。
         x, y, yaw = sim.privileged_pose()
         _v, w_act = sim.privileged_velocity()
         cur = int(getattr(pol, "_cursor", 0))
@@ -107,6 +109,7 @@ def drive_and_record(xml_path, params, nodes, dirs, v_diag, v_walls, h_walls,
         rec.append((sim.sim_time, pol._omega_cmd, w_act, e_y,
                     KIND[str(kinds[k])], float(path.s[cur]),
                     float(path.curvature[cur])))
+        out = sim.step_control(vl, vr)
         if out.get("collision"):
             collided = True
             break
