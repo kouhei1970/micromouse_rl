@@ -62,10 +62,13 @@ def make_probed(policy_cls):
         def __init__(self, *a, **kw):
             super().__init__(*a, **kw)
             self._omega_cmd = float("nan")
+            self._volt = (float("nan"), float("nan"))
 
         def _wheel_targets_to_voltage(self, v_cmd, omega_cmd, obs):
             self._omega_cmd = float(omega_cmd)
-            return super()._wheel_targets_to_voltage(v_cmd, omega_cmd, obs)
+            vl, vr = super()._wheel_targets_to_voltage(v_cmd, omega_cmd, obs)
+            self._volt = (float(vl), float(vr))   # **記録のみ。返り値は素通し**
+            return vl, vr
 
     return Probed
 
@@ -108,7 +111,8 @@ def drive_and_record(xml_path, params, nodes, dirs, v_diag, v_walls, h_walls,
                + (y - float(path.y[cur])) * math.cos(head))
         rec.append((sim.sim_time, pol._omega_cmd, w_act, e_y,
                     KIND[str(kinds[k])], float(path.s[cur]),
-                    float(path.curvature[cur]), v_act, x, y, yaw))
+                    float(path.curvature[cur]), v_act, x, y, yaw,
+                    pol._volt[0], pol._volt[1]))
         out = sim.step_control(vl, vr)
         if out.get("collision"):
             collided = True
@@ -116,8 +120,8 @@ def drive_and_record(xml_path, params, nodes, dirs, v_diag, v_walls, h_walls,
         if pol.finished:
             break
     cols = ("t", "omega_des", "omega_act", "e_y", "kind", "s", "kappa", "v_act",
-            "x", "y", "yaw")
-    return dict(zip(cols, np.asarray(rec, dtype=float).T)), collided
+            "x", "y", "yaw", "volt_l", "volt_r")
+    return dict(zip(cols, np.asarray(rec, dtype=float).T)), collided, pol
 
 
 def d1_lag(r, dt):
@@ -170,6 +174,30 @@ def d1_tau(r, dt, path_kappa=None):
             continue
         g = float(np.dot(e, d) / denom)
         out[name] = dict(tau_s=(dt / g if g > 1e-9 else float("inf")), gain=g, n=int(len(idx)))
+    return out
+
+
+def entry_exit(r, v_limit, approach_m=0.10):
+    """円弧ごとに（入口の |e_y|, 出口の |e_y|, 進入区間の飽和率）を返す（016-H1d 第 2 段）。
+
+    進入区間 = 円弧の最初の標本から**弧長で 0.10 m 遡った**範囲。
+    飽和率 = その区間で max(|V_L|,|V_R|) >= 0.99·V_max だったティックの割合。
+    """
+    kind, s = r["kind"], r["s"]
+    volt = np.maximum(np.abs(r["volt_l"]), np.abs(r["volt_r"]))
+    out, i, n = [], 0, len(kind)
+    while i < n:
+        if kind[i] != KIND["arc"]:
+            i += 1
+            continue
+        j = i
+        while j < n and kind[j] == KIND["arc"]:
+            j += 1
+        if j - i >= 10 and j < n:
+            m_ap = (s >= s[i] - approach_m) & (s < s[i])
+            sat = float(np.mean(volt[m_ap] >= 0.99 * v_limit)) if m_ap.any() else float("nan")
+            out.append((abs(float(r["e_y"][i])), abs(float(r["e_y"][j])), sat))
+        i = j
     return out
 
 
@@ -230,8 +258,9 @@ def main():
         xml = f.with_suffix(".xml")
         if not xml.exists():
             build_maze_robot_xml(v, h, str(xml), model_name=f"m_{f.stem}", params=params)
-        r, collided = drive_and_record(xml, params, p["nodes"][i:j + 1], p["dirs"][i:j],
-                                       args.v_diag, v, h, policy_cls, builder)
+        r, collided, pol_probe = drive_and_record(xml, params, p["nodes"][i:j + 1],
+                                                  p["dirs"][i:j], args.v_diag, v, h,
+                                                  policy_cls, builder)
         if not r or len(r["t"]) == 0:
             print(f"{f.stem}: 記録なし")
             continue
@@ -257,12 +286,14 @@ def main():
         mb = m_arc & moving
         beta_p95 = float(np.degrees(np.percentile(beta[mb], 95))) if mb.any() else float("nan")
         pr = d2_pairs(r, dt)
+        ee = entry_exit(r, float(getattr(pol_probe, "voltage_limit", 3.0)))
         pairs += pr
         rows.append(dict(maze=f.stem, collided=bool(collided), n_ticks=int(len(r["t"])),
                          d1=lag, d1_tau=tau, n_arcs=len(pr),
                          arc_v_med=arc_v, arc_alat_med=arc_alat,
                          arc_alat_p95=arc_alat_p95, arc_alat_max=arc_alat_max,
                          arc_v_max=arc_v_max, r_act_p5=r_act_p5, beta_p95_deg=beta_p95,
+                         entry_exit=[[float(a), float(b), float(c)] for a, b, c in ee],
                          ey_exit_med=float(np.median([q[1] for q in pr])) if pr else float("nan")))
         print(f"{f.stem}: 円弧 {len(pr)} 本／"
               + (f"遅れ {lag['lag_ticks']} ティック = {lag['lag_s']*1000:.0f} ms "
