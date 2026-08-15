@@ -108,14 +108,15 @@ def drive_and_record(xml_path, params, nodes, dirs, v_diag, v_walls, h_walls,
                + (y - float(path.y[cur])) * math.cos(head))
         rec.append((sim.sim_time, pol._omega_cmd, w_act, e_y,
                     KIND[str(kinds[k])], float(path.s[cur]),
-                    float(path.curvature[cur]), v_act))
+                    float(path.curvature[cur]), v_act, x, y, yaw))
         out = sim.step_control(vl, vr)
         if out.get("collision"):
             collided = True
             break
         if pol.finished:
             break
-    cols = ("t", "omega_des", "omega_act", "e_y", "kind", "s", "kappa", "v_act")
+    cols = ("t", "omega_des", "omega_act", "e_y", "kind", "s", "kappa", "v_act",
+            "x", "y", "yaw")
     return dict(zip(cols, np.asarray(rec, dtype=float).T)), collided
 
 
@@ -243,13 +244,26 @@ def main():
         arc_alat_p95 = float(np.percentile(_al, 95))
         arc_alat_max = float(np.max(_al))
         arc_v_max = float(np.max(r["v_act"][m_arc])) if m_arc.any() else float("nan")
+        # --- 016-H1d 副1: 実効半径 R_act = v/|ω|。**その迷路の p5**（最も曲がれている点） ---
+        w = np.abs(r["omega_act"][m_arc]) if m_arc.any() else np.array([np.nan])
+        vv = r["v_act"][m_arc] if m_arc.any() else np.array([np.nan])
+        ok = w > 1e-3
+        r_act_p5 = float(np.percentile(vv[ok] / w[ok], 5)) if ok.any() else float("nan")
+        # --- 016-H1d 副2: スリップ角。速度の向き（位置の差分）と姿勢の差 ---
+        dx = np.gradient(r["x"]); dy = np.gradient(r["y"])
+        beta = np.arctan2(dy, dx) - r["yaw"]
+        beta = np.abs((beta + np.pi) % (2 * np.pi) - np.pi)
+        moving = r["v_act"] > 0.05
+        mb = m_arc & moving
+        beta_p95 = float(np.degrees(np.percentile(beta[mb], 95))) if mb.any() else float("nan")
         pr = d2_pairs(r, dt)
         pairs += pr
         rows.append(dict(maze=f.stem, collided=bool(collided), n_ticks=int(len(r["t"])),
                          d1=lag, d1_tau=tau, n_arcs=len(pr),
                          arc_v_med=arc_v, arc_alat_med=arc_alat,
                          arc_alat_p95=arc_alat_p95, arc_alat_max=arc_alat_max,
-                         arc_v_max=arc_v_max))
+                         arc_v_max=arc_v_max, r_act_p5=r_act_p5, beta_p95_deg=beta_p95,
+                         ey_exit_med=float(np.median([q[1] for q in pr])) if pr else float("nan")))
         print(f"{f.stem}: 円弧 {len(pr)} 本／"
               + (f"遅れ {lag['lag_ticks']} ティック = {lag['lag_s']*1000:.0f} ms "
                  f"(相関 {lag['peak_corr']:.3f})" if lag else "D1 は標本不足"), flush=True)
