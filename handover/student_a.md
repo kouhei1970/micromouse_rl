@@ -37,8 +37,7 @@
   **余裕 15.154 mm**（実測の $e_y$ は 10〜13 mm）。柱は **127.28 mm ごと**に **17.0 mm** 捉えられ
   （**間欠 13.4 %**）、**横偏差への感度 −1.031 mm/mm。⇒ 推定器の新設が要る。**
   **未確認**: 壁の影・方位偏差 ≠ 0・センサ雑音
-- 最終形 = `competition.baseline_slalom_diag_cal_fixd:SlalomDiagCalFixDPolicy`。
-  **速度計画の防御 3 点は (D) で修理済み**
+- 最終形 = `baseline_slalom_diag_cal_fixd:SlalomDiagCalFixDPolicy`（防御 3 点は (D) で修理済み）
 
 ## 他セッション
 
