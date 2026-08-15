@@ -1,0 +1,54 @@
+{
+ "purpose": "大会の走行記録（優勝タイム・上位）を、対応する迷路の理想タイムと突き合わせるための収集物。note_025 第 0 章。",
+ "collected": "2026-08-15 学生A セッション",
+ "confidence_scale": {
+  "official": "主催者（公益財団法人ニューテクノロジー振興財団）が公開する大会記録ページ",
+  "press": "報道・二次的なまとめ",
+  "hearsay": "伝聞・出典不明"
+ },
+ "caveat": [
+  "実機と本プロジェクトのロボットモデルは車体性能がまったく違う（実機の上位はサクションファンで路面へ吸い付き、実効的な摩擦係数が本モデルの mu=1.0 をはるかに超える）。",
+  "したがって『実機タイム ÷ 本モデルの理想タイム』は【参考値】であり、実機の物理限界に対する比ではない。実機の物理限界は不明である。",
+  "その年のクラシック競技で実際に使われた迷路が、対応する npz と同一であることは未確認（迷路データの出所と大会記録の出所が別のため）。"
+ ],
+ "records": [
+  {
+   "year": 2019,
+   "event": "第40回全日本マイクロマウス大会 クラシックマウス競技",
+   "maze": "16MM2019CX",
+   "rank": 1,
+   "machine": "華金",
+   "operator": "浅川 英慶",
+   "time_s": 4.143,
+   "confidence": "official",
+   "source": "https://www.ntf.or.jp/mouse/micromouse2019/recode2019.html",
+   "runners_up": [
+    {"rank": 2, "machine": "赤い彗星", "operator": "宇都宮 正和", "time_s": 4.274},
+    {"rank": 3, "machine": "ExiaAlter", "operator": "平松 直人", "time_s": 4.342},
+    {"rank": 4, "machine": "Gerbera", "operator": "瀬谷 勇太", "time_s": 4.445},
+    {"rank": 5, "machine": "Diu-Gow 4", "operator": "Cai, Xin-Han", "time_s": 4.469}
+   ],
+   "note": "エントリー 77 台・出走 71 台・完走 56 台。決勝という段階分けは無く単一の競技結果、と主催者ページに記載。"
+  },
+  {
+   "year": 2018,
+   "event": "第39回全日本マイクロマウス大会 クラシックマウス競技",
+   "maze": "16MM2018CX",
+   "rank": 1,
+   "machine": "ExiaAlter",
+   "operator": "平松 直人",
+   "team": "Mice Busters",
+   "time_s": 4.939,
+   "confidence": "official",
+   "source": "https://www.ntf.or.jp/mouse/micromouse2018/recode2018.html",
+   "runners_up": [
+    {"rank": 2, "machine": "赤い彗星", "operator": "宇都宮 正和", "team": "D-The-Star", "time_s": 5.105},
+    {"rank": 3, "machine": "Diu-Gow 5", "operator": "Xin-Han Cai", "time_s": 5.210}
+   ]
+  }
+ ],
+ "not_yet_collected": {
+  "years": [2012, 2013, 2014, 2015, 2016, 2017, 2020, 2021],
+  "reason": "主催者サイトの記録ページの URL 規則が年度で揃っておらず、recode<year>.html が 2017・2020 では 404 だった。年度ごとに入口ページから辿る必要がある。"
+ }
+}
