@@ -35,6 +35,9 @@ outputs/**
 # exp_022（にせ履歴）も同じ扱い（判定が乗っている値だけの軽量版を版管理下へ）
 !outputs/exp_022_driving_*.slim.json
 !outputs/exp_022_judgment.json
+# 016-H1（遷移域の横偏差低減）の実装前診断 D1・D2。予測 H4 の判定が乗っている値であり、
+# 軽量（数十 KB）なので版管理下へ。生成は experiments/exp_016_diagonal/run_016h1_diag.py
+!outputs/exp_016_diagonal/016h1/*.json
 
 # legacy/models/ の学習済みチェックポイントは凍結成果物として追跡する
 # Checkpoints under legacy/models/ are frozen artifacts and must remain tracked
