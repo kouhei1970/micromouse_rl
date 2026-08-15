@@ -113,3 +113,26 @@
 - **exp_012 以前の実験の重みの棚卸し**。**判定が現役でないもの**なので今回は入れていない。**過去の判定文書が値を引いている重みが失われていないか**を、R11 バッチで確認する
 - ~~exp_021 の重み 12 本は完走後に保全する~~ → **2026-08-15 実施済み**（上記 §1 の末尾）
 
+
+## exp_023（再帰型方策実験・第 2 弾 B）2026-08-15
+
+| 群 | ファイル | SHA-256 | 大きさ |
+|---|---|---|---|
+| 群1 最終 | `models/exp_023a_seed1.zip` | `c5ae9d5293ca8c79b01be56a775d1d64ae7aeb2dd256e395cf594ec0f70a3f89` | 1,122,498 |
+| 群1 最終 | `models/exp_023a_seed2.zip` | `1583fa055f567fcda140439be9836bc8d29938815d8460974d202ea2d6b88afb` | 1,122,498 |
+| 群1 最終 | `models/exp_023a_seed3.zip` | `ebefc44bffe8d99219a4efc2190f93ce0cebbcf1847d9102f1132a5365a78b93` | 1,122,498 |
+| 群1 最終 | `models/exp_023a_seed4.zip` | `0e43b1fce0df270fb874d041456d2e1d1366c58f1e3c7d82f7cec73ef96dea36` | 1,122,494 |
+| 群1 最終 | `models/exp_023a_seed5.zip` | `fcdd280a22c549ab28d804a3a784f28e09e394dbc5fe1fd728351030a27bc43b` | 1,122,498 |
+| 群1 最終 | `models/exp_023a_seed6.zip` | `1c837db9e608c34da0e8fb2b66462f174885da62832bbb99c51961e3f66c1334` | 1,122,498 |
+| 群2 最終 | `models/exp_023b_seed1.zip` | `f38c40f7c2bff6acf0efad231886cc09b2c2cb1b84af73de9781aac2df7c7077` | 1,122,521 |
+| 群2 最終 | `models/exp_023b_seed2.zip` | `0621143a4b2827546bee726bb020398a63caccc6de4cf0a677c98a7efde4d623` | 1,122,521 |
+| 群2 最終 | `models/exp_023b_seed3.zip` | `ac566ffdfadb54499a185582f1240c78cf7f7301662bf2eb188bbb3a7bd0dc73` | 1,122,521 |
+| 群2 最終 | `models/exp_023b_seed4.zip` | `46e77373ee26c7dd88029fe48d12c37ad4ed95596a591c4a3d0bbced376c8a4b` | 1,122,521 |
+| 群2 最終 | `models/exp_023b_seed5.zip` | `fb6f309ef8a2e535f3f0dc185008afbb87a2763d388d774991c0bdb8b5e82318` | 1,122,521 |
+| 群2 最終 | `models/exp_023b_seed6.zip` | `2f2d98d1fd9980d566d9904387c99fba3afc060a5f3bf7cac1f0aba856058283` | 1,122,521 |
+| 群1 80万歩 | `logs/exp_023a_seed1/rl_model_800000_steps.zip` | `37f5ea5c64b6f428ac3c5c534a321f0a3ad0634a36bb36fde867c985fdb64333` | 1,122,492 |
+| 群1 80万歩 | `logs/exp_023a_seed2/rl_model_800000_steps.zip` | `42d9851ac377d64e0c96f345e5ce5533f30e6210cd3b1478fb9a03f9e23efb77` | 1,122,492 |
+| 群1 80万歩 | `logs/exp_023a_seed3/rl_model_800000_steps.zip` | `c7d0d3a489ec2fa3e7257aefb5863a1c7edc3bb8dc2933947e14c789aad15b50` | 1,122,492 |
+| 群1 80万歩 | `logs/exp_023a_seed4/rl_model_800000_steps.zip` | `cc69a271160e10c74b6609d1a97269bd6ff0624cb4ddb203f315405521e05585` | 1,122,492 |
+| 群1 80万歩 | `logs/exp_023a_seed5/rl_model_800000_steps.zip` | `5fbecdf63f0adf64915d7c9b7beddaf95b85a45435c264f1c36bf8f0f6886edd` | 1,122,492 |
+| 群1 80万歩 | `logs/exp_023a_seed6/rl_model_800000_steps.zip` | `50f0b179156c5095ff26b44eec5b2e05e4c7c63220b1a98f78d2c0677374c44e` | 1,122,492 |
