@@ -665,6 +665,18 @@ def main(argv=None):
     with open(log_dir / ("smoke_run_summary.json" if args.smoke else "run_summary.json"),
               "w", encoding="utf-8") as f:
         json.dump(dict(
+            # 🔴 R11: 投入の設定を **argv ごと** 記録する（2026-08-15・教授裁定）。
+            # **項目を 1 つずつ足す形にしない** — 新しいフラグを増やしても自動で残る。
+            # 【欠落の経緯】exp_021（観測履歴）・exp_022（にせ履歴）・exp_023（再帰型方策）で
+            # 追加した `--obs-history` `--obs-history-sham` `--recurrent` `--lstm-hidden`
+            # `--respawn-reset` は **1 つも run_summary に記録されていなかった**。
+            # そのため「この走行がどの群か」の機械可読な記録が存在せず、
+            # 判定側は `train.log` の日本語 1 行を読むしかなかった（脆い経路）。
+            # `argv` は渡された引数、`args_resolved` は既定値も込みの確定値。
+            # **既定値が版で変わっても後から復元できる**よう、両方を残す。
+            argv=list(sys.argv),
+            args_resolved={k: (list(v) if isinstance(v, tuple) else v)
+                           for k, v in sorted(vars(args).items())},
             experiment=f"exp_012_cond{args.condition}", smoke=bool(args.smoke), total_steps=total_steps,
             d0_schedule=d0_schedule, fine_updates=args.fine_updates,
             n_envs=n_envs, seed=args.seed, gamma=args.gamma, maze_mode=args.maze_mode,
