@@ -1,0 +1,1945 @@
+{
+ "git_rev": "0b48cd39ae5feb3508dbcb5debbdfd0a20c5b19c",
+ "maze_dir": "competition/mazes/design_v4",
+ "group": "healthy",
+ "safety": 0.75,
+ "v_diag": 0.55,
+ "control_dt": 0.01,
+ "L_c": 0.0471239,
+ "d0_frozen": null,
+ "min_entry_straight_m": 0.1,
+ "entry_straight_n_total": 115,
+ "entry_straight_n_excluded": 62,
+ "entry_straight_excluded_rate": 0.5391304347826087,
+ "entry_straight_n_ratio_undefined": 1,
+ "entry_straight_n_usable": 52,
+ "entry_straight_n_increasing": 0,
+ "entry_straight_increasing_rate": 0.0,
+ "rows": [
+  {
+   "maze": "maze_41003",
+   "collided": false,
+   "n_ticks": 184,
+   "n_arcs": 4,
+   "entry_exit": [
+    [
+     2.126638885734938e-07,
+     0.007374190115690092,
+     0.0
+    ],
+    [
+     0.005817223735485905,
+     0.016543501798504133,
+     0.0
+    ],
+    [
+     0.0011232501069911522,
+     0.016001133356395233,
+     0.0
+    ],
+    [
+     0.011943710191792713,
+     0.009514258814253274,
+     0.0
+    ]
+   ],
+   "entry_straights": [
+    {
+     "lambda_seg_m": 0.04000000008023519,
+     "ey_start_m": 0.0,
+     "ey_end_m": 2.660445647060901e-19,
+     "v_act_med": 0.3170425604073074,
+     "n_ticks": 15,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.016709415527882188,
+     "ey_start_m": 0.007374190115690092,
+     "ey_end_m": 0.006191755516003909,
+     "v_act_med": 0.5494489245539019,
+     "n_ticks": 4,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.38394155779173184,
+     "ey_start_m": 0.016543501798504133,
+     "ey_end_m": 0.0011079488057356777,
+     "v_act_med": 0.5492138226933014,
+     "n_ticks": 72,
+     "l_seg_m": 0.14201737448906435,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.022279220703842806,
+     "ey_start_m": 0.016001133356395233,
+     "ey_end_m": 0.011943710191792713,
+     "v_act_med": 0.5118752297465701,
+     "n_ticks": 6,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    }
+   ]
+  },
+  {
+   "maze": "maze_41006",
+   "collided": false,
+   "n_ticks": 375,
+   "n_arcs": 9,
+   "entry_exit": [
+    [
+     2.1266388826903966e-07,
+     0.007374190115687265,
+     0.0
+    ],
+    [
+     0.005817223735482431,
+     0.016543501798503998,
+     0.0
+    ],
+    [
+     0.0018743684593996242,
+     0.014007274146274168,
+     0.0
+    ],
+    [
+     0.0028109186113086217,
+     0.005093428115922616,
+     0.0
+    ],
+    [
+     0.0008891351035468232,
+     0.007331228271685223,
+     0.0
+    ],
+    [
+     0.006110404825309732,
+     0.011869378006483914,
+     0.0
+    ],
+    [
+     0.0007936680548891878,
+     0.014318372336933569,
+     0.0
+    ],
+    [
+     7.946838612525836e-05,
+     0.020029992045278822,
+     0.0
+    ],
+    [
+     0.0031332950686088577,
+     0.00630641159859513,
+     0.0
+    ]
+   ],
+   "entry_straights": [
+    {
+     "lambda_seg_m": 0.040000000080234965,
+     "ey_start_m": 2.220446049250313e-16,
+     "ey_end_m": 2.2191158264267832e-16,
+     "v_act_med": 0.31704256040730716,
+     "n_ticks": 15,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.0167094155278823,
+     "ey_start_m": 0.007374190115687265,
+     "ey_end_m": 0.006191755516000081,
+     "v_act_med": 0.5494489245539038,
+     "n_ticks": 4,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.1293831165645742,
+     "ey_start_m": 0.016543501798503998,
+     "ey_end_m": 0.0020148518500923765,
+     "v_act_med": 0.5459590742519487,
+     "n_ticks": 26,
+     "l_seg_m": 0.06145159323795268,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.2729082411703659,
+     "ey_start_m": 0.014007274146274168,
+     "ey_end_m": 0.0028109186113086217,
+     "v_act_med": 0.5482142207542435,
+     "n_ticks": 51,
+     "l_seg_m": 0.1699234879198074,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.08214115865926175,
+     "ey_start_m": 0.005093428115922616,
+     "ey_end_m": 0.0008891351035468232,
+     "v_act_med": 0.6969785798891854,
+     "n_ticks": 13,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.013762349957407105,
+     "ey_start_m": 0.007331228271685223,
+     "ey_end_m": 0.006511998574577849,
+     "v_act_med": 0.5505736334951635,
+     "n_ticks": 3,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.12938311656457424,
+     "ey_start_m": 0.011869378006483914,
+     "ey_end_m": 0.0006787959826581242,
+     "v_act_med": 0.5464543140098526,
+     "n_ticks": 26,
+     "l_seg_m": 0.04521677365872722,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.12938311656457424,
+     "ey_start_m": 0.014318372336933569,
+     "ey_end_m": 4.4764062535535324e-05,
+     "v_act_med": 0.547068728241608,
+     "n_ticks": 25,
+     "l_seg_m": 0.02243160781289239,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.1495584413174207,
+     "ey_start_m": 0.020029992045278822,
+     "ey_end_m": 0.0031332950686088577,
+     "v_act_med": 0.5463389498179732,
+     "n_ticks": 29,
+     "l_seg_m": 0.08061817045927375,
+     "excluded_short": false,
+     "ratio_undefined": false
+    }
+   ]
+  },
+  {
+   "maze": "maze_41011",
+   "collided": false,
+   "n_ticks": 184,
+   "n_arcs": 4,
+   "entry_exit": [
+    [
+     2.1266388960149871e-07,
+     0.0073741901156852245,
+     0.0
+    ],
+    [
+     0.005817223735481018,
+     0.01654350179850792,
+     0.0
+    ],
+    [
+     0.001123250106988836,
+     0.01600113335639445,
+     0.0
+    ],
+    [
+     0.011943710191790437,
+     0.009514258814252496,
+     0.0
+    ]
+   ],
+   "entry_straights": [
+    {
+     "lambda_seg_m": 0.040000000080234965,
+     "ey_start_m": 0.0,
+     "ey_end_m": 1.3302228235300424e-19,
+     "v_act_med": 0.3170425604073072,
+     "n_ticks": 15,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.016709415527882437,
+     "ey_start_m": 0.0073741901156852245,
+     "ey_end_m": 0.006191755515998669,
+     "v_act_med": 0.5494489245539027,
+     "n_ticks": 4,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.3839415577917307,
+     "ey_start_m": 0.01654350179850792,
+     "ey_end_m": 0.0011079488057332046,
+     "v_act_med": 0.5492138226933017,
+     "n_ticks": 72,
+     "l_seg_m": 0.14201737448893464,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.02227922070384336,
+     "ey_start_m": 0.01600113335639445,
+     "ey_end_m": 0.011943710191790437,
+     "v_act_med": 0.5118752297465766,
+     "n_ticks": 6,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    }
+   ]
+  },
+  {
+   "maze": "maze_41018",
+   "collided": false,
+   "n_ticks": 235,
+   "n_arcs": 5,
+   "entry_exit": [
+    [
+     1.2336261403142816e-19,
+     0.00784562065541538,
+     0.0
+    ],
+    [
+     0.0014815033562796576,
+     0.007463140545618141,
+     0.0
+    ],
+    [
+     0.00222569949969742,
+     0.0068418110685717105,
+     0.0
+    ],
+    [
+     0.0013393323140374446,
+     0.013562976128322177,
+     0.0
+    ],
+    [
+     0.009308589059471333,
+     0.004740703370659127,
+     0.0
+    ]
+   ],
+   "entry_straights": [
+    {
+     "lambda_seg_m": 0.22107057932963117,
+     "ey_start_m": 0.0,
+     "ey_end_m": 1.2336261403142816e-19,
+     "v_act_med": 0.6605225890041396,
+     "n_ticks": 37,
+     "l_seg_m": NaN,
+     "excluded_short": false,
+     "ratio_undefined": true
+    },
+    {
+     "lambda_seg_m": 0.2839788204999979,
+     "ey_start_m": 0.00784562065541538,
+     "ey_end_m": 0.0014815033562796576,
+     "v_act_med": 0.5496573355526371,
+     "n_ticks": 52,
+     "l_seg_m": 0.17036363107363742,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.08214115865926186,
+     "ey_start_m": 0.007463140545618141,
+     "ey_end_m": 0.00222569949969742,
+     "v_act_med": 0.6925301744346458,
+     "n_ticks": 13,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.14045369589420498,
+     "ey_start_m": 0.0068418110685717105,
+     "ey_end_m": 0.001410898548858749,
+     "v_act_med": 0.5492210770403307,
+     "n_ticks": 26,
+     "l_seg_m": 0.08896086228183092,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.022279220703842917,
+     "ey_start_m": 0.013562976128322177,
+     "ey_end_m": 0.009308589059471333,
+     "v_act_med": 0.5347012933484315,
+     "n_ticks": 5,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    }
+   ]
+  },
+  {
+   "maze": "maze_41020",
+   "collided": false,
+   "n_ticks": 253,
+   "n_arcs": 5,
+   "entry_exit": [
+    [
+     2.1266388857572149e-07,
+     0.007374190115689886,
+     0.0
+    ],
+    [
+     0.005817223735485728,
+     0.016543501798503973,
+     0.0
+    ],
+    [
+     0.0011232501069893463,
+     0.01600113335639131,
+     0.0
+    ],
+    [
+     0.0012366393966388607,
+     0.013593768283998352,
+     0.0
+    ],
+    [
+     0.009858181187563826,
+     0.0047149500579095616,
+     0.0
+    ]
+   ],
+   "entry_straights": [
+    {
+     "lambda_seg_m": 0.04000000008023519,
+     "ey_start_m": 6.798155367234455e-33,
+     "ey_end_m": 1.3302228235301784e-19,
+     "v_act_med": 0.3170425604073074,
+     "n_ticks": 15,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.016709415527882188,
+     "ey_start_m": 0.007374190115689886,
+     "ey_end_m": 0.006191755516003713,
+     "v_act_med": 0.5494489245539019,
+     "n_ticks": 4,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.38394155779173156,
+     "ey_start_m": 0.016543501798503973,
+     "ey_end_m": 0.001107948805733911,
+     "v_act_med": 0.5492138226933018,
+     "n_ticks": 72,
+     "l_seg_m": 0.14201737448898097,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.2566623371781519,
+     "ey_start_m": 0.01600113335639131,
+     "ey_end_m": 0.0012401403390599572,
+     "v_act_med": 0.548190201194036,
+     "n_ticks": 49,
+     "l_seg_m": 0.10035928057344612,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.022279220703842695,
+     "ey_start_m": 0.013593768283998352,
+     "ey_end_m": 0.009858181187563826,
+     "v_act_med": 0.49375572838244675,
+     "n_ticks": 5,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    }
+   ]
+  },
+  {
+   "maze": "maze_41023",
+   "collided": false,
+   "n_ticks": 244,
+   "n_arcs": 3,
+   "entry_exit": [
+    [
+     2.126638880534342e-07,
+     0.007374190115687736,
+     0.0
+    ],
+    [
+     0.005817223735483688,
+     0.01654350179850636,
+     0.0
+    ],
+    [
+     0.001442096957262256,
+     0.005901304662290441,
+     0.0
+    ]
+   ],
+   "entry_straights": [
+    {
+     "lambda_seg_m": 0.04000000008023513,
+     "ey_start_m": 0.0,
+     "ey_end_m": 2.660445647058997e-19,
+     "v_act_med": 0.31704256040730705,
+     "n_ticks": 15,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.016709415527882326,
+     "ey_start_m": 0.007374190115687736,
+     "ey_end_m": 0.00619175551600173,
+     "v_act_med": 0.5494489245539043,
+     "n_ticks": 4,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.6547459030111031,
+     "ey_start_m": 0.01654350179850636,
+     "ey_end_m": 0.001442096957262256,
+     "v_act_med": 0.5496636513798896,
+     "n_ticks": 121,
+     "l_seg_m": 0.2683500206473703,
+     "excluded_short": false,
+     "ratio_undefined": false
+    }
+   ]
+  },
+  {
+   "maze": "maze_41036",
+   "collided": false,
+   "n_ticks": 278,
+   "n_arcs": 5,
+   "entry_exit": [
+    [
+     2.1266388857747146e-07,
+     0.007374190115688855,
+     0.0
+    ],
+    [
+     0.0014426803839529248,
+     0.013514628406331585,
+     0.0
+    ],
+    [
+     0.00021352677557537358,
+     0.00495209693644294,
+     0.0
+    ],
+    [
+     0.004575012341519025,
+     0.010240899542559264,
+     0.0
+    ],
+    [
+     0.007417286508369117,
+     0.009292357892039416,
+     0.0
+    ]
+   ],
+   "entry_straights": [
+    {
+     "lambda_seg_m": 0.040000000080235076,
+     "ey_start_m": 0.0,
+     "ey_end_m": 1.3302228235299745e-19,
+     "v_act_med": 0.31704256040730694,
+     "n_ticks": 15,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.27166233726841726,
+     "ey_start_m": 0.007374190115688855,
+     "ey_end_m": 0.0014388934129068592,
+     "v_act_med": 0.5495277579308291,
+     "n_ticks": 50,
+     "l_seg_m": 0.16624465320752013,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.3952905992874939,
+     "ey_start_m": 0.013514628406331585,
+     "ey_end_m": 0.0001860362350455879,
+     "v_act_med": 0.5491002284778885,
+     "n_ticks": 74,
+     "l_seg_m": 0.0922372234465295,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.2621411586592586,
+     "ey_start_m": 0.00495209693644294,
+     "ey_end_m": 0.004575012341519025,
+     "v_act_med": 0.8730846501673419,
+     "n_ticks": 31,
+     "l_seg_m": 3.3097914825701134,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.028585542885835036,
+     "ey_start_m": 0.010240899542559264,
+     "ey_end_m": 0.007761769056397062,
+     "v_act_med": 0.5490014625424041,
+     "n_ticks": 7,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    }
+   ]
+  },
+  {
+   "maze": "maze_41037",
+   "collided": false,
+   "n_ticks": 298,
+   "n_arcs": 4,
+   "entry_exit": [
+    [
+     2.1266388871216494e-07,
+     0.007374190115690248,
+     0.0
+    ],
+    [
+     0.005817223735486003,
+     0.01654350179850423,
+     0.0
+    ],
+    [
+     0.0014416882271696381,
+     0.01610521009896272,
+     0.0
+    ],
+    [
+     0.0024000973497946046,
+     0.0055735961765561726,
+     0.0
+    ]
+   ],
+   "entry_straights": [
+    {
+     "lambda_seg_m": 0.04000000008023519,
+     "ey_start_m": 0.0,
+     "ey_end_m": 1.3302228235304504e-19,
+     "v_act_med": 0.3170425604073067,
+     "n_ticks": 15,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.016709415527882188,
+     "ey_start_m": 0.007374190115690248,
+     "ey_end_m": 0.006191755516004125,
+     "v_act_med": 0.5494489245539023,
+     "n_ticks": 4,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.6384999990188868,
+     "ey_start_m": 0.01654350179850423,
+     "ey_end_m": 0.0014411755097065995,
+     "v_act_med": 0.5496475447367091,
+     "n_ticks": 118,
+     "l_seg_m": 0.26162304087891347,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.40411688254457845,
+     "ey_start_m": 0.01610521009896272,
+     "ey_end_m": 0.0024000973497946046,
+     "v_act_med": 0.5490732804764071,
+     "n_ticks": 75,
+     "l_seg_m": 0.21228712161193383,
+     "excluded_short": false,
+     "ratio_undefined": false
+    }
+   ]
+  },
+  {
+   "maze": "maze_41038",
+   "collided": false,
+   "n_ticks": 395,
+   "n_arcs": 6,
+   "entry_exit": [
+    [
+     2.1266388871322543e-07,
+     0.007374190115687422,
+     0.0
+    ],
+    [
+     0.005134839052768207,
+     0.009415259920573682,
+     0.0
+    ],
+    [
+     7.689356624318581e-05,
+     0.007136477679758073,
+     0.0
+    ],
+    [
+     0.0012289835269844603,
+     0.0066047766614736325,
+     0.0
+    ],
+    [
+     0.00254784785837181,
+     0.005906191703792427,
+     0.0
+    ],
+    [
+     0.004031427475852702,
+     0.008240883458068504,
+     0.0
+    ]
+   ],
+   "entry_straights": [
+    {
+     "lambda_seg_m": 0.040000000080234965,
+     "ey_start_m": 0.0,
+     "ey_end_m": 0.0,
+     "v_act_med": 0.31704256040730705,
+     "n_ticks": 15,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.03334980003347443,
+     "ey_start_m": 0.007374190115687422,
+     "ey_end_m": 0.005134839052768207,
+     "v_act_med": 0.5491912347991638,
+     "n_ticks": 7,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.26214115865926213,
+     "ey_start_m": 0.009415259920573682,
+     "ey_end_m": 7.689356624318581e-05,
+     "v_act_med": 0.8673857279370494,
+     "n_ticks": 31,
+     "l_seg_m": 0.05452567253622075,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 1.047654144181466,
+     "ey_start_m": 0.007136477679758073,
+     "ey_end_m": 0.0012289835269844603,
+     "v_act_med": 0.5498815081995856,
+     "n_ticks": 191,
+     "l_seg_m": 0.5955856405262391,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.26214115865926235,
+     "ey_start_m": 0.0066047766614736325,
+     "ey_end_m": 0.00254784785837181,
+     "v_act_med": 0.864747126411226,
+     "n_ticks": 31,
+     "l_seg_m": 0.2752010738108366,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.0333498000334731,
+     "ey_start_m": 0.005906191703792427,
+     "ey_end_m": 0.004031427475852702,
+     "v_act_med": 0.5494419611495772,
+     "n_ticks": 7,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    }
+   ]
+  },
+  {
+   "maze": "maze_41049",
+   "collided": false,
+   "n_ticks": 191,
+   "n_arcs": 5,
+   "entry_exit": [
+    [
+     2.1266388849566501e-07,
+     0.007374190115688678,
+     0.0
+    ],
+    [
+     0.005817223735484394,
+     0.016543501798505486,
+     0.0
+    ],
+    [
+     0.0008338009792058269,
+     0.0076270397024638115,
+     0.0
+    ],
+    [
+     0.0019807639822821965,
+     0.004997002543725353,
+     0.0
+    ],
+    [
+     0.002635403099108936,
+     0.007318232641652073,
+     0.0
+    ]
+   ],
+   "entry_straights": [
+    {
+     "lambda_seg_m": 0.04000000008023519,
+     "ey_start_m": 0.0,
+     "ey_end_m": 1.3302228235294646e-19,
+     "v_act_med": 0.31704256040730694,
+     "n_ticks": 15,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.016709415527882188,
+     "ey_start_m": 0.007374190115688678,
+     "ey_end_m": 0.006191755516002358,
+     "v_act_med": 0.5494489245539032,
+     "n_ticks": 4,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.2729082411703668,
+     "ey_start_m": 0.016543501798505486,
+     "ey_end_m": 0.0008338009792058269,
+     "v_act_med": 0.5484763862698588,
+     "n_ticks": 52,
+     "l_seg_m": 0.0913422752264702,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.08214115865926186,
+     "ey_start_m": 0.0076270397024638115,
+     "ey_end_m": 0.0019807639822821965,
+     "v_act_med": 0.6944715608327239,
+     "n_ticks": 12,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.03334980003347432,
+     "ey_start_m": 0.004997002543725353,
+     "ey_end_m": 0.002635403099108936,
+     "v_act_med": 0.5484685662162614,
+     "n_ticks": 7,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    }
+   ]
+  },
+  {
+   "maze": "maze_41135",
+   "collided": false,
+   "n_ticks": 429,
+   "n_arcs": 9,
+   "entry_exit": [
+    [
+     2.1266388871624764e-07,
+     0.007374190115689228,
+     0.0
+    ],
+    [
+     0.005817223735484747,
+     0.016543501798506742,
+     0.0
+    ],
+    [
+     0.0018743684594024596,
+     0.014007274146273382,
+     0.0
+    ],
+    [
+     0.0022323755573157612,
+     0.015192087438212955,
+     0.0
+    ],
+    [
+     0.011690642007048689,
+     0.006722747850384181,
+     0.0
+    ],
+    [
+     0.00035601292124354245,
+     0.004491095154527223,
+     0.0
+    ],
+    [
+     0.0006154294734698024,
+     0.006429120230715846,
+     0.0
+    ],
+    [
+     0.0012941388687628815,
+     0.004782105328060989,
+     0.0
+    ],
+    [
+     0.0006133140541467626,
+     0.007656553720576553,
+     0.0
+    ]
+   ],
+   "entry_straights": [
+    {
+     "lambda_seg_m": 0.040000000080235076,
+     "ey_start_m": 0.0,
+     "ey_end_m": 1.3302228235299745e-19,
+     "v_act_med": 0.31704256040730694,
+     "n_ticks": 15,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.016709415527882354,
+     "ey_start_m": 0.007374190115689228,
+     "ey_end_m": 0.006191755516003026,
+     "v_act_med": 0.5494489245539026,
+     "n_ticks": 4,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.12938311656457402,
+     "ey_start_m": 0.016543501798506742,
+     "ey_end_m": 0.0020148518500955168,
+     "v_act_med": 0.5459590742519465,
+     "n_ticks": 26,
+     "l_seg_m": 0.061451593237993235,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.12938311656457385,
+     "ey_start_m": 0.014007274146273382,
+     "ey_end_m": 0.002093945769855117,
+     "v_act_med": 0.5466997315793689,
+     "n_ticks": 25,
+     "l_seg_m": 0.06807751027007151,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.018349799943209955,
+     "ey_start_m": 0.015192087438212955,
+     "ey_end_m": 0.011690642007048689,
+     "v_act_med": 0.5158397778278274,
+     "n_ticks": 5,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.08214115865926219,
+     "ey_start_m": 0.006722747850384181,
+     "ey_end_m": 0.00035601292124354245,
+     "v_act_med": 0.6737237976691012,
+     "n_ticks": 13,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.6658164823407344,
+     "ey_start_m": 0.004491095154527223,
+     "ey_end_m": 0.0006154294734698024,
+     "v_act_med": 0.5497084002749784,
+     "n_ticks": 122,
+     "l_seg_m": 0.33499669334150545,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.07700733624305856,
+     "ey_start_m": 0.006429120230715846,
+     "ey_end_m": 0.0015065768685950667,
+     "v_act_med": 0.6935286329411928,
+     "n_ticks": 12,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.16062902064705176,
+     "ey_start_m": 0.004782105328060989,
+     "ey_end_m": 0.0006133140541467626,
+     "v_act_med": 0.5492965612839688,
+     "n_ticks": 31,
+     "l_seg_m": 0.07821220360814225,
+     "excluded_short": false,
+     "ratio_undefined": false
+    }
+   ]
+  },
+  {
+   "maze": "maze_41155",
+   "collided": false,
+   "n_ticks": 262,
+   "n_arcs": 6,
+   "entry_exit": [
+    [
+     2.1266388827195514e-07,
+     0.007374190115689856,
+     0.0
+    ],
+    [
+     0.005134839052772211,
+     0.009415259920580343,
+     0.0
+    ],
+    [
+     7.689356623608041e-05,
+     0.007136477679759565,
+     0.0
+    ],
+    [
+     0.00163344953264275,
+     0.005305117159460859,
+     0.0
+    ],
+    [
+     0.00023723115718676815,
+     0.006307611523393507,
+     0.0
+    ],
+    [
+     0.004178078674738852,
+     0.008734611638663056,
+     0.0
+    ]
+   ],
+   "entry_straights": [
+    {
+     "lambda_seg_m": 0.040000000080235076,
+     "ey_start_m": 2.220446049250313e-16,
+     "ey_end_m": 2.2191158264267832e-16,
+     "v_act_med": 0.31704256040730694,
+     "n_ticks": 15,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.033349800033474014,
+     "ey_start_m": 0.007374190115689856,
+     "ey_end_m": 0.005134839052772211,
+     "v_act_med": 0.5491912347991649,
+     "n_ticks": 7,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.2621411586592624,
+     "ey_start_m": 0.009415259920580343,
+     "ey_end_m": 7.689356623608041e-05,
+     "v_act_med": 0.8673857279370395,
+     "n_ticks": 31,
+     "l_seg_m": 0.05452567253516478,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.41125804111357644,
+     "ey_start_m": 0.007136477679759565,
+     "ey_end_m": 0.00163344953264275,
+     "v_act_med": 0.5497898324830481,
+     "n_ticks": 76,
+     "l_seg_m": 0.2789087767946747,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.08214115865926175,
+     "ey_start_m": 0.005305117159460859,
+     "ey_end_m": 0.00023723115718676815,
+     "v_act_med": 0.6938394739510665,
+     "n_ticks": 13,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.03334980003347421,
+     "ey_start_m": 0.006307611523393507,
+     "ey_end_m": 0.004178078674738852,
+     "v_act_med": 0.5487350374234541,
+     "n_ticks": 7,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    }
+   ]
+  },
+  {
+   "maze": "maze_41234",
+   "collided": false,
+   "n_ticks": 334,
+   "n_arcs": 7,
+   "entry_exit": [
+    [
+     2.1266388857338876e-07,
+     0.007374190115688443,
+     0.0
+    ],
+    [
+     0.0018158390588474734,
+     0.016423547449411803,
+     0.0
+    ],
+    [
+     0.0034727640758814332,
+     0.0038403085160468448,
+     0.0
+    ],
+    [
+     0.0011368725999523625,
+     0.004429197426087951,
+     0.0
+    ],
+    [
+     0.00044187723433497734,
+     0.007674970899357092,
+     0.0
+    ],
+    [
+     0.0029605217506247783,
+     0.005288454843010807,
+     0.0
+    ],
+    [
+     0.0008393824360243274,
+     0.007268790209211895,
+     0.0
+    ]
+   ],
+   "entry_straights": [
+    {
+     "lambda_seg_m": 0.04000000008023519,
+     "ey_start_m": 0.0,
+     "ey_end_m": 1.3302228235304504e-19,
+     "v_act_med": 0.31704256040730683,
+     "n_ticks": 15,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.14438311665483866,
+     "ey_start_m": 0.007374190115688443,
+     "ey_end_m": 0.001875980128870516,
+     "v_act_med": 0.5492454598919548,
+     "n_ticks": 27,
+     "l_seg_m": 0.10547730425088854,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.14562902055678834,
+     "ey_start_m": 0.016423547449411803,
+     "ey_end_m": 0.0034727640758814332,
+     "v_act_med": 0.546530139047363,
+     "n_ticks": 29,
+     "l_seg_m": 0.09372652484990339,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.08214115865926219,
+     "ey_start_m": 0.0038403085160468448,
+     "ey_end_m": 0.0011368725999523625,
+     "v_act_med": 0.6830620507820168,
+     "n_ticks": 13,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.28397882049999834,
+     "ey_start_m": 0.004429197426087951,
+     "ey_end_m": 0.00044187723433497734,
+     "v_act_med": 0.5492985086906003,
+     "n_ticks": 53,
+     "l_seg_m": 0.12320434594834334,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.08214115865926175,
+     "ey_start_m": 0.007674970899357092,
+     "ey_end_m": 0.0029605217506247783,
+     "v_act_med": 0.6942315045044471,
+     "n_ticks": 12,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.2830113787641808,
+     "ey_start_m": 0.005288454843010807,
+     "ey_end_m": 0.0008393824360243274,
+     "v_act_med": 0.5494463059636397,
+     "n_ticks": 53,
+     "l_seg_m": 0.15375914247473724,
+     "excluded_short": false,
+     "ratio_undefined": false
+    }
+   ]
+  },
+  {
+   "maze": "maze_41284",
+   "collided": false,
+   "n_ticks": 305,
+   "n_arcs": 7,
+   "entry_exit": [
+    [
+     2.1266388857222324e-07,
+     0.007374190115690219,
+     0.0
+    ],
+    [
+     0.005817223735486062,
+     0.01654350179850409,
+     0.0
+    ],
+    [
+     0.0018743684593992545,
+     0.01400727414627401,
+     0.0
+    ],
+    [
+     0.0028109186113111344,
+     0.005093428115925613,
+     0.0
+    ],
+    [
+     0.0008891351035502647,
+     0.007331228271692603,
+     0.0
+    ],
+    [
+     0.0019984615995805844,
+     0.010448977788839717,
+     0.0
+    ],
+    [
+     0.0005177270794575513,
+     0.008200543013818007,
+     0.0
+    ]
+   ],
+   "entry_straights": [
+    {
+     "lambda_seg_m": 0.04000000008023519,
+     "ey_start_m": 1.359631073446891e-32,
+     "ey_end_m": 1.3302228235305862e-19,
+     "v_act_med": 0.317042560407307,
+     "n_ticks": 15,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.016709415527882188,
+     "ey_start_m": 0.007374190115690219,
+     "ey_end_m": 0.006191755516004047,
+     "v_act_med": 0.5494489245539027,
+     "n_ticks": 4,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.12938311656457394,
+     "ey_start_m": 0.01654350179850409,
+     "ey_end_m": 0.0020148518500924554,
+     "v_act_med": 0.5459590742519453,
+     "n_ticks": 26,
+     "l_seg_m": 0.06145159323795353,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.27290824117036705,
+     "ey_start_m": 0.01400727414627401,
+     "ey_end_m": 0.0028109186113111344,
+     "v_act_med": 0.5482142207542449,
+     "n_ticks": 51,
+     "l_seg_m": 0.1699234879199039,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.08214115865926241,
+     "ey_start_m": 0.005093428115925613,
+     "ey_end_m": 0.0008891351035502647,
+     "v_act_med": 0.6969785798892364,
+     "n_ticks": 13,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.14045369589420598,
+     "ey_start_m": 0.007331228271692603,
+     "ey_end_m": 0.0020573602182689743,
+     "v_act_med": 0.5492897166300492,
+     "n_ticks": 26,
+     "l_seg_m": 0.11053085421964567,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.14955844131742158,
+     "ey_start_m": 0.010448977788839717,
+     "ey_end_m": 0.0005177270794575513,
+     "v_act_med": 0.5476024490362932,
+     "n_ticks": 29,
+     "l_seg_m": 0.049772991108141124,
+     "excluded_short": false,
+     "ratio_undefined": false
+    }
+   ]
+  },
+  {
+   "maze": "maze_42073",
+   "collided": false,
+   "n_ticks": 175,
+   "n_arcs": 3,
+   "entry_exit": [
+    [
+     2.126638884911842e-07,
+     0.007374190115687108,
+     0.0
+    ],
+    [
+     0.005817223735482746,
+     0.016543501798503994,
+     0.0
+    ],
+    [
+     0.0008338009792022941,
+     0.007627039702463367,
+     0.0
+    ]
+   ],
+   "entry_straights": [
+    {
+     "lambda_seg_m": 0.040000000080234965,
+     "ey_start_m": 0.0,
+     "ey_end_m": 0.0,
+     "v_act_med": 0.3170425604073071,
+     "n_ticks": 15,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.016709415527881993,
+     "ey_start_m": 0.007374190115687108,
+     "ey_end_m": 0.006191755516000239,
+     "v_act_med": 0.5494489245539048,
+     "n_ticks": 4,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.27290824117036694,
+     "ey_start_m": 0.016543501798503994,
+     "ey_end_m": 0.0008338009792022941,
+     "v_act_med": 0.5484763862698605,
+     "n_ticks": 52,
+     "l_seg_m": 0.09134227522634346,
+     "excluded_short": false,
+     "ratio_undefined": false
+    }
+   ]
+  },
+  {
+   "maze": "maze_42134",
+   "collided": false,
+   "n_ticks": 428,
+   "n_arcs": 9,
+   "entry_exit": [
+    [
+     2.1266388857736473e-07,
+     0.007374190115688826,
+     0.0
+    ],
+    [
+     0.005817223735484237,
+     0.016543501798506333,
+     0.0
+    ],
+    [
+     0.0018743684594009265,
+     0.014007274146273736,
+     0.0
+    ],
+    [
+     0.002432687831439127,
+     0.0073448568244304235,
+     0.0
+    ],
+    [
+     0.0019102699459521144,
+     0.006009252865968191,
+     0.0
+    ],
+    [
+     0.0005194416358571492,
+     0.008388286098848341,
+     0.0
+    ],
+    [
+     0.003288000475098584,
+     0.0037038497990188888,
+     0.0
+    ],
+    [
+     0.0016738859489161821,
+     0.01439780185029631,
+     0.0
+    ],
+    [
+     0.00012520011344020418,
+     0.007784857132382639,
+     0.0
+    ]
+   ],
+   "entry_straights": [
+    {
+     "lambda_seg_m": 0.040000000080235076,
+     "ey_start_m": 0.0,
+     "ey_end_m": 0.0,
+     "v_act_med": 0.317042560407307,
+     "n_ticks": 15,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.0167094155278823,
+     "ey_start_m": 0.007374190115688826,
+     "ey_end_m": 0.006191755516002496,
+     "v_act_med": 0.5494489245539049,
+     "n_ticks": 4,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.12938311656457396,
+     "ey_start_m": 0.016543501798506333,
+     "ey_end_m": 0.0020148518500938684,
+     "v_act_med": 0.5459590742519463,
+     "n_ticks": 26,
+     "l_seg_m": 0.06145159323797006,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.14073215806033745,
+     "ey_start_m": 0.014007274146273736,
+     "ey_end_m": 0.0023347111382870205,
+     "v_act_med": 0.5469121003814741,
+     "n_ticks": 27,
+     "l_seg_m": 0.07854721956485407,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.08214115865926219,
+     "ey_start_m": 0.0073448568244304235,
+     "ey_end_m": 0.0019102699459521144,
+     "v_act_med": 0.6818855618738122,
+     "n_ticks": 13,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.2839788204999979,
+     "ey_start_m": 0.006009252865968191,
+     "ey_end_m": 0.0005194416358571492,
+     "v_act_med": 0.5495476167833986,
+     "n_ticks": 53,
+     "l_seg_m": 0.11599014656634493,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.07700733624305789,
+     "ey_start_m": 0.008388286098848341,
+     "ey_end_m": 0.0034976413297385096,
+     "v_act_med": 0.6940783225784448,
+     "n_ticks": 12,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.26773291650778464,
+     "ey_start_m": 0.0037038497990188888,
+     "ey_end_m": 0.0016934358030384594,
+     "v_act_med": 0.5493582822299636,
+     "n_ticks": 50,
+     "l_seg_m": 0.3421011670339614,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.276837661930998,
+     "ey_start_m": 0.01439780185029631,
+     "ey_end_m": 0.00012520011344020418,
+     "v_act_med": 0.5485006783773472,
+     "n_ticks": 52,
+     "l_seg_m": 0.05834404165535134,
+     "excluded_short": false,
+     "ratio_undefined": false
+    }
+   ]
+  },
+  {
+   "maze": "maze_42451",
+   "collided": false,
+   "n_ticks": 254,
+   "n_arcs": 6,
+   "entry_exit": [
+    [
+     2.1266388805147416e-07,
+     0.0073741901156878144,
+     0.0
+    ],
+    [
+     0.005817223735483374,
+     0.016543501798506506,
+     0.0
+    ],
+    [
+     0.0018743684594003012,
+     0.014007274146274402,
+     0.0
+    ],
+    [
+     0.0028109186113087392,
+     0.005093428115925239,
+     0.0
+    ],
+    [
+     0.0021402646438992423,
+     0.00657816688182417,
+     0.0
+    ],
+    [
+     0.004584788488874041,
+     0.008047218590706784,
+     0.0
+    ]
+   ],
+   "entry_straights": [
+    {
+     "lambda_seg_m": 0.04000000008023519,
+     "ey_start_m": 0.0,
+     "ey_end_m": 0.0,
+     "v_act_med": 0.3170425604073068,
+     "n_ticks": 15,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.016709415527882326,
+     "ey_start_m": 0.0073741901156878144,
+     "ey_end_m": 0.006191755516001651,
+     "v_act_med": 0.5494489245539046,
+     "n_ticks": 4,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.129383116564574,
+     "ey_start_m": 0.016543501798506506,
+     "ey_end_m": 0.0020148518500935153,
+     "v_act_med": 0.5459590742519469,
+     "n_ticks": 26,
+     "l_seg_m": 0.061451593237964654,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.2729082411703667,
+     "ey_start_m": 0.014007274146274402,
+     "ey_end_m": 0.0028109186113087392,
+     "v_act_med": 0.5482142207542435,
+     "n_ticks": 51,
+     "l_seg_m": 0.16992348791981057,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.262141158659261,
+     "ey_start_m": 0.005093428115925239,
+     "ey_end_m": 0.0021402646438992423,
+     "v_act_med": 0.8737621910553138,
+     "n_ticks": 31,
+     "l_seg_m": 0.3023467390358792,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.028585542885835036,
+     "ey_start_m": 0.00657816688182417,
+     "ey_end_m": 0.004584788488874041,
+     "v_act_med": 0.5496526970942196,
+     "n_ticks": 7,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    }
+   ]
+  },
+  {
+   "maze": "maze_43102",
+   "collided": false,
+   "n_ticks": 313,
+   "n_arcs": 6,
+   "entry_exit": [
+    [
+     2.126638887142876e-07,
+     0.00737419011569015,
+     0.0
+    ],
+    [
+     0.0017137973083072174,
+     0.005575585827207519,
+     0.0
+    ],
+    [
+     0.0001664560883653936,
+     0.004175245131175093,
+     0.0
+    ],
+    [
+     0.00025411717259630226,
+     0.006380136426214045,
+     0.0
+    ],
+    [
+     0.0011554104173872035,
+     0.008063806554547259,
+     0.0
+    ],
+    [
+     0.005670022988354138,
+     0.00835719986923289,
+     0.0
+    ]
+   ],
+   "entry_straights": [
+    {
+     "lambda_seg_m": 0.04000000008023519,
+     "ey_start_m": 6.798155367234455e-33,
+     "ey_end_m": 1.3302228235301784e-19,
+     "v_act_med": 0.317042560407307,
+     "n_ticks": 15,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.1606290206470529,
+     "ey_start_m": 0.00737419011569015,
+     "ey_end_m": 0.0017137973083072174,
+     "v_act_med": 0.5492977793849013,
+     "n_ticks": 30,
+     "l_seg_m": 0.11007457330737534,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.08214115865926241,
+     "ey_start_m": 0.005575585827207519,
+     "ey_end_m": 0.0001664560883653936,
+     "v_act_med": 0.6942243095078224,
+     "n_ticks": 12,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.6658164823407343,
+     "ey_start_m": 0.004175245131175093,
+     "ey_end_m": 0.00025411717259630226,
+     "v_act_med": 0.5497540918123749,
+     "n_ticks": 122,
+     "l_seg_m": 0.23786526434994681,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.08214115865926219,
+     "ey_start_m": 0.006380136426214045,
+     "ey_end_m": 0.0011554104173872035,
+     "v_act_med": 0.6925416372638461,
+     "n_ticks": 13,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.03334980003347443,
+     "ey_start_m": 0.008063806554547259,
+     "ey_end_m": 0.005670022988354138,
+     "v_act_med": 0.5485346252037009,
+     "n_ticks": 7,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    }
+   ]
+  },
+  {
+   "maze": "maze_49745",
+   "collided": false,
+   "n_ticks": 260,
+   "n_arcs": 5,
+   "entry_exit": [
+    [
+     2.1266388960128865e-07,
+     0.0073741901156852245,
+     0.0
+    ],
+    [
+     0.005817223735481018,
+     0.016543501798503998,
+     0.0
+    ],
+    [
+     0.0011529683113233188,
+     0.007145431927856993,
+     0.0
+    ],
+    [
+     0.0022311436547299834,
+     0.00507171035126977,
+     0.0
+    ],
+    [
+     0.0006920905906353366,
+     0.0064736826161948535,
+     0.0
+    ]
+   ],
+   "entry_straights": [
+    {
+     "lambda_seg_m": 0.040000000080234965,
+     "ey_start_m": 0.0,
+     "ey_end_m": 1.3302228235300424e-19,
+     "v_act_med": 0.31704256040730705,
+     "n_ticks": 15,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.016709415527881827,
+     "ey_start_m": 0.0073741901156852245,
+     "ey_end_m": 0.006191755515998669,
+     "v_act_med": 0.5494489245539027,
+     "n_ticks": 4,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.400187461783945,
+     "ey_start_m": 0.016543501798503998,
+     "ey_end_m": 0.0011529683113233188,
+     "v_act_med": 0.5492328916693827,
+     "n_ticks": 75,
+     "l_seg_m": 0.15024005288856918,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.08214115865926241,
+     "ey_start_m": 0.007145431927856993,
+     "ey_end_m": 0.0022311436547299834,
+     "v_act_med": 0.6769582405377401,
+     "n_ticks": 13,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.2827657899666409,
+     "ey_start_m": 0.00507171035126977,
+     "ey_end_m": 0.0007054300393014785,
+     "v_act_med": 0.5494515306504755,
+     "n_ticks": 53,
+     "l_seg_m": 0.14334487162103135,
+     "excluded_short": false,
+     "ratio_undefined": false
+    }
+   ]
+  },
+  {
+   "maze": "maze_50763",
+   "collided": false,
+   "n_ticks": 353,
+   "n_arcs": 7,
+   "entry_exit": [
+    [
+     2.12663889601392e-07,
+     0.0073741901156852245,
+     0.0
+    ],
+    [
+     0.005817223735481018,
+     0.016543501798506978,
+     0.0
+    ],
+    [
+     0.0018743684593994791,
+     0.014007274146270947,
+     0.0
+    ],
+    [
+     0.002232375557315307,
+     0.01519208743820746,
+     0.0
+    ],
+    [
+     0.0007218832702856196,
+     0.008467137545244752,
+     0.0
+    ],
+    [
+     0.0031788053351255764,
+     0.00640029834801502,
+     0.0
+    ],
+    [
+     0.00041473720187019123,
+     0.007933813885784069,
+     0.0
+    ]
+   ],
+   "entry_straights": [
+    {
+     "lambda_seg_m": 0.040000000080234965,
+     "ey_start_m": 0.0,
+     "ey_end_m": 0.0,
+     "v_act_med": 0.31704256040730716,
+     "n_ticks": 15,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.016709415527881827,
+     "ey_start_m": 0.0073741901156852245,
+     "ey_end_m": 0.006191755515998669,
+     "v_act_med": 0.5494489245539048,
+     "n_ticks": 4,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.12938311656457302,
+     "ey_start_m": 0.016543501798506978,
+     "ey_end_m": 0.00201485185009324,
+     "v_act_med": 0.5459590742519465,
+     "n_ticks": 26,
+     "l_seg_m": 0.06145159323795936,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.12938311656457363,
+     "ey_start_m": 0.014007274146270947,
+     "ey_end_m": 0.002093945769854175,
+     "v_act_med": 0.5466997315793667,
+     "n_ticks": 25,
+     "l_seg_m": 0.06807751027006152,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.5274666823975226,
+     "ey_start_m": 0.01519208743820746,
+     "ey_end_m": 0.0007218832702856196,
+     "v_act_med": 0.5495811221067877,
+     "n_ticks": 98,
+     "l_seg_m": 0.1731291141999844,
+     "excluded_short": false,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.07700733624305878,
+     "ey_start_m": 0.008467137545244752,
+     "ey_end_m": 0.0034041189299360837,
+     "v_act_med": 0.693776762740012,
+     "n_ticks": 12,
+     "l_seg_m": NaN,
+     "excluded_short": true,
+     "ratio_undefined": false
+    },
+    {
+     "lambda_seg_m": 0.16062902064705264,
+     "ey_start_m": 0.00640029834801502,
+     "ey_end_m": 0.00041473720187019123,
+     "v_act_med": 0.549227256846991,
+     "n_ticks": 30,
+     "l_seg_m": 0.05869967953618651,
+     "excluded_short": false,
+     "ratio_undefined": false
+    }
+   ]
+  }
+ ]
+}

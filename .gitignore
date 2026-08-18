@@ -27,6 +27,10 @@ outputs/**
 # l0c_determinism_check も含める: l0c だけ別日・別プロセスの産物であり、これを他 3 条件と
 # 混ぜて 1 つの基準値にしてよい根拠が、この照合そのものだから（100 走行・全フィールド一致）。
 !outputs/exp_013_band_v4_reeval/*/runs_detail.json
+# 016-H1e（第三容疑・否定対照つき）: 判定 q が乗っている値そのもの。全 12 本で 528 KB と
+# 軽量なうえ、決定性は実測済み（健常の再走行が保存済み一次記録と 6 水準すべて完全一致）。
+# §9-21 (a) の「走行ごとの要約は版管理する」に従って含める。
+!outputs/exp_016_diagonal/016h1e/*.json
 # exp_021（観測履歴の連結）: 判定が乗っている値そのもの（summary/metrics/p5）だけの
 # 軽量版は版管理下に置く（各 60 KB 程度）。毎歩の生データ入りの完全版（7 MB 超）は
 # 置かず、SHA-256 を experiments/exp_021_observation_history/card.md に記録する。
