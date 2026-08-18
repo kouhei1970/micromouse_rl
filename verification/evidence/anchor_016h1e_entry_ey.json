@@ -1,0 +1,110 @@
+{
+  "sources": {
+    "0.45": {
+      "path": "outputs/exp_016_diagonal/016h1/d1d2_sf0.75_v0.45.json",
+      "sha256": "e6b2acd19ef6a547572662cd547231580148740d1083fe82136c68eab8bbfe45",
+      "git_rev": "278eb050ff0b043ed5d69d82eff06997c20df8c8"
+    },
+    "0.50": {
+      "path": "outputs/exp_016_diagonal/016h1/d1d2_sf0.75_v0.5.json",
+      "sha256": "875b6558ef3f4750745028a5b7c970ada6898b175a5df08ddcdf6310a436eb2c",
+      "git_rev": "278eb050ff0b043ed5d69d82eff06997c20df8c8"
+    },
+    "0.55": {
+      "path": "outputs/exp_016_diagonal/016h1/d1d2_sf0.75_v0.55.json",
+      "sha256": "43bf792525dcbe574e6d3cf4df19849999f8c33b47e8890778fd176e660772b2",
+      "git_rev": "278eb050ff0b043ed5d69d82eff06997c20df8c8"
+    },
+    "0.60": {
+      "path": "outputs/exp_016_diagonal/016h1/d1d2_sf0.75_v0.6.json",
+      "sha256": "c7521b02d51e56428463e5256bbd238c2aa5af29981610a07267f487fce6d7dd",
+      "git_rev": "278eb050ff0b043ed5d69d82eff06997c20df8c8"
+    },
+    "0.65": {
+      "path": "outputs/exp_016_diagonal/016h1/d1d2_sf0.75_v0.65.json",
+      "sha256": "32dcde1af18fabe741ad80f31118b91ce3c2c80c44469caa55f521281028907a",
+      "git_rev": "278eb050ff0b043ed5d69d82eff06997c20df8c8"
+    },
+    "0.70": {
+      "path": "outputs/exp_016_diagonal/016h1/d1d2_sf0.75_v0.7.json",
+      "sha256": "5f49995914f32c372b021c8dc70fec1ae15e7216788808daf0caaca2f71254de",
+      "git_rev": "278eb050ff0b043ed5d69d82eff06997c20df8c8"
+    }
+  },
+  "collided": {
+    "0.45": {
+      "n_collided": 0,
+      "n_total_mazes": 20,
+      "collided_mazes": []
+    },
+    "0.50": {
+      "n_collided": 0,
+      "n_total_mazes": 20,
+      "collided_mazes": []
+    },
+    "0.55": {
+      "n_collided": 0,
+      "n_total_mazes": 20,
+      "collided_mazes": []
+    },
+    "0.60": {
+      "n_collided": 0,
+      "n_total_mazes": 20,
+      "collided_mazes": []
+    },
+    "0.65": {
+      "n_collided": 0,
+      "n_total_mazes": 20,
+      "collided_mazes": []
+    },
+    "0.70": {
+      "n_collided": 0,
+      "n_total_mazes": 20,
+      "collided_mazes": []
+    }
+  },
+  "E_in_mm": {
+    "0.45": 0.6710682636253961,
+    "0.50": 0.9705327464063496,
+    "0.55": 1.6334495326427498,
+    "0.60": 1.794836335621497,
+    "0.65": 4.483860087943797,
+    "0.70": 5.76135750465318
+  },
+  "E_out_mm": {
+    "0.45": 4.979772293036033,
+    "0.50": 5.661606517338491,
+    "0.55": 7.374190115690248,
+    "0.60": 9.031314658127787,
+    "0.65": 11.526601742653742,
+    "0.70": 13.214936784301214
+  },
+  "r_second_stage": 0.6181162800605765,
+  "card_r_text": 0.62,
+  "r_match_exact_5e4": false,
+  "r_round_match_only_note": true,
+  "gain_constants_read": {
+    "k_psi": 12.0,
+    "k_y": 10.0,
+    "v_eps": 0.15
+  },
+  "gain_constants_expected": {
+    "k_psi": 12.0,
+    "k_y": 10.0,
+    "v_eps": 0.15
+  },
+  "model": {
+    "a_s": 1.110284211958548,
+    "c_m": 0.18068898166700376,
+    "card_a_s": 1.11,
+    "a_match_5e4": true
+  },
+  "v_act_entry_straight": {
+    "0.45": null,
+    "0.50": null,
+    "0.55": null,
+    "0.60": null,
+    "0.65": null,
+    "0.70": null
+  }
+}
