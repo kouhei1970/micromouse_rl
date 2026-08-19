@@ -1,0 +1,562 @@
+{
+ "注記": "これは判定の根拠を版管理へ残すための抜粋である。一次記録そのものは outputs/exp_024_s3/ にあり、outputs/** は版管理外（.gitignore:16）。plan_ids のティック列は巨大なので、ここには段階ごと・計画識別子ごとの度数だけを残す。",
+ "生成": "experiments/exp_024_s3_fast_run/judgment.md と同時に作成（2026-08-19）",
+ "records": {
+  "extended": {
+   "maze_41001": {
+    "maze_id": "maze_41001",
+    "seed": 41001,
+    "success": true,
+    "best_time": 150.33999999644496,
+    "runs": [
+     {
+      "index": 1,
+      "outcome": "goal",
+      "t_start": 0.45000000000000034,
+      "t_end": 161.09999999964643,
+      "run_time": 160.64999999964644,
+      "max_progress_cells": 52,
+      "path_efficiency": 0.9747658952606478
+     },
+     {
+      "index": 2,
+      "outcome": "goal",
+      "t_start": 188.4699999989992,
+      "t_end": 338.8099999954442,
+      "run_time": 150.33999999644496,
+      "max_progress_cells": 52,
+      "path_efficiency": 0.9782254780649728
+     }
+    ],
+    "run_phases": [
+     {
+      "run_index": 1,
+      "phase": "EXPLORE"
+     },
+     {
+      "run_index": 2,
+      "phase": "FAST"
+     }
+    ],
+    "incidents": [
+     {
+      "kind": "collision",
+      "t": 188.01999999900985
+     }
+    ],
+    "total_ticks": 42001,
+    "plan_id_histogram": {
+     "explore:straight": 9895,
+     "fast:straight": 8859,
+     "return2:straight": 4254,
+     "fast:turn_left": 3383,
+     "explore:turn_left": 3380,
+     "explore:turn_right": 2987,
+     "fast:turn_right": 2986,
+     "return2:turn_right": 1789,
+     "return2:turn_left": 1394,
+     "return:straight": 1214,
+     "return:turn_right": 594,
+     "return:turn_left": 400,
+     "return2:turn_180": 333,
+     "return:turn_180": 332,
+     "fast:goal_stop": 201
+    }
+   },
+   "maze_41002": {
+    "maze_id": "maze_41002",
+    "seed": 41002,
+    "success": true,
+    "best_time": 306.0999999931903,
+    "runs": [
+     {
+      "index": 1,
+      "outcome": "stuck",
+      "t_start": 0.45000000000000034,
+      "t_end": 112.470000000355,
+      "run_time": 112.020000000355,
+      "max_progress_cells": 27,
+      "path_efficiency": null
+     },
+     {
+      "index": 2,
+      "outcome": "goal",
+      "t_start": 112.92000000035715,
+      "t_end": 419.01999999354746,
+      "run_time": 306.0999999931903,
+      "max_progress_cells": 88,
+      "path_efficiency": 1.0732280777800327
+     }
+    ],
+    "run_phases": [
+     {
+      "run_index": 1,
+      "phase": "EXPLORE"
+     },
+     {
+      "run_index": 2,
+      "phase": "EXPLORE"
+     }
+    ],
+    "incidents": [],
+    "total_ticks": 42002,
+    "plan_id_histogram": {
+     "explore:straight": 23046,
+     "explore:turn_right": 9752,
+     "explore:turn_left": 8546,
+     "explore:turn_180": 332,
+     "explore:blocked": 326
+    }
+   },
+   "maze_41005": {
+    "maze_id": "maze_41005",
+    "seed": 41005,
+    "success": true,
+    "best_time": 273.87999999696893,
+    "runs": [
+     {
+      "index": 1,
+      "outcome": "goal",
+      "t_start": 0.45000000000000034,
+      "t_end": 274.3299999969689,
+      "run_time": 273.87999999696893,
+      "max_progress_cells": 75,
+      "path_efficiency": 1.0868638488286915
+     }
+    ],
+    "run_phases": [
+     {
+      "run_index": 1,
+      "phase": "EXPLORE"
+     }
+    ],
+    "incidents": [],
+    "total_ticks": 42001,
+    "plan_id_histogram": {
+     "explore:straight": 15459,
+     "return:straight": 7909,
+     "explore:turn_right": 6367,
+     "explore:turn_left": 5769,
+     "return:turn_left": 3180,
+     "return:turn_right": 2985,
+     "return:turn_180": 332
+    }
+   },
+   "maze_41008": {
+    "maze_id": "maze_41008",
+    "seed": 41008,
+    "success": false,
+    "best_time": null,
+    "runs": [
+     {
+      "index": 1,
+      "outcome": "collision",
+      "t_start": 0.45000000000000034,
+      "t_end": 99.51000000029312,
+      "run_time": 99.06000000029312,
+      "max_progress_cells": 14,
+      "path_efficiency": null
+     },
+     {
+      "index": 2,
+      "outcome": "collision",
+      "t_start": 99.96000000029527,
+      "t_end": 158.87999999969892,
+      "run_time": 58.91999999940366,
+      "max_progress_cells": 2,
+      "path_efficiency": null
+     },
+     {
+      "index": 3,
+      "outcome": "timeout",
+      "t_start": 159.32999999968828,
+      "t_end": 420.00999999352405,
+      "run_time": 260.67999999383574,
+      "max_progress_cells": 50,
+      "path_efficiency": null
+     }
+    ],
+    "run_phases": [
+     {
+      "run_index": 1,
+      "phase": "EXPLORE"
+     },
+     {
+      "run_index": 2,
+      "phase": "EXPLORE"
+     },
+     {
+      "run_index": 3,
+      "phase": "EXPLORE"
+     }
+    ],
+    "incidents": [],
+    "total_ticks": 42001,
+    "plan_id_histogram": {
+     "explore:straight": 23558,
+     "explore:turn_right": 7754,
+     "explore:turn_left": 7250,
+     "explore:turn_180": 3439
+    }
+   },
+   "maze_41009": {
+    "maze_id": "maze_41009",
+    "seed": 41009,
+    "success": false,
+    "best_time": null,
+    "runs": [
+     {
+      "index": 1,
+      "outcome": "stuck",
+      "t_start": 0.45000000000000034,
+      "t_end": 400.20999999399226,
+      "run_time": 399.75999999399227,
+      "max_progress_cells": 42,
+      "path_efficiency": null
+     },
+     {
+      "index": 2,
+      "outcome": "timeout",
+      "t_start": 400.6599999939816,
+      "t_end": 420.00999999352405,
+      "run_time": 19.349999999542433,
+      "max_progress_cells": 7,
+      "path_efficiency": null
+     }
+    ],
+    "run_phases": [
+     {
+      "run_index": 1,
+      "phase": "EXPLORE"
+     },
+     {
+      "run_index": 2,
+      "phase": "EXPLORE"
+     }
+    ],
+    "incidents": [],
+    "total_ticks": 42001,
+    "plan_id_histogram": {
+     "explore:straight": 23570,
+     "explore:turn_right": 9161,
+     "explore:turn_left": 6957,
+     "explore:turn_180": 1990,
+     "explore:blocked": 323
+    }
+   },
+   "maze_41012": {
+    "maze_id": "maze_41012",
+    "seed": 41012,
+    "success": true,
+    "best_time": 211.4699999984447,
+    "runs": [
+     {
+      "index": 1,
+      "outcome": "goal",
+      "t_start": 0.45000000000000034,
+      "t_end": 211.9199999984447,
+      "run_time": 211.4699999984447,
+      "max_progress_cells": 66,
+      "path_efficiency": 0.9806836533330188
+     }
+    ],
+    "run_phases": [
+     {
+      "run_index": 1,
+      "phase": "EXPLORE"
+     }
+    ],
+    "incidents": [],
+    "total_ticks": 42001,
+    "plan_id_histogram": {
+     "explore:straight": 12464,
+     "return:straight": 11889,
+     "return:turn_left": 4576,
+     "explore:turn_right": 4372,
+     "explore:turn_left": 4181,
+     "return:turn_right": 3524,
+     "return:turn_180": 663,
+     "explore:turn_180": 332
+    }
+   }
+  },
+  "percell": {
+   "maze_41001": {
+    "maze_id": "maze_41001",
+    "seed": 41001,
+    "success": true,
+    "best_time": 160.64999999620116,
+    "runs": [
+     {
+      "index": 1,
+      "outcome": "goal",
+      "t_start": 0.45000000000000034,
+      "t_end": 161.09999999964643,
+      "run_time": 160.64999999964644,
+      "max_progress_cells": 52,
+      "path_efficiency": 0.9747658952606478
+     },
+     {
+      "index": 2,
+      "outcome": "goal",
+      "t_start": 188.4699999989992,
+      "t_end": 349.1199999952004,
+      "run_time": 160.64999999620116,
+      "max_progress_cells": 52,
+      "path_efficiency": 0.9747658952606478
+     }
+    ],
+    "run_phases": [
+     {
+      "run_index": 1,
+      "phase": "EXPLORE"
+     },
+     {
+      "run_index": 2,
+      "phase": "FAST"
+     }
+    ],
+    "incidents": [
+     {
+      "kind": "collision",
+      "t": 188.01999999900985
+     }
+    ],
+    "total_ticks": 42001,
+    "plan_id_histogram": {
+     "explore:straight": 9895,
+     "fast:straight": 9895,
+     "return2:straight": 3818,
+     "explore:turn_left": 3380,
+     "fast:turn_left": 3380,
+     "explore:turn_right": 2987,
+     "fast:turn_right": 2987,
+     "return2:turn_right": 1590,
+     "return:straight": 1214,
+     "return2:turn_left": 996,
+     "return:turn_right": 594,
+     "return:turn_left": 400,
+     "return:turn_180": 332,
+     "return2:turn_180": 332,
+     "fast:goal_stop": 201
+    }
+   },
+   "maze_41002": {
+    "maze_id": "maze_41002",
+    "seed": 41002,
+    "success": true,
+    "best_time": 306.0999999931903,
+    "runs": [
+     {
+      "index": 1,
+      "outcome": "stuck",
+      "t_start": 0.45000000000000034,
+      "t_end": 112.470000000355,
+      "run_time": 112.020000000355,
+      "max_progress_cells": 27,
+      "path_efficiency": null
+     },
+     {
+      "index": 2,
+      "outcome": "goal",
+      "t_start": 112.92000000035715,
+      "t_end": 419.01999999354746,
+      "run_time": 306.0999999931903,
+      "max_progress_cells": 88,
+      "path_efficiency": 1.0732280777800327
+     }
+    ],
+    "run_phases": [
+     {
+      "run_index": 1,
+      "phase": "EXPLORE"
+     },
+     {
+      "run_index": 2,
+      "phase": "EXPLORE"
+     }
+    ],
+    "incidents": [],
+    "total_ticks": 42002,
+    "plan_id_histogram": {
+     "explore:straight": 23046,
+     "explore:turn_right": 9752,
+     "explore:turn_left": 8546,
+     "explore:turn_180": 332,
+     "explore:blocked": 326
+    }
+   },
+   "maze_41005": {
+    "maze_id": "maze_41005",
+    "seed": 41005,
+    "success": true,
+    "best_time": 273.87999999696893,
+    "runs": [
+     {
+      "index": 1,
+      "outcome": "goal",
+      "t_start": 0.45000000000000034,
+      "t_end": 274.3299999969689,
+      "run_time": 273.87999999696893,
+      "max_progress_cells": 75,
+      "path_efficiency": 1.0868638488286915
+     }
+    ],
+    "run_phases": [
+     {
+      "run_index": 1,
+      "phase": "EXPLORE"
+     }
+    ],
+    "incidents": [],
+    "total_ticks": 42001,
+    "plan_id_histogram": {
+     "explore:straight": 15459,
+     "return:straight": 7909,
+     "explore:turn_right": 6367,
+     "explore:turn_left": 5769,
+     "return:turn_left": 3180,
+     "return:turn_right": 2985,
+     "return:turn_180": 332
+    }
+   },
+   "maze_41008": {
+    "maze_id": "maze_41008",
+    "seed": 41008,
+    "success": false,
+    "best_time": null,
+    "runs": [
+     {
+      "index": 1,
+      "outcome": "collision",
+      "t_start": 0.45000000000000034,
+      "t_end": 99.51000000029312,
+      "run_time": 99.06000000029312,
+      "max_progress_cells": 14,
+      "path_efficiency": null
+     },
+     {
+      "index": 2,
+      "outcome": "collision",
+      "t_start": 99.96000000029527,
+      "t_end": 158.87999999969892,
+      "run_time": 58.91999999940366,
+      "max_progress_cells": 2,
+      "path_efficiency": null
+     },
+     {
+      "index": 3,
+      "outcome": "timeout",
+      "t_start": 159.32999999968828,
+      "t_end": 420.00999999352405,
+      "run_time": 260.67999999383574,
+      "max_progress_cells": 50,
+      "path_efficiency": null
+     }
+    ],
+    "run_phases": [
+     {
+      "run_index": 1,
+      "phase": "EXPLORE"
+     },
+     {
+      "run_index": 2,
+      "phase": "EXPLORE"
+     },
+     {
+      "run_index": 3,
+      "phase": "EXPLORE"
+     }
+    ],
+    "incidents": [],
+    "total_ticks": 42001,
+    "plan_id_histogram": {
+     "explore:straight": 23558,
+     "explore:turn_right": 7754,
+     "explore:turn_left": 7250,
+     "explore:turn_180": 3439
+    }
+   },
+   "maze_41009": {
+    "maze_id": "maze_41009",
+    "seed": 41009,
+    "success": false,
+    "best_time": null,
+    "runs": [
+     {
+      "index": 1,
+      "outcome": "stuck",
+      "t_start": 0.45000000000000034,
+      "t_end": 400.20999999399226,
+      "run_time": 399.75999999399227,
+      "max_progress_cells": 42,
+      "path_efficiency": null
+     },
+     {
+      "index": 2,
+      "outcome": "timeout",
+      "t_start": 400.6599999939816,
+      "t_end": 420.00999999352405,
+      "run_time": 19.349999999542433,
+      "max_progress_cells": 7,
+      "path_efficiency": null
+     }
+    ],
+    "run_phases": [
+     {
+      "run_index": 1,
+      "phase": "EXPLORE"
+     },
+     {
+      "run_index": 2,
+      "phase": "EXPLORE"
+     }
+    ],
+    "incidents": [],
+    "total_ticks": 42001,
+    "plan_id_histogram": {
+     "explore:straight": 23570,
+     "explore:turn_right": 9161,
+     "explore:turn_left": 6957,
+     "explore:turn_180": 1990,
+     "explore:blocked": 323
+    }
+   },
+   "maze_41012": {
+    "maze_id": "maze_41012",
+    "seed": 41012,
+    "success": true,
+    "best_time": 211.4699999984447,
+    "runs": [
+     {
+      "index": 1,
+      "outcome": "goal",
+      "t_start": 0.45000000000000034,
+      "t_end": 211.9199999984447,
+      "run_time": 211.4699999984447,
+      "max_progress_cells": 66,
+      "path_efficiency": 0.9806836533330188
+     }
+    ],
+    "run_phases": [
+     {
+      "run_index": 1,
+      "phase": "EXPLORE"
+     }
+    ],
+    "incidents": [],
+    "total_ticks": 42001,
+    "plan_id_histogram": {
+     "explore:straight": 12464,
+     "return:straight": 11889,
+     "return:turn_left": 4576,
+     "explore:turn_right": 4372,
+     "explore:turn_left": 4181,
+     "return:turn_right": 3524,
+     "return:turn_180": 663,
+     "explore:turn_180": 332
+    }
+   }
+  }
+ }
+}
