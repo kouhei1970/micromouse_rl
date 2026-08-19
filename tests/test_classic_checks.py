@@ -7,6 +7,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from classic.checks import (
@@ -16,6 +18,9 @@ from classic.checks import (
     plan_adherence,
     resolve_bound,
 )
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+RESEARCH_NOTES_DIR = REPO_ROOT / "research_notes"
 
 
 # ======================================================================
@@ -152,3 +157,63 @@ def test_find_retracted_numbers_respects_the_allow_list(tmp_path):
 
     assert find_retracted_numbers(["37.6"], repo_root=tmp_path, allow=["retraction.md"]) == []
     assert find_retracted_numbers(["37.6"], repo_root=tmp_path) != []   # 許さなければ鳴る
+
+
+def test_find_retracted_numbers_uses_literal_matching_not_regex(tmp_path):
+    """🔴 空振り防止: git grep は既定で基本正規表現（BRE）を使い、"." は
+    「任意の1文字」を意味するメタ文字になる。"37.6" をそのまま正規表現として
+    渡すと、無関係な数値（例えば "3786" のような桁並び）にまで空マッチし、
+    本当に見たい失効数値の伝播が大量のノイズに埋もれて実質使えなくなる
+    （2026-08-19 検分で実際にこのリポジトリに対して検査してみて発覚した
+    不具合。find_retracted_numbers は `git grep -F` へ是正済み）。"""
+    import subprocess
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
+    doc = tmp_path / "unrelated.md"
+    # "37.6" を正規表現として解釈すると "37X6"（X は任意の1文字）にマッチし
+    # うるが、"3786" は "37.6" の**リテラル文字列**としては一致しない
+    # （"." という文字そのものを含んでいないため）。
+    doc.write_text("無関係な数値: 3786\n", encoding="utf-8")
+    subprocess.run(["git", "add", "unrelated.md"], cwd=tmp_path, check=True)
+
+    assert find_retracted_numbers(["37.6"], repo_root=tmp_path) == []
+    # 対照: リテラルに "37.6" を含む文書には、当然ヒットする（空振り防止）。
+    doc2 = tmp_path / "unrelated2.md"
+    doc2.write_text("無関係な数値: 137.60000000020213\n", encoding="utf-8")
+    subprocess.run(["git", "add", "unrelated2.md"], cwd=tmp_path, check=True)
+    assert find_retracted_numbers(["37.6"], repo_root=tmp_path) != []
+
+
+# ======================================================================
+# 🔴 型 E: 失効した数値の伝播を、このリポジトリに対して実際に検査する
+# ======================================================================
+
+def test_find_retracted_numbers_against_this_repository():
+    """🔴 是正 (1)（note_029 §1-3・§4-4「失効させたら、その数値を引用している
+    全文書を機械的に探して訂正する」）。
+
+    失効した「時間の 69.6%（斜め 37.6% ＋ 円弧 32.0%）」が、失効を宣言している
+    文書以外に残っていないことを、**このリポジトリ全体**に対して検査する。
+
+    🔴 検索語は "37.6" ではなく **"37.6%"** を使う。"37.6" だけだと
+    "5137.6〜5811.6 s"（exp_020 の相対時刻）や "37.69%"（REPORT_002 の別の指標）
+    といった**偶然の部分一致**を拾い、本当に見たい伝播がノイズに埋もれる。
+    失効したのはパーセント表記の時間配分なので、"%" まで含めるのが正しい。
+
+    2026-08-19 の是正で、verification/REVIEW_008_p6_aim.md と
+    REVIEW_010_p6_rest.md に未訂正の引用が残っていたことを本検査が発見し、
+    両文書に失効注記を入れた。**この検査が無ければ見つからなかった。**
+    """
+    numbers = ["37.6%", "69.6%"]
+    allow = [
+        "research_notes/note_019_classical_track_summary.md",
+        "research_notes/p6_diagonal_success_design.md",
+        "research_notes/note_029_classical_postmortem.md",
+        "verification/REVIEW_008_p6_aim.md",
+        "verification/REVIEW_010_p6_rest.md",
+        "tests/test_classic_checks.py",
+    ]
+    hits = find_retracted_numbers(numbers, repo_root=REPO_ROOT, allow=allow)
+    assert hits == [], (
+        "失効した数値が、失効を宣言していない文書に残っている（note_029 型 E）:\n"
+        + "\n".join(f"  {h.path}:{h.line_no}: {h.line}" for h in hits)
+    )

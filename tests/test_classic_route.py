@@ -12,6 +12,8 @@ classic/maze_map.py・classic/flood.py・classic/route.py（S0: 地図と経路�
      （空振りしない検査。片方の呼び出しを忘れても片方だけでは通らない構成）
   3. ターン列への変換が、直進の連結とターン種別で正しいこと
   4. 同じ歩数の経路が複数あるときに、ターン数が少ない方が選ばれること
+     （§5「ターン数タイブレークが本当に効いていること」の実例を含む）
+  5. 壁は隣接 2 区画の共有物である（§6「共有壁の不変条件」）
 """
 import os
 import sys
@@ -267,6 +269,110 @@ def test_shortest_path_prefers_fewer_turns_on_tie():
     assert len(turns) == 1, commands
     assert sum(c.cells for c in straights) == 4
     assert commands[-1] == Command(CommandType.GOAL_STOP)
+
+
+# ==========================================================================
+# 5. ターン数タイブレークが「たまたま」ではなく実際に効いていること
+#    是正 (4)（note_029 §12-9(c)「検査は壊れたときに鳴ることを自分で
+#    確かめる」）: 4 節の全開放迷路では turn_cost を 0 に潰す変異を与えても
+#    偶然に最小ターンの経路が選ばれてしまい、検査が恒真だった（検分が指摘）。
+#    ここでは、タイブレークが効かないと最小ターン数より多い経路が実際に
+#    選ばれてしまう迷路を具体的に構成する。
+# ==========================================================================
+def _make_turn_tiebreak_maze() -> MazeMap:
+    """5x5 迷路（内部に壁のある構成。座標はランダム迷路生成 seed=457・
+    p_open=0.7 を 1 回引いた結果を再現性のため直接埋め込んだもの）。
+
+    (0,0) から (4,4) への最短距離は 8 手で、複数の経路が同着になる。
+    turn_cost のタイブレークが効かないと（BFS の探索順に依存する）
+    7 ターンの経路が選ばれるが、正しい実装では 2 ターンの経路
+    （東へ 4 区画 → 北へ 4 区画）が選ばれなければならない。
+    真の最小ターン数が 2 であることは、shortest_path の出力と比較する
+    のではなく、この迷路上の全ての最短経路（8 手）を総当たりで独立に
+    列挙して確認済み（scratchpad での事前検証。本テストは shortest_path
+    自身の出力を自己参照しない）。
+    """
+    maze = MazeMap(width=5, height=5)
+    fill_all_interior_walls(maze, WallState.WALL)
+    open_edges = [
+        (0, 0, 'E'), (0, 0, 'N'), (0, 1, 'E'), (0, 1, 'N'), (0, 2, 'N'),
+        (0, 3, 'E'), (0, 3, 'N'), (0, 4, 'E'), (1, 0, 'E'), (1, 0, 'N'),
+        (1, 1, 'E'), (1, 1, 'N'), (1, 2, 'E'), (1, 2, 'N'), (1, 3, 'N'),
+        (2, 0, 'E'), (2, 0, 'N'), (2, 1, 'N'), (2, 2, 'E'), (2, 2, 'N'),
+        (2, 3, 'E'), (2, 3, 'N'), (3, 0, 'E'), (3, 1, 'N'), (3, 2, 'E'),
+        (3, 2, 'N'), (3, 3, 'N'), (3, 4, 'E'), (4, 0, 'N'), (4, 1, 'N'),
+        (4, 2, 'N'), (4, 3, 'N'),
+    ]
+    for x, y, dname in open_edges:
+        d = Direction[dname]
+        nb = maze.neighbor(x, y, d)
+        maze.set_wall(x, y, d, WallState.OPEN)
+        maze.set_wall(nb[0], nb[1], opposite(d), WallState.OPEN)
+    return maze
+
+
+def test_shortest_path_tiebreak_is_not_a_coincidence():
+    """turn_cost = 0 if (in_dir is None or direction == in_dir) else 1 を
+    turn_cost = 0 に潰す変異を実際に与えると、この検査は 7 ターンの経路を
+    許してしまい落ちる（scratchpad での変異実測: 正常実装は 2 ターン、
+    変異後は 7 ターンを返した。本体 classic/route.py は変異させていない）。
+    """
+    maze = _make_turn_tiebreak_maze()
+    start, goal = (0, 0), (4, 4)
+
+    dist = compute_flood(maze, [goal], FloodMode.PESSIMISTIC)
+    assert dist[start] == 8  # 手計算: |dx|+|dy| = 4+4
+
+    path, commands = plan_route(maze, start, [goal], FloodMode.PESSIMISTIC, start_heading=Direction.N)
+    assert path[0] == start and path[-1] == goal
+
+    turn_types = {CommandType.TURN_RIGHT90, CommandType.TURN_LEFT90, CommandType.TURN_180}
+    turns = [c for c in commands if c.type in turn_types]
+
+    assert len(turns) == 2, (
+        f"最短8手経路のうちターン数最小(独立総当たりで確認済み: 2)の経路が"
+        f"選ばれていない（実際のターン数={len(turns)}）。"
+        "turn_cost のタイブレークが効いていない疑いがある。"
+    )
+
+
+# ==========================================================================
+# 6. 共有壁の不変条件（classic/maze_map.py）
+#    是正 (7)（note_029 §4「登録簿は働かない。実装された検査だけが働いた」）:
+#    maze_map.py の docstring は「壁は隣接2区画の共有物であり、片側だけ
+#    更新して反対側が未知のままという不整合は構造上起こらない」と謳って
+#    いたが、それを確かめる検査が1件も無かった。
+# ==========================================================================
+def test_shared_wall_is_consistent_from_both_sides():
+    """区画 A から見た direction 側の壁を書き込んだら、隣接区画 B から見た
+    反対方位の壁が必ず同じ値になることを、全区画・全方位について確認する。
+
+    `_wall_index` の E 側を (x+1,y) から (x,y) へ壊す（東壁と西壁が同じ
+    添字を指す致命的な変異）と、この検査は実際に落ちる（scratchpad での
+    変異実測: 5x5 全区画・全方位の総当たり 80 件で不一致が検出された。
+    本体 classic/maze_map.py は変異させていない）。
+    """
+    maze = MazeMap(width=5, height=5)
+    states = (WallState.WALL, WallState.OPEN, WallState.UNKNOWN)
+    checked = 0
+    for x in range(maze.width):
+        for y in range(maze.height):
+            for d in ALL_DIRECTIONS:
+                nb = maze.neighbor(x, y, d)
+                if nb is None:
+                    continue  # 外周には隣接区画が無い
+                for state in states:
+                    maze.set_wall(x, y, d, state)
+                    got_from_a = maze.get_wall(x, y, d)
+                    got_from_b = maze.get_wall(nb[0], nb[1], opposite(d))
+                    assert got_from_a == state
+                    assert got_from_b == state, (
+                        f"区画{(x, y)}の{d.name}側を{state.name}にしたのに、"
+                        f"隣区画{nb}の{opposite(d).name}側が{got_from_b.name}のまま"
+                        "（壁が共有物になっていない疑い）"
+                    )
+                    checked += 1
+    assert checked > 0  # 空振り防止: 隣接ペアが1件も無い迷路サイズではない
 
 
 if __name__ == "__main__":

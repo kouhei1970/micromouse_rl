@@ -201,6 +201,14 @@ def find_retracted_numbers(numbers: Iterable[str], repo_root: str | Path = ".",
     Note:
         失効の宣言をカードの中だけに書くと、総括や設計提案に流れ込んだ数値は残る。
         実際にそれが起きた（note_029 §1-3）。
+
+        🔴 `numbers` は**リテラル文字列**として検索する（`git grep -F`）。
+        素の `git grep` は既定で基本正規表現（BRE）を使い、"." が「任意の
+        1 文字」を意味するメタ文字になる。"37.6" をそのまま渡すと、無関係な
+        数値（例えば "69662" が "69.6" に、"1.0970873786407767" が "37.6" 系
+        パターンにマッチする箇所を含む）に大量に空マッチし、本当に見たい
+        失効数値の伝播が大量のノイズに埋もれて実質使えなくなる
+        （2026-08-19 検分で実際に発生を確認した不具合）。
     """
     root = Path(repo_root)
     allowed = {str(a) for a in allow}
@@ -208,7 +216,7 @@ def find_retracted_numbers(numbers: Iterable[str], repo_root: str | Path = ".",
     for num in numbers:
         try:
             out = subprocess.run(
-                ["git", "grep", "-n", "--", num],
+                ["git", "grep", "-n", "-F", "--", num],
                 cwd=str(root), capture_output=True, text=True, timeout=60,
             ).stdout
         except (OSError, subprocess.SubprocessError):

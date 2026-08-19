@@ -36,7 +36,18 @@ Kp=τ/(K·λ), Ki=Kp/τ（λ: 閉ループ時定数、ここでは λ=0.05s 相�
 実測した動作精度（開通路 5x5 迷路、区画 (2,2) 開始、詳細は
 `tests/test_classic_motion.py` 参照）:
   - 直進 2 区画（目標 0.36 m）: 実移動 0.3562 m（誤差 -3.8 mm）、
-    方位ずれは実質ゼロ（heading hold が効いている）
+    方位ずれは実質ゼロ
+    【訂正 2026-08-19・note_029 検分: 「heading hold が効いている」という
+    旧記述は測定が支持しない。外乱の無い対称なシミュレータでは、
+    kp_heading をゼロに潰しても直進中に方位はそもそもずれない
+    （左右車輪が対称に動くので曲がりようがない）。方位ずれが実質ゼロ
+    なのはそのためであり、heading hold の効果の証拠ではない。
+    heading hold（差動補正）自体が実際に効いていることは、走行開始
+    直後に推測航法のヨー推定へ人為的な初期誤差を注入する検査
+    （tests/test_classic_motion.py の
+    test_default_heading_hold_corrects_an_injected_yaw_estimate_error、
+    対照は test_zero_kp_heading_does_not_correct_the_injected_yaw_error）
+    で別途、実測により確認している。】
   - その場 90° 左旋回: 実ヨー変化 89.56°（誤差 0.44°）、
     旋回中の位置ずれ 0.056 mm
   - その場 90° 右旋回: 実ヨー変化 -89.56°（誤差 0.44°）

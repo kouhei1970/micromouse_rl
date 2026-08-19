@@ -6,6 +6,12 @@ classic/sensing.py の検査。**実際にシミュレータを動かして**距
 ことを確認する。加えて「わざと閾値を壊すと落ちる」検査を含め、
 本テストが空振りしないことを確認する（note_030 §5 の作法）。
 
+🔴 2026-08-19 是正 (1)（note_029 §4「登録簿は働かない。実装された検査
+だけが働いた」）: `classic/checks.py` の再発防止検査は実装した時点では
+どこからも呼ばれていなかった。本ファイルは `classic.checks.plan_adherence`
+を実際に呼び出す（型 C「計画した経路が走行に使われたか」を、「姿勢サンプル
+群が意図した分類から外れていないか」という同型の問題に転用する）。
+
 迷路の座標規約（v_walls[x,y] / h_walls[x,y]）は competition/evaluator.py の
 モジュール docstring・mouse/mjcf.py の build_maze_robot_xml docstring に従う。
 ロボット初期姿勢 heading_deg=90.0（+Y=北向き）のとき:
@@ -25,6 +31,7 @@ from mouse.mjcf import build_maze_robot_xml
 from mouse.params import RobotParams
 from mouse.sim import MouseSim
 
+from classic.checks import plan_adherence
 from classic.sensing import (
     WallState, sense_walls,
     FRONT_WALL_MAX, FRONT_CLEAR_MIN, SIDE_WALL_MAX, SIDE_CLEAR_MIN,
@@ -286,3 +293,40 @@ def test_threshold_ordering_is_enforced_by_construction():
     または WALL/CLEAR が逆転しうる）。"""
     assert FRONT_WALL_MAX < FRONT_CLEAR_MIN
     assert SIDE_WALL_MAX < SIDE_CLEAR_MIN
+
+
+# ==========================================================================
+# 5. plan_adherence の応用: 姿勢ぶれ全域で意図した分類に乗っているか
+#    是正 (1): classic.checks を実際に呼び出す。plan_adherence は本来
+#    「走行がどの計画に乗っていたか」をティック列で測る検査だが、ここでは
+#    「姿勢サンプル群のうち意図した分類に乗っていた割合」という同型の
+#    問題に転用する。
+# ==========================================================================
+def test_front_classification_adherence_across_pose_grid(tmp_path_factory, params):
+    """前方判定 (WALL/CLEAR) が、区画内の位置・方位ずれ全域（5×5×5=125 姿勢の
+    格子）で意図した分類から一件も外れないことを plan_adherence で確認する
+    （前方センサは実測で重なりゼロと分かっている。§1 の分離実測と対の検査）。"""
+    tmp = tmp_path_factory.mktemp("front_adherence")
+    v_closed, h_closed = _make_walls()
+    v_open, h_open = _make_walls(open_front=True, deep=False)
+    sim_closed = _build_sim(v_closed, h_closed, tmp, "closed_adh", params)
+    sim_open = _build_sim(v_open, h_open, tmp, "open_adh", params)
+
+    def classify_front_grid(sim):
+        labels = []
+        for dx in _DXS:
+            for dy in _DYS:
+                for dh in _DHEADS:
+                    _set_pose(sim, dx, dy, dh)
+                    obs = sim.observation()
+                    labels.append(sense_walls(obs, params).front.value)
+        return labels
+
+    closed_adherence = plan_adherence(classify_front_grid(sim_closed), intended="wall")
+    open_adherence = plan_adherence(classify_front_grid(sim_open), intended="clear")
+
+    print(f"\n[実測] 前方判定の乗車率（壁あり側）:\n{closed_adherence.describe()}")
+    print(f"[実測] 前方判定の乗車率（壁なし側）:\n{open_adherence.describe()}")
+
+    assert closed_adherence.ok(1.0), "壁ありのはずの姿勢サンプルで WALL 以外の判定が出た"
+    assert open_adherence.ok(1.0), "壁なしのはずの姿勢サンプルで CLEAR 以外の判定が出た"
