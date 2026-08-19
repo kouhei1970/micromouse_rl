@@ -24,9 +24,14 @@ import os
 import sys
 import tempfile
 
+import pytest
+
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
+
+# sb3_contrib は任意依存（未導入環境では pytest 収集を壊さずスキップする）。
+pytest.importorskip("sb3_contrib")
 
 import numpy as np  # noqa: E402
 from sb3_contrib import RecurrentPPO  # noqa: E402
