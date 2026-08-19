@@ -274,6 +274,40 @@ class CellMotionController:
         """
         self._target_heading += delta_rad
 
+    @property
+    def cells_completed(self) -> int:
+        """現在の FORWARD コマンドで既に完了した区画数（note_030 §3 S3）。
+
+        `int(self._dist_est / self.params.cell_size)` で求める。多区画直進
+        （`start_forward(n)`, n>1）の途中で「何番目の区画中心を通過したか」を
+        呼び出し側（`classic/explorer.py` の `tick`）が検出するために使う。
+        FORWARD 以外のコマンド実行中（旋回・停止・アイドル）は常に 0
+        （区画を積算する概念がそもそも無い）。"""
+        if self._cmd is None or self._cmd.kind is not MotionKind.FORWARD:
+            return 0
+        return int(self._dist_est / self.params.cell_size)
+
+    def reanchor_heading(self, bias_rad: float) -> None:
+        """多区画直進の途中、区画中心を通過するたびに目標方位を「現在の
+        ヨー推定を基準に置き直す」（note_030 §3 S3 (a)）。
+
+        🔴 既存の `bias_target_heading()`（現在の `_target_heading` への
+        **加算**）とは別物として用意してある。区画中心での掛け直しは
+        「現在のヨー推定を基準に置き直す」処理であり、
+        `_target_heading = self._yaw_est + bias_rad` と**上書き**する
+        （加算ではない）。
+
+        これは `start_forward()` が `_target_heading = self._yaw_est` へ
+        リセットしてから `bias_target_heading()` で加算する、という
+        1 区画コマンドの手順と**同じ意味**になる（`start_forward` 直後の
+        `_yaw_est` を基準に置くのと、直進途中の「今」の `_yaw_est` を基準に
+        置くのとで、やっていることは同一）。これにより、S2 で実測済みの
+        「1 区画ごとに読み直して次の 1 区画へバイアスをかける」挙動が、
+        多区画直進の中でもそのまま再現される（n 区画を 1 コマンドにしても、
+        出発点で 1 回測った横ずれが n 区画ぶん一定のバイアスとして効き
+        続けることはない）。"""
+        self._target_heading = self._yaw_est + bias_rad
+
     def start_turn_left(self) -> None:
         """その場 90° 左旋回（超信地旋回）を開始する。左旋回はヨー角を正方向へ増やす
         （mouse.sim.MouseSim.privileged_pose() と同じ CCW 正の規約）。"""

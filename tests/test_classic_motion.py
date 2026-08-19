@@ -391,3 +391,109 @@ def test_zero_kp_heading_does_not_correct_the_injected_yaw_error(open_sim, param
     heading_err_final_deg = math.degrees(ctrl._wrap(ctrl._target_heading - ctrl._yaw_est))
     print(f"\n[実測] kp_heading=0: 注入誤差=+10.000deg 最終推定誤差={heading_err_final_deg:+.3f}deg steps={steps}")
     assert abs(heading_err_final_deg) > 5.0, "kp_heading=0 でも誤差が収束した（注入方法が効いていない疑い）"
+
+
+# ==========================================================================
+# 6. S3（最短走行）で足した `cells_completed`・`reanchor_heading` の単体検査
+#    （note_030 §3 S3 任務指示 7。tests/test_classic_fast_run.py が実際の
+#    最短走行を通しで検査するのに対し、こちらは classic/motion.py だけを
+#    見る単体検査）
+# ==========================================================================
+def test_cells_completed_is_zero_while_idle_turning_or_stopped(open_sim, params):
+    """`cells_completed` は FORWARD 実行中以外は常に 0 であること
+    （note_030 §3 S3 任務指示: 「FORWARD 以外では 0」）。"""
+    sim = open_sim
+    ctrl = CellMotionController(params)
+    ctrl.reset(heading_deg=90.0)
+    assert ctrl.cells_completed == 0, "start_forward を一度も呼んでいない(is_idle)状態で 0 でない"
+
+    ctrl.start_turn_left()
+    obs = sim.observation()
+    ctrl.update(obs)
+    assert ctrl.cells_completed == 0, "旋回中に 0 でない"
+
+    ctrl.start_stop()
+    obs = sim.observation()
+    ctrl.update(obs)
+    assert ctrl.cells_completed == 0, "停止中に 0 でない"
+
+
+def test_cells_completed_counts_cells_passed_during_a_multi_cell_forward(open_sim, params):
+    """`cells_completed` の契約（`int(self._dist_est / self.params.cell_size)`）
+    を、実際に 2 区画直進させて実測する。移動が進むにつれ 0→1 と単調に
+    増えていくこと。
+
+    🔴 完了時ちょうどに区画数(2)と一致することまでは要求しない
+    （実測: 完了判定は `abs(remaining) < distance_tol` であり、収束は
+    target_dist の**手前**からの漸近なので、`done=True` になった瞬間の
+    `_dist_est` は `target_dist` よりわずかに小さいことがあり、
+    `int(dist_est/cell_size)` が区画数-1 のまま止まりうる。これは実装の
+    契約どおりの挙動であり、`classic/explorer.py` の `tick()` が
+    「途中の区画境界の検出には `cells_completed`、最後の1区画の確定には
+    `done` フラグ」と使い分けている理由そのものである — 完了時の最後の
+    1区画は `cells_completed` の値に依存せず `_advance_state()` が
+    無条件に1区画進める設計なので、この挙動があっても最短走行の区画
+    カウントは狂わない）。"""
+    sim = open_sim
+    ctrl = CellMotionController(params)
+    ctrl.reset(heading_deg=90.0)
+    ctrl.start_forward(2)
+    assert ctrl.cells_completed == 0, "start_forward 直後(まだ動いていない)で 0 でない"
+
+    seen = []
+    for _ in range(MAX_STEPS):
+        obs = sim.observation()
+        vl, vr, done = ctrl.update(obs)
+        sim.step_control(vl, vr)
+        seen.append(ctrl.cells_completed)
+        if done:
+            break
+    else:
+        raise AssertionError(f"{MAX_STEPS} ステップ以内に収束しなかった")
+
+    print(f"\n[実測] cells_completed の遷移(末尾10件): {seen[-10:]} 完了時の値={ctrl.cells_completed} "
+          f"完了時の_dist_est={ctrl._dist_est:.6f}m (目標={2 * params.cell_size:.6f}m)")
+    assert seen == sorted(seen), "cells_completed が単調に増加していない"
+    assert 1 in seen, "2区画直進の途中で cells_completed=1 を一度も観測しなかった"
+    assert max(seen) <= 2, "cells_completed が区画数(2)を超えて増えた"
+
+
+def test_reanchor_heading_overwrites_relative_to_current_yaw_estimate_not_additive(params):
+    """`reanchor_heading` の契約（`_target_heading = self._yaw_est + bias_rad`
+    への**上書き**）が、既存の `bias_target_heading`（現在の `_target_heading`
+    への**加算**）と別物であることを、ヨー推定のドリフトを模して実測する
+    （note_030 §3 S3 任務指示・classic/motion.py の reanchor_heading
+    docstring）。走行開始後にヨー推定だけがドリフトした状況を人為的に作り、
+    2 つのメソッドの結果が実際にドリフト量ぶんだけ食い違うことを確認する
+    （シミュレータ不要のユニット検査）。"""
+    drift = math.radians(4.0)  # 直進中に推測航法へ蓄積したと想定するドリフト
+    bias = math.radians(2.0)   # 横位置補正が返す目標方位バイアス
+
+    ctrl_add = CellMotionController(params)
+    ctrl_add.reset(heading_deg=90.0)
+    ctrl_add.start_forward(3)  # _target_heading = _yaw_est(この時点の値) にリセットされる
+    yaw_before_drift = ctrl_add._yaw_est
+    ctrl_add._yaw_est += drift  # ドリフトを注入(_target_heading はまだ古いまま)
+    ctrl_add.bias_target_heading(bias)
+    expected_add = yaw_before_drift + bias  # ドリフトの影響を受けない(古い基準に加算するだけ)
+
+    ctrl_re = CellMotionController(params)
+    ctrl_re.reset(heading_deg=90.0)
+    ctrl_re.start_forward(3)
+    ctrl_re._yaw_est += drift
+    ctrl_re.reanchor_heading(bias)
+    expected_re = (yaw_before_drift + drift) + bias  # ドリフト後の"今"を基準に置き直す
+
+    diff_deg = math.degrees(ctrl_re._target_heading - ctrl_add._target_heading)
+    print(f"\n[実測] bias_target_heading の結果={math.degrees(ctrl_add._target_heading):.4f}deg "
+          f"reanchor_heading の結果={math.degrees(ctrl_re._target_heading):.4f}deg "
+          f"差={diff_deg:.4f}deg (注入ドリフト={math.degrees(drift):.4f}deg)")
+
+    assert abs(ctrl_add._target_heading - expected_add) < 1e-12, \
+        "bias_target_heading が加算(現在の _target_heading への加算)になっていない"
+    assert abs(ctrl_re._target_heading - expected_re) < 1e-12, \
+        "reanchor_heading が「現在のヨー推定を基準に置き直す」上書きになっていない"
+    assert abs(diff_deg - math.degrees(drift)) < 1e-9, (
+        "reanchor_heading と bias_target_heading の差が注入したドリフト量と一致しない"
+        "（2つのメソッドが実際には同じ計算をしている空振りの疑い）"
+    )

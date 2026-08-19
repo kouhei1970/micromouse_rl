@@ -128,15 +128,24 @@ def _map_accuracy(maze, v_walls, h_walls, width: int, height: int):
 
 # plan_adherence の「意図した計画」の定義:
 #   ゴール/スタートへ向けた実際の駆動（explore/return の直進・各旋回）に
-#   加え、"idle"（探索完了 Phase.DONE 後に静止して持ち時間を消費している
-#   状態）も意図どおりとみなす。**探索完了後にじっと待つのは失敗ではなく
-#   正しい終端状態**であり、これを「意図から外れた」に数えると、早く
-#   完走した走行ほど比率が悪化するという逆転した評価になってしまうため。
-# 意図から外れるのは "explore:blocked" / "return:blocked" のみ
-#   （`classic/explorer.py` の安全弁が発火した = 内部で行き詰まった状態）。
+#   加え、"idle"（探索完了直後、まだ最短走行を発行していない一瞬の静止）も
+#   意図どおりとみなす。
+# 🔴 2026-08-19 note_030 §3 S3 実装により、探索完了後は Phase.DONE で
+#   静止し続けるのではなく、実際に **最短走行 (Phase.FAST) → スタートへの
+#   帰還 (Phase.RETURN2) → 最短走行…** と走り続けるようになった
+#   （`classic/explorer.py` 参照）。ここで発行される "fast:*"/"return2:*"
+#   も、explore/return の直進・旋回と同じ意味で「意図した計画どおりの
+#   駆動」である（最短走行こそが探索の先にある本来の目的であり、これを
+#   「意図から外れた」に数えると、実際にはより多く仕事をした走行ほど
+#   比率が悪化するという逆転した評価になってしまう）。
+# 意図から外れるのは "explore:blocked" / "return:blocked" / "fast:blocked" /
+#   "return2:blocked" のみ（`classic/explorer.py` の安全弁が発火した =
+#   内部で行き詰まった状態）。
 INTENDED_PLAN_IDS = {
     "explore:straight", "explore:turn_left", "explore:turn_right", "explore:turn_180",
     "return:straight", "return:turn_left", "return:turn_right", "return:turn_180",
+    "fast:straight", "fast:turn_left", "fast:turn_right", "fast:turn_180", "fast:goal_stop",
+    "return2:straight", "return2:turn_left", "return2:turn_right", "return2:turn_180",
     "idle",
 }
 # 🔴 閾値の根拠: "blocked" は classic/explorer.py 内部の安全弁（同一区画での
