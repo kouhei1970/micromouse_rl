@@ -418,11 +418,19 @@ class RecordingPolicyWrapper(MousePolicy):
         self.state = "FREE"
 
     def bind_sim(self, sim):
+        # 🔴 描画のために**ラッパー自身**は sim を持つ（軌跡を描く「カメラ」であり、
+        # 方策の入力ではない）。しかし **inner が特権を要求していないなら渡さない。**
+        # 2026-08-19 是正: 従来は無条件に転送しており、requires_privileged=False の
+        # 方策にも特権情報を差し出していた。実害は無かった（基底の受け口が空実装）が、
+        # 「センサだけで走っている」という主張を**構成として**保証するために閉じる。
         self.sim = sim
-        self.inner.bind_sim(sim)
+        if getattr(self.inner, "requires_privileged", False):
+            self.inner.bind_sim(sim)
 
     def bind_maze(self, v_walls, h_walls):
-        self.inner.bind_maze(v_walls, h_walls)
+        # 同上。真の壁情報も、要求していない方策には渡さない。
+        if getattr(self.inner, "requires_privileged", False):
+            self.inner.bind_maze(v_walls, h_walls)
 
     def on_maze_start(self, maze_info):
         self.run_count = 0
@@ -635,13 +643,15 @@ def render_right_panel(ctx, wall_map, v, omega, vl, vr, ranges_mm) -> Image.Imag
 # ==========================================================================
 def record_run_video(policy, method_label: str, out_path: Path, maze_id: str,
                       extra_caption=None, max_runs: int = MAX_RUNS,
-                      time_budget: float = TIME_BUDGET_S, v_max_for_graph: float = 0.3) -> dict:
+                      time_budget: float = TIME_BUDGET_S, v_max_for_graph: float = 0.3,
+                      maze_dir: Path | None = None) -> dict:
     """policy（requires_privileged=True の方策インスタンス）で maze_id を
     5走行（既定）分フル録画する。タイミングは competition/evaluator.py の
     CompetitionEvaluator.evaluate_maze() をそのまま駆動して取得する
     （本ファイル冒頭docstring参照）。失敗走行（stuck等）も省略せず記録する。
     """
-    npz_path = EVAL_MAZE_DIR / f"{maze_id}.npz"
+    maze_dir = Path(maze_dir) if maze_dir is not None else EVAL_MAZE_DIR
+    npz_path = maze_dir / f"{maze_id}.npz"
     if not npz_path.exists():
         raise FileNotFoundError(f"{npz_path} が見つかりません")
     data_npz = np.load(npz_path)
@@ -763,7 +773,7 @@ def record_run_video(policy, method_label: str, out_path: Path, maze_id: str,
     print("competition/evaluator.py の CompetitionEvaluator.evaluate_maze() をそのまま駆動します"
           "（タイミング完全一致のため）。")
 
-    evaluator = CompetitionEvaluator(maze_dir=str(EVAL_MAZE_DIR), time_budget=time_budget,
+    evaluator = CompetitionEvaluator(maze_dir=str(maze_dir), time_budget=time_budget,
                                       max_runs=max_runs)
     result = evaluator.evaluate_maze(npz_path, wrapped)
 
