@@ -55,3 +55,7 @@ outputs/**
 # 機構分析の唯一の材料なので、logs/ が版管理外であることによる消失を防ぐ。
 # 489,543 バイト・一度きり（准教授 AUDIT_018 §3-bis・研究計画書 §9-19）。
 !models/exp_012_condE_seed2_step2000000_goal7017.zip
+# 発表用動画（2026-08-19）: 完成物と、その素材である走行動画。
+# 再生成は research_notes/scripts/make_story_video.py（走行動画は render 経由）。
+# 9 MB と 13 MB で軽量なため、成果物として版管理下に置く。
+!outputs/video_rebuild/*.mp4

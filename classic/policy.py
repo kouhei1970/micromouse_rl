@@ -66,6 +66,25 @@ class ClassicExplorerPolicy(MousePolicy):
             self._explorer.handle_retrieval()
 
     # ------------------------------------------------------------------
+    # 既知の壁地図の露出（描画・検分用の読み取り専用）
+    # ------------------------------------------------------------------
+    # 🔴 これは**方策が自分で作った地図**であり、真の壁情報ではない。
+    # 描画器（research_notes/scripts/_video_l0_common.py）が「マウスが今どこまで
+    # 地図を作れたか」を表示するために読む。evaluator の v_walls / h_walls と
+    # 同じ添字規約だが、値は WallState（0=未知・1=壁あり・2=壁なし）である。
+    # 走行がまだ始まっていない（on_maze_start 前）ときは None を返す。
+
+    @property
+    def v_walls_known(self):
+        """方策が把握している縦壁。**真値ではない。**"""
+        return None if self._explorer is None else self._explorer.maze.v_walls
+
+    @property
+    def h_walls_known(self):
+        """方策が把握している横壁。**真値ではない。**"""
+        return None if self._explorer is None else self._explorer.maze.h_walls
+
+    # ------------------------------------------------------------------
     # 制御則本体
     # ------------------------------------------------------------------
     def act(self, obs: np.ndarray) -> Tuple[float, float]:
