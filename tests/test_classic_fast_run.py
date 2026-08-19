@@ -17,7 +17,7 @@ docs/JA_ENGINEERING_TERMS.md §1 に従う — 是正5）。
       経路計画が `classic.route.plan_route` であることを表明する（型 B）
   T3. `classic.checks.plan_adherence` で、最短走行の区間のティックが
       "fast:*" に乗っていた割合を実測して報告する（🔴 閾値は置かない）
-  T4. 否定対照 N1/N2（`classic.checks.negative_control`）
+  T4. 否定対照 N1〜N4（`classic.checks.negative_control`）
   T5. 直線延伸（`extend_straights`）が効いていることの対の検査
   T6. 多区画直進中の区画ごと補正が実際に呼ばれていることの実測
 
@@ -367,6 +367,114 @@ def test_fast_run_does_not_use_privileged_information(tmp_path, params, carved_m
 
     got = negative_control(run_under_test=run_under_test, run_control=run_control)
     print(f"\n[実測] 否定対照(FAST・privileged_pose/velocity): {got.verdict}")
+    assert got.passed, got.verdict
+
+
+# ==========================================================================
+# 否定対照 N3/N4（PREREG.md §10。経路計画が実際に使われていることの実測）
+# ==========================================================================
+N3N4_STEPS = N1N2_STEPS  # 同じ長さ(数区画分の最短走行を確実に含む)を流用
+
+
+def _collapsing_plan_route(*args, **kwargs):
+    """N3 の壊し方: 本物の `classic.route.plan_route` を呼んだ後、返って
+    きた `Command` 列のうち `CommandType.STRAIGHT` の `cells` をすべて 1 に
+    潰す。`Command` は frozen dataclass なので、書き換えず新しい `Command`
+    を作って積み直す。"""
+    path, commands = route_module.plan_route(*args, **kwargs)
+    collapsed = [
+        Command(CommandType.STRAIGHT, 1) if c.type == CommandType.STRAIGHT else c
+        for c in commands
+    ]
+    return path, collapsed
+
+
+def _drive_fast_collect_voltages_with_route_patch(monkeypatch, tmp_path, params, v_walls, h_walls,
+                                                    maze, label, collapse_straights, n_steps):
+    """`classic.explorer.plan_route`（`classic.route.plan_route` ではない —
+    下のコメント参照）を差し替えて FAST を駆動し、電圧列を返す。
+
+    🔴 `classic/explorer.py` は `from classic.route import ... plan_route` で
+    `plan_route` を自分のモジュール名前空間へ**束縛済み**である。実装前に
+    実測で確かめた事実（`classic.route.plan_route` だけを差し替える誤りを
+    避けるため必ず先に確認すること）:
+      - `classic.route.plan_route` だけを差し替えても
+        `classic.explorer.plan_route` は元のまま変わらない（束縛はモジュール
+        読み込み時の1回きりで、以後は互いに独立な別オブジェクトになる）。
+      - `classic.explorer.plan_route` を直接差し替えると、
+        `_plan_route_or_block` 内のベア名前 `plan_route` の参照解決は
+        呼び出しのたびに `classic.explorer` モジュールの名前空間を引くため、
+        実際に差し替えた実装が呼ばれる（`ClassicExplorer._begin_fast_run` を
+        直接呼んで実測・確認済み）。
+    したがって「壊す」には `classic.route.plan_route` ではなく
+    `classic.explorer.plan_route` を差し替える必要がある。"""
+    patched = _collapsing_plan_route if collapse_straights else route_module.plan_route
+    monkeypatch.setattr(explorer_module, "plan_route", patched)
+    is_bound_to_route_module = explorer_module.plan_route is route_module.plan_route
+    print(f"[実測] classic.explorer.plan_route 差し替え後"
+          f"(collapse_straights={collapse_straights}): "
+          f"classic.route.plan_route と同一か={is_bound_to_route_module}")
+    if collapse_straights:
+        assert not is_bound_to_route_module, (
+            "collapse_straights=True で差し替えたのに classic.explorer.plan_route が"
+            "本物のままになっている（壊し方が効いていない）"
+        )
+
+    sim = _fresh_sim(tmp_path, params, v_walls, h_walls, label)
+    ex = _fresh_explorer_in_fast(sim, params, maze)
+    voltages = []
+    for _ in range(n_steps):
+        obs = sim.observation()
+        vl, vr, _plan_id = ex.tick(obs)
+        voltages.append((vl, vr))
+        sim.step_control(vl, vr)
+    return tuple(voltages)
+
+
+def test_fast_run_uses_the_planned_route(tmp_path, params, carved_maze_and_walls, monkeypatch):
+    """PREREG.md §10 N3/N4。
+
+    N3(壊す側): `classic.explorer.plan_route` を、本物の `plan_route` の
+    戻り値のうち `CommandType.STRAIGHT` の `cells` をすべて 1 に潰す
+    ラッパー(`_collapsing_plan_route`)へ差し替える。期待は「最短走行が
+    変わる」こと（経路計画が実際に使われていることの証拠）。
+
+    N4(空振り側): N3 の壊し方を適用せず、同じ構成(本物の plan_route)を
+    2 回走らせる。期待は「変わらない」こと（bit 一致）。これはシミュレータ
+    が決定的であることそのものの実測でもある — 一致しなければそれ自体が
+    報告すべき重大な発見である（握りつぶさない）。
+
+    `classic.checks.negative_control` の役割を N1/N2 とは逆向きに割り当てる:
+      run_under_test = N4 側(壊し方を適用しない。常に本物の plan_route を
+        2 回走らせて bit 一致を見る)
+      run_control    = N3 側(broken=True のときだけ直進を 1 区画に潰す)
+    この配線で `changed_when_broken` が N4 の「変わらない」判定
+    (False であってほしい)に、`changed_in_control` が N3 の「変わる」判定
+    (True であってほしい)にそのまま対応し、
+    `passed = changed_in_control and not changed_when_broken` が
+    「N3 も N4 も両方成立」を表す。対照(N3)側が動かなければ `verdict` は
+    「判定保留」に倒れ、`passed` は偽になる（PREREG.md §10 の指示どおり）。"""
+    maze, v_walls, h_walls = carved_maze_and_walls
+
+    def run_under_test(_unused: bool) -> Tuple[Tuple[float, float], ...]:
+        # N4: 壊し方を適用しない(常に本物の plan_route)。同じ構成を2回
+        # 走らせて bit 一致することを見る。
+        return _drive_fast_collect_voltages_with_route_patch(
+            monkeypatch, tmp_path, params, v_walls, h_walls, maze,
+            f"n4_{_unused}", collapse_straights=False, n_steps=N3N4_STEPS)
+
+    def run_control(broken: bool) -> Tuple[Tuple[float, float], ...]:
+        # N3: broken=True のときだけ直進の区画数を1に潰す。
+        return _drive_fast_collect_voltages_with_route_patch(
+            monkeypatch, tmp_path, params, v_walls, h_walls, maze,
+            f"n3_{broken}", collapse_straights=broken, n_steps=N3N4_STEPS)
+
+    got = negative_control(run_under_test=run_under_test, run_control=run_control)
+    print(f"\n[実測] 否定対照(FAST・N3/N4・経路計画の直進潰し): {got.verdict}")
+    print(f"[実測]   N4側(壊し方を適用しない・変わらないはず) "
+          f"changed_when_broken={got.changed_when_broken}")
+    print(f"[実測]   N3側(直進を1区画に潰す・変わるはず)     "
+          f"changed_in_control={got.changed_in_control}")
     assert got.passed, got.verdict
 
 
