@@ -7,7 +7,8 @@ tests/test_classic_fast_run.py
 
 `tests/test_classic_policy.py`・`tests/test_classic_localization.py` の作法を
 そのまま踏襲する: **実際にシミュレータを動かして**実測し、[実測] タグ付き
-print と、発火側・空振り側を対にした assert で確かめる。
+print と、作動側・空振り側を対にした assert で確かめる（用語は
+docs/JA_ENGINEERING_TERMS.md §1 に従う — 是正5）。
 
 構成（note_030 §3 S3 任務指示の T1〜T6 に対応）:
   T1. 手で作った小さな既知の迷路で、FAST が `classic.route.plan_route` と
@@ -24,11 +25,28 @@ print と、発火側・空振り側を対にした assert で確かめる。
 `start_heading=Direction.N` 固定で呼ぶ以上、実際の帰還後の向きが北でない
 場合に必要になる「先頭への補正旋回」）についても 1 件、単体で検査する
 （`test_fast_run_reconciles_actual_heading_to_north_before_executing_the_plan`）。
+
+2026-08-19 の検収で見つかった不足への是正（`experiments/exp_024_s3_fast_run/
+PREREG.md` 追記1）に対応して、以下を追加する:
+  是正2. 「最短走行中は地図を書き換えない」ことを、地図の**内容**ではなく
+      `_update_map_from_sensing` の**呼び出しの配線**で検査する
+      （作動側・空振り側を対に。内容の一致を根拠にすると、検査用の迷路が
+      単純すぎて書いても内容が変わらない、という穴を再現してしまう）
+  是正3. `ClassicExplorer._enter_route_blocked`（旧 `_enter_fast_blocked`。
+      経路が引けない・実行できないときの安全弁）を実際に作動させる検査
+      （作動側・空振り側を対に）
+  是正4. 実際の迷路（`competition/mazes/design_turn_v1/maze_41001.npz`、
+      対象6迷路中で最短歩数が最小の52）を `CompetitionEvaluator` で走らせ、
+      最短走行が競技評価器の2段階ゴール判定を通って成立することを検査する
+      （🔴 合否のしきい値は置かない。判定条文は PREREG.md の領分）
+  是正6. `Phase.RETURN2`（最短走行の帰路）が `Phase.FAST` と同じ
+      「plan_route のコマンド列を実行する」機構で走ること、その間も
+      地図を書き換えないことを検査する（作動側・空振り側を対に）
 """
 from __future__ import annotations
 
 from pathlib import Path
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 
 import numpy as np
 import pytest
@@ -44,8 +62,11 @@ from classic.explorer import ClassicExplorer, Phase
 from classic.flood import FloodMode
 from classic.maze_map import ALL_DIRECTIONS, Direction, MazeMap, direction_between
 from classic.maze_map import WallState as MapWallState
+from classic.policy import ClassicExplorerPolicy
 from classic.route import Command, CommandType, plan_route
+from competition.evaluator import CompetitionEvaluator
 
+REPO_ROOT = Path(__file__).resolve().parent.parent
 Cell = Tuple[int, int]
 
 
@@ -353,7 +374,7 @@ def test_fast_run_does_not_use_privileged_information(tmp_path, params, carved_m
 # T5: 直線延伸（extend_straights）が効いていることの対の検査
 # ==========================================================================
 def test_extending_straights_completes_faster_than_the_stop_and_go_control(tmp_path, params, carved_maze_and_walls):
-    """発火側 = extend_straights=True の方が、空振り側 = False（STRAIGHT n を
+    """作動側 = extend_straights=True の方が、空振り側 = False（STRAIGHT n を
     1 区画の直進 n 回として実行する対照）より所要ティックが少ないこと。
     経路・速度上限は完全に同一で、直線を伸ばす効果だけが異なる。"""
     maze, v_walls, h_walls = carved_maze_and_walls
@@ -472,3 +493,353 @@ def test_multi_cell_forward_reanchors_localization_at_every_cell_boundary(tmp_pa
     assert bias_off == n_cells, "localization_enabled=False で呼び出し経路そのものが変わってしまっている"
     assert reanchor_off == 0, "localization_enabled=False でも reanchor_heading が呼ばれてしまった"
     assert events_off == 0, "localization_enabled=False でも横位置補正イベントが記録されてしまった"
+
+
+# ==========================================================================
+# 是正2: 「最短走行中は地図を書き換えない」を呼び出しの配線で検査する
+# （内容の一致では検査しない — 検収で判明した穴の再発防止。
+#  PREREG.md 追記1 の是正2 参照）
+# ==========================================================================
+def _count_calls(obj, method_name: str):
+    """`obj.method_name` をラップして呼び出し回数を数える。呼び出し回数の
+    リスト（1要素）と、元のメソッドへ委譲する差し替え関数を返す。"""
+    calls = [0]
+    original = getattr(obj, method_name)
+
+    def _wrapped(*args, **kwargs):
+        calls[0] += 1
+        return original(*args, **kwargs)
+
+    setattr(obj, method_name, _wrapped)
+    return calls
+
+
+def test_fast_run_never_calls_update_map_from_sensing(tmp_path, params, carved_maze_and_walls):
+    """是正2 作動側: Phase.FAST の走行中、`_update_map_from_sensing` が
+    一度も呼ばれないこと。内容の一致（地図が変わっていないこと）ではなく、
+    呼び出しそのものの回数を数える（検収で判明した穴 — 検査用の迷路が
+    単純すぎて、書いても内容が変わらず検査が空振りしていた — の再発防止）。"""
+    maze, v_walls, h_walls = carved_maze_and_walls
+    sim = _fresh_sim(tmp_path, params, v_walls, h_walls, "t_corr2_fast")
+    ex = _fresh_explorer_in_fast(sim, params, maze)
+    calls = _count_calls(ex, "_update_map_from_sensing")
+
+    plan_ids = _drive_to_goal_stop_hold_complete(sim, ex)
+
+    print(f"\n[実測] Phase.FAST 走行中(総ティック{len(plan_ids)})の "
+          f"_update_map_from_sensing 呼び出し回数: {calls[0]}")
+    assert calls[0] == 0, (
+        "Phase.FAST の走行中に _update_map_from_sensing が呼ばれた"
+        "（最短走行中に地図を書き換えている）"
+    )
+
+
+def test_explore_run_always_calls_update_map_from_sensing(tmp_path, params, carved_maze_and_walls):
+    """是正2 空振り側: Phase.EXPLORE の走行中は `_update_map_from_sensing`
+    が必ず呼ばれること（上の作動側検査に判別力があることの確認 —
+    「呼ばれない」が常に真になってしまう壊れた配線ではないことを示す）。"""
+    _maze, v_walls, h_walls = carved_maze_and_walls
+    sim = _fresh_sim(tmp_path, params, v_walls, h_walls, "t_corr2_explore")
+    ex = ClassicExplorer(MAZE_W, MAZE_H, params=params)  # 白紙の地図・Phase.EXPLORE のまま
+    calls = _count_calls(ex, "_update_map_from_sensing")
+
+    ticks = 0
+    for _ in range(2000):
+        obs = sim.observation()
+        vl, vr, _plan_id = ex.tick(obs)
+        sim.step_control(vl, vr)
+        ticks += 1
+        if ex.phase is not Phase.EXPLORE:
+            break
+
+    print(f"\n[実測] Phase.EXPLORE 走行中(駆動{ticks}ティック)の "
+          f"_update_map_from_sensing 呼び出し回数: {calls[0]}")
+    assert calls[0] > 0, (
+        "Phase.EXPLORE の走行中に _update_map_from_sensing が一度も呼ばれなかった"
+        "（作動側検査に判別力が無い）"
+    )
+
+
+# ==========================================================================
+# 是正3: `_enter_route_blocked`（旧 `_enter_fast_blocked`。最短走行の
+# 安全弁）を実際に作動させる検査（作動側・空振り側の対）
+# ==========================================================================
+def _sealed_unreachable_maze(width: int, height: int) -> MazeMap:
+    """全ての内部壁を WALL にした、どの区画からもどこへも動けない地図を
+    新しく作って返す（悲観どころか楽観でも到達不能。到達不能検査用。
+    `tests/test_classic_policy.py` の `_seal_maze` と同じ作法。
+
+    🔴 module スコープの `carved_maze_and_walls` フィクスチャを直接
+    書き換えると、以後の他の検査が壊れた地図を受け取ってしまう。
+    毎回新しい `MazeMap` を作ることでこれを避ける。"""
+    maze = MazeMap(width, height)
+    for x in range(width):
+        for y in range(height):
+            for d in ALL_DIRECTIONS:
+                if maze.neighbor(x, y, d) is not None:
+                    maze.set_wall(x, y, d, MapWallState.WALL)
+    return maze
+
+
+def test_fast_blocked_safety_valve_fires_when_the_goal_route_becomes_unroutable(
+        tmp_path, params, carved_maze_and_walls):
+    """是正3 作動側: 最短走行の経路が引けない状況を人為的に作る
+    （`_begin_fast_run` の直前に地図をゴールへ到達不能な状態へ差し替える。
+    `classic.route.plan_route` が `NoRouteError` を投げる状況）。
+
+    `plan_id` が "fast:blocked" になり、**例外が投げられず**、電圧が 0 の
+    まま停止し続けることを実測する。"""
+    _maze, v_walls, h_walls = carved_maze_and_walls
+    sim = _fresh_sim(tmp_path, params, v_walls, h_walls, "t_corr3_blocked")
+    ex = ClassicExplorer(MAZE_W, MAZE_H, params=params)
+    ex.maze = _sealed_unreachable_maze(MAZE_W, MAZE_H)  # ゴールへ到達不能な地図
+
+    obs = sim.observation()
+    ex._begin_fast_run(obs)  # ここで NoRouteError が起きるが、外へは漏れない
+    ex._need_replan = False
+
+    print(f"\n[実測] fast:blocked 作動直後: plan_id={ex._active_plan_id!r} "
+          f"blocked_reason={ex._blocked_reason!r}")
+    assert ex._active_plan_id == "fast:blocked"
+    assert ex._blocked_reason is not None
+
+    voltages = []
+    for _ in range(50):
+        obs = sim.observation()
+        vl, vr, plan_id = ex.tick(obs)
+        voltages.append((vl, vr, plan_id))
+        sim.step_control(vl, vr)
+
+    print(f"[実測] 作動後 50 ティックの plan_id・電圧（先頭5件）: {voltages[:5]}")
+    assert all(pid == "fast:blocked" for _, _, pid in voltages), (
+        "fast:blocked のまま停止し続けなかった（意図せず次のコマンドへ進んでしまった）"
+    )
+    assert all(vl == 0.0 and vr == 0.0 for vl, vr, _ in voltages), (
+        "fast:blocked 中に電圧が 0 でなかった"
+    )
+
+
+def test_fast_blocked_safety_valve_does_not_fire_when_the_goal_route_is_reachable(
+        tmp_path, params, carved_maze_and_walls):
+    """是正3 空振り側: 同じ手順でも地図が到達可能なまま（`carved_maze_and_walls`
+    の既知の地図）なら "fast:blocked" にならないこと（上の作動側検査に
+    判別力があることの確認）。"""
+    maze, v_walls, h_walls = carved_maze_and_walls
+    sim = _fresh_sim(tmp_path, params, v_walls, h_walls, "t_corr3_ok")
+    ex = ClassicExplorer(MAZE_W, MAZE_H, params=params)
+    ex.maze = maze  # 到達可能な既知の地図のまま
+
+    obs = sim.observation()
+    ex._begin_fast_run(obs)
+    ex._need_replan = False
+
+    print(f"\n[実測] 到達可能な地図での _begin_fast_run 直後: plan_id={ex._active_plan_id!r}")
+    assert ex._active_plan_id != "fast:blocked"
+    assert ex._blocked_reason is None
+
+
+# ==========================================================================
+# 是正4: 競技評価器 (CompetitionEvaluator) を通した最短走行の検査
+# tests/test_classic_policy.py の module スコープ fixture の作法を踏襲する
+# （5〜15分かかるため、検査ごとに走らせ直さず1回だけ走らせて使い回す）。
+# ==========================================================================
+EXP024_MAZE_DIR = REPO_ROOT / "competition" / "mazes" / "design_turn_v1"
+# 対象6迷路（PREREG.md §3）のうち最短歩数 D0 が最小（52）の迷路。
+EXP024_MAZE_ID = "41001"
+EXP024_TIME_BUDGET_S = 420.0  # docs/RESEARCH_PLAN.md §2 の持ち時間そのもの
+EXP024_MAX_RUNS = 5
+
+
+@pytest.fixture(scope="module")
+def exp024_evaluator() -> CompetitionEvaluator:
+    return CompetitionEvaluator(
+        maze_dir=str(EXP024_MAZE_DIR),
+        time_budget=EXP024_TIME_BUDGET_S,
+        max_runs=EXP024_MAX_RUNS,
+    )
+
+
+@pytest.fixture(scope="module")
+def exp024_maze_41001_result(exp024_evaluator) -> Dict[str, object]:
+    """maze_41001（対象6迷路中で最短歩数が最小の52）を実際に
+    `CompetitionEvaluator` で走らせる。module スコープにして、以降の
+    検査(a)(b)(c)が同じ走行結果を再利用できるようにする（5〜15分かかる）。"""
+    policy = ClassicExplorerPolicy()
+    npz_path = EXP024_MAZE_DIR / f"maze_{EXP024_MAZE_ID}.npz"
+    result = exp024_evaluator.evaluate_maze(npz_path, policy)
+    return {"result": result, "policy": policy}
+
+
+def test_fast_run_through_the_competition_evaluator_does_not_lose_any_runs(
+        exp024_maze_41001_result):
+    """是正4: `tests/test_classic_fast_run.py` の検査は、これまで
+    `CompetitionEvaluator` を一度も通しておらず、評価器の2段階ゴール判定
+    （`body_fully_inside` / `goal_not_contained`）を素通りしていた。ここで
+    実際の迷路（maze_41001, 最短歩数52）を評価器で走らせ、次を検査する:
+      (a) runs[] に outcome == "goal_not_contained" が1件も無いこと
+      (b) 走行開始時の段階が FAST だった走行が1本以上あり、その outcome が
+          "goal" であること（最短走行が競技評価器の上で実際に成立すること）
+      (c) 実測値（各走行の index/outcome/run_time、段階の記録）を印字する
+
+    🔴 合否のしきい値（タイムの比など）は置かない。それは
+    `experiments/exp_024_s3_fast_run/PREREG.md` に事前登録された判定条文の
+    領分であり、ここでは「走行が失われていないこと」だけを見る。"""
+    result = exp024_maze_41001_result["result"]
+    policy: ClassicExplorerPolicy = exp024_maze_41001_result["policy"]
+    runs = result["runs"]
+    run_phases = policy.get_run_phases()
+    phase_by_index = {p["run_index"]: p["phase"] for p in run_phases}
+
+    lines = [
+        f"  走行{r['index']}: 開始段階={phase_by_index.get(r['index'], '?')} "
+        f"outcome={r['outcome']} run_time={r['run_time']}"
+        for r in runs
+    ]
+    print(f"\n[実測] maze_{EXP024_MAZE_ID}（D0=52）の各走行 "
+          f"(持ち時間{EXP024_TIME_BUDGET_S}s・最大{EXP024_MAX_RUNS}走行):\n"
+          + "\n".join(lines))
+    print(f"[実測] run_phases（走行開始時点の段階の列）: {run_phases}")
+    print(f"[実測] 走行本数: {len(runs)}")
+
+    goal_not_contained = [r for r in runs if r["outcome"] == "goal_not_contained"]
+    print(f"[実測] (a) goal_not_contained の件数: {len(goal_not_contained)}")
+    assert not goal_not_contained, (
+        f"goal_not_contained が {len(goal_not_contained)} 件あった"
+        f"（ゴール停止ホールドが不十分な可能性。是正1 参照）: {goal_not_contained}"
+    )
+
+    fast_started_runs = [r for r in runs if phase_by_index.get(r["index"]) == "FAST"]
+    fast_goal_runs = [r for r in fast_started_runs if r["outcome"] == "goal"]
+    print(f"[実測] (b) FASTで開始した走行: {[r['index'] for r in fast_started_runs]} "
+          f"うちゴールしたもの: {[r['index'] for r in fast_goal_runs]}")
+    assert fast_started_runs, (
+        "FASTで開始した走行が1本も無かった（最短走行そのものが始まっていない）"
+    )
+    assert fast_goal_runs, (
+        "FASTで開始した走行はあったが、1本もゴールしなかった"
+    )
+
+
+# ==========================================================================
+# 是正6: Phase.RETURN2（最短走行の帰路）が Phase.FAST と同じ
+# 「plan_route のコマンド列を実行する」機構で走ることの検査
+# ==========================================================================
+_TURN_SUFFIX_FOR_TYPE = {
+    CommandType.STRAIGHT: "straight",
+    CommandType.TURN_RIGHT90: "turn_right",
+    CommandType.TURN_LEFT90: "turn_left",
+    CommandType.TURN_180: "turn_180",
+}  # GOAL_STOP は含めない — RETURN2 はこれを "return2:goal_stop" として
+   # 発行せず、受け取った瞬間に次の最短走行(_begin_fast_run)へ移る
+   # （モジュール docstring・classic/explorer.py の docstring 参照）。
+
+
+def test_return2_executes_the_same_command_sequence_as_plan_route(
+        tmp_path, params, carved_maze_and_walls):
+    """是正6 作動側: Phase.RETURN2 が Phase.FAST と同じ「plan_route の
+    コマンド列を実行する」機構で走ることを、T1（`test_fast_executes_the_
+    same_command_sequence_as_plan_route`）と同型の検査で確かめる。
+
+    RETURN2 開始時点（FAST のゴール停止ホールドが完了した瞬間）の
+    `ex.cell`・`ex.heading` を使って独立に `plan_route` を呼び、その出力
+    （末尾の GOAL_STOP を除く）と、実行時の plan_id 列（"return2:*" だけを
+    取り出し重複除去したもの）・`start_forward` に渡された区画数の列を
+    突き合わせる。"""
+    maze, v_walls, h_walls = carved_maze_and_walls
+    sim = _fresh_sim(tmp_path, params, v_walls, h_walls, "t_corr6_cmds")
+    ex = _fresh_explorer_in_fast(sim, params, maze)
+
+    recorded_n_cells_by_phase: List[Tuple[str, int]] = []
+    original_start_forward = ex.motion.start_forward
+
+    def _wrapped_start_forward(n):
+        recorded_n_cells_by_phase.append((ex.phase.name, n))
+        return original_start_forward(n)
+
+    ex.motion.start_forward = _wrapped_start_forward
+
+    # 1本目の最短走行(FAST)をゴール停止ホールド完了まで駆動する。この時点
+    # (_begin_return2_run が呼ばれる直前)の cell・heading が RETURN2 の
+    # plan_route 呼び出しに使われる値（classic/explorer.py の
+    # _begin_return2_run の実装どおり）。
+    _drive_to_goal_stop_hold_complete(sim, ex)
+    return2_start_cell = ex.cell
+    return2_start_heading = ex.heading
+
+    expected_path, expected_commands = plan_route(
+        maze, start=return2_start_cell, goals=[ex.start_cell],
+        mode=FloodMode.PESSIMISTIC, start_heading=return2_start_heading,
+    )
+    expected_labels = [
+        f"return2:{_TURN_SUFFIX_FOR_TYPE[c.type]}" for c in expected_commands
+        if c.type != CommandType.GOAL_STOP
+    ]
+    expected_straight_cells = [c.cells for c in expected_commands if c.type == CommandType.STRAIGHT]
+
+    # RETURN2 を実行し、次の最短走行(Phase.FAST)へ入るまで駆動を続ける。
+    plan_ids_return2: List[str] = []
+    for _ in range(8000):
+        obs = sim.observation()
+        vl, vr, plan_id = ex.tick(obs)
+        plan_ids_return2.append(plan_id)
+        sim.step_control(vl, vr)
+        if ex.phase is Phase.FAST:
+            break
+    else:
+        raise AssertionError("8000 ティック以内に RETURN2 が完了しなかった")
+
+    got_labels = _distinct_sequence([p for p in plan_ids_return2 if p.startswith("return2:")])
+    got_straight_cells = [n for phase_name, n in recorded_n_cells_by_phase if phase_name == "RETURN2"]
+
+    print(f"\n[実測] RETURN2 開始時点: cell={return2_start_cell} heading={return2_start_heading}")
+    print(f"[実測] plan_route(RETURN2相当)の出力: {expected_commands}")
+    print(f"[実測] RETURN2 が実行した plan_id 列(重複除去): {got_labels}")
+    print(f"[実測] RETURN2 中に start_forward に渡された区画数の列: {got_straight_cells}")
+    print(f"[実測] RETURN2 完了(=次のFAST開始)時点の到達区画: {ex.cell}"
+          f"（plan_route の経路終点: {expected_path[-1]}）")
+
+    assert expected_path[-1] == ex.start_cell, (
+        "テスト前提が崩れている（RETURN2 の目的地はスタート区画のはず）"
+    )
+    assert got_labels == expected_labels, (
+        "Phase.RETURN2 が実行したコマンド種別の列が plan_route の出力と一致しない"
+    )
+    assert got_straight_cells == expected_straight_cells, (
+        "Phase.RETURN2 が start_forward に渡した区画数の列が"
+        " plan_route の STRAIGHT.cells と一致しない"
+    )
+    assert ex.cell == ex.start_cell, "RETURN2 完了時の到達区画がスタート区画でない"
+
+
+def test_return2_never_calls_update_map_from_sensing(tmp_path, params, carved_maze_and_walls):
+    """是正6 作動側（是正2と同じ配線の検査）: Phase.RETURN2 の走行中も
+    `_update_map_from_sensing` が一度も呼ばれないこと（地図は探索完了
+    時点で既に確定しており、帰路でも書き換えない設計。空振り側は
+    `test_explore_run_always_calls_update_map_from_sensing` が兼ねる —
+    同じ配線・同じメソッドを対象にした検査であるため）。"""
+    maze, v_walls, h_walls = carved_maze_and_walls
+    sim = _fresh_sim(tmp_path, params, v_walls, h_walls, "t_corr6_map")
+    ex = _fresh_explorer_in_fast(sim, params, maze)
+    calls = _count_calls(ex, "_update_map_from_sensing")
+
+    _drive_to_goal_stop_hold_complete(sim, ex)
+    calls_after_fast = calls[0]
+
+    ticks = 0
+    for _ in range(8000):
+        obs = sim.observation()
+        vl, vr, _plan_id = ex.tick(obs)
+        sim.step_control(vl, vr)
+        ticks += 1
+        if ex.phase is Phase.FAST:
+            break
+    else:
+        raise AssertionError("8000 ティック以内に RETURN2 が完了しなかった")
+
+    print(f"\n[実測] _update_map_from_sensing 呼び出し回数: "
+          f"FAST完了時点={calls_after_fast} RETURN2完了(駆動{ticks}ティック)時点={calls[0]}")
+    assert calls_after_fast == 0, "Phase.FAST 走行中に _update_map_from_sensing が呼ばれた"
+    assert calls[0] == 0, (
+        "Phase.RETURN2 走行中に _update_map_from_sensing が呼ばれた"
+        "（最短走行の帰路で地図を書き換えている）"
+    )

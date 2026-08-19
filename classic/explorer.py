@@ -10,9 +10,13 @@ classic/explorer.py
     帰還後、悲観の歩数マップ（未知は通れない）で「既知の壁だけでゴールへ
     到達できるか」を判定する。到達できれば **FAST（最短走行）** へ移り、
     `classic/route.py` の `plan_route` が返す最短経路のコマンド列を実行する。
-    ゴール停止で 0.2 秒静止したのち、スタートへ戻って再び最短走行する
-    （note_030 §3 S3・L4「最短走行 ×N」）。到達できなければもう一度ゴールを
-    目指す（＝未知の区画を詰めに行く）。
+    ゴール停止で 2.0 秒静止したのち、**RETURN2（最短走行の帰路）** で
+    スタートへ戻る。RETURN2 も FAST と同じ「plan_route のコマンド列を
+    実行する」機構を使う（地図は探索完了時点で既に確定しているので、
+    Phase.RETURN のように 1 区画ずつ足立法で確かめながら戻る理由が無い
+    ——是正6・下記「S3: 最短走行」節参照）。スタートに着いたら再び最短走行
+    する（note_030 §3 S3・L4「最短走行 ×N」）。到達できなければもう一度
+    ゴールを目指す（＝未知の区画を詰めに行く）。
 
 🔴 真値は一切使わない。
   - 位置・方位は `classic/motion.py` の `CellMotionController` が持つ
@@ -87,27 +91,47 @@ classic/explorer.py
     実行の先頭で必要なら「現在の向き→北」への旋回を 1 回差し込んでから
     （`_issue_turn_towards` を再利用。既存の "fast:turn_*" と同じ label が
     付く）、生成されたコマンド列をそのまま実行する。
-  - ゴール停止（`CommandType.GOAL_STOP`）に達したら、その場で 0.2 秒
-    （`params.control_dt` から求めたティック数。既定 100Hz で 20 ティック）
-    静止してからスタートへ戻る段階（Phase.RETURN2）へ移る。🔴 評価器は
+  - ゴール停止（`CommandType.GOAL_STOP`）に達したら、その場で 2.0 秒
+    （`params.control_dt` から求めたティック数。既定 100Hz で 200 ティック。
+    `GOAL_STOP_HOLD_S` の docstring 参照 — 是正1）静止してから、スタートへ
+    戻る段階（Phase.RETURN2）へ移る。🔴 評価器は
     ゴール前端通過のあと「機体全体がゴール区画に完全に入り、かつ前進速度
     < 0.02 m/s」を最大 5 秒間確認して初めて走行を成立させる
     （`competition/evaluator.py` の `GOAL_STOP_TIMEOUT_S` / `body_fully_inside`）。
     すぐ動き出すと `goal_not_contained` へ書き換えられ走行が失われる。
-  - スタートへ戻る段階（Phase.RETURN2）は Phase.RETURN と**同じ機構**
-    （楽観の歩数マップでスタートを目指す。地図更新も従来どおり続ける）を
-    使う。plan_id の接頭辞だけが "return2:" になる（探索中の "return:" と
-    区別できるようにする）。スタート区画に着いたら**再び FAST を実行する**
-    （note_030 §2 L4「最短走行 ×N」）。悲観歩数マップでの再判定はしない
-    （RETURN 完了時に既に「既知の壁だけで到達可能」と確認済みであるため）。
-    評価器が持ち時間・最大走行回数で自然に打ち切る（競技規約）。
+  - 🔴 是正6（2026-08-19 検収）: スタートへ戻る段階（Phase.RETURN2）は、
+    もはや Phase.RETURN と同じ機構（足立法で 1 区画ずつ止まりながら進む）
+    ではない。**Phase.FAST と同じ「plan_route のコマンド列を実行する」
+    機構**を使う。地図は探索完了時点で既に確定済みであり（悲観の歩数マップ
+    で到達可能と確認済み）、帰路だけ 1 区画ずつ探る理由が無いため
+    （実測: maze_41001・最短歩数52 で、持ち時間420秒のうち旧方式の帰路だけ
+    で80秒以上を消費し、3本目の走行が始まらなかった）。目標をスタート区画
+    `(0,0)`、`start_heading` を**現在の向き** `self.heading` にして
+    `plan_route` を呼ぶ（FAST と異なり北固定ではない — スタート区画へ入る
+    向きは経路そのもので決まるので、実行前の向き合わせ旋回は不要）。直線を
+    伸ばす（`extend_straights` の設定に従う）・多区画直進中の区画ごとの
+    位置補正の掛け直しも FAST と全く同じ仕組みを共用する（`_on_stationary_route`
+    以下、内部の実行エンジンは FAST/RETURN2 で共通化してある。plan_id の
+    接頭辞だけが `_phase_prefix()` により "return2:" になる）。地図は
+    書き換えない（FAST と同じ理由。地図は確定済み）。
+    ただし終端の扱いだけ FAST と異なる: `plan_route` が返すコマンド列の
+    最後は（目的地がどこであれ）必ず `CommandType.GOAL_STOP` だが、
+    RETURN2 ではこれを「ゴール停止のホールド」（"return2:goal_stop" という
+    plan_id）としては扱わない。スタート区画に着いた時点で静止する意味が
+    無い（評価器の判定はゴール区画にしか関係しない）ため、この GOAL_STOP
+    を受け取ったら**ホールドせずそのまま** `_begin_fast_run` を呼んで次の
+    最短走行へ移る。悲観歩数マップでの再判定はしない（RETURN 完了時に既に
+    「既知の壁だけで到達可能」と確認済みであるため）。評価器が持ち時間・
+    最大走行回数で自然に打ち切る（競技規約）。
   - 係員回収（`handle_retrieval`）を受けたときは、地図と段階を保ったまま
     位置推定だけ初期化する（現行と同じ）。段階が FAST/RETURN2 だった場合は
     物理的にスタート区画へ戻されているので、スタート区画から最短走行を
     やり直す。
-  - 最短走行の経路が引けない・実行できないなど想定外の事態が起きた場合は
-    例外を投げず、その場で停止して "fast:blocked" を返す（現行の
-    "explore:blocked"/"return:blocked" と同じ思想。note_029 の教訓）。
+  - 最短走行（FAST）の経路が引けない・実行できないなど想定外の事態が
+    起きた場合は例外を投げず、その場で停止して "fast:blocked" を返す
+    （現行の "explore:blocked"/"return:blocked" と同じ思想。note_029 の
+    教訓）。RETURN2 で同じ事態が起きた場合は "return2:blocked" を返す
+    （是正6。plan_id の接頭辞は常に `_phase_prefix()` から決まる）。
 
 【S3 の真値の禁止（変えてはならない前提）】
 `classic/policy.py` の `requires_privileged = False` を維持する。
@@ -138,7 +162,7 @@ class Phase(Enum):
     EXPLORE = auto()   # ゴールを目指す（楽観歩数マップ）
     RETURN = auto()    # 探索完了前の帰還。スタートへ戻る（楽観歩数マップ）。地図も更新する
     FAST = auto()       # 最短走行を実行中（note_030 §3 S3）
-    RETURN2 = auto()    # 最短走行後、次の最短走行のためスタートへ戻る（RETURN と同じ機構）
+    RETURN2 = auto()    # 最短走行後、次の最短走行のためスタートへ戻る（FAST と同じ「コマンド列実行」機構。是正6）
 
 
 def _goal_cells(width: int, height: int) -> List[Cell]:
@@ -166,7 +190,21 @@ MAX_REPLANS_PER_CELL = 8
 
 # ゴール停止の静止ホールド時間（note_030 §3 S3 任務指示 🔴）。評価器の
 # GOAL_STOP_TIMEOUT_S / body_fully_inside 対策（モジュール docstring参照）。
-GOAL_STOP_HOLD_S = 0.2
+#
+# 🔴 是正1（2026-08-19 検収）: 0.2 → 2.0 秒。評価器は機体前端がゴール区画に
+# 入ったあと、「機体全体がゴール区画に完全に入り、かつ前進速度 < 0.02 m/s」を
+# 最大 5.0 秒（`competition/evaluator.py` の GOAL_STOP_TIMEOUT_S）確認して
+# 初めて走行を成立させる。実測（maze_41001）では前端通過から確認完了まで
+# 1.33 秒かかっており、0.2 秒のホールドでは余裕が 0.2 秒しかなかった。
+# 停止位置が少しずれると走行が goal_not_contained に書き換えられて失われる。
+# 2.0 秒なら 5.0 秒の上限に対して十分な余裕がある。走行タイムは前端通過の
+# 時点で確定するので、**タイムには影響しない**（持ち時間だけを 2 秒使う）。
+#
+# 🔴 ホールドは実際には `_goal_stop_hold_ticks` より 1 ティック長く続く。
+# `fast:goal_stop` を発行したティックでは `tick()` の先頭の判定が古い識別子
+# （前のコマンドの plan_id）を見るため、初回の減算が行われないからである。
+# 常に意図より長い方向のずれなので安全側であり、是正しない。
+GOAL_STOP_HOLD_S = 2.0
 
 # CommandType のターン種別 → (target - heading) mod 4。
 # classic/route.py の _turn_type と同じ規約（Direction は N=0,E=1,S=2,W=3 の
@@ -297,6 +335,14 @@ class ClassicExplorer:
         # 合流する（下記 `_on_stationary` の共通処理と同じ経路）。
         if self.phase in (Phase.FAST, Phase.RETURN2):
             self.phase = Phase.RETURN2
+            # コマンド列も空にしておく（是正6）。`_on_stationary_route` は
+            # 「`_fast_commands` が空 かつ スタート区画にいる」ことを
+            # 「係員回収直後で、まだ RETURN2 の経路を組んでいない」の合図に
+            # 使う。ここでクリアしないと、直前に実行していた FAST/RETURN2 の
+            # 使用済みコマンド列が残ったまま `_issue_next_fast_command` に
+            # 渡り、内部矛盾（コマンド列が尽きた後の実行要求）を誤検出する。
+            self._fast_commands = []
+            self._fast_cmd_index = 0
             self._fast_straight_cells_left = 0
             self._fast_cells_reanchored = 0
             self._goal_stop_ticks_left = 0
@@ -318,10 +364,11 @@ class ClassicExplorer:
 
         vl, vr, done = self.motion.update(obs)
 
-        # S3 (b): FAST の多区画直進の途中、区画中心を通過するたびに測り直して
-        # 掛け直す（note_030 §3 S3 任務指示。モジュール docstring 参照）。
-        # 地図は書き換えない（センサは位置補正にのみ使う）。
-        if (self.phase is Phase.FAST and self.extend_straights
+        # S3 (b): FAST・RETURN2（是正6）の多区画直進の途中、区画中心を
+        # 通過するたびに測り直して掛け直す（note_030 §3 S3 任務指示。
+        # モジュール docstring 参照）。地図は書き換えない
+        # （センサは位置補正にのみ使う）。
+        if (self.phase in (Phase.FAST, Phase.RETURN2) and self.extend_straights
                 and self._active_kind is MotionKind.FORWARD and not done):
             completed = self.motion.cells_completed
             # 🔴 最後の1区画ぶんは _advance_state() の完了処理に必ず残す
@@ -338,12 +385,12 @@ class ClassicExplorer:
                     self.motion.reanchor_heading(bias)
                 nb = self.maze.neighbor(self.cell[0], self.cell[1], self.heading)
                 if nb is None:
-                    # 🔴 想定外の事態（`_enter_fast_blocked` docstring参照。
+                    # 🔴 想定外の事態（`_enter_route_blocked` docstring参照。
                     # 地図の誤りが原因で、直進の途中に実際にはあるはずの壁へ
                     # 衝突しつつ車輪だけ空転し、推測航法の距離推定が迷路の
                     # 外まで進んでしまうことがある）。例外を投げず停止する。
-                    self._enter_fast_blocked(
-                        f"FAST の直進中、区画 {self.cell} から向き {self.heading} への"
+                    self._enter_route_blocked(
+                        f"{self.phase.name} の直進中、区画 {self.cell} から向き {self.heading} への"
                         f"移動が迷路外を指しました（地図の誤り、または未知の壁への"
                         f"衝突による車輪角速度の暴走が疑われる）"
                     )
@@ -357,9 +404,9 @@ class ClassicExplorer:
             if self._goal_stop_ticks_left > 0:
                 self._goal_stop_ticks_left -= 1
             else:
-                self.phase = Phase.RETURN2
-                self._replans_at_cell = 0
-                self._on_stationary(obs)
+                # 是正6: 最短走行のあとの帰路（RETURN2）も、足立法ではなく
+                # plan_route のコマンド列を実行する経路計画で始める。
+                self._begin_return2_run(obs)
                 vl, vr, done = self.motion.update(obs)
         elif done and self._active_kind is not MotionKind.STOP:
             # 直進 1 区画／旋回のどちらかが完了した瞬間。位置・方位を確定させ、
@@ -368,11 +415,11 @@ class ClassicExplorer:
             # （実機の「止まって読んで決めてまた走る」を、判断部分は瞬時と
             # 単純化して再現している）。
             self._advance_state()
-            if self._active_plan_id == "fast:blocked":
-                # _advance_state() が FAST の異常事態を検出し、既に停止
-                # コマンドへ切り替え済み（下記参照）。_on_stationary を
-                # 呼ぶと即座に次のコマンドを発行してしまい停止が消えるので
-                # 呼ばない。
+            if self._active_kind is MotionKind.STOP:
+                # _advance_state() が FAST/RETURN2（是正6）の異常事態を検出し、
+                # 既に "fast:blocked"/"return2:blocked" へ切り替え済み
+                # （`_enter_route_blocked` 参照）。_on_stationary を呼ぶと
+                # 即座に次のコマンドを発行してしまい停止が消えるので呼ばない。
                 vl, vr = 0.0, 0.0
             else:
                 self._on_stationary(obs)
@@ -384,8 +431,11 @@ class ClassicExplorer:
     # 区画中心（または旋回直後の同一区画、コマンド完了直後）での処理
     # ------------------------------------------------------------------
     def _on_stationary(self, obs) -> None:
-        if self.phase is Phase.FAST:
-            self._on_stationary_fast(obs)
+        if self.phase in (Phase.FAST, Phase.RETURN2):
+            # 是正6: Phase.RETURN2 も Phase.FAST と同じ「plan_route の
+            # コマンド列を実行する」機構を使うため、ここで合流する
+            # （`_on_stationary_route` 参照）。
+            self._on_stationary_route(obs)
             return
 
         sensing = sense_walls(obs, self.params)
@@ -407,12 +457,6 @@ class ClassicExplorer:
             # なぞるだけにはならない）。
             self.phase = Phase.EXPLORE
             self._replans_at_cell = 0  # 目標が変わったので仕切り直す
-        elif self.phase is Phase.RETURN2 and self.cell == self.start_cell:
-            # 最短走行後の帰還完了。地図は探索完了時点で「既知の壁だけで
-            # 到達可能」と確認済みなので、悲観歩数マップでの再判定はせず、
-            # そのまま次の最短走行へ入る（note_030 §2 L4「最短走行 ×N」）。
-            self._begin_fast_run(obs)
-            return
 
         target = self._pick_next_direction()
         if target is not None and target != self.heading and self._replans_at_cell >= MAX_REPLANS_PER_CELL:
@@ -491,8 +535,9 @@ class ClassicExplorer:
         （未知のまま。前方センサは重なりゼロなので、進行方向として選ばれた
         側は旋回後の再読み取りで必ず確定する）。
 
-        🔴 Phase.FAST 中は呼ばれない（`_on_stationary_fast` を参照。最短走行
-        中は地図を書き換えない）。"""
+        🔴 Phase.FAST・Phase.RETURN2（是正6）中は呼ばれない
+        （`_on_stationary_route` を参照。最短走行・その帰路のどちらも
+        地図を書き換えない）。"""
         cx, cy = self.cell
         front_dir = self.heading
         left_dir = Direction((int(self.heading) - 1) % 4)
@@ -600,14 +645,14 @@ class ClassicExplorer:
         if self._active_kind is MotionKind.FORWARD:
             nb = self.maze.neighbor(self.cell[0], self.cell[1], self.heading)
             if nb is None:
-                if self.phase is Phase.FAST:
-                    # 🔴 想定外の事態（`_enter_fast_blocked` docstring・
+                if self.phase in (Phase.FAST, Phase.RETURN2):
+                    # 🔴 想定外の事態（`_enter_route_blocked` docstring・
                     # `tick()` のコメント参照）。例外を投げず停止する。
-                    # EXPLORE/RETURN/RETURN2 では `_pick_next_direction` が
+                    # EXPLORE/RETURN では `_pick_next_direction` が
                     # `neighbor() is None` の方位を最初から候補から除外して
                     # いるためこの分岐に到達しない（現行どおり例外のまま）。
-                    self._enter_fast_blocked(
-                        f"FAST の直進コマンド完了時、区画 {self.cell} から向き "
+                    self._enter_route_blocked(
+                        f"{self.phase.name} の直進コマンド完了時、区画 {self.cell} から向き "
                         f"{self.heading} への移動が迷路外を指しました（地図の誤りが疑われる）"
                     )
                     return
@@ -623,13 +668,22 @@ class ClassicExplorer:
         # そもそもこのメソッドを呼ばない設計だが、防御的に no-op にしてある）。
 
     # ------------------------------------------------------------------
-    # S3: 最短走行 (Phase.FAST) の実行
+    # S3: 最短走行 (Phase.FAST) とその帰路 (Phase.RETURN2) の実行
     # ------------------------------------------------------------------
-    def _enter_fast_blocked(self, reason: str) -> None:
-        """FAST 実行中に想定外の事態（経路が引けない・実行できない）が
-        起きたとき、例外を投げずにその場で停止する（note_030 §3 S3 任務
+    # 🔴 是正6（2026-08-19 検収）: 以下のコマンド列実行の仕組みは
+    # Phase.FAST と Phase.RETURN2 の両方から使う共通実装である。
+    # plan_id の接頭辞は `_phase_prefix()` により実行時の self.phase から
+    # 自動的に決まる（"fast:*" / "return2:*"）。内部の状態変数名は
+    # （元が FAST 専用実装だった名残で）`_fast_*` のままだが、意味は
+    # 「現在実行中のコマンド列」であり RETURN2 実行中も同じ変数を使う
+    # （同時に FAST と RETURN2 が実行中になることは無いので、専用の変数を
+    # 増やしてもコードが重複するだけで意味が無い）。
+    def _enter_route_blocked(self, reason: str) -> None:
+        """FAST・RETURN2 実行中に想定外の事態（経路が引けない・実行できない）
+        が起きたとき、例外を投げずにその場で停止する（note_030 §3 S3 任務
         指示 5・現行の "explore:blocked"/"return:blocked" と同じ思想。
-        note_029 の教訓）。
+        note_029 の教訓）。plan_id は呼び出し時点の self.phase から
+        `_phase_prefix()` で決まる（"fast:blocked" / "return2:blocked"）。
 
         🔴 実際に起きた事例（2026-08-19、design_v4 の実走で発見）: FAST の
         多区画直進の途中で、地図の誤り（S1 の既知の限界。
@@ -644,28 +698,46 @@ class ClassicExplorer:
         self._blocked_reason = reason
         self.motion.start_stop()
         self._active_kind = MotionKind.STOP
-        self._active_plan_id = "fast:blocked"
+        self._active_plan_id = f"{self._phase_prefix()}:blocked"
+
+    def _plan_route_or_block(self, start: Cell, goals: List[Cell], start_heading: Direction,
+                              reason_prefix: str) -> Optional[List[Command]]:
+        """`plan_route` を呼び、失敗（`NoRouteError`）したら例外を投げず
+        `_enter_route_blocked` で停止する（FAST・RETURN2 共通。是正6で
+        `_begin_fast_run`・`_begin_return2_run` の重複を無くすために切り出した）。
+
+        呼び出し側は**先に `self.phase` を確定させてから**呼ぶこと
+        （`_enter_route_blocked` の plan_id が `self.phase` に依存するため）。
+        成功時はコマンド列を返し、失敗時は None を返す（呼び出し側は
+        None なら何もせず return するだけでよい。blocked への遷移は
+        ここで完了している）。"""
+        try:
+            _path, commands = plan_route(
+                self.maze, start=start, goals=goals,
+                mode=FloodMode.PESSIMISTIC, start_heading=start_heading,
+            )
+        except NoRouteError as exc:
+            self._enter_route_blocked(f"{reason_prefix}: {exc}")
+            return None
+        return commands
 
     def _begin_fast_run(self, obs) -> None:
         """悲観歩数マップで「既知の壁だけでゴールへ到達できる」と判定された
-        瞬間（RETURN 完了時）、または最短走行後にスタートへ戻り着いた瞬間
-        （RETURN2 完了時）に呼ぶ。`plan_route` で最短経路のコマンド列を求め、
-        Phase.FAST へ入って先頭のコマンドを発行する（note_030 §3 S3 ①）。"""
-        try:
-            _path, commands = plan_route(
-                self.maze, start=self.start_cell, goals=self._goal_cell_list,
-                mode=FloodMode.PESSIMISTIC, start_heading=Direction.N,
-            )
-        except NoRouteError as exc:
+        瞬間（RETURN 完了時）、または最短走行の帰路がスタートへ戻り着いた
+        瞬間（RETURN2 完了時）に呼ぶ。`plan_route` で最短経路のコマンド列を
+        求め、Phase.FAST へ入って先頭のコマンドを発行する（note_030 §3 S3 ①）。"""
+        self.phase = Phase.FAST
+        commands = self._plan_route_or_block(
+            start=self.start_cell, goals=self._goal_cell_list, start_heading=Direction.N,
             # 🔴 通常は起こらないはず（悲観歩数マップで到達可能と確認した
             # 直後、または既に確認済みの地図で呼んでいる）。それでも起きたら
             # 例外で評価全体を落とさず、想定外を静かに握りつぶさない方針
             # （モジュール docstring・note_030 §5）どおり停止する。
-            self.phase = Phase.FAST
-            self._enter_fast_blocked(f"最短経路の計画に失敗しました: {exc}")
+            reason_prefix="最短経路の計画に失敗しました",
+        )
+        if commands is None:
             return
 
-        self.phase = Phase.FAST
         self._fast_commands = commands
         self._fast_cmd_index = 0
         self._fast_straight_cells_left = 0
@@ -682,11 +754,55 @@ class ClassicExplorer:
             return
         self._issue_next_fast_command(obs)
 
-    def _on_stationary_fast(self, obs) -> None:
-        """Phase.FAST 実行中、コマンドが完了した瞬間（または開始直後）の処理。
+    def _begin_return2_run(self, obs) -> None:
+        """最短走行のゴール停止ホールドが終わった瞬間に呼ぶ（是正6・
+        note_030 §3 S3 改訂）。地図は探索完了時点で既に確定しているので、
+        `Phase.RETURN`（探索完了前の帰還）のように足立法で 1 区画ずつ確かめる
+        必要が無い。`_begin_fast_run` と同じ「plan_route のコマンド列を
+        求めて実行する」機構を、目標をスタート区画にして使う。
+
+        🔴 FAST と異なり `start_heading` は `Direction.N` 固定ではなく
+        **現在の実際の向き** `self.heading` をそのまま渡す。ゴール区画から
+        スタートへ戻る向きは経路そのもの（ゴール区画のどの出口から出るか）
+        で決まり、FAST のように「plan_route が想定する向き」と「実際の向き」
+        がずれる余地が無い（FAST は北固定で計画するため、帰還後の実際の
+        向きとのズレを実行時の旋回で吸収する必要があった）。したがって
+        `_begin_fast_run` にある「先頭への向き合わせ旋回」は不要。"""
+        self.phase = Phase.RETURN2
+        commands = self._plan_route_or_block(
+            start=self.cell, goals=[self.start_cell], start_heading=self.heading,
+            # 🔴 通常は起こらないはず（悲観歩数マップで既に「既知の壁だけで
+            # 到達可能」と確認済みの地図であり、しかも今回は FAST 自身が
+            # 実際に通った経路の終点から出発するため）。それでも起きたら
+            # 想定外を静かに握りつぶさない方針どおり停止する。
+            reason_prefix="スタートへの最短経路の計画に失敗しました",
+        )
+        if commands is None:
+            return
+
+        self._fast_commands = commands
+        self._fast_cmd_index = 0
+        self._fast_straight_cells_left = 0
+        self._fast_cells_reanchored = 0
+        self._issue_next_fast_command(obs)
+
+    def _on_stationary_route(self, obs) -> None:
+        """Phase.FAST・Phase.RETURN2 共通: コマンド列（plan_route の出力）の
+        実行中、コマンドが完了した瞬間（または開始直後）の処理。
 
         🔴 地図は書き換えない（`_update_map_from_sensing` を呼ばない。
-        note_030 §3 S3 任務指示。センサは位置補正にのみ使う）。"""
+        note_030 §3 S3 任務指示・是正6。センサは位置補正にのみ使う）。"""
+        if (self.phase is Phase.RETURN2 and self.cell == self.start_cell
+                and not self._fast_commands):
+            # 係員回収（`handle_retrieval`）直後、物理的にスタート区画へ
+            # 戻された状態でここへ最初に来たケース。RETURN2 のコマンド列を
+            # まだ何も組んでいない（`_fast_commands` が空。
+            # `handle_retrieval` がそのためにクリアしてある）ので、改めて
+            # スタートへの経路を計画し直す代わりに、既にスタートにいる以上
+            # そのまま次の最短走行へ入る（note_030 §3 任務指示: 「段階が
+            # FAST/RETURN2 ならスタート区画から最短走行をやり直せること」）。
+            self._begin_fast_run(obs)
+            return
         if self._fast_straight_cells_left > 0:
             self._continue_fast_straight_leg(obs)
             return
@@ -694,18 +810,27 @@ class ClassicExplorer:
 
     def _issue_next_fast_command(self, obs) -> None:
         """`self._fast_commands[self._fast_cmd_index]` を発行し、
-        インデックスを進める。"""
+        インデックスを進める（Phase.FAST・Phase.RETURN2 共通）。"""
         if self._fast_cmd_index >= len(self._fast_commands):
             # 🔴 想定外（GOAL_STOP は必ず最後に来るはずで、通常ここには
             # 来ない）。例外を投げず、その場で停止する
             # （note_030 §3 S3 任務指示 5・モジュール docstring）。
-            self._enter_fast_blocked("FAST のコマンド列が尽きた後にも実行要求が来ました（内部矛盾）")
+            self._enter_route_blocked(
+                f"{self.phase.name} のコマンド列が尽きた後にも実行要求が来ました（内部矛盾）")
             return
 
         cmd = self._fast_commands[self._fast_cmd_index]
         self._fast_cmd_index += 1
 
         if cmd.type == CommandType.GOAL_STOP:
+            if self.phase is Phase.RETURN2:
+                # 🔴 是正6: RETURN2 の終端（スタート区画に着いた）は
+                # "return2:goal_stop" というホールドを持たない。スタート
+                # 区画での静止は評価器の判定に関係しないため、ホールドせず
+                # そのまま次の最短走行へ移る（モジュール docstring
+                # 「S3: 最短走行」節参照）。
+                self._begin_fast_run(obs)
+                return
             self.motion.start_stop()
             self._active_kind = MotionKind.STOP
             self._active_plan_id = "fast:goal_stop"
@@ -724,8 +849,9 @@ class ClassicExplorer:
         self._issue_turn_towards(target)
 
     def _issue_fast_straight(self, n_cells: int, sensing: WallSensing) -> None:
-        """FAST の STRAIGHT n を（新しいコマンドとして）発行する
-        （note_030 §3 S3 ②③）。
+        """FAST・RETURN2（是正6）共通: STRAIGHT n を（新しいコマンドとして）
+        発行する（note_030 §3 S3 ②③）。plan_id は `_phase_prefix()` により
+        "fast:straight" / "return2:straight" のどちらかになる。
 
         `extend_straights=True`（既定）: n 区画を `motion.start_forward(n)`
         の 1 コマンドで連続実行する（直線を伸ばす。停止・整定の空費が
@@ -746,12 +872,13 @@ class ClassicExplorer:
             self.motion.start_forward(1)
         self._apply_fast_straight_bias(sensing)
         self._active_kind = MotionKind.FORWARD
-        self._active_plan_id = "fast:straight"
+        self._active_plan_id = f"{self._phase_prefix()}:straight"
 
     def _continue_fast_straight_leg(self, obs) -> None:
         """`extend_straights=False` のときの、同一 STRAIGHT コマンド内の
-        続きの 1 区画を発行する（対照。note_030 §3 S3 任務指示 4）。
-        コマンド列のインデックスは進めない（同じ STRAIGHT の続きなので）。"""
+        続きの 1 区画を発行する（対照。note_030 §3 S3 任務指示 4。
+        FAST・RETURN2 共通・是正6）。コマンド列のインデックスは進めない
+        （同じ STRAIGHT の続きなので）。"""
         self._fast_straight_cells_left -= 1
         self._fast_cells_reanchored = 0
         self._fast_straight_total_cells = 1
@@ -759,12 +886,13 @@ class ClassicExplorer:
         self.motion.start_forward(1)
         self._apply_fast_straight_bias(sensing)
         self._active_kind = MotionKind.FORWARD
-        self._active_plan_id = "fast:straight"
+        self._active_plan_id = f"{self._phase_prefix()}:straight"
 
     def _apply_fast_straight_bias(self, sensing: WallSensing) -> None:
-        """FAST の直進コマンド発行直後の横位置補正（S2 (a) と同じ入り口）。
-        n 区画コマンドの「出発点で 1 回」ぶんに相当する（途中の n-1 回は
-        `tick()` の区画ごと掛け直しが受け持つ。note_030 §3 S3 任務指示）。"""
+        """FAST・RETURN2（是正6）共通: 直進コマンド発行直後の横位置補正
+        （S2 (a) と同じ入り口）。n 区画コマンドの「出発点で 1 回」ぶんに
+        相当する（途中の n-1 回は `tick()` の区画ごと掛け直しが受け持つ。
+        note_030 §3 S3 任務指示）。"""
         bias = self.localizer.lateral_bias_for_forward(sensing, cell=self.cell, heading=int(self.heading))
         if bias != 0.0:
             self.motion.bias_target_heading(bias)
