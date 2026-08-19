@@ -54,15 +54,33 @@ Kp=τ/(K·λ), Ki=Kp/τ（λ: 閉ループ時定数、ここでは λ=0.05s 相�
   - その場 180° 旋回: 実ヨー変化 179.52°（誤差 0.48°）、位置ずれ 0.23 mm
 
 いずれも S1 の出口条件（低速・確実。速さは目的ではない）に対して十分な精度。
+
+【S2: 壁センサによる区画ごとの位置補正（note_030 §3 S2）】
+本ファイル自体は壁は一切見ない（推測航法のみ、という設計は変わらない）。
+補正は `classic/localization.py` の `Localizer` が持ち、本ファイルは補正量の
+「差し込み口」を 2 つ提供するだけである:
+
+  (a) 横位置補正 → `bias_target_heading()`。直進コマンド発行直後に呼ぶと
+      目標方位にバイアスが乗る（呼び出し元は `classic/explorer.py`）。
+  (b) 前後位置補正 → コンストラクタに `localizer` を渡すと、FORWARD 実行中
+      毎ティック `Localizer.correct_forward_remaining()` を通して残距離が
+      補正される。
+
+`localizer=None`（既定）のときは a も b も一切発動せず、**本ファイルの
+コード経路は S2 導入前と完全に同一**である（否定対照・空振り防止検査の
+土台。詳細は `classic/localization.py` docstring）。
 """
 import math
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 import numpy as np
 
 from mouse.params import RobotParams
+
+if TYPE_CHECKING:  # 循環 import 回避（localization.py は motion.py に依存しない）
+    from classic.localization import Localizer
 
 
 class MotionKind(Enum):
@@ -123,7 +141,8 @@ class CellMotionController:
                  kp_dist: float = DEFAULT_KP_DIST, kp_yaw: float = DEFAULT_KP_YAW,
                  kp_heading: float = DEFAULT_KP_HEADING,
                  distance_tol: float = DEFAULT_DISTANCE_TOL, yaw_tol: float = DEFAULT_YAW_TOL,
-                 speed_settle: float = DEFAULT_SPEED_SETTLE, omega_settle: float = DEFAULT_OMEGA_SETTLE):
+                 speed_settle: float = DEFAULT_SPEED_SETTLE, omega_settle: float = DEFAULT_OMEGA_SETTLE,
+                 localizer: Optional["Localizer"] = None):
         self.params = params if params is not None else RobotParams()
         self.kp_wheel = kp_wheel
         self.ki_wheel = ki_wheel
@@ -136,6 +155,9 @@ class CellMotionController:
         self.yaw_tol = yaw_tol
         self.speed_settle = speed_settle
         self.omega_settle = omega_settle
+        # S2: 壁センサによる区画ごとの位置補正（None=既定は完全に無効。
+        # `classic/localization.py` docstring 参照）。
+        self.localizer = localizer
 
         self._n_sensors = len(self.params.sensors)
         self.reset()
@@ -190,6 +212,16 @@ class CellMotionController:
         self._target_heading = self._yaw_est
         self._integ_l = 0.0
         self._integ_r = 0.0
+
+    def bias_target_heading(self, delta_rad: float) -> None:
+        """直進の目標方位に補正角を足し込む（S2 (a) 横位置補正の差し込み口）。
+
+        `start_forward()` の直後に呼ぶこと（`start_forward` が
+        `_target_heading` を現在のヨー推定へリセットするため、その後で
+        バイアスを足さないと上書きされて消える）。呼ばなければ（=補正なし）
+        従来どおり `_target_heading == 発行時の _yaw_est` のまま変わらない。
+        """
+        self._target_heading += delta_rad
 
     def start_turn_left(self) -> None:
         """その場 90° 左旋回（超信地旋回）を開始する。左旋回はヨー角を正方向へ増やす
@@ -248,6 +280,11 @@ class CellMotionController:
 
         if kind == MotionKind.FORWARD:
             remaining = self._target_dist - self._dist_est
+            # S2 (b) 前後位置補正の差し込み口: localizer が無ければ従来どおり
+            # 推測航法だけの remaining（この if 文自体を通らないので計算経路も
+            # 完全に元のまま）。
+            if self.localizer is not None:
+                remaining = self.localizer.correct_forward_remaining(remaining, obs)
             v_cmd = float(np.clip(self.kp_dist * remaining, -self.v_cruise, self.v_cruise))
 
             heading_err = self._wrap(self._target_heading - self._yaw_est)

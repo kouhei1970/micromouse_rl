@@ -41,11 +41,19 @@ classic/explorer.py
   なっている。曖昧だった側の壁情報が、選ばれなかった場合はそのまま未知の
   ままになり、将来別の区画からその壁に近づいたとき（前方として、または
   曖昧でない側方として）に読み直されて確定する。
+
+【S2: 壁センサによる区画ごとの位置補正（note_030 §3 S2）】
+`classic/localization.py` の `Localizer` を持ち、区画の中心（`_on_stationary`）
+で計算済みの `WallSensing` を使って横位置補正（次の直進コマンドへの目標方位
+バイアス）を適用する。無効化は `ClassicExplorer(..., localization_enabled=False)`
+で行う（無効化時は `Localizer.enabled=False` となり、`classic/motion.py` の
+コード経路は S2 導入前と完全に同一になる。詳細は `classic/localization.py`）。
 """
 from enum import Enum, auto
 from typing import List, Optional, Tuple
 
 from classic.flood import FloodMode, UNREACHABLE, compute_flood, is_passable, is_reachable_known
+from classic.localization import Localizer
 from classic.maze_map import ALL_DIRECTIONS, Direction, MazeMap
 from classic.maze_map import WallState as MapWallState
 from classic.motion import CellMotionController, MotionKind
@@ -98,9 +106,15 @@ class ClassicExplorer:
     にする。係員回収時は `handle_retrieval()` を呼ぶこと。
     """
 
-    def __init__(self, width: int, height: int, params: Optional[RobotParams] = None) -> None:
+    def __init__(self, width: int, height: int, params: Optional[RobotParams] = None,
+                 localization_enabled: bool = True) -> None:
         self.params = params if params is not None else RobotParams()
         self.maze = MazeMap(width, height)
+
+        # S2: 壁センサによる区画ごとの位置補正（note_030 §3 S2、任務指示）。
+        # localization_enabled=False で完全に無効化できる（否定対照・
+        # 「補正あり/なし」比較用。詳細は classic/localization.py docstring）。
+        self.localizer = Localizer(self.params, enabled=localization_enabled)
 
         # スタート区画 (0,0)・初期方位 90°(北) は競技プロトコル上の既知定数
         # （評価器が reset_to_start(cell=(0,0), heading_deg=90.0) で置く、という
@@ -114,7 +128,7 @@ class ClassicExplorer:
         self.heading: Direction = Direction.N
         self.phase: Phase = Phase.EXPLORE
 
-        self.motion = CellMotionController(self.params)
+        self.motion = CellMotionController(self.params, localizer=self.localizer)
 
         # 現在実行中（または実行直後）のコマンド種別・識別子。
         self._active_kind: MotionKind = MotionKind.STOP
@@ -284,7 +298,7 @@ class ClassicExplorer:
             return
 
         if target == self.heading:
-            self._issue_forward()
+            self._issue_forward(sensing)
         else:
             self._replans_at_cell += 1
             self._issue_turn_towards(target)
@@ -351,8 +365,16 @@ class ClassicExplorer:
         self._active_kind = MotionKind.STOP
         self._active_plan_id = "idle"
 
-    def _issue_forward(self) -> None:
+    def _issue_forward(self, sensing: WallSensing) -> None:
         self.motion.start_forward(1)
+        # S2 (a) 横位置補正: この区画で読んだ側方センサから横ずれを推定し、
+        # 分かれば次の 1 区画の目標方位へバイアスとして足し込む
+        # （start_forward の直後に呼ぶ必要がある。classic/motion.py の
+        # bias_target_heading docstring 参照）。Localizer.enabled=False の
+        # ときは常に 0.0 が返るので start_forward 直後の状態から変わらない。
+        bias = self.localizer.lateral_bias_for_forward(sensing, cell=self.cell, heading=int(self.heading))
+        if bias != 0.0:
+            self.motion.bias_target_heading(bias)
         self._active_kind = MotionKind.FORWARD
         self._active_plan_id = f"{self._phase_prefix()}:straight"
 
