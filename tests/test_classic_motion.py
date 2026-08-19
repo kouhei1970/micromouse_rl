@@ -243,6 +243,45 @@ def test_turn_reaches_target_angle_without_translating(open_sim, params, start_m
 
 
 # ==========================================================================
+# 2-a. 旋回1回のティック数が予算内に収まること（探索走行の旋回過多の是正・
+#      再発防止検査。note_030 任務指示・classic/motion.py の
+#      DEFAULT_OMEGA_SETTLE 直上のコメント参照）
+# ==========================================================================
+@pytest.mark.parametrize("start_method,tick_budget", [
+    ("start_turn_left", 300),
+    ("start_turn_right", 300),
+    ("start_turn_180", 450),
+])
+def test_turn_completes_within_a_tick_budget_at_default_gains(open_sim, params, start_method, tick_budget):
+    """🔴 2026-08-19 是正の再発防止検査。
+
+    **是正前の実測（design_v4 maze_42134 の実走で計装して確認。詳細は
+    classic/motion.py の DEFAULT_OMEGA_SETTLE 直上のコメント）**: 旧既定値
+    DEFAULT_OMEGA_SETTLE=0.05 rad/s では、90° 旋回が平均 474〜459 ティック
+    （4.7〜4.6秒）、180° 旋回が平均 607 ティック（6.07秒）かかっていた。
+    旋回角度自体は早期（約2.0秒）に許容誤差内へ収まっているにもかかわらず、
+    角速度がほぼゼロになるのを待つ完了判定のせいで、探索走行の持ち時間の
+    半分以上が旋回だけで消費されていた（同一区画内での方位の振動ではなく、
+    旋回1回そのものが遅いことが原因であると、計装した実走で切り分け済み）。
+
+    ここでは `CellMotionController` を既定ゲインのまま（override しない）
+    走らせ、旋回 1 回が tick_budget 以内に完了することを直接検査する。
+    **DEFAULT_OMEGA_SETTLE を 0.05 へ戻すと、90°/180° のいずれも
+    tick_budget を超えてこの検査が落ちる**（実際に戻して確認済み）。
+    """
+    sim = open_sim
+    ctrl = CellMotionController(params)  # 既定ゲインのみ（override しない）
+    ctrl.reset(heading_deg=90.0)
+    getattr(ctrl, start_method)()
+    steps = _run_until_done(sim, ctrl)
+    print(f"\n[実測] {start_method}: {steps} ティック（予算 {tick_budget}）")
+    assert steps <= tick_budget, (
+        f"{start_method} の完了に {steps} ティックかかった（予算 {tick_budget} 超過）。"
+        "DEFAULT_OMEGA_SETTLE が緩和前の値に戻っていないか確認すること。"
+    )
+
+
+# ==========================================================================
 # 3. stop コマンドは常に即座に完了しゼロ電圧を返すこと
 # ==========================================================================
 def test_stop_is_immediate_and_zero_voltage(open_sim, params):
