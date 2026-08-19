@@ -77,6 +77,38 @@ Kp=τ/(K·λ), Ki=Kp/τ（λ: 閉ループ時定数、ここでは λ=0.05s 相�
 `localizer=None`（既定）のときは a も b も一切発動せず、**本ファイルの
 コード経路は S2 導入前と完全に同一**である（否定対照・空振り防止検査の
 土台。詳細は `classic/localization.py` docstring）。
+
+【S4: 円弧スラローム（止まらずに曲がる）（note_030 §8-2、
+`experiments/exp_025_s4_slalom/PREREG.md`）】
+上記の「超信地旋回走行」（区画中心で停止 → その場 90° 旋回 → 発進）に加えて、
+**区画中心線どうしを結ぶ四分円**を並進速度を落とさずに通るコマンド
+（`start_slalom_left()` / `start_slalom_right()`、`MotionKind.SLALOM_LEFT_90` /
+`SLALOM_RIGHT_90`）を追加した。半径は `DEFAULT_ARC_RADIUS = cell_size/2 =
+0.090 m`（旋回区画の中に収まる）、弧長 `0.090 × π/2 = 0.1414 m` を巡航速度
+`v_cruise = 0.12 m/s` のまま通過する設計上の所要時間は `1.178 s`
+（`PREREG.md` §9 錨 A1。実測との照合は `tests/test_classic_motion.py`）。
+
+🔴 **これらは既定では一切使われない。** `start_slalom_*()` を呼ばない限り、
+本ファイルのコード経路（`start_forward()`・その場旋回・`update()` の
+FORWARD/TURN 分岐）は本追加前と完全に同一である（`PREREG.md` §10 の
+否定対照 N2/N4 が直接検査する）。既定経路を保ったまま「転がったまま次の
+コマンドへ渡す」ことを許すため、`self._rolling`（真偽値 1 つ）を新設した。
+`_rolling=True` の間は `start_forward()`／その場旋回開始時に車輪 PI の
+積分器をリセットしない（リセットすると電圧が落ちて速度が凹むため）。
+スラロームを最短走行へ実際に組み込む `slalom` フラグは `classic/explorer.py`
+側（別担当・本ファイルの変更範囲外）が持つ。
+
+`start_forward(..., stop_at_end=False)`（止まらずに次のコマンドへ渡す直進）
+の `v_cmd` は、既定（`stop_at_end=True`）の
+`clip(kp_dist·remaining, -v_cruise, v_cruise)` ではなく `v_cruise` 固定にした
+（`update()` の該当箇所に理由を詳述）。実測で、既存の
+`kp_dist=3.0`・`distance_tol=0.003`・`speed_settle=0.01` は「残距離が
+`distance_tol` を切った瞬間には目標速度が既に `speed_settle` 直下」という
+関係になるよう最初から連動している（両しきい値がほぼ同時に発火するように
+チューニングされていた）。そのため完了判定から `speed_settle` 待ちだけを
+外しても終端速度は `v_cruise` の約 9%（実測 0.011 m/s）にしかならず、
+「転がったまま渡す」という本機能の目的を果たせなかった。`v_cmd=v_cruise`
+固定に変えたことで終端速度は `v_cruise` の 100%程度（実測）まで回復した。
 """
 import math
 from dataclasses import dataclass
@@ -98,6 +130,8 @@ class MotionKind(Enum):
     TURN_LEFT_90 = auto()  # その場 90° 左旋回（超信地旋回）
     TURN_RIGHT_90 = auto()  # その場 90° 右旋回（超信地旋回）
     TURN_180 = auto()      # その場 180° 旋回（超信地旋回）
+    SLALOM_LEFT_90 = auto()   # 四分円を左へ（ヨー角 +90°）。停止しない
+    SLALOM_RIGHT_90 = auto()  # 四分円を右へ（ヨー角 -90°）。停止しない
 
 
 # ------------------------------------------------------------------
@@ -159,12 +193,24 @@ DEFAULT_SPEED_SETTLE: float = 0.01    # 直進完了判定の速度しきい値 
 DEFAULT_OMEGA_SETTLE: float = 0.20
 DEFAULT_INTEG_CLAMP: float = 200.0    # 積分器の絶対値クランプ（暴走防止の保険）
 
+# ------------------------------------------------------------------
+# S4: 円弧スラローム（PREREG.md §2）専用の定数。
+# 🔴 DEFAULT_OMEGA_CRUISE（その場旋回専用、1.2 rad/s）はここでは使わない。
+# 弧に必要な角速度前置き分 v_cruise/DEFAULT_ARC_RADIUS = 0.12/0.09 = 1.333 rad/s
+# は DEFAULT_OMEGA_CRUISE(1.2) を超えるため、共用するとその場旋回の角速度
+# 上限が変わってしまう（既存のその場旋回の挙動を一切変えないための分離）。
+# ------------------------------------------------------------------
+DEFAULT_ARC_RADIUS: float = 0.090   # 弧の半径 [m] = cell_size/2。区画中心線→区画中心線の四分円
+DEFAULT_OMEGA_ARC: float = 2.0      # 弧の角速度上限 [rad/s]。前置き分は v/R = 0.12/0.09 = 1.333
+DEFAULT_KP_ARC_YAW: float = 3.0     # 弧の方位追従ゲイン [1/s]
+
 
 @dataclass
 class MotionCommand:
     """発行済みの区画単位コマンド（診断・テスト用に読み出せるように保持する）。"""
     kind: MotionKind
     n_cells: int = 1  # FORWARD のみ意味を持つ
+    stop_at_end: bool = True  # FORWARD のみ意味を持つ（S4: 転がったまま次のコマンドへ渡すか）
 
 
 class CellMotionController:
@@ -193,7 +239,9 @@ class CellMotionController:
                  kp_heading: float = DEFAULT_KP_HEADING,
                  distance_tol: float = DEFAULT_DISTANCE_TOL, yaw_tol: float = DEFAULT_YAW_TOL,
                  speed_settle: float = DEFAULT_SPEED_SETTLE, omega_settle: float = DEFAULT_OMEGA_SETTLE,
-                 localizer: Optional["Localizer"] = None):
+                 localizer: Optional["Localizer"] = None,
+                 arc_radius: float = DEFAULT_ARC_RADIUS, omega_arc: float = DEFAULT_OMEGA_ARC,
+                 kp_arc_yaw: float = DEFAULT_KP_ARC_YAW):
         self.params = params if params is not None else RobotParams()
         self.kp_wheel = kp_wheel
         self.ki_wheel = ki_wheel
@@ -209,6 +257,10 @@ class CellMotionController:
         # S2: 壁センサによる区画ごとの位置補正（None=既定は完全に無効。
         # `classic/localization.py` docstring 参照）。
         self.localizer = localizer
+        # S4: 円弧スラローム専用（既定では start_slalom_* を呼ばない限り未使用）。
+        self.arc_radius = arc_radius
+        self.omega_arc = omega_arc
+        self.kp_arc_yaw = kp_arc_yaw
 
         self._n_sensors = len(self.params.sensors)
         self.reset()
@@ -230,6 +282,11 @@ class CellMotionController:
         self._integ_l = 0.0
         self._integ_r = 0.0
         self._cmd: Optional[MotionCommand] = None
+        # S4: 「転がったまま次のコマンドへ渡す」かどうかを表す唯一の真偽値。
+        # True の間は start_forward()/_start_turn() が積分器をリセットしない
+        # （既定では start_slalom_*()/stop_at_end=False を一度も使わないので
+        # 常に False のまま＝本追加前と完全に同一の経路を通る）。
+        self._rolling = False
 
     def _split_obs(self, obs: np.ndarray):
         """observation() から車輪角速度・ジャイロ z 成分を取り出す
@@ -253,16 +310,43 @@ class CellMotionController:
     # ------------------------------------------------------------------
     # コマンド発行
     # ------------------------------------------------------------------
-    def start_forward(self, n_cells: int) -> None:
-        """直進 n_cells 区画を開始する（方位は発行時の推定方位を保持する）。"""
-        if n_cells <= 0:
-            raise ValueError(f"n_cells は正の整数で指定してください: {n_cells}")
-        self._cmd = MotionCommand(MotionKind.FORWARD, n_cells)
+    def start_forward(self, n_cells: int = 0, *, distance: Optional[float] = None,
+                       stop_at_end: bool = True) -> None:
+        """直進を開始する（方位は発行時の推定方位を保持する）。
+
+        `n_cells` と `distance` は排他。ちょうど一方だけを指定すること
+        （両方指定・両方省略はいずれも `ValueError`）。`start_forward(n)` の
+        形（既定 `stop_at_end=True`）は本追加前と一字一句同じ挙動を保つ。
+
+        `stop_at_end=False`（S4: 転がったまま次のコマンドへ渡す）のときは
+        完了判定が `abs(remaining) < distance_tol` のみになる（速度が
+        ゼロへ収束するのを待たない）。この場合 `update()` は完了時に
+        ゼロ電圧ではなく直近の電圧を返し、以後 `_rolling=True` になる。
+        """
+        n_cells_given = n_cells != 0
+        distance_given = distance is not None
+        if n_cells_given and distance_given:
+            raise ValueError("n_cells と distance は同時に指定できません（排他です）")
+        if not n_cells_given and not distance_given:
+            raise ValueError("n_cells か distance のどちらかを指定してください")
+
+        if distance_given:
+            if distance <= 0:
+                raise ValueError(f"distance は正の値で指定してください: {distance}")
+            target_dist = distance
+        else:
+            if n_cells <= 0:
+                raise ValueError(f"n_cells は正の整数で指定してください: {n_cells}")
+            target_dist = n_cells * self.params.cell_size
+
+        self._cmd = MotionCommand(MotionKind.FORWARD, n_cells if n_cells_given else 0,
+                                   stop_at_end=stop_at_end)
         self._dist_est = 0.0
-        self._target_dist = n_cells * self.params.cell_size
+        self._target_dist = target_dist
         self._target_heading = self._yaw_est
-        self._integ_l = 0.0
-        self._integ_r = 0.0
+        if not self._rolling:
+            self._integ_l = 0.0
+            self._integ_r = 0.0
 
     def bias_target_heading(self, delta_rad: float) -> None:
         """直進の目標方位に補正角を足し込む（S2 (a) 横位置補正の差し込み口）。
@@ -324,6 +408,29 @@ class CellMotionController:
         self._start_turn(math.radians(180.0))
         self._cmd = MotionCommand(MotionKind.TURN_180)
 
+    def start_slalom_left(self, radius: Optional[float] = None) -> None:
+        """四分円スラローム（左, ヨー角 +90°）を開始する。並進速度を落とさず
+        弧へ入る（積分器はリセットしない。S4: `classic/motion.py` docstring
+        参照）。`radius` を省略すると `self.arc_radius`（既定
+        `DEFAULT_ARC_RADIUS`）を使う。"""
+        self._start_slalom(sign=+1.0, radius=radius)
+        self._cmd = MotionCommand(MotionKind.SLALOM_LEFT_90)
+
+    def start_slalom_right(self, radius: Optional[float] = None) -> None:
+        """四分円スラローム（右, ヨー角 -90°）を開始する。"""
+        self._start_slalom(sign=-1.0, radius=radius)
+        self._cmd = MotionCommand(MotionKind.SLALOM_RIGHT_90)
+
+    def _start_slalom(self, sign: float, radius: Optional[float]) -> None:
+        self._arc_sign = sign
+        self._arc_radius = radius if radius is not None else self.arc_radius
+        self._arc_s_target = self._arc_radius * math.pi / 2.0
+        self._arc_yaw_start = self._yaw_est
+        self._dist_est = 0.0  # 弧に入ってからの走行距離として積算し直す
+        # 🔴 積分器はリセットしない（速度を保ったまま弧に入るため。
+        # start_forward()/_start_turn() の `if not self._rolling:` とは
+        # 対称的に、スラロームは常にリセットしない）。
+
     def start_stop(self) -> None:
         """速度指令ゼロを保持するコマンドを発行する（update() は常に done=True を返す）。"""
         self._cmd = MotionCommand(MotionKind.STOP)
@@ -332,8 +439,9 @@ class CellMotionController:
 
     def _start_turn(self, delta_yaw: float) -> None:
         self._target_yaw = self._yaw_est + delta_yaw
-        self._integ_l = 0.0
-        self._integ_r = 0.0
+        if not self._rolling:
+            self._integ_l = 0.0
+            self._integ_r = 0.0
 
     # ------------------------------------------------------------------
     # 制御ステップ
@@ -361,6 +469,7 @@ class CellMotionController:
         kind = self._cmd.kind
 
         if kind == MotionKind.STOP:
+            self._rolling = False
             return 0.0, 0.0, True
 
         if kind == MotionKind.FORWARD:
@@ -370,7 +479,38 @@ class CellMotionController:
             # 完全に元のまま）。
             if self.localizer is not None:
                 remaining = self.localizer.correct_forward_remaining(remaining, obs)
-            v_cmd = float(np.clip(self.kp_dist * remaining, -self.v_cruise, self.v_cruise))
+
+            stop_at_end = self._cmd.stop_at_end
+            if stop_at_end:
+                # 本追加前と一字一句同じ v_cmd（distance_tol=0.003m は
+                # v_cruise/kp_dist=0.04m の減速域の奥深くにあり、この式のまま
+                # では「残距離が縮まるほど速度を落とす」比例則が終端付近で
+                # 必ず効く。ここは変えない。
+                v_cmd = float(np.clip(self.kp_dist * remaining, -self.v_cruise, self.v_cruise))
+            else:
+                # 🔴 実装仕様書 §4 の記述からの唯一の逸脱（理由は下記）。
+                #
+                # §4 の文面は完了判定の変更のみを述べており、v_cmd 自体は
+                # 変えない前提で読める。しかし実測すると、既存の
+                # kp_dist=3.0・distance_tol=0.003・speed_settle=0.01 は
+                # 「abs(remaining)<distance_tol になった瞬間には
+                # kp_dist*distance_tol=0.009 m/s ≒ speed_settle 直下」という
+                # 関係になるよう最初からほぼ同時に発火するようチューニング
+                # されている（実測: stop_at_end=False で abs(remaining)<
+                # distance_tol になった瞬間の実速度は v_cruise の約 9%
+                # (0.011 m/s) — 0.8×v_cruise の要件を満たさない）。
+                # つまり「speed_settle 待ちだけを外す」変更は、この2つの
+                # しきい値が最初から同時に効くよう調整されているせいで
+                # 速度をほとんど保てず、事実上の no-op になってしまう。
+                # これは §3 が明記する「stop_at_end=False → 電圧を保つ」
+                # （ゼロ電圧ではなく直近の電圧を返す設計）の意図、および
+                # 弧の v_cmd（§6 「🔴 減速しない（弧の要点）」）と対称に
+                # 「転がったまま渡す」ことを意図した記述と整合しない。
+                # そのため、stop_at_end=False のときに限り、弧と同じ
+                # 「残距離に応じて減速しない」設計を FORWARD にも適用した
+                # （v_cmd=self.v_cruise 固定。kp_dist は使わない）。
+                # 方位保持(domega)側は変更していない。
+                v_cmd = self.v_cruise
 
             heading_err = self._wrap(self._target_heading - self._yaw_est)
             domega = self.kp_heading * heading_err
@@ -379,10 +519,39 @@ class CellMotionController:
             omega_r_target = (v_cmd + domega * tread / 2.0) / r
             vl, vr = self._wheel_pi(omega_l_target, omega_r_target, omega_l, omega_r, dt)
 
-            done = abs(remaining) < self.distance_tol and abs(v_meas) < self.speed_settle
+            if stop_at_end:
+                # 本追加前と一字一句同じ完了判定（速度がほぼゼロに収束するまで待つ）。
+                done = abs(remaining) < self.distance_tol and abs(v_meas) < self.speed_settle
+            else:
+                # S4: 転がったまま次のコマンドへ渡す。速度収束を待たない。
+                done = abs(remaining) < self.distance_tol
             if done:
-                return 0.0, 0.0, True
+                if stop_at_end:
+                    self._rolling = False
+                    return 0.0, 0.0, True
+                self._rolling = True
+                return vl, vr, True
             return vl, vr, False
+
+        if kind in (MotionKind.SLALOM_LEFT_90, MotionKind.SLALOM_RIGHT_90):
+            # S4: 経路追従（前置き＋方位フィードバック）。減速しない（弧の要点）。
+            # localizer は一切呼ばない（PREREG.md §11-2 の限界として登録済み）。
+            s = self._dist_est
+            yaw_ref = self._arc_yaw_start + self._arc_sign * (s / self._arc_radius)
+            omega_ff = self._arc_sign * self.v_cruise / self._arc_radius
+            omega_cmd = float(np.clip(
+                omega_ff + self.kp_arc_yaw * self._wrap(yaw_ref - self._yaw_est),
+                -self.omega_arc, self.omega_arc))
+            v_cmd = self.v_cruise
+
+            omega_l_target = (v_cmd - omega_cmd * tread / 2.0) / r
+            omega_r_target = (v_cmd + omega_cmd * tread / 2.0) / r
+            vl, vr = self._wheel_pi(omega_l_target, omega_r_target, omega_l, omega_r, dt)
+
+            done = s >= self._arc_s_target
+            if done:
+                self._rolling = True
+            return vl, vr, done
 
         if kind in (MotionKind.TURN_LEFT_90, MotionKind.TURN_RIGHT_90, MotionKind.TURN_180):
             remaining = self._wrap(self._target_yaw - self._yaw_est)
@@ -396,6 +565,7 @@ class CellMotionController:
 
             done = abs(remaining) < self.yaw_tol and abs(gyro_z) < self.omega_settle
             if done:
+                self._rolling = False
                 return 0.0, 0.0, True
             return vl, vr, False
 

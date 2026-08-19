@@ -497,3 +497,305 @@ def test_reanchor_heading_overwrites_relative_to_current_yaw_estimate_not_additi
         "reanchor_heading と bias_target_heading の差が注入したドリフト量と一致しない"
         "（2つのメソッドが実際には同じ計算をしている空振りの疑い）"
     )
+
+
+# ==========================================================================
+# 7. S4（円弧スラローム）の単体検査（note_030 §8-2・
+#    experiments/exp_025_s4_slalom/PREREG.md §12 チェックリスト最終項目）。
+#    弧は半区画（0.090m）ぶんの余白が前後左右に要るため、既存の open_sim
+#    （5x5・区画(2,2)開始）とは別に、より広い開通路のフィクスチャを使う。
+# ==========================================================================
+@pytest.fixture()
+def open_wide_sim(tmp_path, params):
+    """スラローム検査用の広い開通路（9x9・内部壁なし・区画(4,4)開始）。
+    区画中心から各壁まで約 0.45m の余白があり、助走(1区画)＋弧(半径0.090m)
+    の移動量（進行方向・左右とも 0.3m 未満）を余裕をもって収める。"""
+    W, H = 9, 9
+    v = np.zeros((W + 1, H), dtype=int)
+    v[0, :] = 1
+    v[W, :] = 1
+    h = np.zeros((W, H + 1), dtype=int)
+    h[:, 0] = 1
+    h[:, H] = 1
+    xml_path = os.path.join(str(tmp_path), "open_wide.xml")
+    build_maze_robot_xml(v, h, xml_path, model_name="open9x9", params=params)
+    sim = MouseSim(xml_path, params=params)
+    sim.full_reset(cell=(4, 4), heading_deg=90.0)
+    return sim
+
+
+def _forward_left_components(x0, y0, yaw0, x1, y1):
+    """開始位置(x0,y0)・開始方位 yaw0 を基準に、変位を
+    「進行方向成分・左方向成分」に分解する（弧の位置ずれ検査の答え合わせ）。"""
+    dx = x1 - x0
+    dy = y1 - y0
+    forward = dx * math.cos(yaw0) + dy * math.sin(yaw0)
+    left = -dx * math.sin(yaw0) + dy * math.cos(yaw0)
+    return forward, left
+
+
+def _run_slalom_to_completion(sim, ctrl):
+    """スラローム(SLALOM_LEFT_90/SLALOM_RIGHT_90)を完了まで走らせ、
+    (steps, v_final) を返す。v_final は完了を検出したティックの
+    「ctrl.update() 呼び出し直前」の実測並進速度（推測航法の v_meas と
+    同じ定義: (omega_l+omega_r)/2*r）で、止まらずに曲がったことの直接
+    検査に使う。"""
+    for step in range(1, MAX_STEPS + 1):
+        obs = sim.observation()
+        _gyro_z, omega_l, omega_r = ctrl._split_obs(obs)
+        v_meas = (omega_l + omega_r) / 2.0 * ctrl.params.wheel_radius
+        vl, vr, done = ctrl.update(obs)
+        sim.step_control(vl, vr)
+        if done:
+            return step, v_meas
+    raise AssertionError(f"{MAX_STEPS} ステップ以内に弧が完了しなかった")
+
+
+def test_slalom_left_turns_90_degrees_without_stopping(open_wide_sim, params):
+    """S4 の主要検査（左）: 直進で助走した状態から `start_slalom_left()` を
+    発行し、止まらずに 90° 曲がって区画中心線どうしを結ぶ四分円（半径
+    `DEFAULT_ARC_RADIUS`）を通ることを実測する（所要時間の設計値は
+    PREREG.md §9 錨 A1: `R_arc·(π/2)/v_cruise`。ここでは実装の定数から
+    その場で計算し、実測と照合する）。"""
+    sim = open_wide_sim
+    ctrl = CellMotionController(params)
+    ctrl.reset(heading_deg=90.0)
+
+    # 直進で助走する（stop_at_end=False で速度を保ったまま完了させる）。
+    # PREREG.md §2「弧の前後の直進をそれぞれ R_arc だけ短く発行する」に
+    # 合わせ、区画中心(1区画=cell_size)ではなく区画境界(cell_size-R_arc)
+    # まで進めてから弧へ入る（区画中心線→区画中心線の四分円という設計を
+    # 満たすための助走距離。1区画丸ごと進むと弧が区画中心から始まり、
+    # 隅柱に接触することを実測で確認した）。
+    run_up = params.cell_size - motion_module.DEFAULT_ARC_RADIUS
+    ctrl.start_forward(distance=run_up, stop_at_end=False)
+    _run_until_done(sim, ctrl)
+
+    x0, y0, yaw0 = sim.privileged_pose()
+    ctrl.start_slalom_left()
+    steps, v_final = _run_slalom_to_completion(sim, ctrl)
+    x1, y1, yaw1 = sim.privileged_pose()
+
+    yaw_delta_deg = math.degrees(math.atan2(math.sin(yaw1 - yaw0), math.cos(yaw1 - yaw0)))
+    elapsed = steps * params.control_dt
+    expected_elapsed = motion_module.DEFAULT_ARC_RADIUS * math.pi / 2.0 / motion_module.DEFAULT_V_CRUISE
+    forward, left = _forward_left_components(x0, y0, yaw0, x1, y1)
+
+    print(f"\n[実測] slalom_left: ヨー変化={yaw_delta_deg:+.3f}deg "
+          f"所要時間={elapsed:.4f}s(設計値={expected_elapsed:.4f}s) "
+          f"終端速度={v_final:.4f}m/s(v_cruise比={v_final / motion_module.DEFAULT_V_CRUISE:.3f}) "
+          f"進行方向変位={forward * 1000:.2f}mm 左方向変位={left * 1000:.2f}mm steps={steps}")
+
+    assert abs(yaw_delta_deg - 90.0) < 3.0, "弧のヨー変化が +90° から 3° 以上ずれている"
+    assert abs(elapsed - expected_elapsed) < expected_elapsed * 0.10, (
+        f"弧の所要時間が設計値から 10% 以上ずれている(設計値={expected_elapsed:.4f}s 実測={elapsed:.4f}s)"
+    )
+    assert v_final >= 0.8 * motion_module.DEFAULT_V_CRUISE, "弧の完了時点で並進速度が落ちている(止まっている疑い)"
+    assert abs(forward - motion_module.DEFAULT_ARC_RADIUS) < 0.010, (
+        "進行方向の変位が弧の半径(DEFAULT_ARC_RADIUS)から 10mm 以上ずれている"
+    )
+    assert abs(left - motion_module.DEFAULT_ARC_RADIUS) < 0.010, (
+        "左方向の変位が弧の半径(DEFAULT_ARC_RADIUS)から 10mm 以上ずれている"
+    )
+
+
+def test_slalom_right_turns_minus_90_degrees_without_stopping(open_wide_sim, params):
+    """S4 の主要検査（右）: 上の左旋回版の左右対称。"""
+    sim = open_wide_sim
+    ctrl = CellMotionController(params)
+    ctrl.reset(heading_deg=90.0)
+
+    # 区画境界(cell_size-R_arc)まで助走してから弧へ入る（左旋回版と同じ理由。
+    # PREREG.md §2）。
+    run_up = params.cell_size - motion_module.DEFAULT_ARC_RADIUS
+    ctrl.start_forward(distance=run_up, stop_at_end=False)
+    _run_until_done(sim, ctrl)
+
+    x0, y0, yaw0 = sim.privileged_pose()
+    ctrl.start_slalom_right()
+    steps, v_final = _run_slalom_to_completion(sim, ctrl)
+    x1, y1, yaw1 = sim.privileged_pose()
+
+    yaw_delta_deg = math.degrees(math.atan2(math.sin(yaw1 - yaw0), math.cos(yaw1 - yaw0)))
+    elapsed = steps * params.control_dt
+    expected_elapsed = motion_module.DEFAULT_ARC_RADIUS * math.pi / 2.0 / motion_module.DEFAULT_V_CRUISE
+    forward, left = _forward_left_components(x0, y0, yaw0, x1, y1)
+
+    print(f"\n[実測] slalom_right: ヨー変化={yaw_delta_deg:+.3f}deg "
+          f"所要時間={elapsed:.4f}s(設計値={expected_elapsed:.4f}s) "
+          f"終端速度={v_final:.4f}m/s(v_cruise比={v_final / motion_module.DEFAULT_V_CRUISE:.3f}) "
+          f"進行方向変位={forward * 1000:.2f}mm 右方向変位={-left * 1000:.2f}mm steps={steps}")
+
+    assert abs(yaw_delta_deg - (-90.0)) < 3.0, "弧のヨー変化が -90° から 3° 以上ずれている"
+    assert abs(elapsed - expected_elapsed) < expected_elapsed * 0.10, (
+        f"弧の所要時間が設計値から 10% 以上ずれている(設計値={expected_elapsed:.4f}s 実測={elapsed:.4f}s)"
+    )
+    assert v_final >= 0.8 * motion_module.DEFAULT_V_CRUISE, "弧の完了時点で並進速度が落ちている(止まっている疑い)"
+    assert abs(forward - motion_module.DEFAULT_ARC_RADIUS) < 0.010, (
+        "進行方向の変位が弧の半径(DEFAULT_ARC_RADIUS)から 10mm 以上ずれている"
+    )
+    assert abs(left - (-motion_module.DEFAULT_ARC_RADIUS)) < 0.010, (
+        "右方向の変位が弧の半径(DEFAULT_ARC_RADIUS)から 10mm 以上ずれている"
+    )
+
+
+def test_forward_with_stop_at_end_false_keeps_moving(tmp_path, params):
+    """S4: `start_forward(1, stop_at_end=False)` が完了時に並進速度を
+    落とさないこと、かつ既定の `start_forward(1)`（`stop_at_end=True`）は
+    従来どおり完了時に速度がしきい値未満へ収束することを、同じ 1 区画直進で
+    対にして実測する（`classic/motion.py` の update() FORWARD 分岐にある
+    「実装仕様書 §4 からの唯一の逸脱」コメントが対象とする性質そのもの）。"""
+    def build_open_sim(label):
+        W, H = 5, 5
+        v = np.zeros((W + 1, H), dtype=int)
+        v[0, :] = 1
+        v[W, :] = 1
+        h = np.zeros((W, H + 1), dtype=int)
+        h[:, 0] = 1
+        h[:, H] = 1
+        xml_path = os.path.join(str(tmp_path), f"open_{label}.xml")
+        build_maze_robot_xml(v, h, xml_path, model_name=f"open5x5_{label}", params=params)
+        sim = MouseSim(xml_path, params=params)
+        sim.full_reset(cell=(2, 2), heading_deg=90.0)
+        return sim
+
+    def run(stop_at_end):
+        sim = build_open_sim(f"stop_at_end_{stop_at_end}")
+        ctrl = CellMotionController(params)
+        ctrl.reset(heading_deg=90.0)
+        ctrl.start_forward(1, stop_at_end=stop_at_end)
+        for _ in range(MAX_STEPS):
+            obs = sim.observation()
+            _gyro_z, omega_l, omega_r = ctrl._split_obs(obs)
+            v_meas = (omega_l + omega_r) / 2.0 * params.wheel_radius
+            vl, vr, done = ctrl.update(obs)
+            sim.step_control(vl, vr)
+            if done:
+                return v_meas
+        raise AssertionError(f"{MAX_STEPS} ステップ以内に収束しなかった(stop_at_end={stop_at_end})")
+
+    v_final_rolling = run(stop_at_end=False)
+    v_final_stopped = run(stop_at_end=True)
+
+    print(f"\n[実測] start_forward(1, stop_at_end=False) 完了時速度={v_final_rolling:.4f}m/s "
+          f"start_forward(1)(既定) 完了時速度={v_final_stopped:.4f}m/s "
+          f"(v_cruise={motion_module.DEFAULT_V_CRUISE}m/s speed_settle={motion_module.DEFAULT_SPEED_SETTLE}m/s)")
+
+    assert v_final_rolling >= 0.8 * motion_module.DEFAULT_V_CRUISE, (
+        "stop_at_end=False の完了時点で速度が落ちている(止まっている疑い)"
+    )
+    assert abs(v_final_stopped) < motion_module.DEFAULT_SPEED_SETTLE, (
+        "stop_at_end=True(既定)の完了時点で速度がしきい値未満に収束していない"
+    )
+
+
+def test_default_forward_is_unchanged_by_the_slalom_feature(open_sim, params):
+    """🔴 絶対条件の直接検査: スラローム機能を追加した後も、既定の
+    `start_forward(n)`（`stop_at_end` を渡さない・従来どおりの呼び出し）が、
+    本追加より前に記録された実測値（本ファイル冒頭の
+    `test_forward_two_cells_reaches_target_distance_and_holds_heading` と
+    同条件・`classic/motion.py` モジュール docstring に記録の 0.3562m）を
+    1mm の誤差もなく再現すること。"""
+    sim = open_sim
+    ctrl = CellMotionController(params)
+    ctrl.reset(heading_deg=90.0)
+
+    x0, y0, _ = sim.privileged_pose()
+    ctrl.start_forward(2)
+    _run_until_done(sim, ctrl)
+    x1, y1, _ = sim.privileged_pose()
+
+    displacement = math.hypot(x1 - x0, y1 - y0)
+    recorded = 0.3562  # classic/motion.py モジュール docstring に記録されている、本追加前の実測値
+    print(f"\n[実測] 既定 start_forward(2): 実測変位={displacement:.4f}m 記録値(本追加前)={recorded:.4f}m "
+          f"差={displacement - recorded:+.4f}m")
+    assert abs(displacement - recorded) < 0.001, (
+        "既定の直進到達距離が、スラローム機能追加前に記録された実測値(0.3562m)から 1mm 以上ずれた。"
+        "既定経路がスラローム追加の影響を受けている疑いがある。"
+    )
+
+
+def test_slalom_radius_is_actually_used(tmp_path, params):
+    """否定対照 N3 の単体版（PREREG.md §10）: `start_slalom_left(radius=...)`
+    で半径を既定より小さくすると、ヨー変化は同じ 90° のまま、弧の走行距離
+    （`ctrl._dist_est`。弧に入ってから積算し直した弧長そのもの）と所要時間が
+    半径の比率どおりに短くなることを実測する（半径が実装の中で本当に
+    使われていることの確認。使われていなければ、半径を変えても何も
+    変わらないはず）。
+
+    🔴 仕様どおりに書けなかった箇所: 当初の指示は「半径を既定の厳密に半分
+    (0.045m) にする」だったが、実測すると `radius=0.045` は本機能では
+    完走できない。必要な前置き角速度 `v_cruise/radius = 0.12/0.045 =
+    2.667 rad/s` が、既定半径 0.090m 専用に「前置き分は v/R=1.333、
+    `DEFAULT_OMEGA_ARC=2.0` に対し 0.667 の余裕」という前提で決めた定数
+    `DEFAULT_OMEGA_ARC=2.0` を超えてしまい、`update()` の
+    `clip(omega_ff+kp_arc_yaw*err, -omega_arc, omega_arc)` で角速度が
+    飽和する。飽和すると実効旋回半径が `v_cruise/omega_arc=0.060m` へ
+    張り付き、要求半径(0.045m)から計算した弧長の目標(0.0707m)に
+    ヨー角90°未満で到達してしまう（実測: `radius=0.045` でヨー変化は
+    約56°どまり）。`DEFAULT_ARC_RADIUS`・`DEFAULT_OMEGA_ARC` とも実装
+    仕様書の値をそのまま使う制約の下ではこの組み合わせは物理的に
+    実現できないため、ここでは `radius=0.075m`（既定の 5/6。前置き角速度
+    1.6 rad/s で `omega_arc=2.0` に対し 0.4 の余裕を残し、実測でヨー変化
+    90.0° ちょうどに収束することを確認済み）を使う。半径が実際に効いて
+    いることを確認するという N3 単体版の目的は、既定より明確に小さい別の
+    半径で走行距離・所要時間が短くなることを確認すれば十分満たされる。"""
+    def build_wide_sim(label):
+        W, H = 9, 9
+        v = np.zeros((W + 1, H), dtype=int)
+        v[0, :] = 1
+        v[W, :] = 1
+        h = np.zeros((W, H + 1), dtype=int)
+        h[:, 0] = 1
+        h[:, H] = 1
+        xml_path = os.path.join(str(tmp_path), f"open_wide_{label}.xml")
+        build_maze_robot_xml(v, h, xml_path, model_name=f"open9x9_{label}", params=params)
+        sim = MouseSim(xml_path, params=params)
+        sim.full_reset(cell=(4, 4), heading_deg=90.0)
+        return sim
+
+    def run_arc(radius, label):
+        sim = build_wide_sim(label)
+        ctrl = CellMotionController(params)
+        ctrl.reset(heading_deg=90.0)
+        # 区画境界(cell_size-radius)まで助走してから弧へ入る（PREREG.md §2。
+        # 半径ごとに正しい助走距離を計算しないと弧が区画中心寄りにずれ、
+        # 隅柱に接触する — test_slalom_left/right と同じ理由）。
+        run_up = params.cell_size - radius
+        ctrl.start_forward(distance=run_up, stop_at_end=False)
+        _run_until_done(sim, ctrl)
+        x0, y0, yaw0 = sim.privileged_pose()
+        ctrl.start_slalom_left(radius=radius)
+        for step in range(1, MAX_STEPS + 1):
+            obs = sim.observation()
+            vl, vr, done = ctrl.update(obs)
+            sim.step_control(vl, vr)
+            if done:
+                x1, y1, yaw1 = sim.privileged_pose()
+                yaw_delta_deg = math.degrees(math.atan2(math.sin(yaw1 - yaw0), math.cos(yaw1 - yaw0)))
+                arc_length = ctrl._dist_est  # 弧に入ってから積算し直した弧長そのもの
+                return step, yaw_delta_deg, arc_length
+        raise AssertionError(f"{MAX_STEPS} ステップ以内に弧が完了しなかった(radius={radius})")
+
+    r_default = motion_module.DEFAULT_ARC_RADIUS
+    r_small = 0.075  # 既定の 5/6（理由は docstring 参照。omega_arc の飽和を避ける）
+    ratio = r_small / r_default
+    steps_default, yaw_default, len_default = run_arc(r_default, "default")
+    steps_small, yaw_small, len_small = run_arc(r_small, "small")
+
+    time_default = steps_default * params.control_dt
+    time_small = steps_small * params.control_dt
+
+    print(f"\n[実測] 半径{r_default:.3f}m: steps={steps_default} time={time_default:.4f}s "
+          f"弧長={len_default:.4f}m yaw={yaw_default:+.2f}deg / "
+          f"半径{r_small:.3f}m(既定比{ratio:.3f}): steps={steps_small} time={time_small:.4f}s "
+          f"弧長={len_small:.4f}m yaw={yaw_small:+.2f}deg")
+
+    assert abs(yaw_default - 90.0) < 3.0, "既定半径でのヨー変化が 90° から 3° 以上ずれている"
+    assert abs(yaw_small - 90.0) < 3.0, "小さい半径でのヨー変化が 90° から 3° 以上ずれている(半径のみを変えたはず)"
+    assert abs(time_small - time_default * ratio) < time_default * ratio * 0.15, (
+        "半径を縮めても弧の所要時間が比率どおりに縮まなかった(半径が効いていない疑い)"
+    )
+    assert abs(len_small - len_default * ratio) < len_default * ratio * 0.15, (
+        "半径を縮めても弧長が比率どおりに縮まなかった(半径が効いていない疑い)"
+    )
