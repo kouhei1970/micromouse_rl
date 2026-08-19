@@ -26,12 +26,22 @@ class ClassicExplorerPolicy(MousePolicy):
     name = "classic_explorer"
     requires_privileged = False
 
-    def __init__(self, params: Optional[RobotParams] = None) -> None:
+    def __init__(self, params: Optional[RobotParams] = None,
+                 extend_straights: bool = True) -> None:
         self.params = params if params is not None else RobotParams()
+        # S3 最短走行で直線を伸ばすかどうか（exp_024 PREREG §4 の 2 条件
+        # "extended"/"percell"）。ClassicExplorer へそのまま渡すだけで、
+        # 本クラス自身の挙動は変えない。
+        self.extend_straights = bool(extend_straights)
         self._explorer: Optional[ClassicExplorer] = None
         # ティックごとの「そのとき何をしていたか」の識別子。
         # classic.checks.plan_adherence の入力（note_029 §4-1、型 C 再発防止）。
         self._plan_ids: List[str] = []
+        # 走行が始まった瞬間（on_run_start 通知時点）の段階の列
+        # （exp_024 PREREG §4 の run_phases。判定量 T_fast の入力）。
+        # 🔴 記録するだけで、走行そのもの（電圧の計算）には一切関与しない
+        # ことを tests/test_classic_policy.py の実測で示す。
+        self._run_phases: List[dict] = []
 
     # ------------------------------------------------------------------
     # ライフサイクル通知フック
@@ -44,14 +54,26 @@ class ClassicExplorerPolicy(MousePolicy):
         配列そのものは含まれない。"""
         width = int(maze_info["width"])
         height = int(maze_info["height"])
-        self._explorer = ClassicExplorer(width, height, params=self.params)
+        self._explorer = ClassicExplorer(
+            width, height, params=self.params,
+            extend_straights=self.extend_straights,
+        )
         self._plan_ids = []
+        self._run_phases = []
 
     def on_run_start(self, run_index: int) -> None:
         # 本方策は評価器の「走行」境界（スタート区画を出た瞬間）ではなく、
         # 区画中心への到達を根拠に自前で状態を進める（ClassicExplorer 参照）。
-        # run 境界そのものに応じて内部状態を変える必要が無いので no-op。
-        pass
+        # run 境界そのものに応じて内部状態を変える必要は無いので、走行制御
+        # 自体は変えない。ここでは exp_024 の一次記録用に「走行が始まった
+        # 瞬間の段階」を記録するだけである（PREREG §4 の run_phases）。
+        # 🔴 記録のみ・電圧計算には触れない（tests/test_classic_policy.py の
+        # test_on_run_start_does_not_affect_act_output で実測により確認）。
+        if self._explorer is not None:
+            self._run_phases.append({
+                "run_index": int(run_index),
+                "phase": self._explorer.phase.name,
+            })
 
     def on_run_end(self, outcome: str) -> None:
         # 同上。ゴール到達／帰還は ClassicExplorer が自分の推定セル座標
@@ -103,3 +125,10 @@ class ClassicExplorerPolicy(MousePolicy):
         """これまでの act() 呼び出しで記録した、ティックごとの計画識別子の列。
         `classic.checks.plan_adherence` にそのまま渡せる。"""
         return list(self._plan_ids)
+
+    def get_run_phases(self) -> List[dict]:
+        """走行が始まった瞬間（on_run_start 通知時点）の段階の列。
+        `[{"run_index": 1, "phase": "EXPLORE"}, ...]`（exp_024 PREREG §4）。
+        `phase` は `classic.explorer.Phase` のメンバ名（"EXPLORE"/"RETURN"/
+        "FAST"/"RETURN2"）の文字列。"""
+        return list(self._run_phases)

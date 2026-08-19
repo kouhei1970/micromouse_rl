@@ -293,6 +293,109 @@ def test_act_is_classicexplorerpolicys_own_implementation():
 
 
 # ==========================================================================
+# 1b. exp_024: on_run_start の run_phases 記録が走行そのものを変えないこと
+#     （任務指示 🔴「走行そのものを一切変えないこと」の実測）
+# ==========================================================================
+class _RunIndexEchoPolicy(ClassicExplorerPolicy):
+    """否定対照の対照 (discriminating power 確認用)。on_run_start で受け取った
+    run_index を電圧へ直接混ぜ込む、意図的に「呼び出し有無で act() の出力が
+    変わる」ダミー方策。ClassicExplorerPolicy が同じ壊し方（on_run_start の
+    呼び出し回数を変える）に対して不変であることの比較対象にする。"""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._last_run_index = 0
+
+    def on_run_start(self, run_index: int) -> None:
+        super().on_run_start(run_index)
+        self._last_run_index = int(run_index)
+
+    def act(self, obs: np.ndarray) -> Tuple[float, float]:
+        vl, vr = super().act(obs)
+        return vl + 0.001 * self._last_run_index, vr
+
+
+def _drive_and_maybe_call_on_run_start(policy, sim, n_steps: int, call_on_run_start: bool):
+    """N_STEPS ティック走らせ、途中 3 箇所で on_run_start を呼ぶ／呼ばないを
+    切り替えつつ、電圧列を集める。呼ぶタイミングは走行中の任意の瞬間を
+    模しただけで、評価器の実際の走行境界とは無関係（on_run_start の呼び出し
+    そのものが act() に影響しないかを見たいだけなので、呼ぶ位置は本質では
+    ない）。"""
+    voltages = []
+    call_at = {n_steps // 4, n_steps // 2, (3 * n_steps) // 4}
+    run_index = 0
+    for step in range(n_steps):
+        if call_on_run_start and step in call_at:
+            run_index += 1
+            policy.on_run_start(run_index)
+        obs = sim.observation()
+        vl, vr = policy.act(obs)
+        voltages.append((vl, vr))
+        sim.step_control(vl, vr)
+    return tuple(voltages)
+
+
+def test_on_run_start_does_not_affect_act_output(tmp_path):
+    """on_run_start が run_phases を記録するだけで、act() の返り値（電圧の
+    計算）に一切影響しないことを実測で示す（任務指示 🔴）。
+
+    N1 相当: ClassicExplorerPolicy を on_run_start を呼びながら走らせた場合と
+        呼ばずに走らせた場合とで、電圧列が bit 一致すること。
+    N2 相当(discriminating power の確認): 同じ「呼ぶ/呼ばない」の違いを、
+        意図的に on_run_start の呼び出しに反応するダミー方策
+        (_RunIndexEchoPolicy) に当てると、必ず電圧列が変わること
+        （この検査自体に判別力があることの確認。classic/checks.py の
+        negative_control と同じ考え方）。
+    """
+    params = RobotParams()
+    n_steps = 1200  # 上記の 3 箇所の呼び出しタイミングを含むのに十分な長さ
+
+    def _fresh(policy_cls, label: str):
+        v_walls, h_walls, width, height = _small_turning_maze()
+        xml_path = str(tmp_path / f"maze_run_start_{label}.xml")
+        build_maze_robot_xml(v_walls, h_walls, xml_path, model_name=f"m_run_start_{label}", params=params)
+        sim = MouseSim(xml_path, params=params)
+        sim.full_reset(cell=(0, 0), heading_deg=90.0)
+        policy = policy_cls(params=params)
+        policy.on_maze_start({"maze_id": label, "seed": 0, "xml_path": xml_path,
+                               "width": width, "height": height, "time_budget": 1e9, "max_runs": 5})
+        return sim, policy
+
+    def run_under_test(call_on_run_start: bool):
+        sim, policy = _fresh(ClassicExplorerPolicy, f"ut_{call_on_run_start}")
+        return _drive_and_maybe_call_on_run_start(policy, sim, n_steps, call_on_run_start)
+
+    def run_control(call_on_run_start: bool):
+        sim, policy = _fresh(_RunIndexEchoPolicy, f"ctrl_{call_on_run_start}")
+        return _drive_and_maybe_call_on_run_start(policy, sim, n_steps, call_on_run_start)
+
+    got = negative_control(run_under_test=run_under_test, run_control=run_control)
+    print(f"\n[実測] on_run_start の act() への影響（否定対照）: {got.verdict}")
+    assert got.passed, got.verdict
+
+    # get_run_phases() が実際に記録できていることも併せて確認する
+    # （呼び出しに反応しないことと、記録そのものが無効化されていないことは別の主張）。
+    # 期待値は「呼び出しの瞬間に ClassicExplorer 自身が持っていた phase」を
+    # 独立に読み取って作る（ハードコードしない — 小迷路の探索がどこまで
+    # 進むかは中身のロジックに依存するため）。
+    sim, policy = _fresh(ClassicExplorerPolicy, "phases_smoke")
+    expected = []
+    call_at = {n_steps // 4, n_steps // 2, (3 * n_steps) // 4}
+    run_index = 0
+    for step in range(n_steps):
+        if step in call_at:
+            run_index += 1
+            expected.append({"run_index": run_index, "phase": policy._explorer.phase.name})
+            policy.on_run_start(run_index)
+        obs = sim.observation()
+        vl, vr = policy.act(obs)
+        sim.step_control(vl, vr)
+    assert policy.get_run_phases() == expected, policy.get_run_phases()
+    assert len(expected) == 3
+    print(f"\n[実測] get_run_phases(): {expected}")
+
+
+# ==========================================================================
 # 2. 否定対照（N1/N2）: 真値を一切使っていないことを実測で示す
 #    （tests/test_classic_motion.py の作法をそのまま踏襲する）
 # ==========================================================================
