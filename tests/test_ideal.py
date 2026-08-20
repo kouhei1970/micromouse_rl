@@ -18,8 +18,8 @@
   6. `_fast_max_feasible_radius`（本モジュールの高速版）が
      `classic.geometry.max_feasible_radius`（元の実装）と同じ値を返す
      （速度のための最適化が判定結果を変えていないことの直接照合）
-  7. 共有する直線を挟んで隣り合う2つのターンが、両方とも正の半径を得る
-     （旧実装＝経路の先頭から見た貪欲な先取りでは、片方が0に潰れていた）
+  7. 共有する直線を挟んで隣り合う2つのターンが、比例配分(`allocation="proportional"`)
+     では両方とも正の半径を得る（先取り(`allocation="greedy"`)では片方が0に潰れていた）
   8. `_allocate_shared_straight`（共有する直線の比例配分・緩和法）が
      design_turn_v1 全10迷路で例外なく収束する（反復回数の最大値を印字する）
   9. 否定対照（対で）: 緩和法の反復予算(`max_iter`)を実際に必要な回数未満に
@@ -27,9 +27,14 @@
      加えて、収束の閾値(`tol`)を 1e-1 まで緩めても最終値が変わらないことを確認する
      （🔴 単なる想定ではなく、本ファイル作成時に数理的な理由と乱数検査で
      確かめた。理由は検査9のコメント参照）
-  10. `_ideal_slalom` の新しい比例配分（緩和法）による `t_ideal_slalom` が、
-      design_turn_v1 全10迷路で旧実装（経路の先頭から見た貪欲な先取り）の
-      値以下であること
+  10. `allocation="best"` の `total` が、`"greedy"`・`"proportional"` それぞれの
+      `total` 以下であること（全10迷路）。🔴 当初「比例配分は先取り以下になる
+      はず」という前提で検査していたが、10迷路中4迷路で実際には比例配分の方が
+      わずかに遅いと判明した（半径と直線消費のトレードオフを、どちらの配分も
+      モデル化していないため）。コーディネータの裁定により、理想時間は
+      両方を計算して速い方（`allocation="best"`）を採る方式に改めた。
+  11. `allocation="proportional"` は design_turn_v1 全10迷路で forced_spin
+      （その場旋回への降格）が0件であること（構造上の改善として保持する）
 """
 import json
 import math
@@ -74,18 +79,18 @@ def _load(seed):
 
 
 # ============================================================================
-# キャッシュ: 同じ (seed, mode, margin) の理想時間計算はテスト間で使い回す
-# （幾何探索が重く、テストごとに計算し直すと現実的な時間に収まらない）。
+# キャッシュ: 同じ (seed, mode, margin, allocation) の理想時間計算はテスト間で
+# 使い回す（幾何探索が重く、テストごとに計算し直すと現実的な時間に収まらない）。
 # ============================================================================
 _CACHE = {}
 
 
-def _result(seed, mode="slalom", margin=0.005):
-    key = (seed, mode, margin)
+def _result(seed, mode="slalom", margin=0.005, allocation="best"):
+    key = (seed, mode, margin, allocation)
     if key not in _CACHE:
         v, h = _load(seed)
         path = true_shortest_path(v, h, START, GOALS, Direction.N)
-        res = ideal_time_for_path(path, v, h, Direction.N, mode=mode, margin=margin)
+        res = ideal_time_for_path(path, v, h, Direction.N, mode=mode, margin=margin, allocation=allocation)
         _CACHE[key] = (path, v, h, res)
     return _CACHE[key]
 
@@ -129,18 +134,30 @@ def test_slalom_is_faster_than_spin(seed):
 # ============================================================================
 # 3. limited_by の内訳（全10迷路合計。test2 のキャッシュを使い回すので追加計算は無い）
 # ============================================================================
+_LIMITED_BY_VOCAB = {
+    "greedy": ("geometry", "prev", "next"),
+    "proportional": ("geometry", "shared", "floor"),
+}
+
+
 def test_radius_limits_are_recorded():
+    """`limited_by` の値は、そのターンが属する `IdealResult.allocation_used`
+    （既定 `allocation="best"` なので迷路ごとに "greedy"/"proportional" のどちらか）
+    に応じた語彙のいずれかで埋まっている（`_LIMITED_BY_VOCAB` 参照）。"""
     counts = Counter()
+    allocation_counts = Counter()
     n_turns_total = 0
     for seed in SEEDS:
         _, _, _, res = _result(seed, mode="slalom")
         n_turns_total += res.n_turns
+        allocation_counts[res.allocation_used] += 1
+        vocab = _LIMITED_BY_VOCAB[res.allocation_used]
         for t in res.turns:
-            assert t.limited_by in ("geometry", "shared", "floor"), (seed, t)
+            assert t.limited_by in vocab, (seed, res.allocation_used, t)
             counts[t.limited_by] += 1
 
     print(f"\n[検査3] limited_by の内訳（design_turn_v1 全10迷路・ターン計{n_turns_total}）: "
-          f"{dict(counts)}")
+          f"{dict(counts)}  採用配分: {dict(allocation_counts)}")
 
     assert n_turns_total > 0
     assert sum(counts.values()) == n_turns_total
@@ -270,10 +287,15 @@ SHARED_STRAIGHT_START_HEADING = Direction.W
 
 
 def test_shared_straight_is_split_between_neighbours():
-    """1区画ぶんの直線を挟んで向き合う2つの90°ターンが、両方とも正の半径を得る。"""
+    """1区画ぶんの直線を挟んで向き合う2つの90°ターンが、比例配分では両方とも
+    正の半径を得る。`allocation="proportional"` を明示する（既定の
+    `allocation="best"` は greedy/proportional のうち速い方を選ぶだけなので、
+    この合成経路でたまたま先取りが勝つ場合にも比例配分そのものの検査として
+    成立させるため）。"""
     v, h = _load(SHARED_STRAIGHT_SEED)
     res = ideal_time_for_path(
-        SHARED_STRAIGHT_CELLS, v, h, SHARED_STRAIGHT_START_HEADING, mode="slalom"
+        SHARED_STRAIGHT_CELLS, v, h, SHARED_STRAIGHT_START_HEADING, mode="slalom",
+        allocation="proportional",
     )
 
     assert res.n_turns == 2, "この合成経路はターンちょうど2個のはず（切り出し方を確認）"
@@ -298,14 +320,19 @@ def test_shared_straight_is_split_between_neighbours():
 def test_allocation_converges():
     """design_turn_v1 全10迷路で、共有する直線の比例配分が例外を出さずに収束する。
 
-    `_result(seed, mode="slalom")` の呼び出し自体が、収束しなければ
-    `_allocate_shared_straight` の中で `RuntimeError` を送出する
-    （`_ideal_slalom` が呼び出し元に伝播させる）ので、ここで10迷路すべてを
-    エラー無く読み終えること自体が収束の証拠になる。反復回数の最大値を印字する。
+    `allocation="proportional"` を明示する（既定の `allocation="best"` だと、
+    先取りの方が速い迷路では `alloc_iterations` が比例配分を計算していない
+    ことを示す 0 のままになる — best 自体は内部で両方を計算するので収束性の
+    検査としては成立するが、ここでは比例配分そのものを対象にする）。
+    `_result` の呼び出し自体が、収束しなければ `_allocate_shared_straight` の
+    中で `RuntimeError` を送出する（`_ideal_slalom` が呼び出し元に伝播させる）
+    ので、ここで10迷路すべてをエラー無く読み終えること自体が収束の証拠になる。
+    反復回数の最大値を印字する。
     """
     max_iterations = 0
     for seed in SEEDS:
-        _, _, _, res = _result(seed, mode="slalom")
+        _, _, _, res = _result(seed, mode="slalom", allocation="proportional")
+        assert res.allocation_used == "proportional"
         assert res.alloc_iterations >= 1
         max_iterations = max(max_iterations, res.alloc_iterations)
 
@@ -377,38 +404,60 @@ def test_allocation_tolerance_does_not_affect_the_result():
 
 
 # ============================================================================
-# 10. 新しい按分の t_ideal_slalom が、design_turn_v1 全10迷路で旧実装以下になる
+# 10. allocation="best" の total が、"greedy"・"proportional" それぞれ以下になる
 # ============================================================================
-# 旧実装（経路の先頭から見た貪欲な先取り。本コミットの直前の `classic/ideal.py`）
-# の `t_ideal_slalom`。`outputs/exp_025_s4/ideal_table.json` の是正前の値
-# （2026-08-20 時点。本コミットで上書きされる前に控えた値）。
-_OLD_GREEDY_T_IDEAL_SLALOM = {
-    41000: 14.466, 41001: 9.355, 41002: 15.124, 41004: 18.549, 41005: 13.400,
-    41007: 18.102, 41008: 12.764, 41009: 9.769, 41010: 16.909, 41012: 11.258,
-}
-
-
+# 🔴 旧検査（`test_fair_allocation_is_not_slower_than_greedy`）は「比例配分は
+# 先取り以下になるはず」という前提だったが、design_turn_v1 の10迷路中4迷路
+# （41000/41002/41005/41012）で実際には比例配分の方がわずかに遅い
+# （+0.44%〜+0.81%）と判明した。半径が大きいほど遠心加速度の制約下で速く
+# 曲がれるが直線消費が増えて前後の加速・巡航に使える距離が減る、という
+# トレードオフを、先取り・比例配分のどちらもモデル化していないためであり、
+# 「共有する直線を公平に分け合う」ことと「常に旧実装以下の時間になる」ことは
+# 別の主張だった（前提が誤っていた）。コーディネータの裁定により、理想時間は
+# 両方を計算して速い方（`allocation="best"`）を採る方式に改めたので、この
+# 検査も「best は両方以下」という、必ず成り立つはずの関係を確認する形にした。
 @pytest.mark.parametrize("seed", SEEDS)
-def test_fair_allocation_is_not_slower_than_greedy(seed):
-    """新しい比例配分の `t_ideal_slalom` が、旧実装（先取り）の値以下であること。
-
-    🔴 1迷路でも遅くなったら、合わせ込まずそのまま報告する対象（緩和法が
-    正しくない可能性がある）。比例配分は幾何の上限 `r_geom` を先取りせずに
-    分け合うだけで、`r_geom` 自体（幾何が許す最大値）は旧実装と共通の
-    `_fast_max_feasible_radius` で決めているので、新しい半径が旧実装の半径を
-    上回ることはあっても、幾何的に不可能な値になることは無い。
-    """
-    _, _, _, res = _result(seed, mode="slalom")
-    old = _OLD_GREEDY_T_IDEAL_SLALOM[seed]
-    new = res.total
-    change_pct = 100.0 * (new - old) / old
+def test_best_allocation_is_at_most_each_heuristic(seed):
+    """`allocation="best"` の `total` が、`"greedy"`・`"proportional"` 双方の
+    `total` 以下であること（全10迷路）。"""
+    _, _, _, res_greedy = _result(seed, mode="slalom", allocation="greedy")
+    _, _, _, res_proportional = _result(seed, mode="slalom", allocation="proportional")
+    _, _, _, res_best = _result(seed, mode="slalom", allocation="best")
 
     print(
-        f"\n[検査10] seed={seed}: T_old(貪欲)={old:.3f}s  T_new(比例配分)={new:.3f}s  "
-        f"変化率={change_pct:+.2f}%"
+        f"\n[検査10] seed={seed}: T_greedy={res_greedy.total:.3f}s  "
+        f"T_proportional={res_proportional.total:.3f}s  T_best={res_best.total:.3f}s  "
+        f"採用={res_best.allocation_used}"
     )
 
-    assert new <= old + 1e-9, (
-        f"seed={seed}: 新しい比例配分が旧実装より遅くなった "
-        f"({new:.6f}s > {old:.6f}s)。合わせ込まずそのまま報告する。"
-    )
+    assert res_best.total <= res_greedy.total + 1e-9
+    assert res_best.total <= res_proportional.total + 1e-9
+    assert res_best.allocation_used in ("greedy", "proportional")
+    if res_best.allocation_used == "greedy":
+        assert res_best.total == res_greedy.total
+    else:
+        assert res_best.total == res_proportional.total
+
+
+# ============================================================================
+# 11. 比例配分は design_turn_v1 全10迷路で forced_spin が0件
+# ============================================================================
+def test_proportional_allocation_has_no_forced_spin():
+    """`allocation="proportional"` は design_turn_v1 全10迷路で、その場旋回への
+    降格（`TurnPlan.radius<=0.0`）が1件も起きない。
+
+    旧実装（先取り）は5迷路で forced_spin が発生していた（手前のターンが
+    共有する直線を先取りし、次のターンの残り長が尽きて降格するため）。
+    比例配分はこの非対称を解消したことの構造上の改善として、別検査で保持する
+    （`allocation="best"` が先取りを選んだ迷路では forced_spin が残りうるので、
+    これは `allocation="proportional"` を明示した検査でなければ意味を持たない）。
+    """
+    total_forced = 0
+    for seed in SEEDS:
+        _, _, _, res = _result(seed, mode="slalom", allocation="proportional")
+        n_forced = sum(1 for t in res.turns if t.radius <= 0.0)
+        total_forced += n_forced
+        assert n_forced == 0, f"seed={seed}: 比例配分なのに forced_spin が{n_forced}件ある"
+
+    print(f"\n[検査11] design_turn_v1 全10迷路: 比例配分の forced_spin 合計={total_forced}")
+    assert total_forced == 0

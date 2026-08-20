@@ -1,0 +1,343 @@
+{
+  "generator": "/Users/kouhei/tmp/github/micromouse_rl/experiments/exp_025_s4_slalom/ideal_table.py",
+  "maze_dir": "competition/mazes/design_turn_v1",
+  "start": [
+    0,
+    0
+  ],
+  "goals": [
+    [
+      7,
+      7
+    ],
+    [
+      7,
+      8
+    ],
+    [
+      8,
+      7
+    ],
+    [
+      8,
+      8
+    ]
+  ],
+  "v_cap_reference": 0.12,
+  "rows": [
+    {
+      "seed": 41000,
+      "d0": 94,
+      "path_cells": 95,
+      "n_turns": 45,
+      "t_ideal_spin": 30.16780026831899,
+      "t_ideal_slalom_greedy": 14.465517933089675,
+      "t_ideal_slalom_proportional": 14.533365849933945,
+      "t_ideal_slalom_best": 14.465517933089675,
+      "allocation_used": "greedy",
+      "t_lower_bound": 4.523435927731734,
+      "ratio_best_over_lower_bound": 3.1979049033072906,
+      "t_ideal_slalom": 14.465517933089675,
+      "path_length_slalom": 14.682129354172941,
+      "path_length_spin": 16.919999999999995,
+      "v_max_slalom": 2.4039698417409596,
+      "v_max_spin": 2.453129919103363,
+      "by_kind_slalom": {
+        "straight": 4.843777767867281,
+        "arc": 9.621740165224878,
+        "spin": 0.0
+      },
+      "by_kind_spin": {
+        "straight": 22.38678089757313,
+        "arc": 0.0,
+        "spin": 7.781019370745826
+      },
+      "t_ideal_slalom_vcap0.12": 122.3727811550281,
+      "n_forced_spin_in_slalom": 0
+    },
+    {
+      "seed": 41001,
+      "d0": 52,
+      "path_cells": 53,
+      "n_turns": 32,
+      "t_ideal_spin": 19.93183325030604,
+      "t_ideal_slalom_greedy": 9.355187418448489,
+      "t_ideal_slalom_proportional": 9.174819835785398,
+      "t_ideal_slalom_best": 9.174819835785398,
+      "allocation_used": "proportional",
+      "t_lower_bound": 2.7901156973659273,
+      "ratio_best_over_lower_bound": 3.288329528573706,
+      "t_ideal_slalom": 9.174819835785398,
+      "path_length_slalom": 8.025540027799966,
+      "path_length_spin": 9.359999999999998,
+      "v_max_slalom": 2.3609778816804425,
+      "v_max_spin": 2.453129919103363,
+      "by_kind_slalom": {
+        "straight": 2.921946901859438,
+        "arc": 6.25287293392566,
+        "spin": 0.0
+      },
+      "by_kind_spin": {
+        "straight": 14.398663919997869,
+        "arc": 0.0,
+        "spin": 5.5331693303081435
+      },
+      "t_ideal_slalom_vcap0.12": 66.90125833594473,
+      "n_forced_spin_in_slalom": 0
+    },
+    {
+      "seed": 41002,
+      "d0": 88,
+      "path_cells": 89,
+      "n_turns": 56,
+      "t_ideal_spin": 34.13818229100258,
+      "t_ideal_slalom_greedy": 15.124009928046755,
+      "t_ideal_slalom_proportional": 15.191146392117496,
+      "t_ideal_slalom_best": 15.124009928046755,
+      "allocation_used": "greedy",
+      "t_lower_bound": 4.209884369642358,
+      "ratio_best_over_lower_bound": 3.5925000784122685,
+      "t_ideal_slalom": 15.124009928046755,
+      "path_length_slalom": 13.477975595469143,
+      "path_length_spin": 15.839999999999991,
+      "v_max_slalom": 2.1370733597260365,
+      "v_max_spin": 2.238768503293615,
+      "by_kind_slalom": {
+        "straight": 4.024231885713811,
+        "arc": 11.099778042333288,
+        "spin": 0.0
+      },
+      "by_kind_spin": {
+        "straight": 24.455135962963325,
+        "arc": 0.0,
+        "spin": 9.683046328039257
+      },
+      "t_ideal_slalom_vcap0.12": 112.33816719071662,
+      "n_forced_spin_in_slalom": 0
+    },
+    {
+      "seed": 41004,
+      "d0": 108,
+      "path_cells": 109,
+      "n_turns": 55,
+      "t_ideal_spin": 35.9549731497254,
+      "t_ideal_slalom_greedy": 18.549406699601008,
+      "t_ideal_slalom_proportional": 17.600633707709566,
+      "t_ideal_slalom_best": 17.600633707709566,
+      "allocation_used": "proportional",
+      "t_lower_bound": 5.150372373147933,
+      "ratio_best_over_lower_bound": 3.417351684991268,
+      "t_ideal_slalom": 17.600633707709566,
+      "path_length_slalom": 17.0897967865694,
+      "path_length_spin": 19.439999999999984,
+      "v_max_slalom": 2.71255161195161,
+      "v_max_spin": 2.832630438302916,
+      "by_kind_slalom": {
+        "straight": 6.713613998954784,
+        "arc": 10.887019708754108,
+        "spin": 0.0
+      },
+      "by_kind_spin": {
+        "straight": 26.444838363258313,
+        "arc": 0.0,
+        "spin": 9.510134786467127
+      },
+      "t_ideal_slalom_vcap0.12": 142.436731418877,
+      "n_forced_spin_in_slalom": 0
+    },
+    {
+      "seed": 41005,
+      "d0": 75,
+      "path_cells": 76,
+      "n_turns": 53,
+      "t_ideal_spin": 31.458542629724533,
+      "t_ideal_slalom_greedy": 13.399652477296183,
+      "t_ideal_slalom_proportional": 13.459611592758916,
+      "t_ideal_slalom_best": 13.399652477296183,
+      "allocation_used": "greedy",
+      "t_lower_bound": 3.6405956583092562,
+      "ratio_best_over_lower_bound": 3.680620902437479,
+      "t_ideal_slalom": 13.399652477296183,
+      "path_length_slalom": 11.291696749020575,
+      "path_length_spin": 13.499999999999991,
+      "v_max_slalom": 1.8812482132882336,
+      "v_max_spin": 2.0029721915193837,
+      "by_kind_slalom": {
+        "straight": 3.0206639290648125,
+        "arc": 10.378988548231545,
+        "spin": 0.0
+      },
+      "by_kind_spin": {
+        "straight": 22.294230926401628,
+        "arc": 0.0,
+        "spin": 9.164311703322866
+      },
+      "t_ideal_slalom_vcap0.12": 94.11923121057367,
+      "n_forced_spin_in_slalom": 0
+    },
+    {
+      "seed": 41007,
+      "d0": 106,
+      "path_cells": 107,
+      "n_turns": 61,
+      "t_ideal_spin": 38.385343672577264,
+      "t_ideal_slalom_greedy": 18.101815223578274,
+      "t_ideal_slalom_proportional": 17.4123528580649,
+      "t_ideal_slalom_best": 17.4123528580649,
+      "allocation_used": "proportional",
+      "t_lower_bound": 4.9485253349566705,
+      "ratio_best_over_lower_bound": 3.5186953040460414,
+      "t_ideal_slalom": 17.4123528580649,
+      "path_length_slalom": 16.31462963305499,
+      "path_length_spin": 19.07999999999998,
+      "v_max_slalom": 2.928993170406658,
+      "v_max_spin": 3.0039944573593504,
+      "by_kind_slalom": {
+        "straight": 5.030010867828116,
+        "arc": 12.382341990237789,
+        "spin": 0.0
+      },
+      "by_kind_spin": {
+        "straight": 27.837739636677444,
+        "arc": 0.0,
+        "spin": 10.547604035899909
+      },
+      "t_ideal_slalom_vcap0.12": 135.97700478676717,
+      "n_forced_spin_in_slalom": 0
+    },
+    {
+      "seed": 41008,
+      "d0": 78,
+      "path_cells": 79,
+      "n_turns": 38,
+      "t_ideal_spin": 25.48340779933,
+      "t_ideal_slalom_greedy": 12.763709356919353,
+      "t_ideal_slalom_proportional": 12.303726541287462,
+      "t_ideal_slalom_best": 12.303726541287462,
+      "allocation_used": "proportional",
+      "t_lower_bound": 3.8646277823963775,
+      "ratio_best_over_lower_bound": 3.1836769888504426,
+      "t_ideal_slalom": 12.303726541287462,
+      "path_length_slalom": 12.152062824924583,
+      "path_length_spin": 14.039999999999994,
+      "v_max_slalom": 2.71255161195161,
+      "v_max_spin": 2.832630438302916,
+      "by_kind_slalom": {
+        "straight": 4.1687191067677665,
+        "arc": 8.13500743452224,
+        "spin": 0.0
+      },
+      "by_kind_spin": {
+        "straight": 18.912769219589048,
+        "arc": 0.0,
+        "spin": 6.57063857974092
+      },
+      "t_ideal_slalom_vcap0.12": 101.28889341130878,
+      "n_forced_spin_in_slalom": 0
+    },
+    {
+      "seed": 41009,
+      "d0": 57,
+      "path_cells": 58,
+      "n_turns": 31,
+      "t_ideal_spin": 20.005397230449375,
+      "t_ideal_slalom_greedy": 9.768892598599129,
+      "t_ideal_slalom_proportional": 9.558552975395866,
+      "t_ideal_slalom_best": 9.558552975395866,
+      "allocation_used": "proportional",
+      "t_lower_bound": 3.021464243212243,
+      "ratio_best_over_lower_bound": 3.163549923474777,
+      "t_ideal_slalom": 9.558552975395866,
+      "path_length_slalom": 8.914003567823595,
+      "path_length_spin": 10.259999999999998,
+      "v_max_slalom": 2.5199345833080384,
+      "v_max_spin": 2.6496831508691976,
+      "by_kind_slalom": {
+        "straight": 3.382492380622443,
+        "arc": 6.176060594773448,
+        "spin": 0.0
+      },
+      "by_kind_spin": {
+        "straight": 14.645139441713338,
+        "arc": 0.0,
+        "spin": 5.360257788736014
+      },
+      "t_ideal_slalom_vcap0.12": 74.30512102853872,
+      "n_forced_spin_in_slalom": 0
+    },
+    {
+      "seed": 41010,
+      "d0": 97,
+      "path_cells": 98,
+      "n_turns": 56,
+      "t_ideal_spin": 35.37142097007526,
+      "t_ideal_slalom_greedy": 16.90875966559555,
+      "t_ideal_slalom_proportional": 16.28507388298842,
+      "t_ideal_slalom_best": 16.28507388298842,
+      "allocation_used": "proportional",
+      "t_lower_bound": 4.597071503389709,
+      "ratio_best_over_lower_bound": 3.5424887063384625,
+      "t_ideal_slalom": 16.28507388298842,
+      "path_length_slalom": 14.964917150640566,
+      "path_length_spin": 17.459999999999994,
+      "v_max_slalom": 2.2658821381313548,
+      "v_max_spin": 2.453129919103363,
+      "by_kind_slalom": {
+        "straight": 4.920719680117225,
+        "arc": 11.364354202870588,
+        "spin": 0.0
+      },
+      "by_kind_spin": {
+        "straight": 25.688374642036038,
+        "arc": 0.0,
+        "spin": 9.683046328039257
+      },
+      "t_ideal_slalom_vcap0.12": 124.72934681717169,
+      "n_forced_spin_in_slalom": 0
+    },
+    {
+      "seed": 41012,
+      "d0": 66,
+      "path_cells": 67,
+      "n_turns": 41,
+      "t_ideal_spin": 25.34584234719676,
+      "t_ideal_slalom_greedy": 11.257984496254103,
+      "t_ideal_slalom_proportional": 11.349481573713621,
+      "t_ideal_slalom_best": 11.257984496254103,
+      "allocation_used": "greedy",
+      "t_lower_bound": 3.3197587053099937,
+      "ratio_best_over_lower_bound": 3.39120565547334,
+      "t_ideal_slalom": 11.257984496254103,
+      "path_length_slalom": 10.059564392506685,
+      "path_length_spin": 11.879999999999995,
+      "v_max_slalom": 2.354791634094217,
+      "v_max_spin": 2.453129919103363,
+      "by_kind_slalom": {
+        "straight": 2.926300302160742,
+        "arc": 8.331684194094239,
+        "spin": 0.0
+      },
+      "by_kind_spin": {
+        "straight": 18.25646914273942,
+        "arc": 0.0,
+        "spin": 7.089373204457308
+      },
+      "t_ideal_slalom_vcap0.12": 83.85140647446791,
+      "n_forced_spin_in_slalom": 0
+    }
+  ],
+  "radius_reason_counts": {
+    "geometry": 116,
+    "prev": 127,
+    "shared": 225
+  },
+  "allocation_used_counts": {
+    "greedy": 4,
+    "proportional": 6
+  },
+  "vcap_reference_totals": {
+    "slalom": 136.58232463591833,
+    "slalom_vcap": 1058.3199418293943
+  },
+  "elapsed_seconds": 270.2245509624481
+}
