@@ -1,10 +1,13 @@
 # research_notes/scripts/video_kinematics/clip_07_diagonal.py
-# クリップ7: 斜めは得か — 通路幅の比較とターン回数の削減（約15秒）
+# クリップ7: 斜めは得か — 通路幅の比較とターン回数の削減（約39.9秒）
 #
 # 左パネル: 直線通路と斜め通路の通路幅（機体中心の横方向の余地）を
 # classic/geometry.py（読み取り専用の import）で計算して比較する。
 # 右パネル: 階段 k 段を直交で抜く場合と斜めで抜く場合のターン回数を、
 # k=1,2,3,5 と変えながらアニメで見せる（ターン回数はその場で数える。手打ちしない）。
+#
+# 台本（narration/clip_07_diagonal.txt）の切れ目で画面の要素を増やす:
+#   導入 / 通路幅の比較（左パネル） / 階段k段のターン回数（右パネル） / 結論の強調
 #
 # 実行: .venv/bin/python research_notes/scripts/video_kinematics/clip_07_diagonal.py
 import math
@@ -74,11 +77,25 @@ def main() -> None:
         length_diag = k * math.sqrt(2.0)  # 対角の区画数換算
         return n_turns_ortho, n_turns_diag, length_ortho, length_diag
 
-    total_seconds = 15.0
+    # ---- 台本の切れ目（narration/clip_07_diagonal.txt） ----
+    intro_text = "斜めに走ると何が得なのかも、同じやり方で測れます。"
+    width_text = ("斜めの通路は狭く、機体中心が動ける余地は15.15mm、"
+                  "直線通路の34パーセントしかありません。")
+    turns_text = ("経路は29パーセント短くなります。しかし、それより大きいことがあります。"
+                  "階段をk段抜くとき、直交なら2k引く1回のターンが要りますが、"
+                  "斜めなら出入りの2回で済みます。")
+    conclusion_text = "ターンが消えて、長い直線が残る。斜めの価値の本体はこちらです。"
+
+    # ナレーション実測 38.880s（ffprobe, 2026-08-20） + 余韻 1.0s。
+    total_seconds = 39.880
     n_active = C.seconds_to_active_frames(total_seconds)
     n_cases = len(k_values)
-    bounds = [round(n_active * i / n_cases) for i in range(n_cases + 1)]
-    build_in_frames = min(45, n_active)  # 左パネルのバーが伸びる時間
+    b = C.stage_bounds(
+        [len(intro_text), len(width_text), len(turns_text), len(conclusion_text)],
+        n_active,
+    )
+    # b = [0, 導入末, 通路幅末, ターン回数末(=n_cases周回末), n_active(結論末)]
+    bounds = [b[2] + round((b[3] - b[2]) * i / n_cases) for i in range(n_cases + 1)]
 
     fig = C.new_figure()
     ax_l = fig.add_axes([0.055, 0.20, 0.28, 0.58])
@@ -87,8 +104,12 @@ def main() -> None:
     C.style_axes(ax_r)
 
     C.add_title(fig, "斜めは得か — 通路幅とターン回数", y=0.965)
-    C.add_caption(fig, "経路が29%短いことより、ターンが消えることのほうが大きい。",
-                  y=0.045, fontsize=20)
+    caption = C.add_caption(fig, "経路が29%短いことより、ターンが消えることのほうが大きい。",
+                             y=0.045, fontsize=20)
+    caption.set_visible(False)  # 結論段（文5）でだけ出す
+
+    intro_note = fig.text(0.5, 0.86, "通路幅とターン回数を、幾何とその場で数えた回数で測る",
+                           ha="center", va="top", color=C.FG, fontsize=22, fontweight="bold")
 
     # 左パネルの下地
     ax_l.set_xlim(-0.6, 1.6)
@@ -125,6 +146,7 @@ def main() -> None:
                              linestyle="none", zorder=4)
     legend = ax_r.legend(loc="lower right", fontsize=14, framealpha=0.85,
                           facecolor="#1A1D1F", edgecolor=C.GRID, labelcolor=C.FG)
+    legend.set_visible(False)  # 右パネルが動き出す段（文3+文4）でだけ出す
 
     # 右パネル内（軸のローカル座標）に置く。図全体レベルの右上に置くと、幅の
     # 広い文言がクリップ幅いっぱいのタイトルと衝突するため、軸内の空白
@@ -153,8 +175,14 @@ def main() -> None:
         ax_r.set_ylim(-pad, k + pad)
 
     def draw_frame(i: int):
-        # 左パネル: バーの伸び（最初の build_in_frames だけ）
-        grow = min(i / build_in_frames, 1.0) if build_in_frames > 0 else 1.0
+        # ---- 導入段（文1）: 見出しだけ ----
+        intro_note.set_visible(i < b[1])
+
+        # ---- 左パネル（文2から育つ） ----
+        if i < b[1]:
+            grow = 0.0
+        else:
+            grow = min((i - b[1]) / max(b[2] - b[1], 1), 1.0)
         h_s = straight_room * 1000.0 * grow
         h_d = diag_room * 1000.0 * grow
         bar_straight.set_height(h_s)
@@ -166,7 +194,22 @@ def main() -> None:
         ratio_label.set_text(
             f"斜めは直線の {ratio_pct:.0f}%" if grow >= 1.0 else "")
 
-        # 右パネル: 現在の k を求める
+        # ---- 右パネル（文3+文4から動き出す。文5では最後のkを保持） ----
+        if i < b[2]:
+            for ln in grid_lines:
+                ln.remove()
+            grid_lines.clear()
+            ortho_line.set_data([], [])
+            ortho_turns.set_data([], [])
+            diag_line.set_data([], [])
+            diag_turns.set_data([], [])
+            k_title.set_text("")
+            stat_panel.set_text("")
+            legend.set_visible(False)
+            caption.set_visible(False)
+            return ()
+
+        legend.set_visible(True)
         case_idx = n_cases - 1
         for c in range(n_cases):
             if bounds[c] <= i < bounds[c + 1]:
@@ -174,6 +217,7 @@ def main() -> None:
                 break
         k = k_values[case_idx]
         set_grid(k)
+        caption.set_visible(i >= b[3])
 
         n_to, n_td, len_o, len_d = turn_counts(k)
 

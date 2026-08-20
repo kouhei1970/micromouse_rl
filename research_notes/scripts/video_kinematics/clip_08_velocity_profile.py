@@ -1,10 +1,13 @@
 # research_notes/scripts/video_kinematics/clip_08_velocity_profile.py
-# クリップ8: 速度プロファイル — 短い直線と長い直線（約20秒）
+# クリップ8: 速度プロファイル — 短い直線と長い直線（約57.9秒）
 #
 # classic/profile.py の min_time（読み取り専用の import）で 4 通りの速度プロファイルを
 # その場で計算し、順に切り替えて見せる。横軸は弧長 s、縦軸は速度。
 # 加速／定常／減速を塗り分ける（区間の分類は IdealTime.by_mode と同じ判定則を
 # 表示用グリッドに適用する）。
+#
+# 台本（narration/clip_08_velocity_profile.txt）の切れ目で画面の要素を増やす:
+#   導入（台形の概念図。数値は出さない） / ケース1〜4（文2〜5、1つずつ）
 #
 # 実行: .venv/bin/python research_notes/scripts/video_kinematics/clip_08_velocity_profile.py
 import math
@@ -75,11 +78,24 @@ def main() -> None:
 
     cases = [build_case(c["label"], c["length"], c["v_cap"], limits) for c in CASES]
 
-    total_seconds = 20.0
+    # ---- 台本の切れ目（narration/clip_08_velocity_profile.txt） ----
+    intro_text = ("加速して、一定速度で走って、減速する。"
+                  "この台形が出るかどうかは、直線の長さで決まる。")
+    case_texts = [
+        "1区画、0.18mでは最高速の26パーセントまでしか出ません。三角形です。",
+        "上限を0.12m/sに絞ると、ほとんどが定常になります。現行の実装が走っているのはこの形です。",
+        "迷路の端から端まで16区画、2.88mを走れば、最高速の96.8パーセントまで届きます。",
+        ("規約が許す最長の直線は斜めの15段、3.818m。ここでは99.5パーセントに達し、"
+         "距離の31パーセントが最高速の95パーセント以上になります。"),
+    ]
+
+    # ナレーション実測 56.856s（ffprobe, 2026-08-20） + 余韻 1.0s。
+    total_seconds = 57.856
     n_active = C.seconds_to_active_frames(total_seconds)
     n_cases = len(cases)
-    # フェーズ境界（フレーム数を4分割。端数は前方のフェーズへ配る）
-    bounds = [round(n_active * k / n_cases) for k in range(n_cases + 1)]
+    b = C.stage_bounds([len(intro_text)] + [len(t) for t in case_texts], n_active)
+    # b = [0, 導入末, ケース1末, ケース2末, ケース3末, n_active(ケース4末)]
+    case_bounds = b[1:]
     sweep_frac = 0.78  # フェーズ内でマーカーが動く割合。残りは完成形を保持する
 
     fig = C.new_figure()
@@ -87,19 +103,57 @@ def main() -> None:
     C.style_axes(ax)
 
     C.add_title(fig, "短い直線と長い直線 — 速度プロファイル")
-    C.add_caption(fig, "台形が出るかどうかは直線の長さで決まる。", y=0.045)
+    caption = C.add_caption(fig, "台形が出るかどうかは直線の長さで決まる。", y=0.045)
 
     y_top = V_TOP * 1.08
 
+    def draw_intro(i: int):
+        """導入段（文1）: 数値を持たない概念図（加速・定常・減速の3区間の台形）。"""
+        ax.clear()
+        C.style_axes(ax)
+        ax.set_xlim(0.0, 1.0)
+        ax.set_ylim(0.0, 1.15)
+        ax.set_xlabel("弧長 s（模式図）", fontsize=16)
+        ax.set_ylabel("速度 v（模式図）", fontsize=16)
+        s_shape = [0.0, 0.28, 0.72, 1.0]
+        v_shape = [0.0, 1.0, 1.0, 0.0]
+        reveal = min(max(i / max(b[1] - 1, 1), 0.0), 1.0)
+        n_show = max(int(reveal * 300), 1)
+        s_fine, v_fine = [], []
+        for k in range(n_show + 1):
+            s = k / 300.0
+            if s <= s_shape[1]:
+                v = v_shape[0] + (v_shape[1] - v_shape[0]) * (s / s_shape[1])
+            elif s <= s_shape[2]:
+                v = 1.0
+            else:
+                frac = (s - s_shape[2]) / (s_shape[3] - s_shape[2])
+                v = 1.0 - frac
+            s_fine.append(s)
+            v_fine.append(v)
+        ax.plot(s_fine, v_fine, color=C.FG, linewidth=3.0, zorder=3)
+        if reveal >= 1.0:
+            ax.text(0.14, 0.5, "加速", color=C.C_LIMIT, fontsize=20, ha="center")
+            ax.text(0.5, 1.06, "定常", color=C.C_LIMIT, fontsize=20, ha="center")
+            ax.text(0.86, 0.5, "減速", color=C.C_LIMIT, fontsize=20, ha="center")
+        ax.set_title("台形が出るかどうかは直線の長さで決まる", color=C.FG, fontsize=22, pad=14)
+        caption.set_visible(False)
+        return ()
+
     def draw_frame(i: int):
+        if i < b[1]:
+            return draw_intro(i)
+        caption.set_visible(True)
+
         # 現在のフェーズと、フェーズ内の進み具合を求める
         case_idx = n_cases - 1
         for k in range(n_cases):
-            if bounds[k] <= i < bounds[k + 1]:
+            if case_bounds[k] <= i < case_bounds[k + 1]:
                 case_idx = k
                 break
-        phase_len = max(bounds[case_idx + 1] - bounds[case_idx], 1)
-        local_i = i - bounds[case_idx]
+        stage_start = case_bounds[case_idx]
+        phase_len = max(case_bounds[case_idx + 1] - stage_start, 1)
+        local_i = i - stage_start
         progress = min(local_i / (phase_len * sweep_frac), 1.0)
 
         case = cases[case_idx]

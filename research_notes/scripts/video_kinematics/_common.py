@@ -1,8 +1,8 @@
 # research_notes/scripts/video_kinematics/_common.py
 # 発表用解説動画クリップ第1弾の共通描画設定（配色・フォント・保持フレーム・字幕）。
 #
-# 対象クリップ: clip_02_friction_circle / clip_06_sweep_clearance /
-# clip_07_diagonal / clip_08_velocity_profile（すべて本ディレクトリ配下）。
+# 対象クリップ: clip_01_opening / clip_02_friction_circle / clip_06_sweep_clearance /
+# clip_07_diagonal / clip_08_velocity_profile / clip_09_eta（すべて本ディレクトリ配下）。
 #
 # 🔴 数値は必ず classic/profile.py（vehicle_limits/min_time）・classic/geometry.py
 # から計算した値を描く。本ファイル自身には物理定数・幾何定数は一切置かない
@@ -79,28 +79,30 @@ def style_axes(ax) -> None:
     ax.grid(True, color=GRID, linewidth=0.8, alpha=0.6)
 
 
-def add_title(fig, text: str, y: float = 0.95, fontsize: int = 30) -> None:
-    fig.text(0.5, y, text, ha="center", va="top", color=FG,
-              fontsize=fontsize, fontweight="bold")
+def add_title(fig, text: str, y: float = 0.95, fontsize: int = 30):
+    return fig.text(0.5, y, text, ha="center", va="top", color=FG,
+                     fontsize=fontsize, fontweight="bold")
 
 
-def add_caption(fig, text: str, y: float = 0.055, fontsize: int = 22) -> None:
-    """字幕（画面下端の常設キャプション）。"""
-    fig.text(0.5, y, text, ha="center", va="center", color=FG, fontsize=fontsize,
-              bbox=dict(boxstyle="round,pad=0.5", facecolor="#1A1D1F",
-                        edgecolor=GRID, linewidth=1.0))
+def add_caption(fig, text: str, y: float = 0.055, fontsize: int = 22):
+    """字幕（画面下端の常設キャプション）。戻り値の Text は `set_alpha` 等で
+    段階的な出現に使える（返り値を無視すれば従来どおり常設として使える）。"""
+    return fig.text(0.5, y, text, ha="center", va="center", color=FG, fontsize=fontsize,
+                     bbox=dict(boxstyle="round,pad=0.5", facecolor="#1A1D1F",
+                               edgecolor=GRID, linewidth=1.0))
 
 
 def add_stat_panel(fig, lines: Sequence[str], x: float = 0.985, y: float = 0.90,
-                    fontsize: int = 18, ha: str = "right") -> None:
-    """右上（既定）などに置く数値パネル。等幅フォントで揃える。"""
+                    fontsize: int = 18, ha: str = "right"):
+    """右上（既定）などに置く数値パネル。等幅フォントで揃える。
+    戻り値の Text は `set_alpha` 等で段階的な出現に使える。"""
     # 等幅英数字（Menlo）と日本語（Hiragino Sans）が混在するため、Menlo 指定はしない
     # （Menlo は CJK グリフを持たず欠落警告が出る）。既定の Hiragino Sans に揃える。
     text = "\n".join(lines)
-    fig.text(x, y, text, ha=ha, va="top", color=FG, fontsize=fontsize,
-              linespacing=1.6,
-              bbox=dict(boxstyle="round,pad=0.6", facecolor="#1A1D1F",
-                        edgecolor=GRID, linewidth=1.0))
+    return fig.text(x, y, text, ha=ha, va="top", color=FG, fontsize=fontsize,
+                     linespacing=1.6,
+                     bbox=dict(boxstyle="round,pad=0.6", facecolor="#1A1D1F",
+                               edgecolor=GRID, linewidth=1.0))
 
 
 def make_writer(fps: int = FPS) -> animation.FFMpegWriter:
@@ -135,3 +137,24 @@ def seconds_to_active_frames(total_seconds: float, hold_frames: int = HOLD_FRAME
                               fps: int = FPS) -> int:
     """クリップ全体の目標秒数から、保持を除いた可動フレーム数を求める。"""
     return max(round(total_seconds * fps) - hold_frames, 1)
+
+
+def stage_bounds(weights: Sequence[float], n_active: int) -> list[int]:
+    """重み（台本の文の文字数など）に比例して `n_active` を区切った境界フレーム番号。
+
+    台本の文の切れ目で画面の要素が現れるようにするための土台。戻り値は
+    `len(weights)+1` 個（先頭 0・末尾 `n_active`）で、`weights[k]` に対応する
+    区間は `[bounds[k], bounds[k+1])`。文字数はナレーションの読み上げ時間に
+    ほぼ比例するという単純な近似であり、音声のタイムスタンプそのものではない
+    （台本の文単位で「だいたい合わせる」ための土台。フレーム単位の同期はしない）。
+    """
+    total = sum(weights)
+    if total <= 0:
+        raise ValueError("weights の合計が 0 以下")
+    bounds = [0]
+    cum = 0.0
+    for w in weights[:-1]:
+        cum += w
+        bounds.append(min(round(n_active * cum / total), n_active))
+    bounds.append(n_active)
+    return bounds

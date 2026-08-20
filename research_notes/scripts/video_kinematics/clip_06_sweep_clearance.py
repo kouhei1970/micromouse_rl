@@ -1,11 +1,15 @@
 # research_notes/scripts/video_kinematics/clip_06_sweep_clearance.py
-# クリップ6: 通れるかどうかは幾何が決める — 90° ターンの掃引余裕（約15秒）
+# クリップ6: 通れるかどうかは幾何が決める — 90° ターンの掃引余裕（約49.7秒）
 #
 # classic/geometry.py（読み取り専用の import）で、迷路の壁・柱と機体外形（100x80mm）を
 # 掃引したときの最小余裕を計算する。半径を 90 -> 190 -> 250mm と上げていくと余裕が
 # 減り、通れなくなったところで赤くする。局所迷路の配置（西区画→角区画→北区画の
 # 90°左ターン）は tests/test_geometry.py の検査2〜4・6・7 と同じもの
 # （geometry_anchor.py・note_031 の値との照合済みの配置）を再構成する。
+#
+# 台本（narration/clip_06_sweep_clearance.txt）の切れ目で画面の要素を増やす:
+#   導入（幾何が決める・掃引の説明） / R=90mm / R=190mm / R=250mm /
+#   仕上げ（通路幅いっぱいの300mmとの対比・機体前後端の張り出し）
 #
 # 実行: .venv/bin/python research_notes/scripts/video_kinematics/clip_06_sweep_clearance.py
 import math
@@ -96,10 +100,25 @@ def main() -> None:
     xlim = (min(xs) - margin, max(xs) + margin)
     ylim = (min(ys) - margin, max(ys) + margin)
 
-    total_seconds = 15.0
+    # ---- 台本の切れ目（narration/clip_06_sweep_clearance.txt。行4は2文を含むので分ける） ----
+    intro_text = ("次に、その経路が通れるかどうかは幾何が決めます。"
+                  "機体の外形を円弧に沿って掃引し、壁と柱にどれだけ余裕があるかを測ります。")
+    r90_text = "半径90mmでは、内側の柱まで41.5mm、外側の壁まで34.7mmの余裕があります。"
+    r190_text = "半径を上げていくと余裕は減り、190mmでほぼゼロになります。"
+    r250_text = "250mmでは通れません。"
+    caveat_text = ("通路幅から素朴に計算すると300mmまで取れそうに見えますが、"
+                   "弧を描くとき機体の前後端は中心より外側を通ります。その分が入っていませんでした。")
+
+    # ナレーション実測 48.720s（ffprobe, 2026-08-20） + 余韻 1.0s。
+    total_seconds = 49.720
     n_active = C.seconds_to_active_frames(total_seconds)
     n_cases = len(cases)
-    bounds = [round(n_active * k / n_cases) for k in range(n_cases + 1)]
+    b = C.stage_bounds(
+        [len(intro_text), len(r90_text), len(r190_text), len(r250_text), len(caveat_text)],
+        n_active,
+    )
+    # b = [0, intro末, r90末, r190末, r250末, n_active(=caveat末)]
+    case_bounds = b[1:5]  # 3ケースぶんの [開始,終了) 境界（intro分だけ後ろにずらす）
     sweep_frac = 0.82
     n_env = 26  # 掃引の残像（機体外形のコマ送り）の最大表示数
 
@@ -113,12 +132,31 @@ def main() -> None:
     ax.set_ylabel("y [mm]", fontsize=14)
 
     C.add_title(fig, "通れるかどうかは幾何が決める — 90°ターンの掃引余裕", y=0.965)
-    C.add_caption(
+    caption = C.add_caption(
         fig,
         f"中心線上で通れる最大半径は {r_star_mm:.0f} mm。"
         "通路幅いっぱいの300 mmは機体の長さのぶん通れない。",
         y=0.045, fontsize=20,
     )
+    caption.set_visible(False)  # 仕上げ段（caveat）でだけ出す（bboxが残るのでalphaでなくvisibleで切替）
+
+    intro_note = fig.text(0.37, 0.885, "機体の外形を円弧に沿って掃引する", ha="center",
+                           va="top", color=C.FG, fontsize=24, fontweight="bold")
+
+    # 仕上げ段: 機体の前後端が中心線の外側を通ることを示す張り出しの注記
+    # （HALF_LENGTH は classic/geometry.py の機体半長。手打ちの定数ではない）
+    # 位置はプロット領域と重ならないよう右下の余白（プロット右・キャプション上）に置く。
+    overhang_mm = HALF_LENGTH * 1000.0
+    overhang_note = fig.text(
+        0.74, 0.30,
+        f"機体の半長 = {overhang_mm:.0f} mm ぶん、\n前後端は中心線より外側を通る",
+        ha="left", va="top", color=C.C_MEASURED, fontsize=19, linespacing=1.6,
+        bbox=dict(boxstyle="round,pad=0.5", facecolor="#1A1D1F",
+                  edgecolor=C.C_MEASURED, linewidth=1.2))
+    overhang_note.set_visible(False)
+    overhang_marker, = ax.plot([], [], marker="D", markersize=11, color=C.C_MEASURED,
+                                zorder=7)
+    overhang_marker.set_visible(False)
 
     # 壁・柱（迷路の障害物）。GRID 色の塗り＋文字色の縁取り。
     for obs in obstacles:
@@ -151,13 +189,37 @@ def main() -> None:
                              fontsize=26, fontweight="bold")
 
     def draw_frame(i: int):
+        # ---- 導入段（文1+文2）: まだ掃引を始めない。機体は最初の姿勢で静止 ----
+        if i < b[1]:
+            intro_note.set_visible(True)
+            radius_title.set_visible(False)
+            stat_panel.set_visible(False)
+            idle_pose = cases[0]["poses"][0]
+            corners_idle = [(cx * 1000.0, cy * 1000.0) for cx, cy in robot_corners(idle_pose)]
+            main_patch.set_xy(corners_idle)
+            main_patch.set_facecolor(C.GRID)
+            main_patch.set_edgecolor(C.FG)
+            for p_artist in env_patches:
+                p_artist.set_alpha(0.0)
+            worst_marker.set_data([], [])
+            caption.set_visible(False)
+            overhang_note.set_visible(False)
+            overhang_marker.set_visible(False)
+            return ()
+
+        intro_note.set_visible(False)
+        radius_title.set_visible(True)
+        stat_panel.set_visible(True)
+
+        # ---- どの半径のケースか（文3=R90 / 文4前半=R190 / 文4後半=R250） ----
         case_idx = n_cases - 1
         for k in range(n_cases):
-            if bounds[k] <= i < bounds[k + 1]:
+            if case_bounds[k] <= i < case_bounds[k + 1]:
                 case_idx = k
                 break
-        phase_len = max(bounds[case_idx + 1] - bounds[case_idx], 1)
-        local_i = i - bounds[case_idx]
+        stage_start = case_bounds[case_idx]
+        phase_len = max(case_bounds[case_idx + 1] - stage_start, 1)
+        local_i = i - stage_start
         progress = min(local_i / (phase_len * sweep_frac), 1.0)
 
         case = cases[case_idx]
@@ -203,6 +265,27 @@ def main() -> None:
             f"中心線上の通行可能な最大半径\n"
             f"  = {r_star_mm:.2f} mm（margin=0）"
         )
+
+        # ---- 仕上げ段（文5+文6）: R=250mm の最終姿勢を保持し、張り出しの注記を足す ----
+        if i >= b[4]:
+            caption.set_visible(True)
+            overhang_note.set_visible(True)
+            # 機体の最前端コーナー（進行方向ベクトルへの射影が最大の頂点）を
+            # 張り出しの実例として指す（中心線＝pose.x,y は進行方向に沿って進むが、
+            # 前端コーナーはその外側＝進行方向により先を通る）。
+            p_final = poses[idx]
+            heading = (math.cos(p_final.theta), math.sin(p_final.theta))
+            cx_mm, cy_mm = p_final.x * 1000.0, p_final.y * 1000.0
+            front_corner = max(
+                corners_now,
+                key=lambda c: (c[0] - cx_mm) * heading[0] + (c[1] - cy_mm) * heading[1],
+            )
+            overhang_marker.set_data([front_corner[0]], [front_corner[1]])
+            overhang_marker.set_visible(True)
+        else:
+            caption.set_visible(False)
+            overhang_note.set_visible(False)
+            overhang_marker.set_visible(False)
         return ()
 
     out_path = C.OUT_DIR / "clip_06_sweep_clearance.mp4"
