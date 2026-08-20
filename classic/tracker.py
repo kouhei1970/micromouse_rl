@@ -313,6 +313,17 @@ class ProfileTracker:
             psi_grid[i + 1] = psi_grid[i] + self._kappa_ref[i] * ds
         self._psi_grid = psi_grid
         self._mode = "path"
+        # 車輪 PI 積分器をリセットする。`classic/motion.py` の
+        # `start_forward()`/`_start_turn()` が新しいコマンド発行時に積分器を
+        # リセットするのと同じ考え方（`self._rolling` に相当する「継続」概念は
+        # 本トラッカーには無いので常にリセットする）。特に経路追従とその場旋回で
+        # `ki_wheel`/`ki_wheel_spin` の値が大きく異なるため、積分器の値を
+        # 前の計画から持ち越すと、別モードの ki で再解釈されて過大な電圧に
+        # なることを実測で確認した（その場旋回からの引き継ぎ検査で、旋回終了時
+        # 点の積分器を経路追従の ki_wheel=0.5 でそのまま使うと、旋回用に
+        # 積み上がっていた値が12倍以上に水増しされ、方位が却って発散した）。
+        self._integ_l = 0.0
+        self._integ_r = 0.0
 
     def _v_at(self, s: float) -> float:
         return _interp_linear(s, self._s_grid, self._v_ref)
@@ -373,6 +384,9 @@ class ProfileTracker:
         self._spin_psi0 = psi_start if psi_start is not None else self._yaw_est
         self._t = 0.0
         self._mode = "spin"
+        # 車輪 PI 積分器をリセットする（理由は load_plan() 内の同種コメント参照）。
+        self._integ_l = 0.0
+        self._integ_r = 0.0
 
     def _spin_kinematics(self, t: float):
         """時刻 `t`（旋回開始からの経過時間）における `(psi_ref, omega_ref,
