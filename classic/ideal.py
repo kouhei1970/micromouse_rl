@@ -45,15 +45,21 @@
 
 ## 既知の限界
 
-- **半径は各ターンについて独立に最大化する貪欲法であり、厳密な時間最適ではない**
+- **半径は各ターンについて独立に最大化する近似であり、厳密な時間最適ではない**
   （前後の速度の連成を考えていない。ある区間の速度が本当に効率よく使えるかは
   隣接区間の速度計画にも依存するが、本モジュールは考慮しない）。
   したがって `T_ideal` は真の最小より**大きい側**に出る。
-- 「手前/次の直線から食える長さ」は、ターンを経路の先頭から順番に処理しながら
-  **既に前のターンが消費した分を引いた残り長**を使う（隣り合う 2 つのターンが
-  同じ直線の両端から独立に満額を要求して食い合う — 直線の長さより多く消費してしまう
-  — という不整合を避けるための処理順）。この意味でも「独立に最大化」は
-  「経路の先頭から見て貪欲」という意味であり、真に対称な配分ではない。
+- 「共有する直線から食える長さ」は、直線の制約を無視した幾何上の希望消費量から
+  出発し、隣り合う 2 つのターンが同じ直線を分け合う場面では需要に比例して
+  両方を同じ割合で縮める、という緩和法で求める（`_allocate_shared_straight`。
+  `_ideal_slalom` 内の按分呼び出し）。片方だけを一方的に優先することはない
+  （旧実装は経路の先頭から順に処理しながら「既に前のターンが消費した分を引いた
+  残り長」だけを次のターンに渡していたため、手前のターンが直線を先取りし、
+  次のターンが締め出される非対称バグがあった。今は解消済み）。この緩和法は
+  縮める方向にしか動かない（一度縮めた消費量は、別の直線の制約が後から緩んでも
+  増えて戻らない）ため、「後から空いた余地を隣に回す」ような、より賢い再配分には
+  なっていない（`_allocate_shared_straight` の docstring 参照。ただしこれは
+  今回指定された仕様どおりの挙動であり、バグではない）。
 - 横オフセット（通路の中心線から機体をずらす走り方）と斜め走行は未対応。
 """
 from __future__ import annotations
@@ -165,7 +171,13 @@ class TurnPlan:
     cell: Cell           # ターンが起きる区画（進入・退出の中心線を延長した交点＝この区画の中心）
     delta_theta: float   # 旋回角 [rad]（正=左/反時計回り）
     radius: float        # 円弧半径 [m]。0.0 ならその場旋回（docstring の「半径が0になる場合」参照）
-    limited_by: str       # "geometry"/"prev"/"next"（何が半径の上限を決めたか）
+    limited_by: str       # 何が半径を決めたか。値は3つ（"prev"/"next"は廃止した）:
+                           #   "geometry" … 幾何の上限（壁・柱との干渉）で決まった
+                           #                （比例配分では縮められなかった）
+                           #   "shared"   … 共有する直線の取り合いで比例配分により縮められた
+                           #                （それでも _R_LO 以上は残った）
+                           #   "floor"    … 比例配分で縮められた結果 _R_LO を下回り、
+                           #                その場旋回へ降格した
 
 
 @dataclass(frozen=True)
@@ -184,6 +196,11 @@ class IdealResult:
                                        # 「停止→停止」で解かれているので、この列全体を
                                        # 1 本の min_time に通し直しても正しい結果にはならない
                                        # （要素ごとに区切って min_time を呼び直す必要がある）。
+    alloc_iterations: int = 0         # 共有する直線の比例配分（`_allocate_shared_straight`）が
+                                       # 収束するまでに使った反復回数。mode="spin" やターンの
+                                       # 無い経路では配分自体が発生しないので 0。診断用の値で、
+                                       # `tests/test_ideal.py::test_allocation_converges` が
+                                       # 10迷路の最大反復回数を印字するのに使う。
 
 
 # ============================================================================
@@ -251,7 +268,7 @@ def _ideal_spin(cells: Sequence[Cell], start_heading: Direction) -> IdealResult:
         by_kind["spin"] += st.time
         # spin モードでは弧を作らないため、半径・幾何の吟味自体が発生しない
         # （常に radius=0.0）。limited_by は slalom モードの3値の意味を持たないので
-        # "n/a" にする（geometry/prev/next のどれでもない、と明示する札）。
+        # "n/a" にする（geometry/shared/floor のどれでもない、と明示する札）。
         turns_out.append(
             TurnPlan(index=k, cell=cells[move_idx], delta_theta=delta_theta, radius=0.0, limited_by="n/a")
         )
@@ -269,7 +286,7 @@ def _ideal_spin(cells: Sequence[Cell], start_heading: Direction) -> IdealResult:
 # 掃引全姿勢の厳密な干渉判定をする。16x16 迷路の障害物（500件超）をそのまま渡すと
 # 1ターンあたり数秒かかり、経路1本（ターン数十個）×10迷路では現実的な時間に収まらない
 # （実測: 全障害物・未整列で1回あたり約4.5秒。ターン数十×迷路10で計算すると
-# 数十分かかってしまう）。そこで判定の中身を変えずに次の2つだけ行う:
+# 数十分かかってしまう）。そこで判定の中身を変えずに次の3つを行う:
 #
 #   1. 空間フィルタ: ターンの角から離れた障害物は、どんな半径を試しても掃引軌跡に
 #      絶対に触れない（半径の探索上限 r_hi と旋回角から、角からの最大到達距離を
@@ -280,20 +297,7 @@ def _ideal_spin(cells: Sequence[Cell], start_heading: Direction) -> IdealResult:
 #      「これまでの最小余裕」で足切りする実装なので、近い障害物を先に渡すと
 #      足切りが早く効き、遠い障害物の厳密計算（多角形の頂点×辺の総当たり）を
 #      スキップできる（未整列だと同じ障害物集合でも 3 倍以上遅い。実測）。
-#   3. 探索上限の絞り込み: 半径は「手前/次の直線から食える長さ」（`prev`/`next`）を
-#      超えられない（超えたら円弧が直線からはみ出す）。なので `max_feasible_radius`
-#      に渡す `r_hi` を `min(_R_HI, r_prev, r_next)` に絞ってよい — それを超える
-#      半径が幾何的に通るかどうかは、どのみち採用できないので知る必要が無い
-#      （半径が大きいほど掃引区間が長くなり二分探索の1ステップが重くなるので、
-#      これは速度にも効く）。ただし探索上限ちょうどで「通る」と判定された場合、
-#      幾何がそこで初めて効いたのか、prev/next が先に効いていて幾何はもっと
-#      余裕があったのかは、この絞った探索だけでは区別できない。**その場合は
-#      prev/next 起因として扱う**（幾何が cap 未満まで絞り込んだことを示せた
-#      場合だけ "geometry" とする）。これは `limited_by` の帰属だけに影響し、
-#      採用する半径の値そのものは絞り込みの有無に関わらず常に一致する
-#      （down 側の値は変えていない — 上限を「どうせ採用できない範囲」に
-#      限っただけなので、真の最小候補は必ず探索範囲に含まれる）。
-#   4. 二分探索を自前で回し、試す半径 r ごとに絞り込みをかけ直す:
+#   3. 二分探索を自前で回し、試す半径 r ごとに絞り込みをかけ直す:
 #      `classic.geometry.max_feasible_radius` は 1 回の呼び出しにつき固定の障害物
 #      集合を渡す作りなので、40 回の二分探索のどのステップでも同じ集合を見る。
 #      しかし二分探索は最初の数回こそ広い r を試すが、後半は答え（多くは r_hi より
@@ -310,6 +314,13 @@ def _ideal_spin(cells: Sequence[Cell], start_heading: Direction) -> IdealResult:
 # どれも「同じ答え（半径の値）を速く出す」ための最適化であり、判定ロジック
 # （分離軸定理による厳密な干渉判定。`classic.geometry.clearance`/`sweep_clearance`）
 # は一切変えていない。
+#
+# 🔴 `_ideal_slalom` はここで求めた `r_geom`（`r_hi=_R_HI` で呼んだ、直線の制約を
+# 無視した幾何上の最大半径）を、共有する直線の按分（下記「比例配分の緩和法」）の
+# 入力にする。旧実装はここで `r_hi` を「手前/次の直線から食える長さ」でさらに
+# 絞っていたが、それが「先に処理したターンが直線を先取りする」非対称バグの原因
+# だったため、今は `r_hi=_R_HI` 固定にして直線側の制約と切り離した
+# （幾何と直線配分を別々の段階にする設計。詳細はモジュール docstring「既知の限界」）。
 _R_HI = 0.40  # geometry.max_feasible_radius の既定 r_hi と同じ値。明示的に渡して固定する。
 _R_LO = 0.02  # geometry.max_feasible_radius の既定 r_lo と同じ値。
 
@@ -450,6 +461,80 @@ def _geometry_blocks(
 
 
 # ============================================================================
+# 4.6. 共有する直線の比例配分（緩和法）
+# ============================================================================
+def _allocate_shared_straight(
+    c0: Sequence[float], runs: Sequence[float], max_iter: int = 100, tol: float = 1e-9,
+) -> Tuple[List[float], int]:
+    """共有する直線ごとに、需要が長さを超えるぶんを比例配分で縮める緩和法。
+
+    `c0[k]`（`n_turns` 個。直線の制約を無視したターン k の希望消費量）と
+    `runs`（`n_turns+1` 個。直線ランの長さ）を受け取り、収束した消費量の列と、
+    収束に使った反復回数の組を返す。
+
+    直線 i（0<=i<=n_turns）は、ターン(i-1) の「次」使用とターン i の「手前」使用の
+    両方から需要を受ける（端の直線は片側だけ）。需要 `d_i = c[i-1]+c[i]` が
+    `runs[i]` を超えたら、両者を `runs[i]/d_i` で等しい割合だけ縮める。各ターンは
+    2 本の直線に接するので、一方を縮めるともう一方の直線の需給も変わりうる。
+    直感的には何周も繰り返しが要りそうに見えるが、実際には次の段落のとおり
+    1 巡で足りる。
+
+    🔴 **この関数は、実は全直線を 1 回さらう（`iteration=1`）だけで厳密解に到達する
+    ことが証明できる**（`tests/test_ideal.py::test_allocation_converges` が
+    design_turn_v1 全10迷路で反復回数=2 に収まることで実測も裏付けている）。
+    証明の骨子: 直線 i を処理した直後は必ず `demand_i<=runs[i]` が成り立つ
+    （既に満たしていたか、ちょうど等号になるまで縮めたかのどちらか）。
+    この関係は、その後どちらの端のターンがさらに縮められても崩れない
+    （`c[i-1]`・`c[i]` は縮む一方で増えないので、和である `demand_i` も
+    減る一方である）。つまり**一度処理した直線は、二度と違反状態に戻らない**。
+    したがって処理順によらず、全直線を 1 巡すれば全直線が同時に条件を満たす
+    （n 個のターンは高々 2 本の直線にしか接しない「鎖」構造だからこそ成り立つ
+    性質で、3本以上の直線を同時に取り合うような分岐構造では成り立たない）。
+    2 回目の周回は「もう変化が無い」ことを確認するためだけの空振りである。
+    したがって `tol`（収束の閾値）は、この鎖構造の入力に対しては最終値に
+    影響しない（1e-9 でも 1e-1 でも同じ答えになる。
+    `tests/test_ideal.py::test_allocation_tolerance_does_not_affect_the_result`
+    で直接確認している）。`max_iter` だけが実効的なパラメータで、
+    2 未満に削ると本当に必要な 2 回目の空振り確認が行えず収束前に打ち切られる
+    （`tests/test_ideal.py::test_allocation_budget_negative_control`）。
+
+    この緩和は縮める方向にしか動かない（`factor<=1`）ため、`c[k]` は各周回で
+    単調非増加であり、下に有界（0以上）なので必ずどこかへ収束する。ただし
+    念のため（上記の証明に誤りがあった場合に無限ループへ落ちないよう）
+    `max_iter` 回で `tol` 未満に収まらなければ `RuntimeError` を投げる
+    （黙って打ち切らない）。
+    """
+    n_turns = len(c0)
+    assert len(runs) == n_turns + 1, f"runs は{n_turns + 1}個のはず（実際={len(runs)}）"
+
+    c = list(c0)
+    n_iterations = 0
+    max_delta = 0.0
+    for iteration in range(max_iter):
+        max_delta = 0.0
+        for i in range(n_turns + 1):
+            idxs = [j for j in (i - 1, i) if 0 <= j < n_turns]
+            if not idxs:
+                continue
+            demand = sum(c[j] for j in idxs)
+            if demand > runs[i] + 1e-15:
+                factor = (runs[i] / demand) if demand > 0.0 else 1.0
+                for j in idxs:
+                    new_c = c[j] * factor
+                    max_delta = max(max_delta, abs(c[j] - new_c))
+                    c[j] = new_c
+        n_iterations = iteration + 1
+        if max_delta < tol:
+            return c, n_iterations
+
+    raise RuntimeError(
+        f"半径配分の緩和法が上限{max_iter}回で収束しなかった"
+        f"（最終変化量={max_delta:.3e} >= 閾値{tol:.1e}）。"
+        "比例配分が正しく単調収束していない可能性がある。"
+    )
+
+
+# ============================================================================
 # 5. mode="slalom"（円弧で曲がる。止まらない）
 # ============================================================================
 def _ideal_slalom(
@@ -461,57 +546,70 @@ def _ideal_slalom(
     obstacles = wall_obstacles(v_walls, h_walls)
 
     n_turns = len(turns)
-    remaining = list(runs)  # 各ターンの消費で減っていく「残り直線長」
-    turns_out: List[TurnPlan] = []
 
+    # --- 1段目: 各ターンの「直線の制約を無視した」幾何上の最大半径 r_geom[k] -------
+    # （180°折返しは tan(|Δθ|/2)=tan(90°) が発散し、有限半径の弧が作れないので
+    #   r_geom=0 のまま扱う。それ以外は _fast_max_feasible_radius を r_hi=_R_HI
+    #   固定で呼ぶ — 直線の長さでは絞らない。上の「幾何判定の高速化」節末尾参照）。
+    delta_thetas: List[float] = []
+    is_uturn: List[bool] = []
+    tan_half: List[float] = [0.0] * n_turns
+    r_geom: List[float] = [0.0] * n_turns
     for k, (move_idx, from_dir, to_dir) in enumerate(turns):
         delta_theta = _turn_delta(from_dir, to_dir)
+        delta_thetas.append(delta_theta)
+        uturn = abs(abs(delta_theta) - math.pi) < 1e-9
+        is_uturn.append(uturn)
+        if uturn:
+            continue
+        tan_half[k] = math.tan(abs(delta_theta) / 2.0)
         cell = cells[move_idx]
         corner_pose = Pose(
             (cell[0] + 0.5) * CELL_SIZE, (cell[1] + 0.5) * CELL_SIZE, _dir_angle(from_dir)
         )
+        try:
+            r_geom[k] = _fast_max_feasible_radius(
+                delta_theta, obstacles, corner_pose, margin=margin, r_lo=_R_LO, r_hi=_R_HI
+            )
+        except ValueError:
+            # r_lo (既定 0.02m) ですら margin を満たす半径が無い
+            # → 幾何的に通れる半径が無い、という結果を r_geom=0 として扱う
+            # （呼び出し元に例外を投げず、その場旋回への降格として処理する）。
+            r_geom[k] = 0.0
 
-        is_uturn = abs(abs(delta_theta) - math.pi) < 1e-9
-        if is_uturn:
-            # 180°折返し: tan(|Δθ|/2)=tan(90°) が発散し、有限半径の弧が作れない。
+    # 希望消費量（直線の制約を無視した場合にこのターンが両側の直線から食いたい長さ。
+    # `turn_path` の弧は入出の直線から等しい長さを食う幾何なので、ターン k は
+    # runs[k]（手前）と runs[k+1]（次）の**両方**から同じ量を引く1つの値である）。
+    c: List[float] = [0.0 if is_uturn[k] else r_geom[k] * tan_half[k] for k in range(n_turns)]
+    c0 = list(c)  # 比例配分前の値（"geometry"/"shared" の判定に使う）
+
+    # --- 2段目: 共有する直線ごとに、需要が長さを超えるぶんを比例配分で縮める -------
+    # （緩和法の中身は `_allocate_shared_straight` 参照。単体でも
+    #   `tests/test_ideal.py::test_allocation_converges` などが直接照合する）。
+    c, n_alloc_iterations = _allocate_shared_straight(c0, runs)
+
+    # --- 3段目: 収束した c[k] から半径・limited_by を決める -----------------------
+    _EPS = 1e-9
+    turns_out: List[TurnPlan] = []
+    for k, (move_idx, from_dir, to_dir) in enumerate(turns):
+        cell = cells[move_idx]
+        if is_uturn[k]:
             # 「geometry」起因の半径0（=どんな半径も幾何的に許されない）として扱う。
-            radius, limited_by, consumed = 0.0, "geometry", 0.0
+            radius, limited_by = 0.0, "geometry"
         else:
-            tan_half = math.tan(abs(delta_theta) / 2.0)
-            r_prev = remaining[k] / tan_half
-            r_next = runs[k + 1] / tan_half
-            cap = min(_R_HI, r_prev, r_next)  # 採用できない範囲は探索しない（上のコメント参照）
-
-            if cap <= _R_LO:
-                # 手前/次の直線が短すぎて（<=20mm）幾何探索の下限にすら届かない。
-                # 弧の意味のある候補が無いので、幾何判定を呼ばずその場旋回として
-                # 扱う（半径0は弧を描かないので、壁・柱に当たりようが無く常に安全）。
-                radius, limited_by = 0.0, ("prev" if r_prev <= r_next else "next")
+            radius_raw = c[k] / tan_half[k]
+            if radius_raw < _R_LO - _EPS:
+                radius = 0.0
+                # r_geom 自体が既に _R_LO 未満なら（比例配分に関わらず）幾何起因、
+                # 比例配分で削られて初めて _R_LO を割ったのなら共有直線の取り合い起因。
+                limited_by = "geometry" if r_geom[k] < _R_LO - _EPS else "floor"
             else:
-                try:
-                    r_geom_cap = _fast_max_feasible_radius(
-                        delta_theta, obstacles, corner_pose, margin=margin, r_lo=_R_LO, r_hi=cap
-                    )
-                except ValueError:
-                    # r_lo (既定 0.02m) ですら margin を満たす半径が無い
-                    # → 幾何的に通れる半径が無い、という結果を radius=0 として扱う
-                    # （呼び出し元に例外を投げず、その場旋回への降格として処理する）。
-                    r_geom_cap = 0.0
-
-                if cap < _R_HI and r_geom_cap >= cap - 1e-9:
-                    # 探索上限(cap)ちょうどまで通った = 幾何はそこで絞っていない
-                    # （cap は prev/next が決めた値なので、そちらに帰属させる）。
-                    radius, limited_by = r_geom_cap, ("prev" if r_prev <= r_next else "next")
-                else:
-                    radius, limited_by = r_geom_cap, "geometry"
-
-            consumed = radius * tan_half
-
-        remaining[k] -= consumed
-        remaining[k + 1] -= consumed
+                radius = radius_raw
+                shrunk = c[k] < c0[k] - max(_EPS, _EPS * abs(c0[k]))
+                limited_by = "shared" if shrunk else "geometry"
 
         turns_out.append(
-            TurnPlan(index=k, cell=cell, delta_theta=delta_theta, radius=radius, limited_by=limited_by)
+            TurnPlan(index=k, cell=cell, delta_theta=delta_thetas[k], radius=radius, limited_by=limited_by)
         )
 
     # --- 区間列の組み立て -----------------------------------------------
@@ -552,6 +650,7 @@ def _ideal_slalom(
     return IdealResult(
         total=total, by_kind=by_kind, n_turns=n_turns, path_cells=len(cells),
         path_length=path_length, v_max=v_max, turns=turns_out, segments=all_segments,
+        alloc_iterations=n_alloc_iterations,
     )
 
 
