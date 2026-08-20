@@ -154,10 +154,17 @@ T_measured`）を受け、Phase.FAST・Phase.RETURN2 の実行方式を選べる
     （既知の壁だけでは到達できない・安全弁）、その走行に限り現行のコマンド方式へ
     落ちる。落ちたことは `plan_id` の接頭辞（`"fast_fallback"`/`"return2_fallback"`）
     に残る（`_phase_prefix()` 参照）。
-  - **本段では S2（壁センサによる位置補正）を profile 経路に配線しない**
-    （推測航法のみで走らせ、どこまで持つかを測ってから次段で補正を足す。
-    任務指示の範囲）。`ProfileTracker.apply_lateral_correction()` は
-    `kp_lat=0`（既定）のまま呼ばないので、経路追従は純粋な推測航法である。
+  - `friction_use`（記号 `u`。既定 1.0）: `plan_fast_run()` へそのまま渡す
+    摩擦円の使用率（`classic/fast_planner.py::plan_fast_run` docstring・
+    `research_notes/note_031_profile_planner_and_eta.md` §「摩擦円の使用率は
+    η の上限を決める」参照）。`1.0` は exp_026 と完全に同一（摩擦円を100%
+    使う計画）。
+  - `wall_correction`（既定 False）: profile 経路に壁センサによる位置補正
+    （S2 相当）を配線するかどうか。**False のときは exp_026 と完全に同一**
+    （推測航法のみ。`ProfileTracker` は `kp_lat=0` のまま構築され、
+    `apply_lateral_correction()` も一切呼ばない）。True にすると、直線区間
+    でのみ `_apply_wall_correction()`（横位置・前後位置の両方）が働く
+    （詳細は同メソッドの docstring）。
   - `plan_id` は経路追従中 `"fast:profile"`/`"return2:profile"`、その場旋回中
     `"fast:profile_spin"`/`"return2:profile_spin"` になる（一次記録からどちらの
     区間を走っていたかが分かるようにする。任務指示）。
@@ -168,7 +175,8 @@ from typing import List, Optional, Tuple, Union
 
 from classic.fast_planner import FastPlan, PathBlock, SpinSegment, plan_fast_run
 from classic.flood import FloodMode, UNREACHABLE, compute_flood, is_passable, is_reachable_known
-from classic.localization import Localizer
+from classic.localization import DEFAULT_LATERAL_CORRECTION_FRACTION, DEFAULT_MAX_FORWARD_CORRECTION_M
+from classic.localization import Localizer, estimate_lateral_offset
 from classic.maze_map import ALL_DIRECTIONS, Direction, MazeMap, direction_between
 from classic.maze_map import WallState as MapWallState
 from classic.motion import CellMotionController, MotionKind
@@ -176,7 +184,7 @@ from classic.route import Command, CommandType, NoRouteError, plan_route
 from classic.sensing import WallSensing
 from classic.sensing import WallState as SenseWallState
 from classic.sensing import sense_walls
-from classic.tracker import ProfileTracker
+from classic.tracker import ProfileTracker, TrackerGains
 from mouse.params import RobotParams
 
 Cell = Tuple[int, int]
@@ -253,9 +261,12 @@ class ClassicExplorer:
 
     def __init__(self, width: int, height: int, params: Optional[RobotParams] = None,
                  localization_enabled: bool = True, extend_straights: bool = True,
-                 fast_mode: str = "command") -> None:
+                 fast_mode: str = "command", friction_use: float = 1.0,
+                 wall_correction: bool = False) -> None:
         if fast_mode not in ("command", "profile"):
             raise ValueError(f"未知の fast_mode: {fast_mode!r}（'command' か 'profile' のいずれか）")
+        if not (0.0 < friction_use <= 1.0):
+            raise ValueError(f"friction_use は (0.0, 1.0] の範囲で指定してください: {friction_use}")
         self.params = params if params is not None else RobotParams()
         self.maze = MazeMap(width, height)
 
@@ -333,15 +344,48 @@ class ClassicExplorer:
         # --- S3': 最短走行のプロファイル追従化 (fast_mode) の実行状態 ---
         # モジュール docstring「S3': 最短走行のプロファイル追従化」参照。
         self.fast_mode = fast_mode
+        # 摩擦円の使用率 u（`classic.fast_planner.plan_fast_run` の
+        # `friction_use` へそのまま渡す。既定 1.0 = 従来と完全に同一。
+        # `research_notes/note_031_profile_planner_and_eta.md` §「摩擦円の
+        # 使用率は η の上限を決める」参照）。fast_mode="command" のときは
+        # コマンド方式のコード経路がそもそも `plan_fast_run` を呼ばないので
+        # 参照されない。
+        self.friction_use = float(friction_use)
+        # 壁センサによる位置補正（S2 相当。fast_mode="profile" のときだけ
+        # 意味を持つ）。既定 False = 推測航法のみ（exp_026 と同一）。
+        # `_apply_wall_correction` docstring 参照。
+        self.wall_correction = bool(wall_correction)
         # ProfileTracker は fast_mode="profile" のときだけ作る
         # （fast_mode="command" のときは一切参照しないので、作らないことで
         # 「コード経路が変更前と完全に同一」の主張を明確にする）。
-        self._tracker: Optional[ProfileTracker] = ProfileTracker(self.params) if fast_mode == "profile" else None
+        if fast_mode == "profile":
+            if self.wall_correction:
+                # 壁センサ横位置補正の kp_lat を、既存のチューニング済み定数
+                # だけから導く（`_apply_wall_correction` docstring 参照。
+                # 新たな独立パラメータを増やさない）。
+                lateral_gain = DEFAULT_LATERAL_CORRECTION_FRACTION / self.params.cell_size  # [rad/m]
+                kp_lat = -TrackerGains().kp_psi * lateral_gain
+                self._tracker: Optional[ProfileTracker] = ProfileTracker(
+                    self.params, gains=TrackerGains(kp_lat=kp_lat))
+            else:
+                self._tracker = ProfileTracker(self.params)
+        else:
+            self._tracker = None
         self._fast_plan: Optional[FastPlan] = None
         self._fast_plan_step_idx: int = 0
         # 直近の FAST/RETURN2 が profile 計画を作れず、現行のコマンド方式へ
         # 落ちた（安全弁）かどうか。`_phase_prefix()` が plan_id へ反映する。
         self._fast_command_fallback: bool = False
+
+        # --- 壁センサによる位置補正 (wall_correction) の内部状態 ---
+        # `_apply_wall_correction` docstring 参照。直近に見た曲率が0(直線)
+        # だったかどうか（弧⇔直線の切り替わり検出用。None=未観測）。
+        self._wc_prev_kappa_nonzero: Optional[bool] = None
+        # 前後位置補正の基準点（区画境界のs座標。None=未較正）。
+        self._wc_fwd_ref_s: Optional[float] = None
+        # 直近ティックの側方壁確定状態（境界通過の立ち上がり/立ち下がり検出用）。
+        self._wc_prev_left: Optional[bool] = None
+        self._wc_prev_right: Optional[bool] = None
 
     # ------------------------------------------------------------------
     # 係員回収（外部から呼ばれる）
@@ -912,7 +956,7 @@ class ClassicExplorer:
         委ねる（本メソッドはここで停止も例外も出さない）。"""
         assert self._tracker is not None  # fast_mode="profile" のときだけ呼ばれる
         plan = plan_fast_run(self.maze, start=start, goals=goals, start_heading=start_heading,
-                              params=self.params)
+                              params=self.params, friction_use=self.friction_use)
         if plan is None:
             self._fast_command_fallback = True
             self._fast_plan = None
@@ -921,6 +965,13 @@ class ClassicExplorer:
         self._fast_command_fallback = False
         self._fast_plan = plan
         self._fast_plan_step_idx = 0
+        # 壁センサ位置補正の内部状態を新しい計画のために初期化する
+        # （前の FAST/RETURN2 の基準点・弧/直線判定を持ち越さない。
+        # `_apply_wall_correction` docstring 参照）。
+        self._wc_prev_kappa_nonzero = None
+        self._wc_fwd_ref_s = None
+        self._wc_prev_left = None
+        self._wc_prev_right = None
 
         if not plan.steps:
             # 既にゴール/スタートにいる(trivial)。追従するステップが無いので
@@ -1002,9 +1053,15 @@ class ClassicExplorer:
         `_advance_state()` 直後に `_on_stationary()`→`motion.update()` を
         同じティックでもう一度呼ぶのと同じ作法を踏襲する）。
 
-        🔴 S2 の壁センサ位置補正はここでは行わない（推測航法のみ。本任務の
-        範囲外 — モジュール docstring参照）。"""
+        `wall_correction=True` のときだけ、`update()` を呼ぶ直前に
+        `_apply_wall_correction()` で壁センサによる位置補正を差し込む
+        （既定 False なら推測航法のみ。`_apply_wall_correction` docstring
+        参照）。ステップ遷移した同じティック内の2回目の `update()`（下記
+        `_load_current_profile_step()` 直後）は対象外（次ティックから通常
+        どおり働く。範囲が1ティックだけなので実害は無視できる）。"""
         assert self._fast_plan is not None and self._tracker is not None
+        if self.wall_correction:
+            self._apply_wall_correction(obs)
         vl, vr, done = self._tracker.update(obs)
         if not done:
             return vl, vr, self._active_plan_id
@@ -1018,6 +1075,108 @@ class ClassicExplorer:
         # 計画の全ステップが完了 = ゴール(FAST)またはスタート(RETURN2)に到達した。
         vl, vr = self._complete_profile_plan(obs)
         return vl, vr, self._active_plan_id
+
+    def _apply_wall_correction(self, obs) -> None:
+        """壁センサによる位置補正（`wall_correction=True` のときだけ呼ばれる。
+        `classic/localization.py` の作法 — 計画の上で「いま自分がどの区画の
+        どこにいるはずか」を持ち、そこからのずれを壁センサで測る — を、
+        profile 追従（弧長 `s` でパラメータ化された計画）向けに踏襲する。
+
+        **直線区間でのみ**行う（弧の途中は姿勢が斜めで、`estimate_lateral_
+        offset` の前提 — センサが区画の壁とほぼ平行な向きを見ている — が
+        成り立たないため。任務指示 2026-08-20）。その場旋回
+        （`SpinSegment`）中も同じ理由で行わない。
+
+        (a) 横位置補正: `classic.localization.estimate_lateral_offset` で
+            中心線からの横ずれを推定し、`ProfileTracker.apply_lateral_
+            correction()` へ渡す（`__init__` で設定した `kp_lat` — 既存の
+            `kp_psi`・`classic.localization.DEFAULT_LATERAL_CORRECTION_
+            FRACTION` から導出。下記コメント参照 — がゼロでないときだけ
+            実際に `w_cmd` へ効く）。推定できない（両側とも壁未確定）
+            ティックは 0.0 を渡し、古い推定値を持ち越さない。
+
+        (b) 前後位置補正: 側方センサの確定壁の有無（WALL/非WALL）が反転した
+            瞬間を「区画境界を通過した」根拠として使う（壁のギャップは
+            区画境界にしか無いので、同じ直線副区間内で連続して観測される
+            境界イベントの間隔は必ず `cell_size` の整数倍になる）。最初に
+            観測した境界を基準点として較正するだけ（補正はしない）にし、
+            2回目以降の境界イベントを、その基準点から `cell_size` の
+            整数倍だけ離れた最寄りの予測位置へ引き寄せる形で
+            `ProfileTracker` の弧長推定（`_s`）を補正する。ズレが
+            `classic.localization.DEFAULT_MAX_FORWARD_CORRECTION_M` を
+            超える場合は誤検出とみなし、補正はせず基準点だけ現在地点へ
+            張り直す（`Localizer.correct_forward_remaining` と同じ保険）。
+
+        直線⇔弧の切り替わり（同一 `PathBlock` 内で複数回起こりうる —
+        `classic/ideal.py` の「直線→弧→直線→…」という幾何ブロックの構成の
+        ため）のたびに、前後位置補正の基準点をリセットする。新しい直線
+        副区間の開始位置は一般に区画境界と一致しない（弧が両側の直線を
+        `radius*tan(|Δθ|/2)` だけ食うため）ので、古い基準点をそのまま
+        使い回すと「間隔は cell_size の整数倍」という前提が崩れるからである。
+
+        🔴 真値姿勢（`privileged_pose`）は一切読まない。使うのは `obs`
+        （距離センサ・車輪角速度・ジャイロ由来の `sense_walls()`）と、
+        `ProfileTracker` が推測航法で持つ弧長推定 `s`・計画の曲率
+        `kappa_ref(s)` だけである。
+        """
+        assert self._fast_plan is not None and self._tracker is not None
+        step = self._fast_plan.steps[self._fast_plan_step_idx]
+        if not isinstance(step, PathBlock):
+            # その場旋回中は行わない（docstring参照）。次に直線区間へ戻った
+            # ときに真っさらな状態から較正し直すよう、内部状態をクリアする。
+            self._wc_prev_kappa_nonzero = None
+            self._wc_fwd_ref_s = None
+            self._wc_prev_left = None
+            self._wc_prev_right = None
+            return
+
+        s = self._tracker.s
+        kappa_nonzero_now = self._tracker._kappa_at(s) != 0.0
+
+        if self._wc_prev_kappa_nonzero is None or kappa_nonzero_now != self._wc_prev_kappa_nonzero:
+            # 直線⇔弧の切り替わり（docstring参照）。基準点をリセットする。
+            self._wc_fwd_ref_s = None
+            self._wc_prev_left = None
+            self._wc_prev_right = None
+        self._wc_prev_kappa_nonzero = kappa_nonzero_now
+
+        if kappa_nonzero_now:
+            # 弧の途中: 横位置補正の値を持ち越さない（docstring参照）。
+            self._tracker.apply_lateral_correction(0.0)
+            return
+
+        sensing = sense_walls(obs, self.params)
+
+        # (a) 横位置補正
+        est = estimate_lateral_offset(sensing, self.params)
+        self._tracker.apply_lateral_correction(est.offset_m if est is not None else 0.0)
+
+        # (b) 前後位置補正
+        is_wall_left = sensing.left is SenseWallState.WALL
+        is_wall_right = sensing.right is SenseWallState.WALL
+        edge = (self._wc_prev_left is not None
+                and (is_wall_left != self._wc_prev_left or is_wall_right != self._wc_prev_right))
+        self._wc_prev_left = is_wall_left
+        self._wc_prev_right = is_wall_right
+
+        if not edge:
+            return
+
+        cell_size = self.params.cell_size
+        if self._wc_fwd_ref_s is None:
+            self._wc_fwd_ref_s = s  # 較正: 最初の境界を基準点にする（補正はしない）。
+            return
+
+        k = round((s - self._wc_fwd_ref_s) / cell_size)
+        s_expected = self._wc_fwd_ref_s + k * cell_size
+        correction = s_expected - s
+        if abs(correction) <= DEFAULT_MAX_FORWARD_CORRECTION_M:
+            self._tracker._s = s + correction
+            self._wc_fwd_ref_s = self._tracker._s
+        else:
+            # 誤検出とみなし、以後の予測が一箇所の誤検出に引きずられない
+            # よう、基準点だけ現在地点へ張り直す（補正はしない）。
+            self._wc_fwd_ref_s = s
 
     def _on_stationary_route(self, obs) -> None:
         """Phase.FAST・Phase.RETURN2 共通: コマンド列（plan_route の出力）の

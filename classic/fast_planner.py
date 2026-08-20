@@ -68,7 +68,7 @@ IdealTime.s_grid`/`v_grid`/`kappa_grid`）までは外へ出さない（内部�
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import List, Optional, Sequence, Tuple, Union
 
 import numpy as np
@@ -148,6 +148,7 @@ def plan_fast_run(
     params: Optional[RobotParams] = None,
     margin: float = 0.005,
     allocation: str = "best",
+    friction_use: float = 1.0,
 ) -> Optional[FastPlan]:
     """マウスが学習した地図から最短走行の速度プロファイル計画を作る。
 
@@ -157,7 +158,36 @@ def plan_fast_run(
 
     `params` は追従制御が使う車両パラメータ（`classic.tracker.ProfileTracker` と
     同じ `RobotParams`）。省略すると既定値（`RobotParams()`）を使う。
+
+    `friction_use`（記号 `u`）は速度計画が使ってよい摩擦円の割合
+    （`research_notes/note_031_profile_planner_and_eta.md` §「摩擦円の使用率は
+    η の上限を決める」）。`vehicle_limits()` が返す `A_TR`（前後加速度限界）・
+    `A_LAT`（横加速度限界）の**両方に同じ `u` を掛けてから** `min_time` へ渡す
+    （`0 < u <= 1.0`。既定 `1.0` は摩擦円を 100% 使う従来どおりの計画で、
+    数値まで完全に同一になる — `1.0` を掛けても浮動小数点は変化しないため）。
+    `u` を下げると、同じ経路・同じ半径のまま巡航速度と加減速だけが控えめになり、
+    実行時の推測航法の誤差に対する通路の余地（壁までの距離的余裕）が増える
+    代わりに `t_plan` は伸びる（exp_026 の実測: maze_41001 で
+    u=1.00→9.175s, u=0.90→9.671s, u=0.75→10.594s, u=0.60→11.845s。概ね
+    `1/sqrt(u)` で伸びる）。
+
+    🔴 `V_TOP`（モータが出せる最高速度）・`alpha_yaw_max`（その場旋回の角加速度
+    限界）には `u` を掛けない。`u` は**タイヤと路面の摩擦円に対してどれだけ
+    余裕を残すか**という意味の量（横滑り・制動距離の余地）であり、モータが
+    出せる電圧・トルクの頭打ち（`V_TOP`・`alpha_yaw_max` の由来）とは別物
+    だから。したがって `spin_turn_time()`（その場旋回。`alpha_yaw_max`・
+    `V_TOP` にしか依存しない）の挙動は `u` の値に関わらず変わらない。
+
+    🔴 `classic/ideal.py::ideal_time_for_path`（判定の分母 `T_ideal` の計算元）
+    は本関数の内部で呼ぶが、`vehicle_limits()` を `u` 無し（既定 `1.0` 相当）で
+    使う既存の呼び出しのままであり、本引数の影響を一切受けない
+    （`classic/ideal.py` 自体は変更していない）。`u` が効くのは、本関数がその
+    結果（半径）を再利用して**追従用の速度プロファイルだけを引き直す**
+    `min_time()` の呼び出しだけである。
     """
+    if not (0.0 < friction_use <= 1.0):
+        raise ValueError(f"friction_use は (0.0, 1.0] の範囲で指定してください: {friction_use}")
+
     goals = list(goals)
     v_walls, h_walls = _bool_walls_from_maze(maze)
 
@@ -172,6 +202,14 @@ def plan_fast_run(
         return FastPlan(steps=(), t_plan=0.0, cells=tuple(cells), n_turns=0, n_forced_spins=0)
 
     limits = vehicle_limits(params)
+    if friction_use != 1.0:
+        # A_TR・A_LAT にのみ u を掛ける（docstring 参照）。V_TOP・alpha_yaw_max は
+        # vehicle_limits() の返り値のまま変えない。
+        limits = replace(
+            limits,
+            A_TR=limits.A_TR * friction_use,
+            A_LAT=limits.A_LAT * friction_use,
+        )
 
     # 半径の幾何最適化・共有直線の配分（比例/先取り、速い方）は ideal.py に委ねる
     # （モジュール docstring「classic/ideal.py の内部関数の再利用について」参照）。

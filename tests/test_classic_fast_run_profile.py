@@ -24,8 +24,15 @@ from mouse.params import RobotParams
 from mouse.sim import MouseSim
 
 from classic.explorer import ClassicExplorer, Phase
+from classic.fast_planner import PathBlock
+from classic.localization import (
+    DEFAULT_LATERAL_CORRECTION_FRACTION, DEFAULT_MAX_FORWARD_CORRECTION_M, estimate_lateral_offset,
+)
 from classic.maze_map import ALL_DIRECTIONS, Direction, MazeMap, direction_between
 from classic.maze_map import WallState as MapWallState
+from classic.sensing import WallSensing
+from classic.sensing import WallState as SenseWallState
+from classic.tracker import TrackerGains
 
 Cell = Tuple[int, int]
 
@@ -68,6 +75,22 @@ def carved_maze_and_walls():
     return _carved_path_maze_and_walls(MAZE_W, MAZE_H, KNOWN_PATH)
 
 
+# `_apply_wall_correction` の前後位置補正の検査専用: 最初の直線副区間を長く
+# 取った回廊（KNOWN_PATH は最初のターンまで2区画=0.36mしか無く、弧に食われる
+# 分を差し引くと合成テストに必要な余地が不足する）。北へ6区画→東へ折れて
+# ゴール中央2x2領域（8x8迷路の(3,3)-(4,4)）へ抜ける。
+LONG_STRAIGHT_W, LONG_STRAIGHT_H = 8, 8
+LONG_STRAIGHT_PATH: List[Cell] = [
+    (0, 0), (0, 1), (0, 2), (0, 3), (0, 4), (0, 5), (0, 6),
+    (1, 6), (2, 6), (3, 6), (3, 5), (3, 4),
+]
+
+
+@pytest.fixture(scope="module")
+def long_straight_maze_and_walls():
+    return _carved_path_maze_and_walls(LONG_STRAIGHT_W, LONG_STRAIGHT_H, LONG_STRAIGHT_PATH)
+
+
 def _fresh_sim(tmp_path: Path, params: RobotParams, v_walls, h_walls, label: str) -> MouseSim:
     xml_path = str(tmp_path / f"{label}.xml")
     build_maze_robot_xml(v_walls, h_walls, xml_path, model_name=label, params=params)
@@ -77,8 +100,11 @@ def _fresh_sim(tmp_path: Path, params: RobotParams, v_walls, h_walls, label: str
 
 
 def _fresh_explorer_in_fast(sim: MouseSim, params: RobotParams, maze: MazeMap,
-                             fast_mode: str = "command") -> ClassicExplorer:
-    ex = ClassicExplorer(MAZE_W, MAZE_H, params=params, fast_mode=fast_mode)
+                             fast_mode: str = "command", friction_use: float = 1.0,
+                             wall_correction: bool = False,
+                             width: int = MAZE_W, height: int = MAZE_H) -> ClassicExplorer:
+    ex = ClassicExplorer(width, height, params=params, fast_mode=fast_mode,
+                          friction_use=friction_use, wall_correction=wall_correction)
     ex.maze = maze
     obs = sim.observation()
     ex._begin_fast_run(obs)
@@ -228,3 +254,169 @@ def test_profile_mode_falls_back_and_marks_plan_id_when_unreachable(tmp_path, pa
         f"plan_id接頭辞にフォールバックが反映されていない(実際={ex._active_plan_id})"
     )
     assert ex._profile_active is False
+
+
+# ==========================================================================
+# 5. friction_use（摩擦円の使用率 u）が ClassicExplorer から plan_fast_run() へ
+#    実際に届いていること（配線そのものの検査。値の妥当性は tests/
+#    test_fast_planner.py::test_friction_use_lowers_speed_without_changing_
+#    the_route が既に見ている）
+# ==========================================================================
+def test_friction_use_is_threaded_to_the_plan(tmp_path, params, carved_maze_and_walls):
+    maze, v_walls, h_walls = carved_maze_and_walls
+    sim_full = _fresh_sim(tmp_path, params, v_walls, h_walls, "fu_full")
+    ex_full = _fresh_explorer_in_fast(sim_full, params, maze, fast_mode="profile", friction_use=1.0)
+
+    sim_half = _fresh_sim(tmp_path, params, v_walls, h_walls, "fu_half")
+    ex_half = _fresh_explorer_in_fast(sim_half, params, maze, fast_mode="profile", friction_use=0.5)
+
+    assert ex_full._fast_plan is not None and ex_half._fast_plan is not None
+    print(f"\n[実測] t_plan: u=1.0 -> {ex_full._fast_plan.t_plan:.4f}s  "
+          f"u=0.5 -> {ex_half._fast_plan.t_plan:.4f}s")
+    assert ex_half._fast_plan.t_plan > ex_full._fast_plan.t_plan, (
+        "friction_use=0.5 が ClassicExplorer から plan_fast_run() へ届いていない疑い"
+        "(t_planが伸びていない)"
+    )
+    assert ex_half._fast_plan.cells == ex_full._fast_plan.cells, "friction_use で経路自体が変わった(半径探索・経路選択は u の影響を受けないはず)"
+
+
+# ==========================================================================
+# 6. wall_correction（壁センサによる位置補正）
+# ==========================================================================
+def test_wall_correction_default_off_means_zero_kp_lat(params):
+    """既定 False のとき、`ProfileTracker` は `kp_lat=0`（既定ゲイン）のまま
+    構築される（exp_026 と完全に同一の実行経路であることの直接確認）。"""
+    ex = ClassicExplorer(MAZE_W, MAZE_H, params=params, fast_mode="profile")
+    assert ex._tracker is not None
+    assert ex._tracker.gains.kp_lat == 0.0
+
+
+def test_wall_correction_true_sets_the_derived_kp_lat(params):
+    """wall_correction=True のとき、kp_lat が `_apply_wall_correction`
+    docstring どおりの式（既存のチューニング済み定数 kp_psi・
+    DEFAULT_LATERAL_CORRECTION_FRACTION から導出）で設定されること。"""
+    ex = ClassicExplorer(MAZE_W, MAZE_H, params=params, fast_mode="profile", wall_correction=True)
+    assert ex._tracker is not None
+    expected = -TrackerGains().kp_psi * (DEFAULT_LATERAL_CORRECTION_FRACTION / params.cell_size)
+    assert ex._tracker.gains.kp_lat == pytest.approx(expected)
+    assert ex._tracker.gains.kp_lat != 0.0
+
+
+def _wall_sensing(left: SenseWallState, right: SenseWallState,
+                   left_dist: float = 0.06, right_dist: float = 0.06) -> WallSensing:
+    return WallSensing(front=SenseWallState.AMBIGUOUS, left=left, right=right,
+                        front_dist=999.0, left_dist=left_dist, right_dist=right_dist)
+
+
+def test_apply_wall_correction_snaps_forward_drift_to_the_nearest_cell_boundary(
+        tmp_path, params, monkeypatch, long_straight_maze_and_walls):
+    """`_apply_wall_correction` の (b) 前後位置補正（境界イベントの間隔は
+    cell_size の整数倍という自己較正）を、`sense_walls` を差し替えて直接検査
+    する。壁の生値そのものは使わず、境界通過イベント（側方壁の確定状態の
+    反転）だけを人為的に発生させる。`long_straight_maze_and_walls`（最初の
+    直線副区間が6区画=1.08m。弧に食われる分を差し引いても本検査に十分な
+    余地がある）を使う（`KNOWN_PATH` は最初のターンまで2区画しか無く不足する）。
+    """
+    maze, v_walls, h_walls = long_straight_maze_and_walls
+    sim = _fresh_sim(tmp_path, params, v_walls, h_walls, "wc_fwd")
+    ex = _fresh_explorer_in_fast(sim, params, maze, fast_mode="profile", wall_correction=True,
+                                  width=LONG_STRAIGHT_W, height=LONG_STRAIGHT_H)
+    assert ex._fast_plan is not None
+    step = ex._fast_plan.steps[0]
+    assert isinstance(step, PathBlock), "経路の先頭がPathBlockであるという前提が崩れた"
+
+    cell_size = params.cell_size
+    dummy_obs = sim.observation()
+
+    # s=0.02（先頭の直線副区間の内部。s=0は必ず区画中心=直線の開始点になる
+    # ―― classic/ideal.py::_geometry_blocks の block_starts の構成による）
+    # がkappa=0であることを前提として使う。以降 s3 まで、最初のターンが
+    # 弧に食う最大量(_R_HI=0.40m)を差し引いても直線区間内に収まる設計
+    # （最初の直線副区間の生の長さは 6*cell_size=1.08m）。
+    s0 = 0.02
+    assert ex._tracker._kappa_at(s0) == 0.0, "テストの前提(先頭付近が直線)が崩れた"
+
+    calls = {"sensing": _wall_sensing(SenseWallState.WALL, SenseWallState.WALL)}
+    monkeypatch.setattr("classic.explorer.sense_walls", lambda obs, p: calls["sensing"])
+
+    # tick 1: 最初の観測（両側WALL）。エッジ判定の基準ができるだけで、
+    # 補正はまだ起きない。
+    ex._tracker._s = s0
+    ex._apply_wall_correction(dummy_obs)
+    assert ex._wc_fwd_ref_s is None, "最初の観測でいきなり基準点ができてしまった"
+
+    # tick 2: 左側がCLEARへ反転(区画境界を通過したという合図)。1回目のエッジ
+    # なので較正だけ(基準点=このときのs)で補正はしない。
+    s1 = s0 + 0.01
+    ex._tracker._s = s1
+    calls["sensing"] = _wall_sensing(SenseWallState.CLEAR, SenseWallState.WALL)
+    ex._apply_wall_correction(dummy_obs)
+    assert ex._wc_fwd_ref_s == pytest.approx(s1)
+    assert ex._tracker._s == pytest.approx(s1), "較正だけのはずが弧長を書き換えた"
+
+    # tick 3: 左側がWALLへ戻る(次の区画境界)。真の間隔は 1*cell_size だが、
+    # 推測航法が +15mm 行き過ぎたと仮定する(小さな誤差。DEFAULT_MAX_FORWARD_
+    # CORRECTION_M=50mm以内)。cell_sizeの整数倍への引き寄せで補正されるはず。
+    drift = 0.015
+    s2_measured = s1 + cell_size + drift
+    s2_expected = s1 + cell_size
+    ex._tracker._s = s2_measured
+    assert ex._tracker._kappa_at(s2_measured) == 0.0, "テストの前提(直線区間内)が崩れた"
+    calls["sensing"] = _wall_sensing(SenseWallState.WALL, SenseWallState.WALL)
+    ex._apply_wall_correction(dummy_obs)
+    print(f"\n[実測] 前後位置補正: 測定s={s2_measured:.4f} 補正後s={ex._tracker._s:.4f} "
+          f"期待s={s2_expected:.4f}")
+    assert ex._tracker._s == pytest.approx(s2_expected, abs=1e-9), "cell_sizeの整数倍へ補正されなかった"
+    assert ex._wc_fwd_ref_s == pytest.approx(s2_expected, abs=1e-9)
+
+    # tick 4: 次の境界で今度は大きくズレている(60mm。50mmの保険を超える)。
+    # 誤検出とみなし弧長は書き換えず、基準点だけ現在地点へ張り直すはず。
+    big_drift = 0.06
+    assert big_drift > DEFAULT_MAX_FORWARD_CORRECTION_M
+    s3_measured = s2_expected + cell_size + big_drift
+    assert ex._tracker._kappa_at(s3_measured) == 0.0, "テストの前提(直線区間内)が崩れた"
+    ex._tracker._s = s3_measured
+    calls["sensing"] = _wall_sensing(SenseWallState.CLEAR, SenseWallState.WALL)
+    ex._apply_wall_correction(dummy_obs)
+    assert ex._tracker._s == pytest.approx(s3_measured), "大きすぎるズレなのに弧長を書き換えてしまった"
+    assert ex._wc_fwd_ref_s == pytest.approx(s3_measured), "誤検出時に基準点が現在地点へ張り直されなかった"
+
+
+def test_apply_wall_correction_lateral_matches_localization_estimate(
+        tmp_path, params, monkeypatch, carved_maze_and_walls):
+    """(a) 横位置補正: `_apply_wall_correction` が `ProfileTracker._e_lat` へ
+    渡す値は `classic.localization.estimate_lateral_offset` の推定値そのもの
+    であること（直線区間）。弧区間では推定を無視して 0.0 を渡すことも見る。"""
+    maze, v_walls, h_walls = carved_maze_and_walls
+    sim = _fresh_sim(tmp_path, params, v_walls, h_walls, "wc_lat")
+    ex = _fresh_explorer_in_fast(sim, params, maze, fast_mode="profile", wall_correction=True)
+    assert ex._fast_plan is not None
+    step = ex._fast_plan.steps[0]
+    assert isinstance(step, PathBlock)
+    dummy_obs = sim.observation()
+
+    # 直線区間: 左右の距離を非対称にして、非ゼロの横ずれ推定を作る。
+    sensing = _wall_sensing(SenseWallState.WALL, SenseWallState.WALL, left_dist=0.05, right_dist=0.07)
+    expected = estimate_lateral_offset(sensing, params)
+    assert expected is not None and expected.offset_m != 0.0, "テスト用センシングが非ゼロの推定を作れていない"
+
+    monkeypatch.setattr("classic.explorer.sense_walls", lambda obs, p: sensing)
+    s0 = 0.02
+    assert ex._tracker._kappa_at(s0) == 0.0
+    ex._tracker._s = s0
+    ex._apply_wall_correction(dummy_obs)
+    print(f"\n[実測] 横位置補正: 推定={expected.offset_m * 1000:.3f}mm "
+          f"tracker._e_lat={ex._tracker._e_lat * 1000:.3f}mm")
+    assert ex._tracker._e_lat == pytest.approx(expected.offset_m)
+
+    # 弧区間: 曲率が非ゼロの s を探し、推定が非ゼロのままでも 0.0 が渡ること
+    # を確かめる（弧の途中は姿勢が斜めで前提が崩れるため補正しない）。
+    arc_s = None
+    for i, kap in enumerate(step.kappa_ref):
+        if kap != 0.0:
+            arc_s = 0.5 * (step.s_grid[i] + step.s_grid[i + 1])
+            break
+    assert arc_s is not None, "この経路に弧区間が無い(テストの前提が崩れた)"
+    ex._tracker._s = arc_s
+    ex._apply_wall_correction(dummy_obs)
+    assert ex._tracker._e_lat == 0.0, "弧区間なのに横位置補正が効いてしまった"

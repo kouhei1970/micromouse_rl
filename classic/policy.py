@@ -27,7 +27,8 @@ class ClassicExplorerPolicy(MousePolicy):
     requires_privileged = False
 
     def __init__(self, params: Optional[RobotParams] = None,
-                 extend_straights: bool = True, fast_mode: str = "command") -> None:
+                 extend_straights: bool = True, fast_mode: str = "command",
+                 friction_use: float = 1.0, wall_correction: bool = False) -> None:
         self.params = params if params is not None else RobotParams()
         # S3 最短走行で直線を伸ばすかどうか（exp_024 PREREG §4 の 2 条件
         # "extended"/"percell"）。ClassicExplorer へそのまま渡すだけで、
@@ -40,6 +41,12 @@ class ClassicExplorerPolicy(MousePolicy):
         # プロファイル追従化」参照）。ClassicExplorer へそのまま渡すだけで、
         # 本クラス自身の挙動は変えない。
         self.fast_mode = str(fast_mode)
+        # 摩擦円の使用率 u（既定 1.0 = 従来と同一）と壁センサ位置補正の
+        # 有効/無効（既定 False = 従来と同一）。どちらも ClassicExplorer へ
+        # そのまま渡すだけで、本クラス自身の挙動は変えない
+        # （`classic/explorer.py` の `friction_use`/`wall_correction` 参照）。
+        self.friction_use = float(friction_use)
+        self.wall_correction = bool(wall_correction)
         self._explorer: Optional[ClassicExplorer] = None
         # ティックごとの「そのとき何をしていたか」の識別子。
         # classic.checks.plan_adherence の入力（note_029 §4-1、型 C 再発防止）。
@@ -65,6 +72,8 @@ class ClassicExplorerPolicy(MousePolicy):
             width, height, params=self.params,
             extend_straights=self.extend_straights,
             fast_mode=self.fast_mode,
+            friction_use=self.friction_use,
+            wall_correction=self.wall_correction,
         )
         self._plan_ids = []
         self._run_phases = []

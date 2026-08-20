@@ -132,3 +132,52 @@ def test_trivial_plan_when_already_at_goal(carved_maze_and_walls):
     assert plan.steps == ()
     assert plan.t_plan == 0.0
     assert plan.cells == ((2, 3),)
+
+
+# ==========================================================================
+# 5. friction_use（摩擦円の使用率 u）: 任務指示「1. 摩擦円の使用率 u を計画の
+#    引数にする」の検査。u=1.0（既定）は従来と数値まで完全に一致し、u を
+#    下げると経路・半径（cells/n_turns/n_forced_spins）は変えずに t_plan だけ
+#    伸びること（単調性）を見る。
+# ==========================================================================
+def test_friction_use_default_matches_pre_existing_behavior(carved_maze_and_walls):
+    """friction_use を明示的に1.0で渡しても、省略時と完全に同じ結果になる
+    （既定値であることの直接確認）。"""
+    maze, _v_walls, _h_walls = carved_maze_and_walls
+    plan_default = plan_fast_run(maze, start=(0, 0), goals=GOAL_CELLS, start_heading=Direction.N)
+    plan_explicit = plan_fast_run(
+        maze, start=(0, 0), goals=GOAL_CELLS, start_heading=Direction.N, friction_use=1.0)
+    assert plan_default is not None and plan_explicit is not None
+    assert plan_explicit.t_plan == plan_default.t_plan
+    assert plan_explicit.cells == plan_default.cells
+
+
+def test_friction_use_lowers_speed_without_changing_the_route(carved_maze_and_walls):
+    """u を 1.00→0.90→0.75→0.60 と下げるにつれ t_plan が単調に伸びること
+    （note_031 段5の実測: maze_41001 で同じ傾向）。経路そのもの（cells・
+    ターン数・強制その場旋回の数）は u に関わらず不変であること
+    （u は速度計画だけを変え、半径・経路選択は ideal.py の結果をそのまま
+    再利用するため）も併せて確認する。"""
+    maze, _v_walls, _h_walls = carved_maze_and_walls
+    levels = (1.00, 0.90, 0.75, 0.60)
+    plans = [
+        plan_fast_run(maze, start=(0, 0), goals=GOAL_CELLS, start_heading=Direction.N, friction_use=u)
+        for u in levels
+    ]
+    assert all(p is not None for p in plans)
+
+    t_plans = [p.t_plan for p in plans]
+    assert t_plans == sorted(t_plans), f"u を下げても t_plan が単調に伸びなかった: {list(zip(levels, t_plans))}"
+    assert t_plans[0] < t_plans[-1], "u=1.00とu=0.60でt_planに差が無い"
+
+    for p in plans[1:]:
+        assert p.cells == plans[0].cells
+        assert p.n_turns == plans[0].n_turns
+        assert p.n_forced_spins == plans[0].n_forced_spins
+
+
+def test_friction_use_out_of_range_raises(carved_maze_and_walls):
+    maze, _v_walls, _h_walls = carved_maze_and_walls
+    for bad_u in (0.0, -0.1, 1.5):
+        with pytest.raises(ValueError):
+            plan_fast_run(maze, start=(0, 0), goals=GOAL_CELLS, start_heading=Direction.N, friction_use=bad_u)
