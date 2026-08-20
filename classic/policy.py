@@ -27,12 +27,19 @@ class ClassicExplorerPolicy(MousePolicy):
     requires_privileged = False
 
     def __init__(self, params: Optional[RobotParams] = None,
-                 extend_straights: bool = True) -> None:
+                 extend_straights: bool = True, fast_mode: str = "command") -> None:
         self.params = params if params is not None else RobotParams()
         # S3 最短走行で直線を伸ばすかどうか（exp_024 PREREG §4 の 2 条件
         # "extended"/"percell"）。ClassicExplorer へそのまま渡すだけで、
         # 本クラス自身の挙動は変えない。
         self.extend_straights = bool(extend_straights)
+        # S3': 最短走行(FAST/RETURN2)をコマンド方式("command"・既定)と
+        # 速度プロファイル追従("profile")のどちらで走らせるか
+        # （`research_notes/note_031_profile_planner_and_eta.md`、
+        # `classic/explorer.py` モジュール docstring「S3': 最短走行の
+        # プロファイル追従化」参照）。ClassicExplorer へそのまま渡すだけで、
+        # 本クラス自身の挙動は変えない。
+        self.fast_mode = str(fast_mode)
         self._explorer: Optional[ClassicExplorer] = None
         # ティックごとの「そのとき何をしていたか」の識別子。
         # classic.checks.plan_adherence の入力（note_029 §4-1、型 C 再発防止）。
@@ -57,6 +64,7 @@ class ClassicExplorerPolicy(MousePolicy):
         self._explorer = ClassicExplorer(
             width, height, params=self.params,
             extend_straights=self.extend_straights,
+            fast_mode=self.fast_mode,
         )
         self._plan_ids = []
         self._run_phases = []

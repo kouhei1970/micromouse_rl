@@ -138,19 +138,45 @@ classic/explorer.py
 `mouse.sim.MouseSim.privileged_pose()`/`privileged_velocity()` を参照しない。
 `maze_info["xml_path"]` を読まない（このパスの MJCF には壁の真値が含まれる。
 評価器はこの経路を塞いでいないので、規約として自分で守る）。
-"""
-from enum import Enum, auto
-from typing import List, Optional, Tuple
 
+【S3': 最短走行のプロファイル追従化（`fast_mode`。note_031・任務指示）】
+`research_notes/note_031_profile_planner_and_eta.md` の判定条文（`η = T_ideal /
+T_measured`）を受け、Phase.FAST・Phase.RETURN2 の実行方式を選べるようにする:
+
+  - `fast_mode="command"`（既定）: 上の【S3】節どおりのコマンド方式。
+    🔴 **このときのコード経路は本節導入前と完全に同一である**（`_profile_active`
+    が常に False になるだけで、他の分岐・状態遷移は一切変わらない）。
+  - `fast_mode="profile"`: `classic/fast_planner.py` の `plan_fast_run()` が
+    マウス自身の学習した地図（未知は壁として悲観に扱う）から速度プロファイル
+    計画（`FastPlan`）を作り、`classic/tracker.py` の `ProfileTracker` で追従する。
+    区間の切れ目（経路追従⇄その場旋回）で速度・角速度の収束を待たない
+    （`ProfileTracker` の設計どおり）。`plan_fast_run()` が `None` を返したら
+    （既知の壁だけでは到達できない・安全弁）、その走行に限り現行のコマンド方式へ
+    落ちる。落ちたことは `plan_id` の接頭辞（`"fast_fallback"`/`"return2_fallback"`）
+    に残る（`_phase_prefix()` 参照）。
+  - **本段では S2（壁センサによる位置補正）を profile 経路に配線しない**
+    （推測航法のみで走らせ、どこまで持つかを測ってから次段で補正を足す。
+    任務指示の範囲）。`ProfileTracker.apply_lateral_correction()` は
+    `kp_lat=0`（既定）のまま呼ばないので、経路追従は純粋な推測航法である。
+  - `plan_id` は経路追従中 `"fast:profile"`/`"return2:profile"`、その場旋回中
+    `"fast:profile_spin"`/`"return2:profile_spin"` になる（一次記録からどちらの
+    区間を走っていたかが分かるようにする。任務指示）。
+"""
+import math
+from enum import Enum, auto
+from typing import List, Optional, Tuple, Union
+
+from classic.fast_planner import FastPlan, PathBlock, SpinSegment, plan_fast_run
 from classic.flood import FloodMode, UNREACHABLE, compute_flood, is_passable, is_reachable_known
 from classic.localization import Localizer
-from classic.maze_map import ALL_DIRECTIONS, Direction, MazeMap
+from classic.maze_map import ALL_DIRECTIONS, Direction, MazeMap, direction_between
 from classic.maze_map import WallState as MapWallState
 from classic.motion import CellMotionController, MotionKind
 from classic.route import Command, CommandType, NoRouteError, plan_route
 from classic.sensing import WallSensing
 from classic.sensing import WallState as SenseWallState
 from classic.sensing import sense_walls
+from classic.tracker import ProfileTracker
 from mouse.params import RobotParams
 
 Cell = Tuple[int, int]
@@ -226,7 +252,10 @@ class ClassicExplorer:
     """
 
     def __init__(self, width: int, height: int, params: Optional[RobotParams] = None,
-                 localization_enabled: bool = True, extend_straights: bool = True) -> None:
+                 localization_enabled: bool = True, extend_straights: bool = True,
+                 fast_mode: str = "command") -> None:
+        if fast_mode not in ("command", "profile"):
+            raise ValueError(f"未知の fast_mode: {fast_mode!r}（'command' か 'profile' のいずれか）")
         self.params = params if params is not None else RobotParams()
         self.maze = MazeMap(width, height)
 
@@ -301,6 +330,19 @@ class ClassicExplorer:
         self._goal_stop_hold_ticks: int = max(1, int(round(GOAL_STOP_HOLD_S / self.params.control_dt)))
         self._goal_stop_ticks_left: int = 0
 
+        # --- S3': 最短走行のプロファイル追従化 (fast_mode) の実行状態 ---
+        # モジュール docstring「S3': 最短走行のプロファイル追従化」参照。
+        self.fast_mode = fast_mode
+        # ProfileTracker は fast_mode="profile" のときだけ作る
+        # （fast_mode="command" のときは一切参照しないので、作らないことで
+        # 「コード経路が変更前と完全に同一」の主張を明確にする）。
+        self._tracker: Optional[ProfileTracker] = ProfileTracker(self.params) if fast_mode == "profile" else None
+        self._fast_plan: Optional[FastPlan] = None
+        self._fast_plan_step_idx: int = 0
+        # 直近の FAST/RETURN2 が profile 計画を作れず、現行のコマンド方式へ
+        # 落ちた（安全弁）かどうか。`_phase_prefix()` が plan_id へ反映する。
+        self._fast_command_fallback: bool = False
+
     # ------------------------------------------------------------------
     # 係員回収（外部から呼ばれる）
     # ------------------------------------------------------------------
@@ -346,6 +388,14 @@ class ClassicExplorer:
             self._fast_straight_cells_left = 0
             self._fast_cells_reanchored = 0
             self._goal_stop_ticks_left = 0
+            # profile 計画も同様にクリアする（物理的にスタートへ戻された以上、
+            # 進行中だった FastPlan は無効。`_begin_fast_run` が新しく作り直す。
+            # `_profile_active` はこれで False になり、次の tick() は
+            # `_on_stationary_route` の既存の再合流経路（コマンド方式・profile方式
+            # 共通）を通る）。
+            self._fast_plan = None
+            self._fast_plan_step_idx = 0
+            self._fast_command_fallback = False
 
     # ------------------------------------------------------------------
     # 1 制御ステップ
@@ -361,6 +411,14 @@ class ClassicExplorer:
         if self._need_replan:
             self._on_stationary(obs)
             self._need_replan = False
+
+        # S3': fast_mode="profile" で FAST/RETURN2 の profile 計画を実行中なら、
+        # 以下のコマンド方式の分岐は一切通らずここで確定させる（モジュール
+        # docstring「S3': 最短走行のプロファイル追従化」参照）。
+        # fast_mode="command"（既定）のときは `_profile_active` が常に False
+        # になるので、この分岐そのものが実行されない（コード経路は不変）。
+        if self._profile_active:
+            return self._tick_profile(obs)
 
         vl, vr, done = self.motion.update(obs)
 
@@ -592,9 +650,15 @@ class ClassicExplorer:
             return "explore"
         if self.phase is Phase.RETURN:
             return "return"
-        if self.phase is Phase.FAST:
-            return "fast"
-        return "return2"  # Phase.RETURN2
+        base = "fast" if self.phase is Phase.FAST else "return2"  # Phase.RETURN2
+        if self.fast_mode == "profile" and self._fast_command_fallback:
+            # fast_mode="profile" で plan_fast_run() が計画できず（安全弁）、
+            # 現行のコマンド方式へ落ちたことを一次記録(plan_id)へ残す
+            # （モジュール docstring「S3': 最短走行のプロファイル追従化」参照）。
+            # fast_mode="command"（既定）のときは self.fast_mode=="profile" が
+            # 常に False なのでこの分岐へ入らず、返り値は変更前と同一のまま。
+            return f"{base}_fallback"
+        return base
 
     def _issue_forward(self, sensing: WallSensing) -> None:
         self.motion.start_forward(1)
@@ -725,8 +789,24 @@ class ClassicExplorer:
         """悲観歩数マップで「既知の壁だけでゴールへ到達できる」と判定された
         瞬間（RETURN 完了時）、または最短走行の帰路がスタートへ戻り着いた
         瞬間（RETURN2 完了時）に呼ぶ。`plan_route` で最短経路のコマンド列を
-        求め、Phase.FAST へ入って先頭のコマンドを発行する（note_030 §3 S3 ①）。"""
+        求め、Phase.FAST へ入って先頭のコマンドを発行する（note_030 §3 S3 ①）。
+
+        fast_mode="profile" のときは `plan_fast_run()` の速度プロファイル計画を
+        代わりに使う（モジュール docstring「S3': 最短走行のプロファイル
+        追従化」参照）。計画できなければ（`_fast_command_fallback=True`）、
+        以下の既存のコマンド方式へそのままフォールスルーする（安全弁）。
+        fast_mode="command"（既定）のときは以下の処理が変更前と完全に同一。"""
         self.phase = Phase.FAST
+        if self.fast_mode == "profile":
+            # 🔴 profile 計画は現在の実際の向き(self.heading)から作る
+            # （command方式のような「北固定で計画してから北へ向き直す」補正は
+            # 不要 — plan_fast_run/ideal.py は任意の start_heading をそのまま
+            # 扱えるため、実行前の余計な旋回を挟まない）。
+            self._begin_profile_run(
+                obs, start=self.start_cell, goals=self._goal_cell_list, start_heading=self.heading,
+            )
+            if not self._fast_command_fallback:
+                return
         commands = self._plan_route_or_block(
             start=self.start_cell, goals=self._goal_cell_list, start_heading=Direction.N,
             # 🔴 通常は起こらないはず（悲観歩数マップで到達可能と確認した
@@ -767,8 +847,18 @@ class ClassicExplorer:
         で決まり、FAST のように「plan_route が想定する向き」と「実際の向き」
         がずれる余地が無い（FAST は北固定で計画するため、帰還後の実際の
         向きとのズレを実行時の旋回で吸収する必要があった）。したがって
-        `_begin_fast_run` にある「先頭への向き合わせ旋回」は不要。"""
+        `_begin_fast_run` にある「先頭への向き合わせ旋回」は不要。
+
+        fast_mode="profile" のときの扱いは `_begin_fast_run` と同じ
+        （モジュール docstring参照。計画できなければ既存のコマンド方式へ
+        フォールスルーする）。"""
         self.phase = Phase.RETURN2
+        if self.fast_mode == "profile":
+            self._begin_profile_run(
+                obs, start=self.cell, goals=[self.start_cell], start_heading=self.heading,
+            )
+            if not self._fast_command_fallback:
+                return
         commands = self._plan_route_or_block(
             start=self.cell, goals=[self.start_cell], start_heading=self.heading,
             # 🔴 通常は起こらないはず（悲観歩数マップで既に「既知の壁だけで
@@ -785,6 +875,149 @@ class ClassicExplorer:
         self._fast_straight_cells_left = 0
         self._fast_cells_reanchored = 0
         self._issue_next_fast_command(obs)
+
+    # ------------------------------------------------------------------
+    # S3': 最短走行のプロファイル追従化 (fast_mode="profile")
+    # ------------------------------------------------------------------
+    # 🔴 このブロックは fast_mode="profile" のときにしか呼ばれない
+    # （`_begin_fast_run`/`_begin_return2_run` の `if self.fast_mode ==
+    # "profile":` 分岐、および `tick()` の `_profile_active` チェック経由のみ）。
+    # fast_mode="command"（既定）のコード経路はここを一切通らない。
+    @property
+    def _profile_active(self) -> bool:
+        """このティック、`tick()` を `_tick_profile()` へ委ねるべきか。
+
+        profile 計画（`self._fast_plan`）が読み込まれている間だけ True になる。
+        計画の全ステップが完了する（`_finish_profile_plan()`）と `self._fast_plan`
+        が None に戻るので、以後は既存のコマンド方式の `tick()` 本体（ゴール
+        停止ホールドや `_begin_return2_run`/`_begin_fast_run` の呼び出しを
+        含む）が自然に引き継ぐ。"""
+        return (self.fast_mode == "profile" and self.phase in (Phase.FAST, Phase.RETURN2)
+                and self._fast_plan is not None)
+
+    def _profile_plan_id(self, step: Union[PathBlock, SpinSegment]) -> str:
+        """profile 実行中の1ステップの plan_id。経路追従は
+        `"fast:profile"`/`"return2:profile"`、その場旋回は
+        `"fast:profile_spin"`/`"return2:profile_spin"`（任務指示）。"""
+        prefix = "fast" if self.phase is Phase.FAST else "return2"
+        suffix = "profile_spin" if isinstance(step, SpinSegment) else "profile"
+        return f"{prefix}:{suffix}"
+
+    def _begin_profile_run(self, obs, start: Cell, goals: List[Cell], start_heading: Direction) -> None:
+        """profile モードで最短走行(FAST/RETURN2共通)の計画を作り、実行を
+        始める。`classic/fast_planner.py` の `plan_fast_run()` が `None` を
+        返した（既知の壁だけでは到達できない）場合は `self._fast_command_fallback
+        = True` にするだけで、実際のフォールバック実行は呼び出し元
+        （`_begin_fast_run`/`_begin_return2_run`）の既存コマンド方式コードに
+        委ねる（本メソッドはここで停止も例外も出さない）。"""
+        assert self._tracker is not None  # fast_mode="profile" のときだけ呼ばれる
+        plan = plan_fast_run(self.maze, start=start, goals=goals, start_heading=start_heading,
+                              params=self.params)
+        if plan is None:
+            self._fast_command_fallback = True
+            self._fast_plan = None
+            return
+
+        self._fast_command_fallback = False
+        self._fast_plan = plan
+        self._fast_plan_step_idx = 0
+
+        if not plan.steps:
+            # 既にゴール/スタートにいる(trivial)。追従するステップが無いので
+            # 即座に完了扱いにする（`_complete_profile_plan` が次の遷移
+            # — ゴール停止ホールド、またはRETURN2ならそのまま次のFASTへ — を行う）。
+            self._complete_profile_plan(obs)
+            return
+
+        self._tracker.reset(heading_deg=math.degrees(plan.steps[0].psi_start))
+        self._load_current_profile_step()
+
+    def _load_current_profile_step(self) -> None:
+        """`self._fast_plan.steps[self._fast_plan_step_idx]` をトラッカーへ
+        ロードする（経路追従なら `load_plan`、その場旋回なら `load_spin_plan`）。
+        呼び出し前に添字が範囲内であることは呼び出し元が保証する。"""
+        assert self._fast_plan is not None and self._tracker is not None
+        step = self._fast_plan.steps[self._fast_plan_step_idx]
+        if isinstance(step, PathBlock):
+            self._tracker.load_plan(step.s_grid, step.v_ref, step.kappa_ref, psi_start=step.psi_start)
+            # `ProfileTracker.load_plan()` は弧長 s をクリアしない（複数の計画を
+            # 順に読み込む前提の設計。`tests/test_tracker.py` の引き継ぎ検査と
+            # 同じ作法で、新しい区間として明示的に 0 へ戻す）。
+            self._tracker._s = 0.0
+        else:
+            assert isinstance(step, SpinSegment)
+            self._tracker.load_spin_plan(step.delta_theta, psi_start=step.psi_start)
+        self._active_plan_id = self._profile_plan_id(step)
+
+    def _finish_profile_plan(self) -> None:
+        """profile 計画（`self._fast_plan`）の全ステップが完了したときに呼ぶ。
+        自前の位置カウンタ（`self.cell`/`self.heading`。command方式の
+        `_advance_state()` に相当）を計画の終点へ合わせ、計画状態をクリアする
+        （クリアすることで `_profile_active` が False に戻り、以後は既存の
+        `tick()`/`_on_stationary` の経路が引き継ぐ）。"""
+        assert self._fast_plan is not None
+        cells = self._fast_plan.cells
+        if len(cells) >= 2:
+            self.heading = direction_between(cells[-2], cells[-1])
+        self.cell = cells[-1]
+        self._fast_plan = None
+        self._fast_plan_step_idx = 0
+
+    def _complete_profile_plan(self, obs) -> Tuple[float, float]:
+        """profile 計画の全ステップが完了した（または最初から1つも無かった）
+        ときの遷移。Phase.FAST ならゴール停止ホールドへ（既存のコマンド方式と
+        同じ `"fast:goal_stop"` の仕組みをそのまま再利用する）、Phase.RETURN2
+        ならホールドせずそのまま次の最短走行へ（是正6と同じ思想）。
+        このティックの (v_left, v_right) を返す。"""
+        self._finish_profile_plan()
+        if self.phase is Phase.FAST:
+            self.motion.start_stop()
+            self._active_kind = MotionKind.STOP
+            self._active_plan_id = "fast:goal_stop"
+            self._goal_stop_ticks_left = self._goal_stop_hold_ticks
+            return 0.0, 0.0
+        # Phase.RETURN2: 是正6と同じくホールドせず次の最短走行へ。
+        self._begin_fast_run(obs)
+        return self._drive_active(obs)
+
+    def _drive_active(self, obs) -> Tuple[float, float]:
+        """現在アクティブな実行系（profileのtracker、またはコマンド方式の
+        motion）からこのティックの電圧だけを取り出す（done判定の結果は
+        使わない。`_begin_fast_run`/`_begin_return2_run` が profile
+        計画を積んだか、コマンド方式へ落ちたかのどちらでも正しく動く）。"""
+        if self._profile_active:
+            vl, vr, _done = self._tracker.update(obs)
+            return vl, vr
+        vl, vr, _done = self.motion.update(obs)
+        return vl, vr
+
+    def _tick_profile(self, obs) -> Tuple[float, float, str]:
+        """Phase.FAST・Phase.RETURN2 の profile モード実行本体
+        （`_profile_active` が True のときだけ `tick()` から呼ばれる）。
+
+        `ProfileTracker.update()` を毎ティック回し、計画の1ステップ（経路追従
+        またはその場旋回）が完了したら、区間の切れ目で速度・角速度が
+        しきい値未満に収束するのを待たず、即座に次のステップへ進む
+        （`classic/tracker.py` の設計そのもの。既存のコマンド方式の
+        `_advance_state()` 直後に `_on_stationary()`→`motion.update()` を
+        同じティックでもう一度呼ぶのと同じ作法を踏襲する）。
+
+        🔴 S2 の壁センサ位置補正はここでは行わない（推測航法のみ。本任務の
+        範囲外 — モジュール docstring参照）。"""
+        assert self._fast_plan is not None and self._tracker is not None
+        vl, vr, done = self._tracker.update(obs)
+        if not done:
+            return vl, vr, self._active_plan_id
+
+        self._fast_plan_step_idx += 1
+        if self._fast_plan_step_idx < len(self._fast_plan.steps):
+            self._load_current_profile_step()
+            vl, vr, _done2 = self._tracker.update(obs)
+            return vl, vr, self._active_plan_id
+
+        # 計画の全ステップが完了 = ゴール(FAST)またはスタート(RETURN2)に到達した。
+        vl, vr = self._complete_profile_plan(obs)
+        return vl, vr, self._active_plan_id
 
     def _on_stationary_route(self, obs) -> None:
         """Phase.FAST・Phase.RETURN2 共通: コマンド列（plan_route の出力）の
