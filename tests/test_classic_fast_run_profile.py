@@ -103,10 +103,11 @@ def _fresh_sim(tmp_path: Path, params: RobotParams, v_walls, h_walls, label: str
 
 def _fresh_explorer_in_fast(sim: MouseSim, params: RobotParams, maze: MazeMap,
                              fast_mode: str = "command", friction_use: float = 1.0,
-                             wall_correction: bool = False,
+                             wall_correction: bool = False, wall_correction_mode: str = "blend",
                              width: int = MAZE_W, height: int = MAZE_H) -> ClassicExplorer:
     ex = ClassicExplorer(width, height, params=params, fast_mode=fast_mode,
-                          friction_use=friction_use, wall_correction=wall_correction)
+                          friction_use=friction_use, wall_correction=wall_correction,
+                          wall_correction_mode=wall_correction_mode)
     ex.maze = maze
     obs = sim.observation()
     ex._begin_fast_run(obs)
@@ -402,10 +403,16 @@ def test_apply_wall_correction_snaps_forward_drift_to_the_nearest_cell_boundary(
     反転）だけを人為的に発生させる。`long_straight_maze_and_walls`（最初の
     直線副区間が6区画=1.08m。弧に食われる分を差し引いても本検査に十分な
     余地がある）を使う（`KNOWN_PATH` は最初のターンまで2区画しか無く不足する）。
+
+    本検査は「補正した s が cell_size の整数倍へ厳密に一致する」ことを見る
+    ものなので `wall_correction_mode="snap"`（1回で一気に当てる従来方式）を
+    明示する（既定の "blend" は `wall_correction_alpha` 倍・上限つきでしか
+    当てないため、この厳密一致は成り立たない）。
     """
     maze, v_walls, h_walls = long_straight_maze_and_walls
     sim = _fresh_sim(tmp_path, params, v_walls, h_walls, "wc_fwd")
     ex = _fresh_explorer_in_fast(sim, params, maze, fast_mode="profile", wall_correction=True,
+                                  wall_correction_mode="snap",
                                   width=LONG_STRAIGHT_W, height=LONG_STRAIGHT_H)
     assert ex._fast_plan is not None
     step = ex._fast_plan.steps[0]
@@ -579,6 +586,208 @@ def test_apply_wall_correction_lateral_matches_localization_estimate(
 
 
 # ==========================================================================
+# 6b. wall_correction_mode="blend"（既定）: 前後位置補正を「張り替え」から
+#     「混ぜ込み」に変える是正（任務指示 2026-08-20）。
+# ==========================================================================
+def test_kappa_nonzero_within_lookahead_detects_upcoming_curvature_only_within_range():
+    """`_kappa_nonzero_within_lookahead`（純粋関数）の単体検査。`_apply_wall_
+    correction` の "blend" モードが使う「曲率が立ち上がる直前は補正しない」
+    判定そのもの（任務指示 2026-08-20 の 3）。"""
+    from classic.explorer import _kappa_nonzero_within_lookahead
+
+    # s=[0,0.5)->kappa0.0, [0.5,1.0)->kappa0.0, [1.0,1.5)->kappa3.0(弧)
+    step = PathBlock(s_grid=(0.0, 0.5, 1.0, 1.5), v_ref=(1.0, 1.0, 1.0, 1.0),
+                      kappa_ref=(0.0, 0.0, 3.0), psi_start=0.0, t_plan=1.0)
+
+    # 現在地 s=0.2: 弧の開始(s=1.0)まで0.8m。lookaheadが届かなければFalse。
+    assert _kappa_nonzero_within_lookahead(step, 0.2, 0.3) is False
+    # lookaheadが弧の開始まで届けばTrue。
+    assert _kappa_nonzero_within_lookahead(step, 0.2, 0.9) is True
+    # ちょうど境界(0.8m先)ぴったりは「まだ届いていない」扱い(半開区間、
+    # horizon=s+L 自身は含まない)。浮動小数点の境界一致に依存しない設計。
+    assert _kappa_nonzero_within_lookahead(step, 0.2, 0.8) is False
+    assert _kappa_nonzero_within_lookahead(step, 0.2, 0.8 + 1e-6) is True
+    # L=0(見送り機能そのものを無効化する既定の使い方)は「ちょうど先頭に
+    # 立っている」場合も含めて常にFalse(実運用では kappa_nonzero_now が
+    # 真のときはこの関数を呼ばない前提なので、s が弧の開始点そのものに
+    # 一致するケースは通常起きない)。
+    assert _kappa_nonzero_within_lookahead(step, 1.0, 0.0) is False
+    assert _kappa_nonzero_within_lookahead(step, 0.999, 0.0) is False
+    # 弧を通り過ぎた後(s=1.6、ブロック範囲外)は先に何も無いのでFalse。
+    assert _kappa_nonzero_within_lookahead(step, 1.6, 1.0) is False
+
+
+def test_apply_wall_correction_blend_caps_a_single_large_correction(
+        tmp_path, params, monkeypatch, long_straight_maze_and_walls):
+    """作動側: `wall_correction_mode="blend"` は 1 回の検出が示す補正量が
+    大きくても（DEFAULT_MAX_FORWARD_CORRECTION_M=50mm未満なので誤検出としては
+    弾かれない大きさ）、`wall_correction_alpha`・`wall_correction_max_step_m`
+    のうち厳しいほうで頭打ちになり、1回で全量を当てない（任務指示
+    2026-08-20「1回あたりの上限を設ける」）。同じ入力を
+    `wall_correction_mode="snap"`（従来）に与えると全量がそのまま1回で
+    当たることと対比する——これが「1回でも誤ると走行が終わる」性質
+    そのものであり、"blend" が抑えようとしている対象である。"""
+    maze, v_walls, h_walls = long_straight_maze_and_walls
+    cell_size = params.cell_size
+    alpha = 0.8
+    cap_m = 0.010
+    drift = 0.030  # 30mm。50mm閾値未満(誤検出扱いされない)だが cap(10mm)は超える大きさ。
+    assert alpha * drift > cap_m, "テストの前提(capが実際に効く大きさ)が崩れた"
+
+    calls = {"sensing": _wall_sensing(SenseWallState.WALL, SenseWallState.WALL)}
+    monkeypatch.setattr("classic.explorer.sense_walls", lambda obs, p: calls["sensing"])
+
+    results = {}
+    for mode, tag in [("blend", "cap_blend"), ("snap", "cap_snap")]:
+        sim = _fresh_sim(tmp_path, params, v_walls, h_walls, tag)
+        ex = _fresh_explorer_in_fast(sim, params, maze, fast_mode="profile", wall_correction=True,
+                                      wall_correction_mode=mode,
+                                      width=LONG_STRAIGHT_W, height=LONG_STRAIGHT_H)
+        ex.wall_correction_alpha = alpha
+        ex.wall_correction_max_step_m = cap_m
+        ex.wall_correction_lookahead_m = 0.0  # このテストはL(曲率直前見送り)の対象外にする
+        dummy_obs = sim.observation()
+
+        s0 = 0.02
+        assert ex._tracker._kappa_at(s0) == 0.0
+        ex._tracker._s = s0
+        ex._apply_wall_correction(dummy_obs)  # 最初の観測。基準はまだ無い。
+
+        s1 = s0 + 0.01
+        ex._tracker._s = s1
+        calls["sensing"] = _wall_sensing(SenseWallState.CLEAR, SenseWallState.WALL)
+        ex._apply_wall_correction(dummy_obs)  # 1回目のエッジ。基準点=s1。
+        assert ex._wc_fwd_ref_s == pytest.approx(s1)
+
+        s2_measured = s1 + cell_size + drift
+        assert ex._tracker._kappa_at(s2_measured) == 0.0, "テストの前提(直線区間内)が崩れた"
+        ex._tracker._s = s2_measured
+        calls["sensing"] = _wall_sensing(SenseWallState.WALL, SenseWallState.WALL)
+        ex._apply_wall_correction(dummy_obs)  # 2回目のエッジ。補正が発生する。
+
+        applied = ex._tracker._s - s2_measured
+        results[mode] = applied
+        print(f"\n[実測] mode={mode}: 測定s={s2_measured:.4f} 適用後s={ex._tracker._s:.4f} "
+              f"適用量={applied * 1000:+.2f}mm (真の補正量={-drift * 1000:+.2f}mm)")
+
+    assert results["snap"] == pytest.approx(-drift, abs=1e-9), (
+        "snapモードは全量(-30mm)を1回で当てるはず(従来どおりの回帰確認)"
+    )
+    assert results["blend"] != 0.0, "blendなのに補正そのものが機能していない"
+    assert abs(results["blend"]) <= cap_m + 1e-9, (
+        "blendなのに上限(10mm)を超えて当ててしまった(作動側の失敗)"
+    )
+    assert abs(results["blend"]) < abs(results["snap"]), (
+        "blendがsnapと同じかそれ以上の量を1回で当ててしまった(作動側の失敗)"
+    )
+
+
+def test_apply_wall_correction_blend_applies_alpha_scaled_correction_when_under_cap(
+        tmp_path, params, monkeypatch, long_straight_maze_and_walls):
+    """空振り側: 上限（`wall_correction_max_step_m`）に掛からない普通サイズの
+    ドリフトでは、"blend" は `wall_correction_alpha * correction` をそのまま
+    当てる——上限・見送り（このテストは L=0 で無効化）が余計な歪みを加えず、
+    「混ぜ込み」そのものは素直に効くことの確認（作動側の検査が上限機構だけを
+    見ているのに対する対照）。"""
+    maze, v_walls, h_walls = long_straight_maze_and_walls
+    cell_size = params.cell_size
+    alpha = 0.8
+    cap_m = 0.030  # alpha*drift(=8mm)より十分大きく、cap は効かない。
+    drift = 0.010  # 10mm。50mm閾値未満・cap未満の"普通サイズ"のドリフト。
+    assert alpha * drift < cap_m, "テストの前提(capが効かない大きさ)が崩れた"
+
+    sim = _fresh_sim(tmp_path, params, v_walls, h_walls, "blend_scaled")
+    ex = _fresh_explorer_in_fast(sim, params, maze, fast_mode="profile", wall_correction=True,
+                                  wall_correction_mode="blend",
+                                  width=LONG_STRAIGHT_W, height=LONG_STRAIGHT_H)
+    ex.wall_correction_alpha = alpha
+    ex.wall_correction_max_step_m = cap_m
+    ex.wall_correction_lookahead_m = 0.0
+    dummy_obs = sim.observation()
+
+    calls = {"sensing": _wall_sensing(SenseWallState.WALL, SenseWallState.WALL)}
+    monkeypatch.setattr("classic.explorer.sense_walls", lambda obs, p: calls["sensing"])
+
+    s0 = 0.02
+    ex._tracker._s = s0
+    ex._apply_wall_correction(dummy_obs)
+
+    s1 = s0 + 0.01
+    ex._tracker._s = s1
+    calls["sensing"] = _wall_sensing(SenseWallState.CLEAR, SenseWallState.WALL)
+    ex._apply_wall_correction(dummy_obs)
+
+    s2_measured = s1 + cell_size + drift
+    assert ex._tracker._kappa_at(s2_measured) == 0.0
+    ex._tracker._s = s2_measured
+    calls["sensing"] = _wall_sensing(SenseWallState.WALL, SenseWallState.WALL)
+    ex._apply_wall_correction(dummy_obs)
+
+    applied = ex._tracker._s - s2_measured
+    expected = -alpha * drift
+    print(f"\n[実測] 空振り側: 適用量={applied * 1000:+.3f}mm 期待値(alpha*correction)={expected * 1000:+.3f}mm")
+    assert applied == pytest.approx(expected, abs=1e-9), (
+        "上限に掛からない普通サイズの補正で alpha*correction からずれた"
+        "(空振り側の失敗: 上限・見送りが余計な歪みを加えている)"
+    )
+
+
+def test_apply_wall_correction_blend_vetoes_correction_just_before_curvature_onset(
+        tmp_path, params, monkeypatch, carved_maze_and_walls):
+    """`wall_correction_lookahead_m`（L）: 現在の s から先 L 以内に曲率が
+    非ゼロになる区間があるとき、blend は補正そのものを見送る（s・基準点の
+    どちらも書き換えない）。`carved_maze_and_walls`（最初のターンまで2区画
+    しかない）を使い、弧の直前まで s を進めた状態で検査する。"""
+    maze, v_walls, h_walls = carved_maze_and_walls
+    sim = _fresh_sim(tmp_path, params, v_walls, h_walls, "blend_veto")
+    ex = _fresh_explorer_in_fast(sim, params, maze, fast_mode="profile", wall_correction=True,
+                                  wall_correction_mode="blend")
+    assert ex._fast_plan is not None
+    step = ex._fast_plan.steps[0]
+    assert isinstance(step, PathBlock)
+
+    # 最初に曲率が非ゼロになる格子点(弧の開始)を探す。
+    arc_start = None
+    for i, kap in enumerate(step.kappa_ref):
+        if kap != 0.0:
+            arc_start = step.s_grid[i]
+            break
+    assert arc_start is not None, "この経路に弧区間が無い(テストの前提が崩れた)"
+
+    ex.wall_correction_alpha = 0.8
+    ex.wall_correction_max_step_m = 0.010
+    ex.wall_correction_lookahead_m = 0.05  # 弧の開始まで5cm以内なら見送る
+
+    calls = {"sensing": _wall_sensing(SenseWallState.WALL, SenseWallState.WALL)}
+    monkeypatch.setattr("classic.explorer.sense_walls", lambda obs, p: calls["sensing"])
+
+    cell_size = params.cell_size
+
+    # 基準点を作る(弧よりずっと手前)。
+    s_ref = max(arc_start - 3 * cell_size, 0.02)
+    assert ex._tracker._kappa_at(s_ref) == 0.0
+    ex._tracker._s = s_ref
+    ex._apply_wall_correction(dummy_obs := sim.observation())
+    calls["sensing"] = _wall_sensing(SenseWallState.CLEAR, SenseWallState.WALL)
+    ex._apply_wall_correction(dummy_obs)
+    assert ex._wc_fwd_ref_s == pytest.approx(s_ref)
+
+    # (A) 弧の開始まで L=0.05 より近い地点でエッジ発生 -> 見送られるはず。
+    s_near = arc_start - 0.02  # 弧開始まで20mm(<L=50mm)
+    assert s_near > s_ref, "テストの前提(基準点より先)が崩れた"
+    assert ex._tracker._kappa_at(s_near) == 0.0, "テストの前提(直線区間内)が崩れた"
+    ex._tracker._s = s_near + 0.003  # 実測ドリフトを少し足す(補正が起きるならわかるように)
+    calls["sensing"] = _wall_sensing(SenseWallState.WALL, SenseWallState.WALL)
+    ref_before = ex._wc_fwd_ref_s
+    s_before = ex._tracker._s
+    ex._apply_wall_correction(dummy_obs)
+    print(f"\n[実測] 弧の開始まで{(arc_start - s_near) * 1000:.1f}mm(L={ex.wall_correction_lookahead_m*1000:.0f}mm): "
+          f"s {s_before:.4f}->{ex._tracker._s:.4f}  ref {ref_before}->{ex._wc_fwd_ref_s}")
+    assert ex._tracker._s == pytest.approx(s_before), "曲率立ち上がり直前なのに補正してしまった(検査項目3の失敗)"
+    assert ex._wc_fwd_ref_s == ref_before, "曲率立ち上がり直前なのに基準点を書き換えてしまった"
+
+
+# ==========================================================================
 # 7. 北向き開始が南向き開始よりずっと脆い問題の再発防止
 #    （2026-08-20・診断: `experiments/exp_027_friction_sweep/
 #    diagnose_start_heading.py`。原因はテスト6の k=0 二重検出。ここでは
@@ -635,12 +844,14 @@ def _drive_fast_run_to_completion(sim: MouseSim, ex: ClassicExplorer, max_ticks:
 
 
 def _begin_known_map_fast_run(maze_41004_known_map_and_xml, params: RobotParams,
-                               heading_deg: float, ex_heading: Direction) -> Tuple[MouseSim, ClassicExplorer]:
+                               heading_deg: float, ex_heading: Direction,
+                               wall_correction_mode: str = "blend") -> Tuple[MouseSim, ClassicExplorer]:
     maze, xml_path, width, height = maze_41004_known_map_and_xml
     sim = MouseSim(xml_path, params=params)
     sim.full_reset(cell=(0, 0), heading_deg=heading_deg)
     ex = ClassicExplorer(width, height, params=params, fast_mode="profile",
-                          friction_use=0.50, wall_correction=True)
+                          friction_use=0.50, wall_correction=True,
+                          wall_correction_mode=wall_correction_mode)
     ex.maze = maze
     ex.heading = ex_heading  # 実際の物理姿勢(heading_deg)と揃える(_begin_fast_run docstring参照)
     obs = sim.observation()
@@ -655,12 +866,26 @@ def test_north_start_is_not_catastrophically_more_fragile_than_south_start(
     その場旋回）よりずっと早く衝突する、という exp_027 で見つかった脆さの
     直接検査。u=0.50・wall_correction=True・maze_41004（実在する迷路）で、
     北向き開始と南向き開始それぞれで Phase.FAST を直接始め、衝突するまでの
-    到達ティック数を比べる。
+    到達ティック数を比べる。既定の `wall_correction_mode="blend"` で検査する
+    （引数を明示していないので `_begin_known_map_fast_run` の既定＝実運用の
+    既定と同じ経路）。
 
-    是正前の実測（このテストと同じ経路で確認）: 北=186ティックで衝突・
+    是正前(k=0二重検出バグが残っていた状態)の実測: 北=186ティックで衝突・
     南=890ティックで衝突（比 0.21 — 北が南の1/5も走れない）。
-    是正後の実測: 北=592ティックで衝突・南=868ティックで衝突（比 0.68）。
-    しきい値は是正前を確実に落とし、是正後には十分な余裕を残す位置に置く。
+    k=0是正後(snapのみ。本タスクの「修正前」baseline)の実測: 北=592ティック・
+    南=868ティック（比 0.68）。
+    本タスクの blend 是正後の実測: 北=592〜593ティック（不変。後述）・
+    南=865ティック（比 0.68。誤差の範囲でほぼ同値）。
+    しきい値は「是正前(186ティック・比0.21)」を確実に落とし、それ以降の
+    どの状態にも十分な余裕を残す位置に置く。
+
+    🔴 実測で判明した想定外（そのまま記録する）: 北向き開始の衝突地点
+    （s≈4.76m）は `wall_correction=False`（壁センサ補正を全く使わない
+    対照）でも同じ地点で起こる。つまり北向き開始の頭打ちは前後位置補正の
+    「張り替え/混ぜ込み」の選び方とは無関係（u=0.50 の摩擦円そのものが
+    頭打ちの原因）であり、本タスクの対象外。このため `wall_correction_mode`
+    をどう変えても北向き開始の到達ティック数はほぼ変わらない
+    （`classic/explorer.py` の `DEFAULT_WALL_CORRECTION_*` 定数コメント参照）。
     """
     sim_n, ex_n = _begin_known_map_fast_run(
         maze_41004_known_map_and_xml, params, heading_deg=90.0, ex_heading=Direction.N)
@@ -682,4 +907,41 @@ def test_north_start_is_not_catastrophically_more_fragile_than_south_start(
     assert ratio >= 0.5, (
         f"北向き開始が南向き開始に比べて著しく脆い(比={ratio:.3f})。"
         "「北向き開始でも南向き開始と同程度に走れる」という要件が崩れている"
+    )
+
+
+def test_wall_correction_mode_snap_matches_pre_blend_baseline_exactly(
+        maze_41004_known_map_and_xml, params):
+    """回帰検査: `wall_correction_mode="snap"` を明示すると、本タスク
+    （"blend" を既定へ変える是正）より前の状態（k=0 是正のみが入った
+    状態）と完全に同一のティック数で衝突すること。`_apply_wall_correction`
+    の "snap" 分岐は本タスクで変更していない既存コード（`s_expected`・
+    `correction` の計算・k=0 ガード・50mm 超過ガードは共通のまま）なので、
+    決定論的な MuJoCo シミュレーションが厳密に同じ値を再現するはず。
+
+    比較対象の値は `test_north_start_is_not_catastrophically_more_fragile_
+    than_south_start` の docstring に記載した「k=0是正後(snapのみ)」の実測
+    （北=592ティック・南=868ティック）そのもの。
+    """
+    sim_n, ex_n = _begin_known_map_fast_run(
+        maze_41004_known_map_and_xml, params, heading_deg=90.0, ex_heading=Direction.N,
+        wall_correction_mode="snap")
+    n_ticks_north, collided_north, _s_north = _drive_fast_run_to_completion(sim_n, ex_n)
+
+    sim_s, ex_s = _begin_known_map_fast_run(
+        maze_41004_known_map_and_xml, params, heading_deg=-90.0, ex_heading=Direction.S,
+        wall_correction_mode="snap")
+    n_ticks_south, collided_south, _s_south = _drive_fast_run_to_completion(sim_s, ex_s)
+
+    print(f"\n[実測] snap: 北={n_ticks_north}ティック(衝突={collided_north}) "
+          f"南={n_ticks_south}ティック(衝突={collided_south})")
+
+    assert collided_north and collided_south
+    assert n_ticks_north == 592, (
+        f"wall_correction_mode='snap' の北向き開始が是正前と一致しない(実測={n_ticks_north})。"
+        "snapモードが従来のコード経路から変わってしまっている疑い(回帰)"
+    )
+    assert n_ticks_south == 868, (
+        f"wall_correction_mode='snap' の南向き開始が是正前と一致しない(実測={n_ticks_south})。"
+        "snapモードが従来のコード経路から変わってしまっている疑い(回帰)"
     )

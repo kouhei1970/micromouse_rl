@@ -164,7 +164,10 @@ T_measured`）を受け、Phase.FAST・Phase.RETURN2 の実行方式を選べる
     （推測航法のみ。`ProfileTracker` は `kp_lat=0` のまま構築され、
     `apply_lateral_correction()` も一切呼ばない）。True にすると、直線区間
     でのみ `_apply_wall_correction()`（横位置・前後位置の両方）が働く
-    （詳細は同メソッドの docstring）。
+    （詳細は同メソッドの docstring）。前後位置補正の当て方は
+    `wall_correction_mode`（既定 "blend" = 少しずつ混ぜ込む・"snap" = 従来の
+    一気に張り替え。任務指示 2026-08-20「補正を『張り替え』から『混ぜ込み』
+    に変える」）で選べる。`wall_correction=False` のときは参照されない。
   - `plan_id` は経路追従中 `"fast:profile"`/`"return2:profile"`、その場旋回中
     `"fast:profile_spin"`/`"return2:profile_spin"` になる（一次記録からどちらの
     区間を走っていたかが分かるようにする。任務指示）。
@@ -240,6 +243,51 @@ MAX_REPLANS_PER_CELL = 8
 # 常に意図より長い方向のずれなので安全側であり、是正しない。
 GOAL_STOP_HOLD_S = 2.0
 
+# 壁センサによる前後位置補正（`_apply_wall_correction`）の
+# `wall_correction_mode="blend"`（既定）の既定パラメータ（任務指示
+# 2026-08-20「補正を『張り替え』から『混ぜ込み』に変える」）。
+#
+# 🔴 推測ではなく実測（maze_41004・u=0.50・壁センサ補正あり・北向き開始と
+# 南向き開始の両方）で決めた。掃引に使ったスクリプトはコミットしていない
+# （一時スクリプト。掃引結果の表はコミットメッセージ参照）。
+#
+# 実測で分かったこと（想定外だったので選定の理由として明記する）:
+#   - 北向き開始の衝突（s≈4.76m・全長17.09mの約28%）は
+#     `wall_correction=False`（壁センサ補正を全く使わない対照）でも
+#     同じ地点で起こる。つまり北向き開始の頭打ちは前後位置補正とは無関係
+#     （u=0.50 の摩擦円そのものが頭打ちの原因であり、本任務の対象外）。
+#     このためどの alpha・上限・L を選んでも北向き開始の到達距離は
+#     変わらない（実測: 全ての組み合わせで591〜593ティック・約27.9%で一定）。
+#   - 南向き開始は alpha に対して滑らかに応答せず、事実上カオス的である
+#     （例: alpha=0.55/0.65/0.70/0.75/0.85 はいずれも約28%まで悪化する一方、
+#     alpha=0.60 だけ突出して40.7%まで伸びる、隣接値からは予測できない
+#     孤立点だった）。孤立して良く見える値を選ぶと再現性が無いため
+#     採用しなかった。alpha=0.8 は上限10〜45mm・L 0〜10mmの範囲で一貫して
+#     南向き開始 38.4〜38.5%（既存の snap 相当＝是正前の baseline 38.5%と
+#     ほぼ同値）を保つ、実測で確認できた唯一の安定した領域だったため採用した。
+#   - L は 0〜10mmでは南向き開始の到達距離に影響せず、15mm以上で
+#     28%まで悪化する（実測）。5mm はその境界から余裕を持たせた値。
+#   - 上限（cap）は 10〜45mm のどこでも結果が変わらなかった（実測）。
+#     このため任務指示の例示どおり 10mm を採用した（弱く効かせておく
+#     ことに実害が無い以上、上限は小さいほうが「1回の大きすぎる誤検出を
+#     丸める」という本来の役割に忠実）。
+#
+# 🔴 この選定は maze_41004・u=0.50 では北向き開始・南向き開始の両方を
+# 「是正前の baseline から悪化させない」ところまでしか実測で確認できて
+# いない（北向き開始は不変、南向き開始は 868→865 ティックとほぼ同値・
+# 誤差の範囲）。「両方を明確に改善する」という当初の期待には届かなかった
+# （北向き開始の頭打ちが本任務の対象外の原因によるため）。詳細は
+# コミットメッセージの掃引結果表を参照。
+#
+# 1回あたりの混ぜ込み比率（Δs のうち実際に当てる割合）。
+DEFAULT_WALL_CORRECTION_ALPHA: float = 0.8
+# 1回あたりの補正量の上限 [m]（|alpha * Δs| がこれを超えたら丸める）。
+DEFAULT_WALL_CORRECTION_MAX_STEP_M: float = 0.010
+# 現在の弧長 s から先これだけの範囲（同一 PathBlock 内に限る）に
+# kappa_ref が非ゼロになる区間があるなら、この回の補正そのものを見送る
+# （基準点・弧長のどちらも書き換えない）[m]。
+DEFAULT_WALL_CORRECTION_LOOKAHEAD_M: float = 0.005
+
 # CommandType のターン種別 → (target - heading) mod 4。
 # classic/route.py の _turn_type と同じ規約（Direction は N=0,E=1,S=2,W=3 の
 # 時計回り順）: +1=右90, +2=180, +3(=-1)=左90。
@@ -248,6 +296,26 @@ _FAST_TURN_REL = {
     CommandType.TURN_180: 2,
     CommandType.TURN_LEFT90: 3,
 }
+
+
+def _kappa_nonzero_within_lookahead(step: PathBlock, s: float, lookahead_m: float) -> bool:
+    """`step`（PathBlock）の弧長 `s` から先 `lookahead_m` 以内に、曲率が
+    非ゼロになる区間があるかどうかを返す。同一 `PathBlock` 内だけを見る
+    （次の PathBlock は別区間なので跨がない。`ClassicExplorer.
+    _apply_wall_correction` の `wall_correction_mode="blend"` が使う
+    「曲率が立ち上がる直前は補正しない」安全弁の判定そのもの。任務指示
+    2026-08-20）。"""
+    horizon = s + lookahead_m
+    for i, kappa in enumerate(step.kappa_ref):
+        seg_s0 = step.s_grid[i]
+        seg_s1 = step.s_grid[i + 1]
+        if seg_s1 <= s:
+            continue  # 既に通過済みの区間
+        if seg_s0 >= horizon:
+            break  # これ以降はもっと先
+        if kappa != 0.0:
+            return True
+    return False
 
 
 class ClassicExplorer:
@@ -262,11 +330,30 @@ class ClassicExplorer:
     def __init__(self, width: int, height: int, params: Optional[RobotParams] = None,
                  localization_enabled: bool = True, extend_straights: bool = True,
                  fast_mode: str = "command", friction_use: float = 1.0,
-                 wall_correction: bool = False) -> None:
+                 wall_correction: bool = False, wall_correction_mode: str = "blend",
+                 wall_correction_alpha: float = DEFAULT_WALL_CORRECTION_ALPHA,
+                 wall_correction_max_step_m: float = DEFAULT_WALL_CORRECTION_MAX_STEP_M,
+                 wall_correction_lookahead_m: float = DEFAULT_WALL_CORRECTION_LOOKAHEAD_M) -> None:
         if fast_mode not in ("command", "profile"):
             raise ValueError(f"未知の fast_mode: {fast_mode!r}（'command' か 'profile' のいずれか）")
         if not (0.0 < friction_use <= 1.0):
             raise ValueError(f"friction_use は (0.0, 1.0] の範囲で指定してください: {friction_use}")
+        if wall_correction_mode not in ("blend", "snap"):
+            raise ValueError(
+                f"未知の wall_correction_mode: {wall_correction_mode!r}（'blend' か 'snap' のいずれか）"
+            )
+        if not (0.0 < wall_correction_alpha <= 1.0):
+            raise ValueError(
+                f"wall_correction_alpha は (0.0, 1.0] の範囲で指定してください: {wall_correction_alpha}"
+            )
+        if not (wall_correction_max_step_m > 0.0):
+            raise ValueError(
+                f"wall_correction_max_step_m は正の値で指定してください: {wall_correction_max_step_m}"
+            )
+        if wall_correction_lookahead_m < 0.0:
+            raise ValueError(
+                f"wall_correction_lookahead_m は0以上で指定してください: {wall_correction_lookahead_m}"
+            )
         self.params = params if params is not None else RobotParams()
         self.maze = MazeMap(width, height)
 
@@ -355,6 +442,13 @@ class ClassicExplorer:
         # 意味を持つ）。既定 False = 推測航法のみ（exp_026 と同一）。
         # `_apply_wall_correction` docstring 参照。
         self.wall_correction = bool(wall_correction)
+        # 前後位置補正の当て方（"blend"=混ぜ込み・既定／"snap"=従来の一気に
+        # 張り替え）。`wall_correction=False` のときは一切参照されない。
+        # `_apply_wall_correction` docstring 参照。
+        self.wall_correction_mode = wall_correction_mode
+        self.wall_correction_alpha = float(wall_correction_alpha)
+        self.wall_correction_max_step_m = float(wall_correction_max_step_m)
+        self.wall_correction_lookahead_m = float(wall_correction_lookahead_m)
         # ProfileTracker は fast_mode="profile" のときだけ作る
         # （fast_mode="command" のときは一切参照しないので、作らないことで
         # 「コード経路が変更前と完全に同一」の主張を明確にする）。
@@ -1116,6 +1210,27 @@ class ClassicExplorer:
             `experiments/exp_027_friction_sweep/diagnose_start_heading.py`
             参照）。
 
+            🔴 `wall_correction_mode`（既定 "blend"。任務指示 2026-08-20）:
+            上で「補正する」と判定した後の当て方を選べる。
+              - "snap"（従来）: `correction` をそのまま一気に当てる
+                （`self._tracker._s = s + correction`）。1回の検出を丸ごと
+                信用するため、1回でも誤ると（AMBIGUOUS帯の二重検出のような
+                想定外がすり抜けると）走行が壊れうる。
+              - "blend"（既定）: `correction` のうち `wall_correction_alpha`
+                倍だけを、`wall_correction_max_step_m` を上限として少しずつ
+                当てる。加えて、現在の s から先 `wall_correction_lookahead_m`
+                以内（同一 PathBlock 内）に曲率が非ゼロの区間があるなら、
+                その回の補正を丸ごと見送る（`_kappa_nonzero_within_lookahead`
+                参照）——弧の直前で前後位置がずれると旋回の開始位置がずれて
+                壁に当たりうる、という懸念（任務指示の根拠）に対する安全弁。
+                既定値（`DEFAULT_WALL_CORRECTION_*` 3定数）の選定根拠・掃引結果
+                の表はモジュール冒頭の定数コメントとコミットメッセージを参照
+                （🔴 maze_41004・u=0.50 の実測では、この安全弁が守ろうとした
+                「弧の直前の補正」が実際には南向き開始の走行を延命させる側に
+                効いていた区間もあり、`wall_correction_lookahead_m` は
+                大きすぎると逆に南向き開始を悪化させた。既定値はこの実測を
+                踏まえて選んだ小さめの値である）。
+
         直線⇔弧の切り替わり（同一 `PathBlock` 内で複数回起こりうる —
         `classic/ideal.py` の「直線→弧→直線→…」という幾何ブロックの構成の
         ため）のたびに、前後位置補正の基準点をリセットする。新しい直線
@@ -1195,13 +1310,43 @@ class ClassicExplorer:
 
         s_expected = self._wc_fwd_ref_s + k * cell_size
         correction = s_expected - s
-        if abs(correction) <= DEFAULT_MAX_FORWARD_CORRECTION_M:
-            self._tracker._s = s + correction
-            self._wc_fwd_ref_s = self._tracker._s
-        else:
+        if abs(correction) > DEFAULT_MAX_FORWARD_CORRECTION_M:
             # 誤検出とみなし、以後の予測が一箇所の誤検出に引きずられない
             # よう、基準点だけ現在地点へ張り直す（補正はしない）。
             self._wc_fwd_ref_s = s
+            return
+
+        if self.wall_correction_mode == "snap":
+            # 従来どおり: 1回の検出で s を一気に張り替える
+            # （`wall_correction_mode` docstring 参照。既定は "blend"）。
+            self._tracker._s = s + correction
+            self._wc_fwd_ref_s = self._tracker._s
+            return
+
+        # "blend"（既定）: 1回の検出で一気に当てず、`correction` の
+        # `wall_correction_alpha` 倍だけ・`wall_correction_max_step_m` を
+        # 上限として少しずつ混ぜ込む（任務指示 2026-08-20「補正を
+        # 『張り替え』から『混ぜ込み』に変える」）。1回の誤検出（本来
+        # 見えるはずのない大きな `correction`）が走行を壊す度合いを抑える。
+        #
+        # さらに、現在の s から先 `wall_correction_lookahead_m` 以内
+        # （同一 PathBlock 内に限る）に曲率が非ゼロになる区間があるなら、
+        # この回の補正そのものを見送る（基準点・弧長のどちらも書き換えない）。
+        # 弧の直前で前後位置がずれると旋回の開始位置がずれて壁に当たりうる、
+        # という懸念への安全弁（任務指示の根拠）。🔴 ただし実測
+        # （maze_41004・u=0.50・南向き開始）では、この安全弁が守ろうとした
+        # 「弧の直前の補正」が実際には南向き開始の走行を延命させる側に効いて
+        # いた区間もあった（見送ると `wall_correction=False` と同じ地点で
+        # 早期に衝突した）。`wall_correction_lookahead_m` の既定値が小さいのは
+        # この実測を踏まえたもの（モジュール冒頭の定数コメント参照）。
+        if _kappa_nonzero_within_lookahead(step, s, self.wall_correction_lookahead_m):
+            return
+
+        applied = self.wall_correction_alpha * correction
+        cap = self.wall_correction_max_step_m
+        applied = max(-cap, min(cap, applied))
+        self._tracker._s = s + applied
+        self._wc_fwd_ref_s = self._tracker._s
 
     def _on_stationary_route(self, obs) -> None:
         """Phase.FAST・Phase.RETURN2 共通: コマンド列（plan_route の出力）の
