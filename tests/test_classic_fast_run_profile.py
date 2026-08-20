@@ -226,6 +226,90 @@ def test_profile_mode_loops_from_return2_back_to_fast(tmp_path, params, carved_m
 
 
 # ==========================================================================
+# 3b. 係員回収（handle_retrieval）をまたいでも、ProfileTracker・壁センサ位置
+#     補正の内部状態は次の FAST(profile) 計画・追従へ影響しない
+#     （exp_027 一次記録で観測された「1本目の FAST だけ他と違う／2本目以降は
+#     互いに完全に同一」という型の診断結果を固定する回帰検査。
+#     `experiments/exp_027_friction_sweep/diagnose_retrieval.py` の実測
+#     （maze_41004・u=0.50・wall_correction=True）で確認したのは:
+#       - `ProfileTracker`/壁センサ位置補正の内部状態（積分器・s・yaw_est・
+#         弧⇔直線判定の基準点）は `_begin_profile_run` が呼ばれるたびに
+#         必ず reset()/load_plan()/load_spin_plan() で上書きされ、直前の
+#         走行の値には一切依存しない（＝「持ち越し」バグは無かった）。
+#       - 実際に違ったのは `start_heading`（自然な RETURN 完了時は実際の
+#         到達方位、係員回収後は `handle_retrieval` が強制する
+#         `Direction.N`）で、これは真値姿勢の実測とも一致する**正当な**
+#         差である（回収前後で機体の向きが本当に異なるため）。
+#     本検査は前者（state が持ち越されないこと）だけを固定する。後者
+#     （start_heading が回収前後で異なりうること）は正しい挙動なので
+#     「回収前後で FAST の計画が同一になること」は検査しない。
+# ==========================================================================
+def test_retrieval_does_not_leak_tracker_or_wall_correction_state(
+        tmp_path, params, carved_maze_and_walls):
+    maze, v_walls, h_walls = carved_maze_and_walls
+
+    # (A) 「汚れた」explorer: 一度 FAST(profile) を走らせて tracker・壁センサ
+    #     位置補正の内部状態を実際に進めた後、係員回収してもう一度 FAST を
+    #     組み直す（評価器と同じ順序: sim.reset_to_start() → policy.on_retrieval()
+    #     相当の ex.handle_retrieval()）。
+    sim_a = _fresh_sim(tmp_path, params, v_walls, h_walls, "leak_a")
+    ex_a = ClassicExplorer(MAZE_W, MAZE_H, params=params, fast_mode="profile", wall_correction=True)
+    ex_a.maze = maze
+    obs = sim_a.observation()
+    ex_a._begin_fast_run(obs)
+    ex_a._need_replan = False
+    for _ in range(80):  # tracker.s・yaw_est・積分器・wc_* を実際に汚す
+        obs = sim_a.observation()
+        vl, vr, _plan_id = ex_a.tick(obs)
+        sim_a.step_control(vl, vr)
+    dirty_s = ex_a._tracker.s
+    assert dirty_s > 0.0, "前提が崩れた: tracker.s が実際に進んでいない(汚れていない)"
+
+    sim_a.reset_to_start(cell=(0, 0), heading_deg=90.0)
+    ex_a.handle_retrieval()
+    obs = sim_a.observation()
+    # `tick()` ではなく `_on_stationary()` を直接呼ぶ（`_on_stationary_route` →
+    # `_begin_fast_run` まで到達させ、その先の `_tick_profile`（tracker.update()
+    # をもう1回呼ぶ）は呼ばない。(B)の「素の」explorerも `_begin_fast_run` を
+    # 直接呼ぶだけで tracker.update() を挟まないため、両者を対称に保つ)。
+    ex_a._on_stationary(obs)
+    assert ex_a._fast_plan is not None
+
+    # (B) 「素の」explorer: 一度も走らせず、いきなり FAST を組む対照。
+    sim_b = _fresh_sim(tmp_path, params, v_walls, h_walls, "leak_b")
+    ex_b = ClassicExplorer(MAZE_W, MAZE_H, params=params, fast_mode="profile", wall_correction=True)
+    ex_b.maze = maze
+    obs_b = sim_b.observation()
+    ex_b._begin_fast_run(obs_b)
+    assert ex_b._fast_plan is not None
+
+    print(f"\n[実測] 汚れたtracker(回収直前): s={dirty_s:.4f}m")
+    print(f"[実測] 回収後の計画: t_plan={ex_a._fast_plan.t_plan:.4f} cells={len(ex_a._fast_plan.cells)} "
+          f"n_turns={ex_a._fast_plan.n_turns} n_forced_spins={ex_a._fast_plan.n_forced_spins}")
+    print(f"[実測] 素の計画    : t_plan={ex_b._fast_plan.t_plan:.4f} cells={len(ex_b._fast_plan.cells)} "
+          f"n_turns={ex_b._fast_plan.n_turns} n_forced_spins={ex_b._fast_plan.n_forced_spins}")
+
+    # FastPlan は「地図・start・goals・start_heading」だけで決まるはず
+    # （汚れたtrackerの値に一切依存しない）。回収後はどちらも
+    # start_heading=Direction.N になる(ex_bは構築直後のself.heading=Direction.Nと一致)。
+    assert ex_a._fast_plan.t_plan == ex_b._fast_plan.t_plan
+    assert ex_a._fast_plan.cells == ex_b._fast_plan.cells
+    assert ex_a._fast_plan.n_turns == ex_b._fast_plan.n_turns
+    assert ex_a._fast_plan.n_forced_spins == ex_b._fast_plan.n_forced_spins
+
+    # ProfileTracker・壁センサ位置補正の内部状態も「汚れ」を引きずらない。
+    assert abs(ex_a._tracker.s - dirty_s) > 1e-6, "tracker.s が汚れた値のまま(reset漏れ)"
+    assert ex_a._tracker.s == ex_b._tracker.s
+    assert ex_a._tracker.yaw_estimate == ex_b._tracker.yaw_estimate
+    assert ex_a._tracker._integ_l == 0.0 == ex_b._tracker._integ_l
+    assert ex_a._tracker._integ_r == 0.0 == ex_b._tracker._integ_r
+    assert ex_a._tracker._e_lat == 0.0 == ex_b._tracker._e_lat
+    assert ex_a._wc_prev_kappa_nonzero is None
+    assert ex_b._wc_prev_kappa_nonzero is None
+    assert ex_a._wc_fwd_ref_s is None and ex_b._wc_fwd_ref_s is None
+
+
+# ==========================================================================
 # 4. 安全弁: plan_fast_run() が計画できない(未知区画=壁の悲観判定で到達不能)
 #    場合、fast_command_fallback が立ち、plan_id接頭辞に反映される
 # ==========================================================================
