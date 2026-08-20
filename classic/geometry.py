@@ -79,6 +79,7 @@ def wall_obstacles(
     cell_size: float = 0.180,
     wall_thickness: float = 0.012,
     post_size: float = 0.012,
+    center_goal: bool = True,
 ) -> List[Rect]:
     """真の壁配列（`v_walls`/`h_walls`）から、壁と柱を軸平行の長方形の列にする。
 
@@ -97,8 +98,14 @@ def wall_obstacles(
     mjcf 側にある「赤い壁上端」geom は同じ xy 足跡（高さだけが違う）なので、
     2D の干渉判定には寄与せず、ここでは 1 壁につき 1 個の `Rect` で足りる。
 
-    mjcf 側の `center_goal`（16x16 のゴール中央柱を落とす特例）はここでは再現しない
-    （本モジュールは迷路サイズ非依存の一般的な建て方だけを担う）。
+    `center_goal=True`（既定）のとき、格子点 `(width//2, height//2)` の柱を生成しない。
+    これは `mouse/mjcf.py::build_maze_robot_xml` の同名引数（既定 True）と同じ扱いで、
+    競技規約（`docs/RESEARCH_PLAN.md` §2）の「終点の中央を除いたすべての格子点には
+    少なくとも 1 つの壁が接している」＝ゴール中央の格子点だけ柱が無い、に対応する。
+    迷路の大きさには依存しない（`width//2` で一般化してある）。
+
+    ここを落とさないと、実在しない柱をゴール付近に置くことになり、
+    最短走行の終端で通れる半径を実際より小さく見積もる。
     """
     width = v_walls.shape[0] - 1
     height = v_walls.shape[1]
@@ -115,6 +122,8 @@ def wall_obstacles(
     # 柱：格子点すべて（壁の有無に関わらず）。x 外側・y 内側ループは mjcf.py と同じ順序。
     for x in range(width + 1):
         for y in range(height + 1):
+            if center_goal and x == width // 2 and y == height // 2:
+                continue  # 中央 2x2 ゴールの中心柱は立たない（mjcf.py と同じ扱い）
             obstacles.append(Rect(x * cell_size, y * cell_size, half_post, half_post))
 
     # 縦壁（vertical walls）。mjcf.py と同じ x 外側・y 内側ループ。

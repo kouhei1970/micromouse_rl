@@ -53,7 +53,8 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 # ============================================================================
 # 1. wall_obstacles が mouse/mjcf.py の建て方と一致する
 # ============================================================================
-def test_wall_obstacles_match_the_mjcf_geometry(tmp_path):
+@pytest.mark.parametrize("center_goal", [False, True])
+def test_wall_obstacles_match_the_mjcf_geometry(center_goal, tmp_path):
     """4x4 の迷路で、生成した長方形の数と位置が `mouse/mjcf.py` の建て方と一致する。
 
     `build_maze_robot_xml` は MuJoCo を import せず ElementTree だけで XML を書くので、
@@ -72,9 +73,9 @@ def test_wall_obstacles_match_the_mjcf_geometry(tmp_path):
     h_walls[:, -1] = 1
 
     out_path = tmp_path / "maze.xml"
-    # center_goal=False: mjcf 側のゴール中央柱を落とす特例は wall_obstacles() が
-    # 再現しない一般則なので、比較のために無効化する。
-    build_maze_robot_xml(v_walls, h_walls, str(out_path), center_goal=False)
+    # center_goal は True/False の両方で突き合わせる（wall_obstacles も同じ値を渡す）。
+    # True のとき、mjcf も wall_obstacles も格子点 (width//2, height//2) の柱を立てない。
+    build_maze_robot_xml(v_walls, h_walls, str(out_path), center_goal=center_goal)
 
     root = ET.parse(out_path).getroot()
     worldbody = root.find("worldbody")
@@ -101,10 +102,10 @@ def test_wall_obstacles_match_the_mjcf_geometry(tmp_path):
         + [_to_rect(g) for g in v_wall_geoms]
         + [_to_rect(g) for g in h_wall_geoms]
     )
-    my_rects = wall_obstacles(v_walls, h_walls)
+    my_rects = wall_obstacles(v_walls, h_walls, center_goal=center_goal)
 
-    # 柱の数 = 格子点の数
-    assert len(posts) == (width + 1) * (height + 1)
+    # 柱の数 = 格子点の数（center_goal=True ならゴール中央の 1 本ぶん少ない）
+    assert len(posts) == (width + 1) * (height + 1) - (1 if center_goal else 0)
     # 壁の数 = 実際に壁があるマスの数
     assert len(v_wall_geoms) + len(h_wall_geoms) == int(v_walls.sum() + h_walls.sum())
     # 壁の長さ = cell_size - post_size（縦壁の hy・横壁の hx のどちらにも現れる）
@@ -145,7 +146,10 @@ def _turn_obstacles():
     h_walls[0, 0] = 1  # 西区画の南壁
     h_walls[1, 0] = 1  # 角区画の南壁（外側）
     h_walls[0, 1] = 1  # 西区画の北壁
-    return wall_obstacles(v_walls, h_walls)
+    # 🔴 この合成迷路はゴールを持たないので center_goal=False。
+    # 既定(True)にすると (width//2, height//2)=(1,1) の柱 ── まさにこのターンの
+    # 内側の柱 ── が消え、最大半径が 190.2mm から 210.2mm へ変わってしまう。
+    return wall_obstacles(v_walls, h_walls, center_goal=False)
 
 
 def _corner_pose(offset: float = 0.0) -> Pose:
@@ -340,3 +344,37 @@ def test_no_collision_for_the_known_good_case():
     poses = _quarter_turn_poses(radius=0.09)
     min_clear, _ = sweep_clearance(poses, obstacles)
     assert min_clear > 0.0, f"R=0.09 は通れるはずが余裕が正にならなかった: {min_clear*1000:.3f}mm"
+
+
+# ============================================================================
+# 8. ゴール中央の柱は立たない（mouse/mjcf.py の center_goal と同じ扱い）
+# ============================================================================
+def test_goal_center_post_is_absent():
+    """競技規約（RESEARCH_PLAN §2）でゴール中央の格子点だけ柱が無い。
+
+    `mouse/mjcf.py::build_maze_robot_xml` は `center_goal=True`（既定）のとき
+    格子点 `(width//2, height//2)` の柱を生成しない。障害物の側もそれに合わせる。
+    合っていないと、実在しない柱をゴール付近に置き、最短走行の終端で
+    通れる半径を実際より小さく見積もることになる。
+
+    作動側（既定 True で柱が無い）と空振り側（False にすると柱がある）を対で検査する。
+    """
+    import numpy as np
+    from classic.geometry import wall_obstacles
+
+    w = h = 6
+    v = np.zeros((w + 1, h), dtype=np.int8)
+    hh = np.zeros((w, h + 1), dtype=np.int8)
+    cx, cy = (w // 2) * 0.180, (h // 2) * 0.180
+
+    at_center = lambda obs: [o for o in obs
+                             if abs(o.cx - cx) < 1e-9 and abs(o.cy - cy) < 1e-9]
+
+    assert at_center(wall_obstacles(v, hh)) == [], "ゴール中央に柱が立っている"
+    assert len(at_center(wall_obstacles(v, hh, center_goal=False))) == 1, \
+        "center_goal=False にしても柱が生成されない（検査が空振りしている）"
+
+    # 柱の総数も対で確認する（格子点の数 −1 になるはず）
+    n_true = len(wall_obstacles(v, hh))
+    n_false = len(wall_obstacles(v, hh, center_goal=False))
+    assert n_false - n_true == 1, f"差が 1 本ではない: {n_false - n_true}"
