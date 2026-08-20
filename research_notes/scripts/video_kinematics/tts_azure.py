@@ -130,7 +130,9 @@ def main(argv=None) -> int:
     p.add_argument("--text", help="読み上げる台本")
     p.add_argument("--text-file", type=Path, help="台本のファイル")
     p.add_argument("--voice", default=DEFAULT_VOICE)
-    p.add_argument("--rate", default="0%", help="速度（例 -10% / +15%）")
+    # 🔴 負の値は `--rate=-8%` の形で渡すこと。`--rate -8%` だと argparse が
+    # `-8%` を別のオプションと解釈して失敗する（実際に踏んだ）。
+    p.add_argument("--rate", default="0%", help="速度（例 --rate=-10% / --rate=+15%）")
     p.add_argument("--pitch", default="0%")
     p.add_argument("--out", type=Path, default=Path("outputs/video_kinematics/narration.mp3"))
     p.add_argument("--show-ssml", action="store_true", help="生成した SSML を印字して終わる")
