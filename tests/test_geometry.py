@@ -230,6 +230,56 @@ def test_centerline_max_radius_is_about_190mm():
 
 
 # ============================================================================
+# 3.5. margin を上げると、通れる最大半径が縮む（直接検査）
+# ============================================================================
+def test_larger_margin_shrinks_the_max_feasible_radius():
+    """`margin`（機体の掃引と壁・柱のあいだに残す余裕）を大きくするほど、
+    `max_feasible_radius` が返す最大半径は縮む（または少なくとも大きくならない）
+    ことを、中心線上の90°ターン（検査3と同じ配置）で直接確認する。
+
+    任務指示 2026-08-20「余裕を実測に合わせる」§1: `classic/fast_planner.py::
+    plan_fast_run` に足す `clearance_margin_m` は、この `margin` を
+    `ideal_time_for_path()` 経由でそのまま渡すだけなので、効果の本体は
+    ここ（`classic.geometry.max_feasible_radius`）にある。本検査はその
+    メカニズムを `classic/fast_planner.py` を経由せず直接確かめる。
+    """
+    obstacles = _turn_obstacles()
+    delta = math.pi / 2
+    corner = _corner_pose(0.0)
+
+    margins_m = (0.000, 0.005, 0.010, 0.015, 0.020, 0.025)
+    radii_mm = [
+        max_feasible_radius(delta, obstacles, corner, margin=m) * 1000.0
+        for m in margins_m
+    ]
+
+    print("\n[検査3.5] margin[mm] -> max_feasible_radius[mm]:")
+    for m, r in zip(margins_m, radii_mm):
+        print(f"    margin={m*1000:5.1f}mm -> R={r:8.3f}mm")
+
+    # 隣接する水準どうしで非増加であること（margin を上げて半径が増えたら異常）。
+    for (m_a, r_a), (m_b, r_b) in zip(zip(margins_m, radii_mm), zip(margins_m[1:], radii_mm[1:])):
+        assert r_b <= r_a + 1e-9, (
+            f"margin を {m_a*1000:.1f}mm から {m_b*1000:.1f}mm に上げたのに"
+            f"半径が増えた: {r_a:.3f}mm -> {r_b:.3f}mm"
+        )
+
+    # 既定5mmから25mmまで上げると、明確に（1mm以上）縮むこと。
+    assert radii_mm[-1] < radii_mm[1] - 1.0, (
+        f"margin=5mm({radii_mm[1]:.3f}mm)からmargin=25mm({radii_mm[-1]:.3f}mm)へ"
+        "上げても半径がほとんど変わらなかった"
+    )
+
+    # 🔴 実測で分かったこと: この中心線上の90°ターンでは margin をさらに
+    # 30mmまで上げると、探索範囲の下限 r_lo=0.02m(20mm)ですら margin を
+    # 満たす半径が無くなる（=このターンは弧を作れずその場旋回へ降格する。
+    # `classic/ideal.py` の `_ideal_slalom_*` がこの ValueError を捕まえて
+    # r_geom=0 として扱う設計と一致する）。合わせ込まず、そのまま確認する。
+    with pytest.raises(ValueError):
+        max_feasible_radius(delta, obstacles, corner, margin=0.030)
+
+
+# ============================================================================
 # 4. 通路の外側へ寄せると、より大きな半径が通る
 # ============================================================================
 def test_outward_offset_allows_a_larger_radius():

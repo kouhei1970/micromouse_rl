@@ -103,10 +103,12 @@ def _fresh_sim(tmp_path: Path, params: RobotParams, v_walls, h_walls, label: str
 
 def _fresh_explorer_in_fast(sim: MouseSim, params: RobotParams, maze: MazeMap,
                              fast_mode: str = "command", friction_use: float = 1.0,
+                             clearance_margin_m: float = 0.005,
                              wall_correction: bool = False, wall_correction_mode: str = "blend",
                              width: int = MAZE_W, height: int = MAZE_H) -> ClassicExplorer:
     ex = ClassicExplorer(width, height, params=params, fast_mode=fast_mode,
-                          friction_use=friction_use, wall_correction=wall_correction,
+                          friction_use=friction_use, clearance_margin_m=clearance_margin_m,
+                          wall_correction=wall_correction,
                           wall_correction_mode=wall_correction_mode)
     ex.maze = maze
     obs = sim.observation()
@@ -365,6 +367,47 @@ def test_friction_use_is_threaded_to_the_plan(tmp_path, params, carved_maze_and_
         "(t_planが伸びていない)"
     )
     assert ex_half._fast_plan.cells == ex_full._fast_plan.cells, "friction_use で経路自体が変わった(半径探索・経路選択は u の影響を受けないはず)"
+
+
+# ==========================================================================
+# 5.5. clearance_margin_m（幾何の掃引と壁・柱のあいだに残す余裕）が
+#      ClassicExplorer から plan_fast_run() へ実際に届いていること
+#      （配線そのものの検査。値の妥当性は tests/test_fast_planner.py::
+#      test_larger_clearance_margin_m_does_not_shorten_t_plan、半径への
+#      効き方は tests/test_geometry.py::
+#      test_larger_margin_shrinks_the_max_feasible_radius が既に見ている）
+# ==========================================================================
+def test_clearance_margin_m_is_threaded_to_the_plan(tmp_path, params, carved_maze_and_walls):
+    maze, v_walls, h_walls = carved_maze_and_walls
+    sim_default = _fresh_sim(tmp_path, params, v_walls, h_walls, "cm_default")
+    ex_default = _fresh_explorer_in_fast(sim_default, params, maze, fast_mode="profile")
+
+    sim_wide = _fresh_sim(tmp_path, params, v_walls, h_walls, "cm_wide")
+    ex_wide = _fresh_explorer_in_fast(
+        sim_wide, params, maze, fast_mode="profile", clearance_margin_m=0.030)
+
+    assert ex_default._fast_plan is not None and ex_wide._fast_plan is not None
+    print(f"\n[実測] t_plan: clearance_margin_m=5mm -> {ex_default._fast_plan.t_plan:.4f}s  "
+          f"clearance_margin_m=30mm -> {ex_wide._fast_plan.t_plan:.4f}s")
+    assert ex_wide._fast_plan.t_plan >= ex_default._fast_plan.t_plan, (
+        "clearance_margin_m=30mm が ClassicExplorer から plan_fast_run() へ届いていない疑い"
+        "(t_planが縮まなかった/伸びなかった)"
+    )
+    assert ex_wide._fast_plan.t_plan > ex_default._fast_plan.t_plan, (
+        "clearance_margin_m を5mmから30mmへ上げてもt_planに差が無い"
+    )
+    assert ex_wide._fast_plan.cells == ex_default._fast_plan.cells, (
+        "clearance_margin_m で経路自体が変わった(悲観歩数マップの経路選択は幾何の余裕を見ないはず)"
+    )
+
+
+def test_clearance_margin_m_default_is_5mm(params):
+    """既定値 0.005（5mm）＝従来と同一であることの直接確認（`ClassicExplorer`
+    レベル。`classic.fast_planner.plan_fast_run` レベルは tests/
+    test_fast_planner.py::test_clearance_margin_m_default_matches_pre_existing_behavior
+    が見ている）。"""
+    ex = ClassicExplorer(MAZE_W, MAZE_H, params=params, fast_mode="profile")
+    assert ex.clearance_margin_m == pytest.approx(0.005)
 
 
 # ==========================================================================

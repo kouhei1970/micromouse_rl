@@ -28,7 +28,8 @@ class ClassicExplorerPolicy(MousePolicy):
 
     def __init__(self, params: Optional[RobotParams] = None,
                  extend_straights: bool = True, fast_mode: str = "command",
-                 friction_use: float = 1.0, wall_correction: bool = False) -> None:
+                 friction_use: float = 1.0, clearance_margin_m: float = 0.005,
+                 wall_correction: bool = False) -> None:
         self.params = params if params is not None else RobotParams()
         # S3 最短走行で直線を伸ばすかどうか（exp_024 PREREG §4 の 2 条件
         # "extended"/"percell"）。ClassicExplorer へそのまま渡すだけで、
@@ -46,6 +47,10 @@ class ClassicExplorerPolicy(MousePolicy):
         # そのまま渡すだけで、本クラス自身の挙動は変えない
         # （`classic/explorer.py` の `friction_use`/`wall_correction` 参照）。
         self.friction_use = float(friction_use)
+        # 幾何の掃引と壁・柱のあいだに残す設計上の余裕（既定 0.005m(5mm) =
+        # 従来と同一）。ClassicExplorer へそのまま渡すだけで、本クラス自身の
+        # 挙動は変えない（`classic/explorer.py` の `clearance_margin_m` 参照）。
+        self.clearance_margin_m = float(clearance_margin_m)
         self.wall_correction = bool(wall_correction)
         self._explorer: Optional[ClassicExplorer] = None
         # ティックごとの「そのとき何をしていたか」の識別子。
@@ -73,6 +78,7 @@ class ClassicExplorerPolicy(MousePolicy):
             extend_straights=self.extend_straights,
             fast_mode=self.fast_mode,
             friction_use=self.friction_use,
+            clearance_margin_m=self.clearance_margin_m,
             wall_correction=self.wall_correction,
         )
         self._plan_ids = []

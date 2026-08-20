@@ -146,7 +146,7 @@ def plan_fast_run(
     goals: Sequence[Cell],
     start_heading: Direction,
     params: Optional[RobotParams] = None,
-    margin: float = 0.005,
+    clearance_margin_m: float = 0.005,
     allocation: str = "best",
     friction_use: float = 1.0,
 ) -> Optional[FastPlan]:
@@ -158,6 +158,21 @@ def plan_fast_run(
 
     `params` は追従制御が使う車両パラメータ（`classic.tracker.ProfileTracker` と
     同じ `RobotParams`）。省略すると既定値（`RobotParams()`）を使う。
+
+    `clearance_margin_m`（既定 `0.005` = 5mm）は `classic.geometry.
+    max_feasible_radius` の `margin` として `ideal_time_for_path()` へそのまま
+    渡す、機体の掃引と壁・柱のあいだに残す設計上の余裕である。既定 5mm は
+    実測の横ずれ（10〜20mm、`research_notes/note_031_profile_planner_and_eta.md`
+    「北向き開始が頭打ちになる」節）に対して足りていない疑いがあり、本引数で
+    掃引できるようにした（任務指示 2026-08-20）。上げるほど通れる半径は小さく
+    なり `t_plan` は伸びる（`friction_use` を下げるのと同じ構造のトレードオフ）。
+
+    🔴 `classic/ideal.py::ideal_time_for_path`（判定の分母 `T_ideal` の計算元。
+    `experiments/exp_025_s4_slalom/ideal_table.json` の作成に使う独立した
+    呼び出し）は本引数と無関係に、常に既定の `margin=0.005` で呼ばれる
+    （`classic/ideal.py` 自体・その既定値は変更していない）。本引数が効くのは
+    **本関数が自分の計画（`t_plan`）を作るために呼ぶ `ideal_time_for_path()`**
+    だけであり、分母 `T_ideal` を動かすことは無い。
 
     `friction_use`（記号 `u`）は速度計画が使ってよい摩擦円の割合
     （`research_notes/note_031_profile_planner_and_eta.md` §「摩擦円の使用率は
@@ -187,6 +202,10 @@ def plan_fast_run(
     """
     if not (0.0 < friction_use <= 1.0):
         raise ValueError(f"friction_use は (0.0, 1.0] の範囲で指定してください: {friction_use}")
+    if not (clearance_margin_m > 0.0):
+        raise ValueError(
+            f"clearance_margin_m は正の値で指定してください: {clearance_margin_m}"
+        )
 
     goals = list(goals)
     v_walls, h_walls = _bool_walls_from_maze(maze)
@@ -214,7 +233,8 @@ def plan_fast_run(
     # 半径の幾何最適化・共有直線の配分（比例/先取り、速い方）は ideal.py に委ねる
     # （モジュール docstring「classic/ideal.py の内部関数の再利用について」参照）。
     result = ideal_time_for_path(
-        cells, v_walls, h_walls, start_heading, mode="slalom", margin=margin, allocation=allocation,
+        cells, v_walls, h_walls, start_heading, mode="slalom",
+        margin=clearance_margin_m, allocation=allocation,
     )
 
     # 確定済みの半径（result.turns）から、同じ幾何ブロックを再構成する

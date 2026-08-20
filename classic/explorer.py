@@ -367,6 +367,7 @@ class ClassicExplorer:
     def __init__(self, width: int, height: int, params: Optional[RobotParams] = None,
                  localization_enabled: bool = True, extend_straights: bool = True,
                  fast_mode: str = "command", friction_use: float = 1.0,
+                 clearance_margin_m: float = 0.005,
                  wall_correction: bool = False, wall_correction_mode: str = "blend",
                  wall_correction_alpha: float = DEFAULT_WALL_CORRECTION_ALPHA,
                  wall_correction_max_step_m: float = DEFAULT_WALL_CORRECTION_MAX_STEP_M,
@@ -375,6 +376,10 @@ class ClassicExplorer:
             raise ValueError(f"未知の fast_mode: {fast_mode!r}（'command' か 'profile' のいずれか）")
         if not (0.0 < friction_use <= 1.0):
             raise ValueError(f"friction_use は (0.0, 1.0] の範囲で指定してください: {friction_use}")
+        if not (clearance_margin_m > 0.0):
+            raise ValueError(
+                f"clearance_margin_m は正の値で指定してください: {clearance_margin_m}"
+            )
         if wall_correction_mode not in ("blend", "snap"):
             raise ValueError(
                 f"未知の wall_correction_mode: {wall_correction_mode!r}（'blend' か 'snap' のいずれか）"
@@ -475,6 +480,12 @@ class ClassicExplorer:
         # コマンド方式のコード経路がそもそも `plan_fast_run` を呼ばないので
         # 参照されない。
         self.friction_use = float(friction_use)
+        # 幾何の掃引と壁・柱のあいだに残す設計上の余裕（`classic.fast_planner.
+        # plan_fast_run` の `clearance_margin_m` へそのまま渡す。既定 0.005m
+        # (5mm) = 従来と完全に同一。任務指示 2026-08-20「余裕を実測に合わせる」
+        # 参照）。fast_mode="command" のときはコマンド方式のコード経路が
+        # そもそも `plan_fast_run` を呼ばないので参照されない。
+        self.clearance_margin_m = float(clearance_margin_m)
         # 壁センサによる位置補正（S2 相当。fast_mode="profile" のときだけ
         # 意味を持つ）。既定 False = 推測航法のみ（exp_026 と同一）。
         # `_apply_wall_correction` docstring 参照。
@@ -1087,7 +1098,8 @@ class ClassicExplorer:
         委ねる（本メソッドはここで停止も例外も出さない）。"""
         assert self._tracker is not None  # fast_mode="profile" のときだけ呼ばれる
         plan = plan_fast_run(self.maze, start=start, goals=goals, start_heading=start_heading,
-                              params=self.params, friction_use=self.friction_use)
+                              params=self.params, friction_use=self.friction_use,
+                              clearance_margin_m=self.clearance_margin_m)
         if plan is None:
             self._fast_command_fallback = True
             self._fast_plan = None

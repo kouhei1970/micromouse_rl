@@ -181,3 +181,82 @@ def test_friction_use_out_of_range_raises(carved_maze_and_walls):
     for bad_u in (0.0, -0.1, 1.5):
         with pytest.raises(ValueError):
             plan_fast_run(maze, start=(0, 0), goals=GOAL_CELLS, start_heading=Direction.N, friction_use=bad_u)
+
+
+# ==========================================================================
+# 6. clearance_margin_m（幾何の掃引と壁・柱のあいだに残す余裕）: 任務指示
+#    「余裕を実測に合わせる」§1「margin を計画の引数にする」の検査。
+#    既定 0.005（5mm）は省略時と完全に同一（回帰検査）、大きくすると
+#    t_plan は縮まない（単調に伸びる、または経路自体がその場旋回へ
+#    降格して伸びる）ことを見る。半径そのものへの効き方は
+#    tests/test_geometry.py::test_larger_margin_shrinks_the_max_feasible_radius
+#    が `classic.geometry.max_feasible_radius` を直接見ている。
+# ==========================================================================
+def test_clearance_margin_m_default_matches_pre_existing_behavior(carved_maze_and_walls):
+    """clearance_margin_m を明示的に0.005で渡しても、省略時と完全に同じ結果になる
+    （既定値であることの直接確認。旧引数名 `margin` からの改名で既定挙動が
+    変わっていないことの回帰検査でもある）。"""
+    maze, _v_walls, _h_walls = carved_maze_and_walls
+    plan_default = plan_fast_run(maze, start=(0, 0), goals=GOAL_CELLS, start_heading=Direction.N)
+    plan_explicit = plan_fast_run(
+        maze, start=(0, 0), goals=GOAL_CELLS, start_heading=Direction.N, clearance_margin_m=0.005)
+    assert plan_default is not None and plan_explicit is not None
+    assert plan_explicit.t_plan == plan_default.t_plan
+    assert plan_explicit.cells == plan_default.cells
+    assert plan_explicit.n_turns == plan_default.n_turns
+    assert plan_explicit.n_forced_spins == plan_default.n_forced_spins
+
+
+def test_clearance_margin_m_default_matches_ideal_time_for_path_default(carved_maze_and_walls):
+    """既定の `clearance_margin_m=0.005` で作った計画の `t_plan` が、
+    `ideal_time_for_path()` を既定の `margin`（同じ 0.005）で呼んだ結果の
+    `total` と一致すること（`plan_fast_run` 側の改名が `classic/ideal.py` の
+    既定値の意味を変えていないことの回帰検査）。"""
+    maze, v_walls, h_walls = carved_maze_and_walls
+    plan = plan_fast_run(maze, start=(0, 0), goals=GOAL_CELLS, start_heading=Direction.N)
+    assert plan is not None
+
+    result_explicit_margin = ideal_time_for_path(
+        plan.cells, v_walls, h_walls, Direction.N, mode="slalom", margin=0.005)
+    assert plan.t_plan == pytest.approx(result_explicit_margin.total, abs=1e-9)
+
+
+def test_larger_clearance_margin_m_does_not_shorten_t_plan(carved_maze_and_walls):
+    """`clearance_margin_m` を 5mm→30mm と上げるにつれ、`t_plan` が縮まない
+    （半径が縮む、または弧がその場旋回へ降格することで速度計画が控えめになる）
+    ことを見る。`friction_use` の単調性検査（検査5）と対になる、`margin` 側の
+    「計画レベル」での効果確認（半径そのものへの効果は tests/test_geometry.py
+    が直接見ている）。"""
+    maze, _v_walls, _h_walls = carved_maze_and_walls
+    levels_mm = (5.0, 10.0, 15.0, 20.0, 25.0, 30.0)
+    plans = [
+        plan_fast_run(
+            maze, start=(0, 0), goals=GOAL_CELLS, start_heading=Direction.N,
+            clearance_margin_m=mm / 1000.0,
+        )
+        for mm in levels_mm
+    ]
+    assert all(p is not None for p in plans)
+
+    t_plans = [p.t_plan for p in plans]
+    print(f"\n[実測] clearance_margin_m[mm] -> t_plan[s]: {list(zip(levels_mm, t_plans))}")
+    assert t_plans == sorted(t_plans), (
+        f"clearance_margin_m を上げても t_plan が縮まなかった(想定外の増減): "
+        f"{list(zip(levels_mm, t_plans))}"
+    )
+    assert t_plans[-1] > t_plans[0], "margin=5mmとmargin=30mmでt_planに差が無い"
+
+    # 経路そのもの（区画列）は margin に関わらず不変（悲観歩数マップの経路選択は
+    # 幾何の余裕を見ないため）。
+    for p in plans[1:]:
+        assert p.cells == plans[0].cells
+
+
+def test_clearance_margin_m_non_positive_raises(carved_maze_and_walls):
+    maze, _v_walls, _h_walls = carved_maze_and_walls
+    for bad_margin in (0.0, -0.001):
+        with pytest.raises(ValueError):
+            plan_fast_run(
+                maze, start=(0, 0), goals=GOAL_CELLS, start_heading=Direction.N,
+                clearance_margin_m=bad_margin,
+            )
