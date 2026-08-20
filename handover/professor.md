@@ -29,8 +29,8 @@
 
 ## 確定した数値（`note_031` §結果。再計算は下記スクリプト）
 
-- **10 迷路の理想時間表**（`experiments/exp_025_s4_slalom/ideal_table.json`・版管理下・走行 0 本で算出）。
-  合計: スラローム 136.58 s／その場旋回 296.24 s（方式の代償 2.17 倍）／上限 0.12 を課すと 1058.32 s（7.75 倍）
+- **10 迷路の理想時間表** `experiments/exp_025_s4_slalom/ideal_table.json`（版管理下・走行 0 本）。合計: スラローム
+  136.58 s／その場旋回 296.24 s（方式 2.17 倍）／上限 0.12 で 1058.32 s（7.75 倍）
 - **実測との分解**（maze_41001・実測 154.24 s）: `9.17 × 2.17(方式) × 4.23(速度上限) × 1.83(制御) = 154.2`、η=5.9%。
   制御の内訳は**直線 88.9%・ターン 8.7%** ── 直線はほぼ限界、ターンだけが壊滅的
 - **その場旋回は物理限界の 8.6%**: 90° 限界 0.173 s に対し実測 2.00 s（180° は 0.245 / 3.32 s）。
@@ -41,8 +41,8 @@
 
 ## 新実装の現況
 
-`classic/` にゼロから構築。**`requires_privileged = False`**（真値も真の壁も使わない）。構成: `maze_map`・`flood`・
-`route`・`sensing`・`motion`・`localization`・`explorer`・`policy`・`checks`・**`profile`(実装中)**。
+`classic/` にゼロから構築。**`requires_privileged = False`**。構成: `maze_map`・`flood`・`route`・`sensing`・`motion`・
+`localization`・`explorer`・`policy`・`checks`・`profile`・`geometry`・`ideal`・**`tracker`(実装中)**。
 🔴 **`classic/` は実行時に迷路 XML を読んではならない**（MJCF に壁の真値が含まれる）。モデル由来の定数は
 **定数として持ち、テストが実モデルから再計算して照合する**。`motion.py` には円弧スラローム（既定では未使用）と `_rolling` が入っている。
 
@@ -53,15 +53,14 @@
 
 ## 成果物と環境
 
-`outputs/video_rebuild/story.mp4`（78 秒・発表用・**未公開**）。`.venv` は版管理外（無ければ `requirements-lock.txt` から再構築）。
-**進捗盤 Artifact** `https://claude.ai/code/artifact/33987bdb-da0e-44f7-85d1-741721dd43c8` は 2026-08-14 で停止・要更新。
-🔴 **この URL は過去 3 回メモの圧縮で脱落している。この行を消さないこと。**
+`outputs/video_rebuild/story.mp4`（78 秒・未公開）。`.venv` は版管理外（`requirements-lock.txt` から再構築）。
 既知の無関係な失敗: `tests/test_mouse_v2.py::test4_sensors`（本作業前から落ちている）。
+🔴 **進捗盤 Artifact** `https://claude.ai/code/artifact/33987bdb-da0e-44f7-85d1-741721dd43c8`（2026-08-14 で停止・要更新）。
+**この URL は過去 3 回メモの圧縮で脱落している。この行を消さないこと。**
 
 ## 強化学習（温存・ユーザ指示）
 
-**確定** =「短期文脈でも隠れ 32 次元の再帰構造でも届かない」／未確定 =「記憶では届かない」（`note_026`）。
-**新実験は古典の完成まで起票しない。**到達点はコースどりを生物のように学び取ること（決定 08-20）。
+**確定** =「短期文脈でも隠れ 32 次元でも届かない」／未確定 =「記憶では届かない」（`note_026`）。優先順として古典が先だが**起票の禁止は破棄済み**。到達点はコースどりを生物のように学び取ること
 
 ## 効いているユーザの決定
 
@@ -73,11 +72,9 @@
 ## 注意点
 
 - **走行水準の p 値は条件比較に使えない**／閾値は対照で校正／検査は作動と空振り両方を実測してから使う
-- **subagent の測定は前景で完走させる**（背景へ投げてターンを終えるとプロセスが落ちる）／コミットは
-  `git commit <パス...> -F -` でパス明示（`git add -A` 禁止）／**用語辞書 §6 を報告・コミット・文書の前に毎回適用する**
+- **subagent の測定は前景で完走**（背景へ投げてターンを終えると落ちる）／`git commit <パス...> -F -`（`add -A` 禁止）／**辞書 §6 を毎回適用**
 
 ## 手持ちの道具
 
-`classic/checks.py`（**新しい実験はここから書き始める**）／`experiments/exp_025_s4_slalom/`（幾何の錨・10 迷路のハーネス）／
-`research_notes/scripts/check_physical_limits_and_ideal_lap.py`（**`classic/profile.py` の祖先**。理想ラップの再現が錨）／
-`competition/maze_gen_turnmix.py`／`make_story_video.py`
+`classic/checks.py`（**新しい実験はここから**）／`experiments/exp_025_s4_slalom/`（幾何の錨・10 迷路のハーネス・理想時間表）／
+`research_notes/scripts/check_physical_limits_and_ideal_lap.py`（`profile.py` の祖先・理想ラップの再現が錨）／`competition/maze_gen_turnmix.py`
