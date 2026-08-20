@@ -59,3 +59,6 @@ outputs/**
 # 再生成は research_notes/scripts/make_story_video.py（走行動画は render 経由）。
 # 9 MB と 13 MB で軽量なため、成果物として版管理下に置く。
 !outputs/video_rebuild/*.mp4
+
+# 秘密情報（API 鍵など）。版管理に入れない
+.secrets/
