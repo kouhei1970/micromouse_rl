@@ -549,7 +549,10 @@ def test_apply_wall_correction_lateral_matches_localization_estimate(
         tmp_path, params, monkeypatch, carved_maze_and_walls):
     """(a) 横位置補正: `_apply_wall_correction` が `ProfileTracker._e_lat` へ
     渡す値は `classic.localization.estimate_lateral_offset` の推定値そのもの
-    であること（直線区間）。弧区間では推定を無視して 0.0 を渡すことも見る。"""
+    であること（直線区間）。弧区間では新規の推定はせず、直前の直線区間の
+    推定値を保持する（0.0へは戻さない。是正 2026-08-20。理由・実測は
+    `classic/explorer.py` の `DEFAULT_WALL_CORRECTION_LOOKAHEAD_M` 直下の
+    調査コメント参照）ことも見る。"""
     maze, v_walls, h_walls = carved_maze_and_walls
     sim = _fresh_sim(tmp_path, params, v_walls, h_walls, "wc_lat")
     ex = _fresh_explorer_in_fast(sim, params, maze, fast_mode="profile", wall_correction=True)
@@ -572,17 +575,31 @@ def test_apply_wall_correction_lateral_matches_localization_estimate(
           f"tracker._e_lat={ex._tracker._e_lat * 1000:.3f}mm")
     assert ex._tracker._e_lat == pytest.approx(expected.offset_m)
 
-    # 弧区間: 曲率が非ゼロの s を探し、推定が非ゼロのままでも 0.0 が渡ること
-    # を確かめる（弧の途中は姿勢が斜めで前提が崩れるため補正しない）。
+    # 弧区間: 曲率が非ゼロの s を探し、(1) センシングが変わっても新規の推定を
+    # 拾わないこと、(2) 直前の直線区間の推定値（0.0ではない）を保持し続ける
+    # ことを確かめる（弧の途中は姿勢が斜めで前提が崩れるため新規推定はしない。
+    # 0.0へ戻すのは「理由なく捨てる」動きだったので是正 2026-08-20）。
     arc_s = None
     for i, kap in enumerate(step.kappa_ref):
         if kap != 0.0:
             arc_s = 0.5 * (step.s_grid[i] + step.s_grid[i + 1])
             break
     assert arc_s is not None, "この経路に弧区間が無い(テストの前提が崩れた)"
+    other_sensing = _wall_sensing(SenseWallState.WALL, SenseWallState.WALL, left_dist=0.07, right_dist=0.05)
+    other_expected = estimate_lateral_offset(other_sensing, params)
+    assert other_expected is not None and other_expected.offset_m != pytest.approx(expected.offset_m), (
+        "弧区間用のセンシングが直線区間と異なる推定を作れていない(テストの前提が崩れた)"
+    )
+    monkeypatch.setattr("classic.explorer.sense_walls", lambda obs, p: other_sensing)
     ex._tracker._s = arc_s
     ex._apply_wall_correction(dummy_obs)
-    assert ex._tracker._e_lat == 0.0, "弧区間なのに横位置補正が効いてしまった"
+    print(f"[実測] 弧区間: 直線側の推定={expected.offset_m * 1000:.3f}mm "
+          f"弧側のセンシングでの推定={other_expected.offset_m * 1000:.3f}mm "
+          f"tracker._e_lat={ex._tracker._e_lat * 1000:.3f}mm")
+    assert ex._tracker._e_lat == pytest.approx(expected.offset_m), (
+        "弧区間で横位置補正の推定値が変わってしまった"
+        "（新規推定を拾った、または理由なく0.0へ戻された）"
+    )
 
 
 # ==========================================================================
@@ -872,20 +889,28 @@ def test_north_start_is_not_catastrophically_more_fragile_than_south_start(
 
     是正前(k=0二重検出バグが残っていた状態)の実測: 北=186ティックで衝突・
     南=890ティックで衝突（比 0.21 — 北が南の1/5も走れない）。
-    k=0是正後(snapのみ。本タスクの「修正前」baseline)の実測: 北=592ティック・
-    南=868ティック（比 0.68）。
-    本タスクの blend 是正後の実測: 北=592〜593ティック（不変。後述）・
-    南=865ティック（比 0.68。誤差の範囲でほぼ同値）。
+    k=0是正後(snapのみ)の実測: 北=592ティック・南=868ティック（比 0.68）。
+    blend 是正後の実測: 北=592〜593ティック・南=865ティック（比 0.68。
+    誤差の範囲でほぼ同値）。
+    弧突入時に横位置補正の推定値を0へ捨てるのをやめた是正後（2026-08-20。
+    `classic/explorer.py` の `DEFAULT_WALL_CORRECTION_LOOKAHEAD_M` 直下の
+    調査コメント参照）の実測: 北=595ティック（不変）・南=1073ティック
+    （868→1073・大幅に改善。比は上がるが下限0.5は変えない）。
     しきい値は「是正前(186ティック・比0.21)」を確実に落とし、それ以降の
     どの状態にも十分な余裕を残す位置に置く。
 
     🔴 実測で判明した想定外（そのまま記録する）: 北向き開始の衝突地点
-    （s≈4.76m）は `wall_correction=False`（壁センサ補正を全く使わない
-    対照）でも同じ地点で起こる。つまり北向き開始の頭打ちは前後位置補正の
-    「張り替え/混ぜ込み」の選び方とは無関係（u=0.50 の摩擦円そのものが
-    頭打ちの原因）であり、本タスクの対象外。このため `wall_correction_mode`
-    をどう変えても北向き開始の到達ティック数はほぼ変わらない
-    （`classic/explorer.py` の `DEFAULT_WALL_CORRECTION_*` 定数コメント参照）。
+    （s≈4.77〜4.79m。半径0.178mの弧の途中）は `wall_correction=False`
+    （壁センサ補正を全く使わない対照）でも同じ地点で起こる。**計画そのものは
+    北向きと南向きで完全に同一**（`PathBlock` がビット一致。異なるのは
+    南向きが先頭に実在の180°その場旋回を挟むことだけ）ことも確認済みで、
+    北向き開始の頭打ちは計画の違いではない。原因は「その弧のマージン
+    （設計5mm）と弧の間の横方向フィードバック欠如が生む、初期条件への
+    鋭敏な依存性（カオス的）」までは特定したが、`friction_use`・`margin`・
+    先頭へのその場旋回付加のいずれを動かしても再現性のある形では直せて
+    いない（詳細・実測は `DEFAULT_WALL_CORRECTION_LOOKAHEAD_M` 直下の
+    コメント参照）。このため `wall_correction_mode` をどう変えても
+    北向き開始の到達ティック数はほぼ変わらない。
     """
     sim_n, ex_n = _begin_known_map_fast_run(
         maze_41004_known_map_and_xml, params, heading_deg=90.0, ex_heading=Direction.N)
@@ -912,16 +937,20 @@ def test_north_start_is_not_catastrophically_more_fragile_than_south_start(
 
 def test_wall_correction_mode_snap_matches_pre_blend_baseline_exactly(
         maze_41004_known_map_and_xml, params):
-    """回帰検査: `wall_correction_mode="snap"` を明示すると、本タスク
-    （"blend" を既定へ変える是正）より前の状態（k=0 是正のみが入った
-    状態）と完全に同一のティック数で衝突すること。`_apply_wall_correction`
-    の "snap" 分岐は本タスクで変更していない既存コード（`s_expected`・
-    `correction` の計算・k=0 ガード・50mm 超過ガードは共通のまま）なので、
-    決定論的な MuJoCo シミュレーションが厳密に同じ値を再現するはず。
+    """回帰検査: `wall_correction_mode="snap"` は "blend" と横位置補正
+    （part (a)。`wall_correction_mode` に関わらず共通のコード経路）を共有する
+    ため、決定論的な MuJoCo シミュレーションは常に厳密に同じティック数で
+    衝突するはず。この値が変わったら、`wall_correction_mode` に関わらない
+    共通コード（横位置補正・弧/直線判定・前後位置補正の基準点管理）が
+    意図せず変わったことを疑う。
 
-    比較対象の値は `test_north_start_is_not_catastrophically_more_fragile_
-    than_south_start` の docstring に記載した「k=0是正後(snapのみ)」の実測
-    （北=592ティック・南=868ティック）そのもの。
+    比較対象の値は、弧突入時に横位置補正の推定値を0へ捨てるのをやめた
+    是正（2026-08-20。`classic/explorer.py` の
+    `DEFAULT_WALL_CORRECTION_LOOKAHEAD_M` 直下の調査コメント参照）を
+    反映した実測（北=595ティック・南=617ティック）。この是正より前は
+    北=592ティック・南=868ティックだった
+    （`test_north_start_is_not_catastrophically_more_fragile_than_south_start`
+    docstring 参照）。
     """
     sim_n, ex_n = _begin_known_map_fast_run(
         maze_41004_known_map_and_xml, params, heading_deg=90.0, ex_heading=Direction.N,
@@ -937,11 +966,110 @@ def test_wall_correction_mode_snap_matches_pre_blend_baseline_exactly(
           f"南={n_ticks_south}ティック(衝突={collided_south})")
 
     assert collided_north and collided_south
-    assert n_ticks_north == 592, (
-        f"wall_correction_mode='snap' の北向き開始が是正前と一致しない(実測={n_ticks_north})。"
-        "snapモードが従来のコード経路から変わってしまっている疑い(回帰)"
+    assert n_ticks_north == 595, (
+        f"wall_correction_mode='snap' の北向き開始が想定と一致しない(実測={n_ticks_north})。"
+        "wall_correction_mode に関わらない共通コード（横位置補正等）が変わった疑い(回帰)"
     )
-    assert n_ticks_south == 868, (
-        f"wall_correction_mode='snap' の南向き開始が是正前と一致しない(実測={n_ticks_south})。"
-        "snapモードが従来のコード経路から変わってしまっている疑い(回帰)"
+    assert n_ticks_south == 617, (
+        f"wall_correction_mode='snap' の南向き開始が想定と一致しない(実測={n_ticks_south})。"
+        "wall_correction_mode に関わらない共通コード（横位置補正等）が変わった疑い(回帰)"
+    )
+
+
+def test_north_and_south_start_plan_the_identical_path_block(maze_41004_known_map_and_xml, params):
+    """北向き開始が頭打ちになる原因の切り分け検査その1（2026-08-20・
+    `DEFAULT_WALL_CORRECTION_LOOKAHEAD_M` 直下の調査コメント参照）:
+    **計画（`PathBlock`）そのものは北向きと南向きで完全に同一**であり、
+    頭打ちの原因が計画の違い（半径配分・曲率列）ではないことの回帰検査。
+
+    北向き開始の計画は `steps=(PathBlock,)`（先頭がその場旋回なしで
+    そのまま経路追従）、南向き開始の計画は `steps=(SpinSegment, PathBlock)`
+    （先頭に実在の180°その場旋回。開始方位が経路の必要方位と逆向きのため）
+    になるが、**その場旋回の後に続く `PathBlock` は北向き開始の唯一の
+    `PathBlock` とビット一致する**（`s_grid`/`kappa_ref`/`v_ref` すべて）。
+    「61対62ターン」の差はこの1回の強制その場旋回の有無だけで、経路の
+    形状そのものは同一である。
+    """
+    from classic.explorer import _goal_cells
+    from classic.fast_planner import plan_fast_run
+
+    maze, _xml_path, width, height = maze_41004_known_map_and_xml
+    goals = _goal_cells(width, height)
+
+    plan_north = plan_fast_run(maze, start=(0, 0), goals=goals, start_heading=Direction.N,
+                                params=params, friction_use=0.50)
+    plan_south = plan_fast_run(maze, start=(0, 0), goals=goals, start_heading=Direction.S,
+                                params=params, friction_use=0.50)
+
+    assert [type(s).__name__ for s in plan_north.steps] == ["PathBlock"], (
+        "北向き開始の計画の先頭がその場旋回なしの前提が崩れている"
+    )
+    assert [type(s).__name__ for s in plan_south.steps] == ["SpinSegment", "PathBlock"], (
+        "南向き開始の計画の先頭がその場旋回1回の前提が崩れている"
+    )
+
+    block_north = plan_north.steps[0]
+    block_south = plan_south.steps[1]
+    assert block_north.s_grid == block_south.s_grid, "s_grid が北向き/南向きで一致しない"
+    assert block_north.kappa_ref == block_south.kappa_ref, "kappa_ref が北向き/南向きで一致しない"
+    assert block_north.v_ref == block_south.v_ref, "v_ref が北向き/南向きで一致しない"
+
+
+def test_settling_spin_does_not_rescue_north_start(maze_41004_known_map_and_xml, params):
+    """北向き開始が頭打ちになる原因の切り分け検査その2（2026-08-20・
+    委譲指示で最優先とされた実験の回帰版）: 北向き開始の計画の先頭へ
+    人為的にその場旋回を挟んでも到達弧長（`s_final`。到達ティック数
+    ではない — その場旋回自体は距離を進まないぶんティック数を底上げする
+    ので、比較には弧長を使う）は伸びないことの回帰検査。
+
+    「先頭にその場旋回が無いから発進直後の追従が不安定で、それが頭打ちの
+    原因」という仮説が正しいなら、その場旋回を挟むことで発進直後に
+    フィードバック制御が収束する時間ができ、到達弧長が伸びるはずである。
+    実測（`_apply_wall_correction` の是正後・maze_41004・u=0.50）:
+        素のまま:      s_final=4.7877m
+        +360度spin:   s_final=4.7377m（わずかに悪化・誤差の範囲）
+        +720度spin:   s_final=0.0708m（壊滅的に悪化）
+        +1080度spin:  s_final=0.0205m（壊滅的に悪化）
+    360度（1回転して同じ向きに戻る、最も穏当な「発進直後の追従に時間を
+    与えるだけ」の操作）でさえ到達弧長を改善しない。この仮説は否定される
+    （詳細は `DEFAULT_WALL_CORRECTION_LOOKAHEAD_M` 直下の調査コメント参照）。
+    このテストは「その場旋回を足せば直る」という誤った修正が将来再導入
+    されないための回帰検査。
+    """
+    import math
+    from dataclasses import replace as dc_replace
+
+    from classic.fast_planner import SpinSegment
+    from classic.profile import spin_turn_time, vehicle_limits
+
+    maze, xml_path, width, height = maze_41004_known_map_and_xml
+
+    sim_baseline, ex_baseline = _begin_known_map_fast_run(
+        maze_41004_known_map_and_xml, params, heading_deg=90.0, ex_heading=Direction.N)
+    _n_baseline, collided_baseline, s_baseline = _drive_fast_run_to_completion(sim_baseline, ex_baseline)
+    assert collided_baseline
+
+    sim_spin, ex_spin = _begin_known_map_fast_run(
+        maze_41004_known_map_and_xml, params, heading_deg=90.0, ex_heading=Direction.N)
+    plan = ex_spin._fast_plan
+    limits = vehicle_limits(params)
+    delta = 2.0 * math.pi  # 360度: 元の向きへ戻るので計画の幾何自体は変えない
+    st = spin_turn_time(delta, limits)
+    spin = SpinSegment(delta_theta=delta, psi_start=plan.steps[0].psi_start, t_plan=st.time)
+    new_plan = dc_replace(plan, steps=(spin,) + tuple(plan.steps), t_plan=plan.t_plan + st.time)
+    ex_spin._fast_plan = new_plan
+    ex_spin._fast_plan_step_idx = 0
+    ex_spin._tracker.reset(heading_deg=math.degrees(new_plan.steps[0].psi_start))
+    ex_spin._load_current_profile_step()
+    _n_spin, collided_spin, s_spin = _drive_fast_run_to_completion(sim_spin, ex_spin)
+    assert collided_spin
+
+    print(f"\n[実測] 北向き開始 素のまま: s_final={s_baseline:.4f}m")
+    print(f"[実測] 北向き開始 先頭に360度spin: s_final={s_spin:.4f}m")
+
+    assert s_spin < s_baseline * 1.05, (
+        f"先頭に360度のその場旋回を挟んだら到達弧長が明確に伸びた"
+        f"（素={s_baseline:.4f}m・spin後={s_spin:.4f}m）。"
+        "「その場旋回が頭打ちを直す」という仮説が実は正しかった可能性がある。"
+        "本テストの前提（実測では伸びない）が崩れているので、まず再現するか確認すること"
     )
