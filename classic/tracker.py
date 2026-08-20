@@ -11,8 +11,8 @@ classic/tracker.py
 方針（ユーザ裁定・2026-08-20）: これは「事故らないロボット」ではなく
 **究極の速度を競うもの**である。整定待ちは受け入れる対象ではなく工学的な
 工夫で消す対象。本ファイルは (1) 経路（弧長 s でパラメータ化）追従、
-(2) その場旋回の時間最適軌道追従、(3) 車輪速度ループの遅れ（τ_v）を打ち消す
-逆モデル前置き、の 3 つで整定待ちの概念そのものを消しに行く。
+(2) その場旋回の時間最適軌道追従、(3) 逆動力学（電圧）前置き、の 3 つで
+整定待ちの概念そのものを消しに行く。
 
 【この段では classic/motion.py・classic/explorer.py は 1 行も変更しない】
 本ファイルと `tests/test_tracker.py` の 2 つだけが新規。差し替え（実際に
@@ -43,62 +43,6 @@ observation() から車輪角速度・ジャイロ z を切り出し、車輪角
     omega_l_target = (v_cmd - w_cmd * tread / 2) / r
     omega_r_target = (v_cmd + w_cmd * tread / 2) / r
 
-【境界フォーシング（実測で追加した、指示書に無い最小限の補正。理由は下記）】
-静止発進（`v_ref` の最初の格子値が 0）・停止着地（最後の格子値が 0）の近傍では、
-`v_ff` がそのまま 0 に張り付く。この付近は速度そのものへのフィードバックが
-無い（`w_cmd` は角速度のみを補正する）ため、実測すると **PI が発生させる
-電圧が「目標角速度と実測角速度の差」から生まれる構造上、両方が 0 に近づくと
-差もほぼ 0 になり、指数関数的に目標へ漸近するだけで有限時間では
-到達しない**（3000 ティック回しても残り 0.01mm 未満まで詰まるが一度も
-`s>=s_end` を満たさなかったことを実測で確認済み）。これは「速度がしきい値
-未満に収束するのを待つ」整定待ちの逆（動き続けさせる側）の話であり、
-本追加が消したい整定待ちの概念には抵触しない。`s` が計画の始点・終点から
-`_BOUNDARY_FORCE_DISTANCE` 以内のとき、`v_ff` に最小接近速度
-`_BOUNDARY_FORCE_SPEED` の下駄を履かせて確実に有限時間で通過させる
-（値の根拠は `_BOUNDARY_FORCE_SPEED` 直上のコメント）。
-
-【逆モデル前置き（ユーザ指示・追加 1。実装は「微分」ではなく「先読み」）】
-車輪速度 PI（`classic/motion.py` の `_wheel_pi` と同じ形。時定数
-`tau_v`（`docs/ROBOT_SPEC.md` §2.5 実測値）の一次遅れを持つ）に対し、
-角速度目標の**フィードフォワード成分のみ**を `tau_v` 秒先読みしてかさ上げする
-（逆モデル: `tau_v*domega/dt + omega ≈ K*V` の一次遅れ系を、目標を
-`omega_target(t+tau_v)` 相当にかさ上げして与えると定常追従遅れがほぼ消える、
-という標準的なリード補償）。
-
-🔴 指示書の式は `omega_target + tau_v*d(omega_target)/dt`（1 次のテイラー近似）
-だったが、**そのまま実装すると新しい不動点を作ることを実測で確認したため、
-数学的に同値だが破綻しない形へ実装を変えた**（理由は下記）。バンバン型の
-時間最適プロファイル（`min_time` の加減速・`spin_turn_time` の旋回）は
-区間の境界で加速度が不連続に切り替わる。その境界の直前で 1 次のテイラー近似
-`omega + tau_v*domega/dt` を使うと、`tau_v` が「目標がまさに 0 に落ちる
-までの残り時間」と同程度の場面（実測: 直線減速区間で A_TR≈5.57m/s²・
-tau_v≈0.124s が桁で一致、その場旋回でも同様）で前置き項が目標とほぼ同じ
-大きさの負の値になり、加算後の目標がほぼ0または符号反転して
-「目標がほぼ0→PIの誤差もほぼ0→電圧が生まれない」という不動点を作ってしまう
-ことを実測で確認した（クランプで抑える対処も試したが、経路追従とその場旋回で
-必要なクランプの強さが大きく異なり、その場旋回側は角速度の収束が悪いまま
-残った）。
-
-代わりに、`tau_v*domega/dt` を**同じ値の近似**である「`tau_v` 秒先の計画上の
-目標をそのまま読む」形で計算する:
-    omega_ff_now(s)      = (v_ref(s) - v_ref(s)*kappa_ref(s)*tread/2) / r  （現在点）
-    s_preview            = s + tau_v * v_ff(s)   （tau_v 秒後の弧長の見積り。
-                                                    ds/dt を計画上の v_ff で
-                                                    近似するのは元の連鎖律と同じ考え）
-    omega_ff_preview(s)  = (v_ref(s_preview) - v_ref(s_preview)*kappa_ref(s_preview)*tread/2) / r
-    lead = omega_ff_preview - omega_ff_now
-その場旋回も同じ考え方で `omega_ref(t)` を `t+tau_v` で直接引く
-（`_spin_kinematics()` は境界（t<=0 や t>=time_total）で自動的に頭打ちになる
-ので、先読みが計画の外へ出ても不連続な値を返さない）。この形は `v_ref`・
-`kappa_ref`・`omega_ref` が区間内で滑らかな場面ではテイラー近似と一致しつつ、
-**区間の境界をまたいでも実際の計画値（0 でクランプされる等）をそのまま返す
-ので線形外挿のように暴れない**。**微分の対象・先読みの対象はいずれも
-フィードフォワード成分だけに限定し、フィードバック成分（kp_psi*e_psi 等、
-測定ヨーを含む）は先読みしない**（測定ノイズを含む項を先読みに使うと
-雑音を増幅するため）。
-`TrackerGains.use_lag_feedforward=False` にすると、この項の計算そのものを
-一切行わない（否定対照の土台。下記 update() 参照）。
-
 【その場旋回の時間最適軌道追従（ユーザ指示・追加 2）】
 `load_spin_plan(delta_theta)` で `classic/profile.py` の `spin_turn_time()`
 （バンバン制御。三角形/台形を自動判定）が返す `alpha`（角加速度）・
@@ -108,14 +52,47 @@ tau_v≈0.124s が桁で一致、その場旋回でも同様）で前置き項�
     v_cmd  = 0
     done   = t >= time_total
 `t` は計画ロード直後（`reset()`/直近の `load_*`）からの経過時間で、実際の
-角速度に関わらず一定速度で進む（＝時間そのものが基準点なので、経路追従と
-同種の「速度が 0 に近づくほど収束が遅くなる」不動点がそもそも起きない）。
+角速度に関わらず一定速度で進む。
 
 **区間の切れ目・その場旋回の終端で止まらない。** 経路追従の `done` は
 `s >= s_end` のときだけ、その場旋回の `done` は `t >= time_total` のときだけ
 真になる。「速度・角速度がしきい値未満に収束するのを待つ」ような completion
 判定は持たない（`classic/motion.py` の FORWARD/TURN の
 `speed_settle`/`omega_settle` 待ちに相当する概念がそもそも無い）。
+
+【逆動力学（電圧）前置き（ユーザ指示・2026-08-20 是正）】
+🔴 経緯: 当初は「車輪速度 PI の目標角速度を tau_v 秒先読みしてかさ上げする」
+という設計（角速度目標のリード補償）だったが、その場旋回の終端角速度が
+0.2rad/s 以下に収まらなかった（実測 90°=6.9rad/s、180°=5.7rad/s）。これを
+「車輪速度ループの時定数 tau_v がその場旋回の総所要時間と同程度だから構造的に
+無理」と判断したのは**誤りだった**（教授セッションの検算: その場 90° 旋回で
+1 輪に要る力は 0.291N、停動時に 1 輪が出せる力は 2.056N で 7.1 倍の余裕があり、
+最大角速度時の逆起電力 0.480V に対し必要電圧は 0.904V で電源 3.0V に対し 2.1V
+の余りがある。力にも電圧にも大きな余裕があるのに追従できていなかったのは、
+**速度 PI が必要な電圧を出していなかっただけ**である）。
+
+そこで角速度目標のかさ上げをやめ、**計画から必要な電圧を直接計算して足す**
+方式（逆動力学前置き）に切り替えた。DC モータの逆モデル
+（`V = I·Rw + N·Ke·ω_wheel`、`τ_wheel = N·Kt·I`、`F = τ_wheel/r` より
+`V_ff = F·r·Rw/(N·Kt) + N·Ke·ω_wheel_ref`）を使い、各輪に要る力を計画の
+並進加速度 `a_ref`・角加速度 `alpha_ref` から求める:
+    F_common = M_eff·a_ref/2 + F_fric/2 + c_eff·v_ref/2   （走行抵抗・粘性を含む）
+    F_diff   = I_eff·alpha_ref / tread                     （純ヨーぶん）
+    F_L = F_common - F_diff,  F_R = F_common + F_diff
+    V_ff_L = F_L·r·Rw/(N·Kt) + N·Ke·omega_l_target
+    V_ff_R = F_R·r·Rw/(N·Kt) + N·Ke·omega_r_target
+最終指令は `V = clip(V_ff + kp_wheel*err + ki_wheel*integ(err), ±Vmax)`
+（`_wheel_pi` 参照。PI は残差だけを担う 2 自由度制御）。`a_ref`・`alpha_ref`
+の求め方:
+  - 経路追従: `a_ref(s)` はセル内の運動学 `v[i+1]²=v[i]²+2·a·Δs` から求める
+    （`dv/ds × v_ref(s)` の連鎖律ではない。連鎖律は `v_ref(s)=0` の点で
+    厳密に 0 になってしまい、静止発進直後の a_ref が消えてしまう。
+    運動学の式なら `v[i]=0` でも `v[i+1]>0` である限り 0 にならない）。
+    `alpha_ref(s) = a_ref(s) * kappa_ref(s)`（kappa はセル内区分定数の近似）。
+  - その場旋回: `a_ref=0`（v_cmd=0 のため）、`alpha_ref` は加速/減速フェーズで
+    `±alpha`、定常フェーズで `0`（`_spin_kinematics()` が返す符号付き値）。
+`TrackerGains.use_voltage_feedforward=False` にすると、この項の計算そのものを
+一切行わない（否定対照の土台。下記 update() 参照）。
 
 【kp_psi の決め方】
 下記 `DEFAULT_KP_PSI` 直上のコメントを参照（実測スイープの結果と根拠）。
@@ -136,38 +113,39 @@ __all__ = ["TrackerGains", "ProfileTracker"]
 
 
 # ------------------------------------------------------------------
-# 車輪速度 PI（classic/motion.py の DEFAULT_KP_WHEEL/DEFAULT_KI_WHEEL と同じ値。
-# 二重管理を避けたいところだが、classic/motion.py は本段で 1 行も変更しない
-# 対象なので、値そのものをここへ複写する（根拠は classic/motion.py モジュール
-# docstring の「PI ゲインの決め方」節を参照。同じ実測較正に基づく）。
-# ------------------------------------------------------------------
-DEFAULT_KP_WHEEL: float = 0.025
-DEFAULT_KI_WHEEL: float = 0.2
-# 🔴 その場旋回専用の車輪 PI 積分ゲイン（実測スイープで追加。2026-08-20）。
-# その場旋回は経路追従よりずっと高い車輪角速度（数十〜100rad/s級）・急な
-# 加減速（560 rad/s²級）を要求する。`ki_wheel`（経路追従用に較正済み。
-# `classic/motion.py` と同じ 0.2）のままだと車輪 PI の応答が追いつかず、
-# 実測で旋回の到達角度誤差が大きいまま残る。`kp_wheel` を上げる案は
-# `classic/motion.py` の「PI ゲインの決め方」節と同じ理由（左右非対称に
-# 暴れて位置ずれが増える）で実測により却下し、`ki_wheel` だけを旋回時に
-# 引き上げる（値の根拠は `DEFAULT_KP_PSI` 直上のコメント参照。同じ実測ログで
-# 一緒にスイープした）。
-DEFAULT_KI_WHEEL_SPIN: float = 0.8
+# 車輪速度 PI・方位フィードバックゲイン。
+#
+# 🔴 逆動力学（電圧）前置きの追加（2026-08-20 是正）に伴い、経路追従と
+# その場旋回で別々に実測スイープし直した。逆動力学前置きの導入前は
+# `classic/motion.py` の DEFAULT_KP_WHEEL/DEFAULT_KI_WHEEL（0.025/0.2）を
+# そのまま複写していたが、前置きが必要な電圧の大半を計画から直接計算する
+# ようになった結果、フィードバック（PI）が担うのは残差の補正だけでよくなり、
+# 前置き導入前の PI ゲインのままだと二重に補正して振動・オーバーシュートを
+# 起こすことを実測で確認した（`kp_wheel` を上げるほど直線の到達が乱れ、
+# `kp_wheel=0` 付近＋`ki_wheel` だけのほうが素直に収束した）。経路追従と
+# その場旋回は要求される車輪角速度の桁（前者は数 rad/s〜数十 rad/s、後者は
+# 数十〜100rad/s級・560rad/s²級の急加減速）が大きく異なるため、`kp_wheel`・
+# `ki_wheel`・`kp_psi` のいずれも別々に持つ（`_spin` 接尾辞側がその場旋回用）。
+#
+# 経路追従側（直線4区画の停止→停止計画、+4deg注入・四分円・直線→弧→直線を
+# 横断して比較）: kp_wheel は 0 付近が最も素直（0.0～0.01 の間で実測/計画比
+# 1.03～1.15）、ki_wheel=0.4～0.5 が良好。kp_psi は四分円のヨー到達（目標
+# 90°±5°）で決めた（4→87.0°・6→88.8°・8→92.5°・…・18→99.2° と単調に
+# 過回頭が増える。6.0 が最も 90° に近い）。
+DEFAULT_KP_WHEEL: float = 0.008
+DEFAULT_KI_WHEEL: float = 0.5
+DEFAULT_KP_PSI: float = 6.0
 
-# 方位フィードバックゲイン [1/s]（e_psi -> 角速度指令への比例ゲイン）。
-# 🔴 実測スイープで決定（2026-08-20、tests/test_tracker.py 実行時の
-# [実測] 行・本タスクの完了報告に詳細ログを残す）。直線4区画の停止→停止計画
-# （開始直後に+10degのヨー推定誤差を注入）と、その場旋回90°/180°
-# （時間最適バンバン軌道、DEFAULT_KI_WHEEL_SPIN と同時にスイープ）の両方を
-# 判定に使った。直線側は kp_psi にほぼ非依存（無外乱の対称なシミュレータでは
-# 直線中に方位誤差がそもそも生じないため。classic/motion.py の
-# kp_heading と同じ事情）なので、その場旋回側の実測が実質的な決め手になった:
-#   kp_psi=16: 90°誤差 30.3° / 180°誤差 29.6°（不足）
-#   kp_psi=24: 90°誤差 13.9° / 180°誤差  7.0°
-#   kp_psi=28（DEFAULT_KI_WHEEL_SPIN=0.8 併用）: 90°誤差 0.54° / 180°誤差 1.18°
-#   kp_psi=32: 90°誤差  2.7° / 180°誤差  4.9°（180°側が再び悪化）
-# 28 前後が両角度とも 3° 未満に収まる唯一の帯だったため、これを採用する。
-DEFAULT_KP_PSI: float = 28.0
+# その場旋回側（90°/180°の到達角度誤差・終端角速度を横断してスイープ）:
+# `kp_wheel_spin`・`ki_wheel_spin`・`kp_psi_spin` を同時にスイープし、両角度
+# とも到達角度誤差が3°未満に収まり、終端角速度が実測で最も小さくなる帯
+# （kp_wheel_spin=0.05・ki_wheel_spin=0.04・kp_psi_spin=18 付近）を採用した。
+# 終端角速度は 0.2rad/s 以下という目標には届かなかった（実測 90°=0.77rad/s、
+# 180°=0.36rad/s。逆動力学前置き導入前の 6.9/5.7rad/s からは 9〜16 倍改善）。
+# 詳細・スイープの生ログは本タスクの完了報告を参照。
+DEFAULT_KP_WHEEL_SPIN: float = 0.05
+DEFAULT_KI_WHEEL_SPIN: float = 0.04
+DEFAULT_KP_PSI_SPIN: float = 18.0
 
 # 横ずれ -> 方位 の変換ゲイン [1/m]。既定 0（無効）。`apply_lateral_correction()`
 # の差し込み口自体は用意するが、壁センサからの実際の推定・結線は本段の範囲外
@@ -175,44 +153,12 @@ DEFAULT_KP_PSI: float = 28.0
 # kp_lat=0 のとき経路を一切通らないことだけを保証する）。
 DEFAULT_KP_LAT: float = 0.0
 
-# 逆モデル前置き（モジュール docstring 参照）。既定 ON。
-DEFAULT_USE_LAG_FEEDFORWARD: bool = True
-# 車輪速度ループの時定数 [s]（docs/ROBOT_SPEC.md §2.5 の実測較正値。
-# classic/motion.py モジュール docstring の「PI ゲインの決め方」節が引用する
-# のと同じ値: τ_v=0.124s）。
-DEFAULT_TAU_V: float = 0.124
+# 逆動力学（電圧）前置き（モジュール docstring 参照）。既定 ON。
+DEFAULT_USE_VOLTAGE_FEEDFORWARD: bool = True
 
 # 車輪 PI 積分器の絶対値クランプ（classic/motion.py の DEFAULT_INTEG_CLAMP と
 # 同じ値・同じ理由: 暴走防止の保険）。
 _INTEG_CLAMP: float = 200.0
-
-# ------------------------------------------------------------------
-# 境界フォーシング（モジュール docstring「境界フォーシング」節参照）。
-#
-# 値の根拠（2026-08-20 実測）: 車輪 PI の比例ゲイン kp_wheel=0.025・車輪の
-# 乾性摩擦 wheel_frictionloss=9.1e-4 N·m（mouse/params.py）から、比例項だけで
-# 静止摩擦を破る（角速度誤差 × kp_wheel が破断電圧
-# frictionloss*motor_R/(N*Kt)≈0.098V を超える）のに必要な角速度誤差は
-# 0.098/0.025≈3.9 rad/s、並進速度に換算すると 3.9*r≈0.053 m/s。これを
-# 下回る指令では車輪が動き出さない（実測でも v_ref が 0.03〜0.05 m/s 程度の
-# 領域では並進速度がほぼ 0 のまま張り付くことを確認した）。十分な余裕を見て
-# 0.10 m/s を最小接近速度に採用する。
-_BOUNDARY_FORCE_SPEED: float = 0.10   # m/s
-# 境界フォーシングを発動する、始点・終点からの弧長距離のしきい値。
-# 0.10 m/s で通過するとすれば 20mm は 1 ティック(10ms)あたり 1mm 程度の刻みで
-# 通過できる距離であり、tests/test_tracker.py の終端位置誤差判定(20mm)と
-# 同じ桁で保守的（フォーシングが効く区間自体を判定の許容誤差程度に抑える）。
-_BOUNDARY_FORCE_DISTANCE: float = 0.020  # m
-
-# 逆モデル前置きの下駄（フロア）比率（update() の `_apply_lead_floor` 参照）。
-# 🔴 実測スイープ（2026-08-20、直線4区画・その場旋回90°/180°・
-# 直線助走付き四分円を横断して比較）: 0.3 では直線が実測/計画比 1.68（既定
-# ゲイン kp_psi=28 のもとで）とやや遅く、0.7 まで上げると比は 0.99 まで
-# 改善するが、その場旋回の到達角度誤差が 7〜12° まで悪化する。0.4〜0.6 の
-# 帯は直線が比 1.22（1.3 以内）・誤差 17mm（20mm 以内）、その場旋回が
-# 90°/180° とも誤差 1° 未満、四分円がヨー変化 92.7°（90°±5° 以内）と、
-# 4 種の計画すべてで判定基準を満たす唯一の帯だったため、その中央値 0.5 を採用。
-_LEAD_MIN_FRACTION: float = 0.5
 
 
 @dataclass
@@ -221,11 +167,12 @@ class TrackerGains:
 
     kp_wheel: float = DEFAULT_KP_WHEEL
     ki_wheel: float = DEFAULT_KI_WHEEL
+    kp_wheel_spin: float = DEFAULT_KP_WHEEL_SPIN
     ki_wheel_spin: float = DEFAULT_KI_WHEEL_SPIN
     kp_psi: float = DEFAULT_KP_PSI
+    kp_psi_spin: float = DEFAULT_KP_PSI_SPIN
     kp_lat: float = DEFAULT_KP_LAT
-    use_lag_feedforward: bool = DEFAULT_USE_LAG_FEEDFORWARD
-    tau_v: float = DEFAULT_TAU_V
+    use_voltage_feedforward: bool = DEFAULT_USE_VOLTAGE_FEEDFORWARD
 
 
 def _interp_linear(s: float, s_grid: Sequence[float], values: Sequence[float]) -> float:
@@ -261,6 +208,18 @@ def _interp_step(s: float, s_grid: Sequence[float], cell_values: Sequence[float]
     return cell_values[i]
 
 
+def _cell_index(s: float, s_grid: Sequence[float]) -> int:
+    """`s` を含むセルの添字（範囲外はクランプ）を返す（`_interp_linear`・
+    `_interp_step` の bisect と同じ規約。セル内の運動学から `a_ref` を
+    取り出すのに使う）。"""
+    if s <= s_grid[0]:
+        return 0
+    if s >= s_grid[-1]:
+        return len(s_grid) - 2
+    i = bisect.bisect_right(s_grid, s) - 1
+    return min(max(i, 0), len(s_grid) - 2)
+
+
 class ProfileTracker:
     """速度プロファイル `v_ref(s)`・曲率プロファイル `kappa_ref(s)` に沿って
     走る追従制御器、およびその場旋回の時間最適軌道追従（モジュール
@@ -291,6 +250,9 @@ class ProfileTracker:
         self.params = params if params is not None else RobotParams()
         self.gains = gains if gains is not None else TrackerGains()
         self._n_sensors = len(self.params.sensors)
+        # 逆動力学前置きで使う車両物理定数（モジュール docstring 参照）。
+        # MuJoCo は読まない（vehicle_limits() は RobotParams の算術のみ）。
+        self._limits = vehicle_limits(self.params)
 
         # 経路追従の計画（load_plan() が設定するまでは未ロード）
         self._s_grid: List[float] = []
@@ -361,6 +323,22 @@ class ProfileTracker:
     def _psi_at(self, s: float) -> float:
         return _interp_linear(s, self._s_grid, self._psi_grid)
 
+    def _a_ref_at(self, s: float) -> float:
+        """`s` を含むセル内での計画上の並進加速度 [m/s²]。
+
+        運動学 `v[i+1]²=v[i]²+2·a·Δs` をセル内で解いたもの（`dv/ds × v_ref(s)`
+        の連鎖律ではない）。連鎖律は `v_ref(s)=0` の点（静止発進の起点・
+        停止着地の終点）で厳密に 0 になってしまうが、運動学の式なら
+        `v[i]=0` でも隣の格子点 `v[i+1]>0` である限り 0 にならない
+        （モジュール docstring「逆動力学（電圧）前置き」節参照）。
+        """
+        i = _cell_index(s, self._s_grid)
+        s0, s1 = self._s_grid[i], self._s_grid[i + 1]
+        if s1 <= s0:
+            return 0.0
+        v0, v1 = self._v_ref[i], self._v_ref[i + 1]
+        return (v1 * v1 - v0 * v0) / (2.0 * (s1 - s0))
+
     # ------------------------------------------------------------------
     # 計画のロード（その場旋回）
     # ------------------------------------------------------------------
@@ -377,8 +355,7 @@ class ProfileTracker:
         現在のヨー推定）を基準に使う（`classic/motion.py` の `_start_turn` が
         `self._target_yaw = self._yaw_est + delta_yaw` とするのと同じ考え方）。
         """
-        limits = vehicle_limits(self.params)
-        spin = spin_turn_time(delta_theta, limits)
+        spin = spin_turn_time(delta_theta, self._limits)
         sign = 1.0 if delta_theta >= 0.0 else -1.0
 
         self._spin_sign = sign
@@ -400,7 +377,7 @@ class ProfileTracker:
     def _spin_kinematics(self, t: float):
         """時刻 `t`（旋回開始からの経過時間）における `(psi_ref, omega_ref,
         alpha_ref)` を返す（閉形式・区分二次/一次関数）。`alpha_ref` は
-        `omega_ref` の時間微分（符号付き角加速度。逆モデル前置きで使う）。"""
+        `omega_ref` の時間微分（符号付き角加速度。逆動力学前置きで使う）。"""
         alpha = self._spin_alpha
         omega_peak = self._spin_omega_peak
         t_acc = self._spin_t_acc
@@ -451,6 +428,7 @@ class ProfileTracker:
         self._e_lat = 0.0
         self._integ_l = 0.0
         self._integ_r = 0.0
+        self._last_voltage_saturated = False
 
     def _split_obs(self, obs: np.ndarray):
         """observation() から車輪角速度・ジャイロ z 成分を取り出す
@@ -470,6 +448,13 @@ class ProfileTracker:
     def yaw_estimate(self) -> float:
         """推測航法によるヨー角推定 [rad]（真値ではなく積算値）。"""
         return self._yaw_est
+
+    @property
+    def voltage_saturated(self) -> bool:
+        """直近の `update()` で左右いずれかの電圧が `±voltage_limit` に
+        張り付いていたか（診断用。「飽和していないのに追従できていない」の
+        切り分けに使う）。"""
+        return self._last_voltage_saturated
 
     # ------------------------------------------------------------------
     # S2 相当の差し込み口（横ずれ補正。本段では中身を実装しない）
@@ -512,12 +497,13 @@ class ProfileTracker:
         self._t += dt
 
         if self._mode == "path":
-            v_ff, w_ff, psi_ref, v_ff_prev, w_ff_prev, done = self._path_step()
+            v_ff, w_ff, psi_ref, a_ref, alpha_ref, done = self._path_step()
         else:
-            v_ff, w_ff, psi_ref, v_ff_prev, w_ff_prev, done = self._spin_step()
+            v_ff, w_ff, psi_ref, a_ref, alpha_ref, done = self._spin_step()
 
         e_psi = self._wrap(psi_ref - self._yaw_est)
-        w_cmd = w_ff + self.gains.kp_psi * e_psi
+        kp_psi = self.gains.kp_psi if self._mode == "path" else self.gains.kp_psi_spin
+        w_cmd = w_ff + kp_psi * e_psi
         # kp_lat==0（既定）のとき、または旋回モードのときは、この分岐そのものを
         # 通らない（横ずれ補正の経路が一切実行されないことの保証。否定対照の土台）。
         if self.gains.kp_lat != 0.0 and self._mode == "path":
@@ -527,104 +513,101 @@ class ProfileTracker:
         omega_l_target = (v_cmd - w_cmd * tread / 2.0) / r
         omega_r_target = (v_cmd + w_cmd * tread / 2.0) / r
 
-        # 逆モデル前置き（モジュール docstring「逆モデル前置き」節参照。
-        # tau_v 秒先のフィードフォワードをそのまま読んで差分を乗せる「先読み」
-        # 方式で、テイラー近似の破綻を避ける）。use_lag_feedforward=False の
-        # ときはこの分岐そのものを通らない（否定対照の土台）。
-        #
-        # 🔴 実測で追加した下駄（フロア）: 先読み点が計画の終端（強制的に
-        # 境界値へクランプされる領域）を越えると、先読み値と現在値の差が
-        # 現在の目標とほぼ同じ大きさの逆符号になり、加算後の目標がほぼ0（＝
-        # 「目標がほぼ0→PIの誤差もほぼ0→電圧が生まれない」という新しい
-        # 不動点）になることを実測で確認した（例: 直線減速中に
-        # tau_v*v_ff が残り距離を超えると、先読み値が「もう止まっている」
-        # 前提の0を返してしまう）。前置きが目標を大きく減らす／符号を反転
-        # させる方向に働く場合だけ、基準目標（前置き無しの目標）の
-        # `_LEAD_MIN_FRACTION` 未満には落とさない下駄で止める（増やす方向
-        # ＝オーバーシュートを追認する方向には制限をかけない。これは
-        # 「前置きが効きすぎて行き過ぎる」ことより「不動点を作る」ことの方が
-        # 実害が大きいという実測に基づく判断）。
-        if self.gains.use_lag_feedforward:
-            omega_l_ff_now = (v_ff - w_ff * tread / 2.0) / r
-            omega_r_ff_now = (v_ff + w_ff * tread / 2.0) / r
-            omega_l_ff_prev = (v_ff_prev - w_ff_prev * tread / 2.0) / r
-            omega_r_ff_prev = (v_ff_prev + w_ff_prev * tread / 2.0) / r
-            omega_l_target = self._apply_lead_floor(
-                omega_l_target, omega_l_target + (omega_l_ff_prev - omega_l_ff_now))
-            omega_r_target = self._apply_lead_floor(
-                omega_r_target, omega_r_target + (omega_r_ff_prev - omega_r_ff_now))
+        # 逆動力学（電圧）前置き（モジュール docstring 参照）。
+        # use_voltage_feedforward=False のときはこの分岐そのものを通らない
+        # （否定対照の土台）。
+        if self.gains.use_voltage_feedforward:
+            v_ff_l, v_ff_r = self._voltage_feedforward(
+                v_ff, a_ref, alpha_ref, omega_l_target, omega_r_target)
+        else:
+            v_ff_l = v_ff_r = 0.0
 
-        ki_wheel = self.gains.ki_wheel if self._mode == "path" else self.gains.ki_wheel_spin
-        vl, vr = self._wheel_pi(omega_l_target, omega_r_target, omega_l, omega_r, dt, ki_wheel)
+        if self._mode == "path":
+            kp_wheel, ki_wheel = self.gains.kp_wheel, self.gains.ki_wheel
+        else:
+            kp_wheel, ki_wheel = self.gains.kp_wheel_spin, self.gains.ki_wheel_spin
+        vl, vr = self._wheel_pi(omega_l_target, omega_r_target, omega_l, omega_r, dt,
+                                 kp_wheel, ki_wheel, v_ff_l, v_ff_r)
         return vl, vr, done
 
-    @staticmethod
-    def _apply_lead_floor(base: float, combined: float) -> float:
-        """逆モデル前置き適用後の目標 `combined` が、基準目標 `base` の
-        `_LEAD_MIN_FRACTION` 未満（符号反転を含む）まで削られていたら、
-        その下駄まで戻す（update() 内のコメント参照）。"""
-        floor = _LEAD_MIN_FRACTION * abs(base)
-        if base >= 0.0:
-            return combined if combined >= floor else floor
-        return combined if combined <= -floor else -floor
+    def _voltage_feedforward(self, v_ref: float, a_ref: float, alpha_ref: float,
+                              omega_l_target: float, omega_r_target: float):
+        """計画上の並進加速度 `a_ref`・角加速度 `alpha_ref` から、各輪に必要な
+        電圧 `(V_ff_L, V_ff_R)` を DC モータの逆モデルで直接計算する
+        （モジュール docstring「逆動力学（電圧）前置き」節参照。フィード
+        バック成分（kp_psi*e_psi 等）は含めない。純フィードフォワード）。"""
+        lim = self._limits
+        p = self.params
+        tread = p.tread
+        r = p.wheel_radius
+        N = p.gear_ratio
+        Rw = p.motor_R
+        Kt = p.motor_Kt
+        Ke = p.motor_Ke
 
-    def _ff_at(self, s: float):
-        """弧長 `s` におけるフィードフォワード `(v_ff, w_ff)`（境界フォーシング
-        適用後）。逆モデル前置きの「現在点」「tau_v 秒先の点」の両方で使う
-        共通ロジック（モジュール docstring「境界フォーシング」節参照）。"""
-        v_ref = self._v_at(s)
-        kappa_ref = self._kappa_at(s)
-        remaining = self._s_end - s
-        near_start = self._v_ref[0] <= 1e-9 and s <= _BOUNDARY_FORCE_DISTANCE
-        near_end = self._v_ref[-1] <= 1e-9 and 0.0 < remaining < _BOUNDARY_FORCE_DISTANCE
-        if near_start or near_end:
-            v_ref = max(v_ref, _BOUNDARY_FORCE_SPEED)
-        return v_ref, v_ref * kappa_ref
+        F_common = lim.M_eff * a_ref / 2.0 + lim.F_fric / 2.0 + lim.c_eff * v_ref / 2.0
+        F_diff = lim.I_eff * alpha_ref / tread
+        F_l = F_common - F_diff
+        F_r = F_common + F_diff
+
+        k_torque = r * Rw / (N * Kt)  # F -> V(トルク分)の変換係数
+        v_ff_l = F_l * k_torque + N * Ke * omega_l_target
+        v_ff_r = F_r * k_torque + N * Ke * omega_r_target
+        return v_ff_l, v_ff_r
 
     def _path_step(self):
         """経路追従モードの 1 ティック分の
-        (v_ff, w_ff, psi_ref, v_ff_preview, w_ff_preview, done)。"""
+        (v_ff, w_ff, psi_ref, a_ref, alpha_ref, done)。"""
         s = self._s
-        v_ff, w_ff = self._ff_at(s)
+        v_ff = self._v_at(s)
+        kappa_ref = self._kappa_at(s)
+        w_ff = v_ff * kappa_ref
         psi_ref = self._psi_at(s)
 
-        # tau_v 秒先の弧長の見積り（ds/dt を計画上の v_ff で近似する。
-        # モジュール docstring 参照）。
-        s_preview = s + self.gains.tau_v * v_ff
-        v_ff_preview, w_ff_preview = self._ff_at(s_preview)
+        a_ref = self._a_ref_at(s)
+        alpha_ref = a_ref * kappa_ref  # kappa はセル内区分定数の近似（モジュール docstring 参照）
 
         done = self._s >= self._s_end
-        return v_ff, w_ff, psi_ref, v_ff_preview, w_ff_preview, done
+        return v_ff, w_ff, psi_ref, a_ref, alpha_ref, done
 
     def _spin_step(self):
         """その場旋回モードの 1 ティック分の
-        (v_ff=0, w_ff=omega_ref, psi_ref, v_ff_preview=0, w_ff_preview, done)。"""
-        psi_ref, omega_ref, _alpha_ref = self._spin_kinematics(self._t)
-        _psi_preview, omega_ref_preview, _ = self._spin_kinematics(self._t + self.gains.tau_v)
+        (v_ff=0, w_ff=omega_ref, psi_ref, a_ref=0, alpha_ref, done)。"""
+        psi_ref, omega_ref, alpha_ref = self._spin_kinematics(self._t)
         done = self._t >= self._spin_time_total
-        return 0.0, omega_ref, psi_ref, 0.0, omega_ref_preview, done
+        return 0.0, omega_ref, psi_ref, 0.0, alpha_ref, done
 
-    def _wheel_pi(self, omega_l_target, omega_r_target, omega_l, omega_r, dt, ki_wheel):
+    def _wheel_pi(self, omega_l_target, omega_r_target, omega_l, omega_r, dt,
+                  kp_wheel, ki_wheel, v_ff_l=0.0, v_ff_r=0.0):
         """車輪角速度目標値と実測値の偏差から PI で左右電圧を作る（アンチ
-        ワインドアップ付き）。`classic/motion.py` の `_wheel_pi` と同じ形
-        （`kp_wheel` は経路追従・その場旋回で共通。`ki_wheel` は呼び出し側
-        `update()` がモードに応じて `gains.ki_wheel`/`gains.ki_wheel_spin` を
-        選んで渡す。理由は `DEFAULT_KI_WHEEL_SPIN` 直上のコメント参照）。"""
+        ワインドアップ付き）。`classic/motion.py` の `_wheel_pi` に、計画から
+        直接計算した電圧前置き `v_ff_l`/`v_ff_r` を足す形（2 自由度制御。
+        モジュール docstring「逆動力学（電圧）前置き」節参照）を加えたもの。
+        `v_ff_l=v_ff_r=0.0`（既定引数）のときは `classic/motion.py` の
+        `_wheel_pi` と一字一句同じ式になる。`kp_wheel`・`ki_wheel` は呼び出し側
+        `update()` がモードに応じて `gains.kp_wheel`/`gains.ki_wheel`（経路追従）
+        または `gains.kp_wheel_spin`/`gains.ki_wheel_spin`（その場旋回）を選んで
+        渡す（理由は `DEFAULT_KP_WHEEL_SPIN`/`DEFAULT_KI_WHEEL_SPIN` 直上の
+        コメント参照。経路追従とその場旋回で要求される車輪 PI の応答速度が
+        大きく異なるため分離した）。"""
         vlim = self.params.voltage_limit
-        kp_wheel = self.gains.kp_wheel
 
         err_l = omega_l_target - omega_l
         err_r = omega_r_target - omega_r
 
-        vl_try = kp_wheel * err_l + ki_wheel * self._integ_l
-        vr_try = kp_wheel * err_r + ki_wheel * self._integ_r
+        # アンチワインドアップ: 前置き込みの電圧が上限に張り付いていない間だけ積分する
+        vl_try = v_ff_l + kp_wheel * err_l + ki_wheel * self._integ_l
+        vr_try = v_ff_r + kp_wheel * err_r + ki_wheel * self._integ_r
         if abs(vl_try) < vlim:
             self._integ_l = float(np.clip(self._integ_l + err_l * dt, -_INTEG_CLAMP, _INTEG_CLAMP))
         if abs(vr_try) < vlim:
             self._integ_r = float(np.clip(self._integ_r + err_r * dt, -_INTEG_CLAMP, _INTEG_CLAMP))
 
-        vl = float(np.clip(kp_wheel * err_l + ki_wheel * self._integ_l, -vlim, vlim))
-        vr = float(np.clip(kp_wheel * err_r + ki_wheel * self._integ_r, -vlim, vlim))
+        vl_raw = v_ff_l + kp_wheel * err_l + ki_wheel * self._integ_l
+        vr_raw = v_ff_r + kp_wheel * err_r + ki_wheel * self._integ_r
+        vl = float(np.clip(vl_raw, -vlim, vlim))
+        vr = float(np.clip(vr_raw, -vlim, vlim))
+        self._last_voltage_saturated = abs(vl_raw) >= vlim or abs(vr_raw) >= vlim
         return vl, vr
 
     @staticmethod

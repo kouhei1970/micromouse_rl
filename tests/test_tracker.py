@@ -292,15 +292,22 @@ def test_spin_turn_needs_no_settling_wait(tmp_path, params, limits, delta_deg):
     ここでは `load_spin_plan()` の時間最適バンバン軌道で同じ90°/180°旋回を
     実測し、実測/物理限界の比を印字する（これが一番知りたい数字）。
 
-    🔴 2026-08-20 実測: 実測タイム比・到達角度誤差は既定ゲインで基準を満たす
-    （90°: 比1.04・誤差0.24deg、180°: 比1.02・誤差0.27deg）が、**終端角速度
-    ≤0.2rad/sだけは満たせなかった**（実測 90°=6.9rad/s、180°=5.7rad/s）。
-    `kp_wheel`・`ki_wheel_spin`・逆モデル前置きのクランプ等を広く実測スイープ
-    したが、車輪速度ループの時定数 tau_v=0.124s がその場旋回の総所要時間
-    （0.17〜0.24s、tau_vの1.4〜2倍程度）と同程度であるため、旋回終端までに
-    car輪速度を目標(ほぼ0)まで追従させきれない（実測: ki_wheelを大きく上げると
-    終端角速度は下がるが際限なく下げきれず、到達角度誤差が悪化する側に振れる
-    ——本タスクの完了報告に実測ログを残す）。合わせ込まずそのまま記録する。"""
+    🔴 2026-08-20 是正の経緯: 当初は逆モデル前置き（角速度目標のリード補償）
+    版で終端角速度が0.2rad/sを満たせず（90°=6.9rad/s、180°=5.7rad/s）、
+    これを「車輪速度ループの時定数tau_vがその場旋回の総所要時間と同程度だから
+    構造的に無理」と判断したが、**教授セッションの検算でこれは誤りと指摘された**
+    （その場90°旋回で1輪に要る力0.291Nに対し停動時に出せる力は2.056N・
+    7.1倍の余裕、必要電圧0.904Vに対し電源3.0V・2.1Vの余りがあり、力にも
+    電圧にも大きな余裕があった。速度PIが必要な電圧を出していなかっただけ）。
+    そこで角速度目標のかさ上げをやめ、計画から必要な電圧を直接計算して足す
+    逆動力学（電圧）前置きに切り替えた結果、終端角速度は90°=0.77rad/s・
+    180°=0.36rad/s まで改善した（9〜16倍）。**それでも0.2rad/s以下には
+    届いていない**（車輪PIゲイン kp_wheel_spin/ki_wheel_spin・kp_psi_spin を
+    広く実測スイープしたが、両角度とも角度誤差3°未満を保ったまま0.2rad/s以下
+    まで追い込む組み合わせは見つからなかった。詳細ログは本タスクの完了報告を
+    参照）。電圧が飽和していれば「頭打ち」の説明が成り立つが、**実測では
+    飽和していない**（`tracker.voltage_saturated` は両角度とも False）ため、
+    合わせ込まずそのまま記録する。"""
     delta = math.radians(delta_deg)
     sp = spin_turn_time(delta, limits)
 
@@ -318,55 +325,48 @@ def test_spin_turn_needs_no_settling_wait(tmp_path, params, limits, delta_deg):
     actual_delta_deg = math.degrees(math.atan2(math.sin(yaw1 - yaw0), math.cos(yaw1 - yaw0)))
     angle_err_deg = abs(abs(actual_delta_deg) - abs(delta_deg))
     gyro_z, _omega_l, _omega_r = tracker._split_obs(sim.observation())
+    saturated = tracker.voltage_saturated
 
     print(f"\n[実測] その場旋回{delta_deg:.0f}deg: 物理限界時間={sp.time:.4f}s({sp.regime}) "
           f"実測時間={elapsed:.4f}s 実測/物理限界={time_ratio:.4f} "
           f"到達角度={actual_delta_deg:+.3f}deg 誤差={angle_err_deg:.3f}deg "
-          f"終端角速度={gyro_z:+.4f}rad/s steps={steps}")
+          f"終端角速度={gyro_z:+.4f}rad/s 終端電圧飽和={saturated} steps={steps}")
 
     assert time_ratio <= 1.3, f"実測タイムが物理限界の1.3倍を超えた(比={time_ratio:.4f})"
     assert angle_err_deg < 3.0, f"到達角度誤差が3degを超えた({angle_err_deg:.3f}deg)"
-    assert abs(gyro_z) <= 0.2, f"終端角速度が0.2rad/sを超えた({gyro_z:+.4f}rad/s)"
+    assert abs(gyro_z) <= 0.2, (
+        f"終端角速度が0.2rad/sを超えた({gyro_z:+.4f}rad/s、終端電圧飽和={saturated})"
+    )
 
 
 # ==========================================================================
-# 4c. 否定対照（対で）: 逆モデル前置き(use_lag_feedforward)を切ると
-#     その場旋回のオーバーシュートが明確に悪化する
+# 4c. 否定対照（対で）: 逆動力学（電圧）前置き(use_voltage_feedforward)を
+#     切ると、その場旋回の終端角速度が明確に悪化する
 # ==========================================================================
-def test_lag_feedforward_reduces_overshoot(tmp_path, params, limits):
-    """`use_lag_feedforward=True`（既定）と `False` とで90°その場旋回の
-    オーバーシュート角（目標90degを超えて回り過ぎた最大量）を測り、
-    Trueのほうが明確に小さいことを確認する。両方の実測値を印字する。"""
-    delta = math.radians(90.0)
-
-    def run(use_lag_feedforward):
-        sim = _open_sim(tmp_path, params, f"lagctrl_{use_lag_feedforward}", W=5, H=5,
-                         cell=(2, 2), heading_deg=90.0)
-        tracker = ProfileTracker(params, gains=TrackerGains(use_lag_feedforward=use_lag_feedforward))
+def test_voltage_feedforward_reduces_terminal_rate(tmp_path, params, limits):
+    """`use_voltage_feedforward=True`（既定）と `False` とで90°/180°その場
+    旋回の終端角速度を比べ、両方の実測値を印字する。"""
+    def run(delta_deg, use_voltage_feedforward):
+        delta = math.radians(delta_deg)
+        sim = _open_sim(tmp_path, params, f"vffctrl_{delta_deg}_{use_voltage_feedforward}",
+                         W=5, H=5, cell=(2, 2), heading_deg=90.0)
+        tracker = ProfileTracker(
+            params, gains=TrackerGains(use_voltage_feedforward=use_voltage_feedforward))
         tracker.reset(heading_deg=90.0)
         tracker.load_spin_plan(delta)
-        yaw0 = sim.privileged_pose()[2]
-        max_overshoot_deg = 0.0
-        for _ in range(MAX_STEPS):
-            obs = sim.observation()
-            vl, vr, done = tracker.update(obs)
-            sim.step_control(vl, vr)
-            yaw_now = sim.privileged_pose()[2]
-            delta_now_deg = math.degrees(math.atan2(math.sin(yaw_now - yaw0), math.cos(yaw_now - yaw0)))
-            max_overshoot_deg = max(max_overshoot_deg, delta_now_deg - 90.0)
-            if done:
-                return max_overshoot_deg
-        raise AssertionError(f"{MAX_STEPS} ステップ以内に収束しなかった")
+        steps = _run_until_done(sim, tracker)
+        gyro_z, _omega_l, _omega_r = tracker._split_obs(sim.observation())
+        return gyro_z
 
-    overshoot_with_ff = run(True)
-    overshoot_without_ff = run(False)
-
-    print(f"\n[実測] 逆モデル前置き オーバーシュート: あり={overshoot_with_ff:.3f}deg "
-          f"なし={overshoot_without_ff:.3f}deg")
-
-    assert overshoot_with_ff < overshoot_without_ff, (
-        "逆モデル前置きを入れてもオーバーシュートが悪化していない(前置きが効いていない疑い)"
-    )
+    for delta_deg in (90.0, 180.0):
+        gyro_with_ff = run(delta_deg, True)
+        gyro_without_ff = run(delta_deg, False)
+        print(f"\n[実測] その場旋回{delta_deg:.0f}deg 終端角速度: "
+              f"前置きあり={gyro_with_ff:+.4f}rad/s 前置きなし={gyro_without_ff:+.4f}rad/s")
+        assert abs(gyro_with_ff) < abs(gyro_without_ff), (
+            f"{delta_deg:.0f}deg: 逆動力学前置きを入れても終端角速度が悪化していない"
+            "(前置きが効いていない疑い)"
+        )
 
 
 # ==========================================================================
