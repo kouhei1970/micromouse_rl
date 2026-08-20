@@ -1106,6 +1106,15 @@ class ClassicExplorer:
             `classic.localization.DEFAULT_MAX_FORWARD_CORRECTION_M` を
             超える場合は誤検出とみなし、補正はせず基準点だけ現在地点へ
             張り直す（`Localizer.correct_forward_remaining` と同じ保険）。
+            🔴 最寄りの予測位置が基準点そのもの（`k=0`）の場合も同様に
+            誤検出扱いにする（是正 2026-08-20）。基準点が定まった後も s は
+            進み続けているので、2回目のイベントが「同じ境界」を指すのは、
+            側方センサの AMBIGUOUS 帯（重なり帯。`classic/sensing.py`
+            docstring 参照）を機体の横ずれでまたいだ二重検出でしかあり得ない。
+            これを信用して s を基準点まで後退させると、正しく進んでいた
+            推測航法を壊す（北向き開始で早期に衝突する原因になっていた。
+            `experiments/exp_027_friction_sweep/diagnose_start_heading.py`
+            参照）。
 
         直線⇔弧の切り替わり（同一 `PathBlock` 内で複数回起こりうる —
         `classic/ideal.py` の「直線→弧→直線→…」という幾何ブロックの構成の
@@ -1168,6 +1177,22 @@ class ClassicExplorer:
             return
 
         k = round((s - self._wc_fwd_ref_s) / cell_size)
+        if k == 0:
+            # 🔴 是正（2026-08-20・北向き開始の脆さの診断で確認）: k=0 は
+            # 「今回のイベントが基準点と同じ区画境界を指している」という意味であり、
+            # その間に s は既に進んでいる（境界を通過した実績があるからこそ2回目の
+            # イベントが起きた）。それを「同じ境界」として s を基準点まで後退させると、
+            # 正しく進んでいた推測航法を壊す。側方センサには実測で確認済みの
+            # AMBIGUOUS帯（重なり帯。`classic/sensing.py` docstring 参照）があり、
+            # 機体の横ずれ・方位ずれがわずかにあるだけで同じ境界を短距離のうちに
+            # 2回検出しうる（実測: maze_41004・u=0.50・北向き開始で s≈0.92m 付近、
+            # 4ティック/48mmの間隔で2回目のイベントが発生し、-47.9mmの誤補正を
+            # 発生させ、そのまま衝突に至ることを `diagnose_start_heading.py` で
+            # 確認した）。誤検出とみなし、基準点だけ現在地点へ張り直す
+            # （下の「大きすぎる補正」の扱いと同じ。s は動かさない）。
+            self._wc_fwd_ref_s = s
+            return
+
         s_expected = self._wc_fwd_ref_s + k * cell_size
         correction = s_expected - s
         if abs(correction) <= DEFAULT_MAX_FORWARD_CORRECTION_M:

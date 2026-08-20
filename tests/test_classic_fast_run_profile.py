@@ -36,6 +36,8 @@ from classic.tracker import TrackerGains
 
 Cell = Tuple[int, int]
 
+REPO_ROOT = Path(__file__).resolve().parent.parent
+
 MAZE_W, MAZE_H = 6, 6
 KNOWN_PATH: List[Cell] = [(0, 0), (0, 1), (0, 2), (1, 2), (1, 3), (2, 3)]
 GOAL_CELLS: List[Cell] = [(2, 2), (2, 3), (3, 2), (3, 3)]
@@ -466,6 +468,76 @@ def test_apply_wall_correction_snaps_forward_drift_to_the_nearest_cell_boundary(
     assert ex._wc_fwd_ref_s == pytest.approx(s3_measured), "誤検出時に基準点が現在地点へ張り直されなかった"
 
 
+def test_apply_wall_correction_ignores_a_same_boundary_double_detection(
+        tmp_path, params, monkeypatch, long_straight_maze_and_walls):
+    """是正（2026-08-20・北向き開始が南向き開始よりずっと脆い問題の診断で発見）:
+
+    `k = round((s - ref) / cell_size)` が 0 になる（＝新しく観測した境界が
+    基準点と同じ区画境界を指す）のに、その間 `s` は既に進んでいるという
+    状況は、区画境界が実在してもう一度起きたのではなく、側方センサの
+    AMBIGUOUS帯（重なり帯。`classic/sensing.py` docstring 参照）を機体の
+    横ずれでまたいだ**同じ境界の二重検出**でしかあり得ない
+    （区画境界は cell_size ごとにしか無いため）。これを信用して `s` を
+    基準点まで後退させると、正しく進んでいた推測航法を壊す。
+
+    実測（`experiments/exp_027_friction_sweep/diagnose_start_heading.py`、
+    maze_41004・u=0.50・北向き開始）: s≈0.92m 付近でこの二重検出が起き、
+    -47.9mm の誤補正のあと衝突まで一度も回復しなかった（到達距離が経路の
+    約9%で終わっていた）。本検査はこの二重検出そのものを人為的に再現し、
+    `_apply_wall_correction` が `s`/基準点のどちらも壊さないことを直接見る。
+    """
+    maze, v_walls, h_walls = long_straight_maze_and_walls
+    sim = _fresh_sim(tmp_path, params, v_walls, h_walls, "wc_fwd_k0")
+    ex = _fresh_explorer_in_fast(sim, params, maze, fast_mode="profile", wall_correction=True,
+                                  width=LONG_STRAIGHT_W, height=LONG_STRAIGHT_H)
+    assert ex._fast_plan is not None
+    step = ex._fast_plan.steps[0]
+    assert isinstance(step, PathBlock), "経路の先頭がPathBlockであるという前提が崩れた"
+
+    cell_size = params.cell_size
+    dummy_obs = sim.observation()
+
+    s0 = 0.02
+    assert ex._tracker._kappa_at(s0) == 0.0, "テストの前提(先頭付近が直線)が崩れた"
+
+    calls = {"sensing": _wall_sensing(SenseWallState.WALL, SenseWallState.WALL)}
+    monkeypatch.setattr("classic.explorer.sense_walls", lambda obs, p: calls["sensing"])
+
+    # tick 1: 最初の観測（両側WALL）。基準を作るだけ。
+    ex._tracker._s = s0
+    ex._apply_wall_correction(dummy_obs)
+    assert ex._wc_fwd_ref_s is None
+
+    # tick 2: 左側がCLEARへ反転(1回目のエッジ)。較正だけで補正はしない。
+    s1 = s0 + 0.01
+    ex._tracker._s = s1
+    calls["sensing"] = _wall_sensing(SenseWallState.CLEAR, SenseWallState.WALL)
+    ex._apply_wall_correction(dummy_obs)
+    assert ex._wc_fwd_ref_s == pytest.approx(s1)
+    assert ex._tracker._s == pytest.approx(s1)
+
+    # tick 3: cell_size(=0.18m)の半分(0.09m)よりずっと近い距離(0.03m=30mm)
+    # で右側がCLEARへ反転(2回目のエッジ)。round((s2-s1)/cell_size)==0 になる
+    # ―― 区画境界がこんなに近くにもう1つあることは無いので、これは同じ境界の
+    # 二重検出とみなし、`_tracker._s` は書き換えず、基準点だけ現在地点へ
+    # 張り直すはず。
+    gap = 0.03
+    assert gap < cell_size / 2.0, "テストの前提(半区画未満の近さ)が崩れた"
+    s2 = s1 + gap
+    assert round((s2 - s1) / cell_size) == 0, "テストの前提(k=0になる近さ)が崩れた"
+    assert ex._tracker._kappa_at(s2) == 0.0, "テストの前提(直線区間内)が崩れた"
+    ex._tracker._s = s2
+    calls["sensing"] = _wall_sensing(SenseWallState.CLEAR, SenseWallState.CLEAR)
+    ex._apply_wall_correction(dummy_obs)
+    print(f"\n[実測] 同一境界の二重検出: s1={s1:.4f} s2(測定)={s2:.4f} "
+          f"補正後s={ex._tracker._s:.4f} 基準点={ex._wc_fwd_ref_s}")
+    assert ex._tracker._s == pytest.approx(s2), (
+        "k=0の二重検出なのに弧長を基準点まで後退させてしまった"
+        "（北向き開始が壊れていた原因そのもの）"
+    )
+    assert ex._wc_fwd_ref_s == pytest.approx(s2), "基準点が現在地点へ張り直されなかった"
+
+
 def test_apply_wall_correction_lateral_matches_localization_estimate(
         tmp_path, params, monkeypatch, carved_maze_and_walls):
     """(a) 横位置補正: `_apply_wall_correction` が `ProfileTracker._e_lat` へ
@@ -504,3 +576,110 @@ def test_apply_wall_correction_lateral_matches_localization_estimate(
     ex._tracker._s = arc_s
     ex._apply_wall_correction(dummy_obs)
     assert ex._tracker._e_lat == 0.0, "弧区間なのに横位置補正が効いてしまった"
+
+
+# ==========================================================================
+# 7. 北向き開始が南向き開始よりずっと脆い問題の再発防止
+#    （2026-08-20・診断: `experiments/exp_027_friction_sweep/
+#    diagnose_start_heading.py`。原因はテスト6の k=0 二重検出。ここでは
+#    その症状そのもの――実際の迷路で北向き開始が異常に早く衝突すること――
+#    を直接見る。EXPLORE/RETURN は使わず、迷路の真の壁をそのまま「既知の
+#    地図」として与えて Phase.FAST を直接始める（このファイルの既存の
+#    作法どおり。EXPLORE を挟むと数分かかり `-q` での前景完走に向かない）。
+# ==========================================================================
+NORTH_VS_SOUTH_MAZE_NPZ = REPO_ROOT / "competition" / "mazes" / "design_turn_v1" / "maze_41004.npz"
+
+
+@pytest.fixture(scope="module")
+def maze_41004_known_map_and_xml(tmp_path_factory):
+    """maze_41004 の真の壁をそのまま『既知の地図』にした `MazeMap` と、
+    対応する MJCF の XML パス。EXPLORE を一切使わないための近道
+    （`experiments/exp_027_friction_sweep/judge.py::compute_t_plan_from_saved_map`
+    と同じ「`MazeMap.v_walls`/`h_walls` へ直接代入する」作法）。"""
+    data = np.load(NORTH_VS_SOUTH_MAZE_NPZ)
+    v_walls_bool = data["v_walls"]
+    h_walls_bool = data["h_walls"]
+    width = int(data["width"]) if "width" in data else int(v_walls_bool.shape[0] - 1)
+    height = int(data["height"]) if "height" in data else int(h_walls_bool.shape[1])
+
+    maze = MazeMap(width, height)
+    # 競技 npz の規約(1=壁あり・0=通行可、`competition/evaluator.py`
+    # モジュールコメント参照)を MazeMap.WallState(WALL=1・OPEN=2)へ変換する。
+    maze.v_walls[:, :] = np.where(v_walls_bool == 1, int(MapWallState.WALL), int(MapWallState.OPEN))
+    maze.h_walls[:, :] = np.where(h_walls_bool == 1, int(MapWallState.WALL), int(MapWallState.OPEN))
+
+    xml_dir = tmp_path_factory.mktemp("maze_41004_known_map")
+    xml_path = str(xml_dir / "maze_41004.xml")
+    build_maze_robot_xml(v_walls_bool, h_walls_bool, xml_path, model_name="maze_41004_known_map",
+                          params=RobotParams())
+    return maze, xml_path, width, height
+
+
+def _drive_fast_run_to_completion(sim: MouseSim, ex: ClassicExplorer, max_ticks: int = 3000):
+    """衝突またはゴール停止ホールドに達するまで駆動し、
+    (到達ティック数, 衝突したか, 最終弧長[m未満・ProfileTracker.s]) を返す。"""
+    n = 0
+    collided = False
+    for _ in range(max_ticks):
+        obs = sim.observation()
+        vl, vr, plan_id = ex.tick(obs)
+        result = sim.step_control(vl, vr)
+        n += 1
+        if result["collision"]:
+            collided = True
+            break
+        if plan_id == "fast:goal_stop":
+            break
+    s_final = ex._tracker.s if ex._tracker is not None else None
+    return n, collided, s_final
+
+
+def _begin_known_map_fast_run(maze_41004_known_map_and_xml, params: RobotParams,
+                               heading_deg: float, ex_heading: Direction) -> Tuple[MouseSim, ClassicExplorer]:
+    maze, xml_path, width, height = maze_41004_known_map_and_xml
+    sim = MouseSim(xml_path, params=params)
+    sim.full_reset(cell=(0, 0), heading_deg=heading_deg)
+    ex = ClassicExplorer(width, height, params=params, fast_mode="profile",
+                          friction_use=0.50, wall_correction=True)
+    ex.maze = maze
+    ex.heading = ex_heading  # 実際の物理姿勢(heading_deg)と揃える(_begin_fast_run docstring参照)
+    obs = sim.observation()
+    ex._begin_fast_run(obs)
+    ex._need_replan = False
+    return sim, ex
+
+
+def test_north_start_is_not_catastrophically_more_fragile_than_south_start(
+        maze_41004_known_map_and_xml, params):
+    """北向き開始（先頭が直線=その場旋回を挟まない）が、南向き開始（先頭が
+    その場旋回）よりずっと早く衝突する、という exp_027 で見つかった脆さの
+    直接検査。u=0.50・wall_correction=True・maze_41004（実在する迷路）で、
+    北向き開始と南向き開始それぞれで Phase.FAST を直接始め、衝突するまでの
+    到達ティック数を比べる。
+
+    是正前の実測（このテストと同じ経路で確認）: 北=186ティックで衝突・
+    南=890ティックで衝突（比 0.21 — 北が南の1/5も走れない）。
+    是正後の実測: 北=592ティックで衝突・南=868ティックで衝突（比 0.68）。
+    しきい値は是正前を確実に落とし、是正後には十分な余裕を残す位置に置く。
+    """
+    sim_n, ex_n = _begin_known_map_fast_run(
+        maze_41004_known_map_and_xml, params, heading_deg=90.0, ex_heading=Direction.N)
+    n_ticks_north, collided_north, s_north = _drive_fast_run_to_completion(sim_n, ex_n)
+
+    sim_s, ex_s = _begin_known_map_fast_run(
+        maze_41004_known_map_and_xml, params, heading_deg=-90.0, ex_heading=Direction.S)
+    n_ticks_south, collided_south, s_south = _drive_fast_run_to_completion(sim_s, ex_s)
+
+    ratio = n_ticks_north / n_ticks_south if n_ticks_south else float("inf")
+    print(f"\n[実測] 北向き開始: {n_ticks_north}ティック 衝突={collided_north} s={s_north}")
+    print(f"[実測] 南向き開始: {n_ticks_south}ティック 衝突={collided_south} s={s_south}")
+    print(f"[実測] 到達ティック数の比(北/南): {ratio:.3f}")
+
+    assert n_ticks_north >= 400, (
+        f"北向き開始が{n_ticks_north}ティックしか走れなかった"
+        "（是正前の水準=186ティックに近い。k=0の二重検出デバウンスの再発を疑う）"
+    )
+    assert ratio >= 0.5, (
+        f"北向き開始が南向き開始に比べて著しく脆い(比={ratio:.3f})。"
+        "「北向き開始でも南向き開始と同程度に走れる」という要件が崩れている"
+    )
