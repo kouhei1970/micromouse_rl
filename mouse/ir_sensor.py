@@ -36,10 +36,29 @@ tan ワープした非一様格子（`_warped_axis`）で標本点を集中さ�
 「近づきすぎると値が下がる」山なりの応答の本体になる。両者の明部を格子が両方とも
 捉えられるよう、窓の幅は離隔ぶんの余裕も持たせてある）。
 
+## 遮蔽（オクルージョン）について
+
+面素ごとの寄与を足す前に、「LED からその点まで」と「その点から PT まで」の 2 本の線分が
+他の壁・柱で遮られていないかを判定する（`response(..., occlusion=True)` が既定。
+`occlusion=False` で遮蔽なしの旧挙動と厳密に一致する＝否定対照）。迷路の壁・柱は軸平行の
+直方体（`Rect` に高さ `wall_height_m` を与えたもの）なので、線分と直方体の交差は
+slab 法（3軸それぞれで交差する媒介変数区間を出し積を取る）で厳密に解ける。詳しい手順は
+`_segment_occluded()` のコメントを見ること。
+
+自分自身（いま寄与を計算している面が属する直方体）との交差は、始点をずらす近似ではなく
+**その直方体を番号で除外する**方法で正確に取り除く（面上の点は定義よりその直方体の表面上に
+あるので、除外しないとほぼ確実に自己遮蔽の誤検出になる。番号除外なら「ずらす量」の
+調整が要らない）。隣接する別の直方体との境界でのかすめ当たりは、交差区間を
+`[eps_t, 1-eps_t]` に収めることで弾く。
+
+床は「壁の直方体を遮る側」には回らない（壁の面素の z 座標は常に `wall_height_m/2 > 0` で、
+LED・PT の取付高さも常に 0 より大きいので、両端の z が正である線分は z=0 を横切れない
+＝床は壁向けの光線を遮り得ない。この非対称性は意図的で、床を遮蔽候補の直方体に
+含めていない理由でもある）。逆に壁は床パッチの一部を遮る（縦配置では PT が床に近く
+床の寄与が効くため、これは無視できない）。
+
 ## 既知の限界
 
-- 他の壁・柱による遮蔽（オクルージョン）は計算しない。面ごとに独立に積分するだけなので、
-  途中に別の障害物があっても素通しになる。
 - 床パッチは無限平面ではなく `floor_halfextent_m` の有限矩形（センサ周辺のみ）。
   遠方の床からの寄与は無視できるという前提（近似の妥当性はテストの数値で確認する）。
 - PT の受光面積・LED の絶対光度は較正していない（`response()` の出力は任意単位。
@@ -321,11 +340,108 @@ def _facet_anchor_and_scale(
     return anchor_u, anchor_v, w
 
 
-def _integrate_facet(
-    facet: _Facet, led: _Emitter, pt: _Emitter, surf: SurfaceSpec, n_grid: int,
-    led_intensity: float, pt_responsivity: float, max_range_m: float,
-    half_angle_max_deg: float, separation_m: float,
-) -> float:
+# ============================================================================
+# 遮蔽（オクルージョン）: 軸平行直方体との線分交差（slab 法）
+# ============================================================================
+def _obstacle_boxes(rects: Sequence[Rect], wall_height_m: float) -> np.ndarray:
+    """壁・柱の top-view 足跡 `Rect` を、遮蔽判定用の 3D 直方体（xmin,xmax,ymin,ymax,zmin,zmax）
+    の配列 shape (N, 6) にする。`rects` と同じ並び順（`facet` 側の owner インデックスと対応させる）。
+    """
+    if len(rects) == 0:
+        return np.zeros((0, 6), dtype=float)
+    return np.array(
+        [[r.cx - r.hx, r.cx + r.hx, r.cy - r.hy, r.cy + r.hy, 0.0, wall_height_m] for r in rects],
+        dtype=float,
+    )
+
+
+def _segment_occluded(
+    A: np.ndarray, B: np.ndarray, boxes: np.ndarray,
+    skip_idx: Union[None, int, np.ndarray],
+    eps_t: float = 1e-6,
+) -> np.ndarray:
+    """線分 A→B が `boxes`（行 = xmin,xmax,ymin,ymax,zmin,zmax）のいずれかに遮られているかを
+    slab 法で判定する。迷路の壁・柱はすべて軸平行の直方体なので、この判定は近似ではなく厳密解。
+
+    `A`・`B` は shape `(..., 3)` で、互いにブロードキャスト可能なら形が違ってもよい
+    （例: 片方が LED の 1 点、もう片方が面素の求積点グリッド全体。あるいは複数の面を
+    先頭軸にまとめて一括判定することもできる。下記 `skip_idx` 参照）。戻り値は
+    ブロードキャスト後の形の bool 配列（True = 遮られている）。
+
+    やり方（slab 法）: 線分を `P(t) = A + t*(B-A)`, `t ∈ [0,1]` とパラメータ化し、
+    各軸ごとに「直方体の範囲に入っている t の区間」を求めて 3 軸分の積（共通部分）を取る。
+    共通部分が空でなければ交差している。軸に平行な光線（分母 ≈ 0）は 0 除算になるので、
+    「始点がその軸の範囲内にあるか」だけで区間を作り直す（範囲内なら常に交差 = 区間は
+    `(-inf, inf)`、範囲外なら絶対に交差しない = 区間は空）。
+
+    自分自身との交差の除外: `skip_idx` に「いま寄与を計算している面が属する直方体」の
+    番号を渡すと、その箱だけ判定から外す。面上の求積点は定義よりその箱の表面上にあるので、
+    除外しないと「自分の壁に遮られた」という誤検出になる。始点をわずかにずらす近似ではなく
+    箱を番号で正確に除外する理由: ずらす量の大小に判定結果が左右されない（ずらしすぎると
+    本当の遮蔽を見逃し、少なすぎると数値誤差で自己交差を拾う、という調整が要らない）。
+    一方、別の（除外対象ではない）箱との境界でのかすめ当たり（例: 壁と柱が角で接する）は
+    `eps_t` で弾く。交差区間を `[eps_t, 1-eps_t]` にクランプしてから空かどうかを見ることで、
+    「線分の両端ぎりぎり」での測度ゼロの接触を遮蔽とみなさないようにしている。
+
+    `skip_idx` は `None`（除外なし）・`int`（`A` の先頭軸すべてに同じ箱番号を適用）・
+    `A` の先頭軸（面の枚数ぶん）と同じ長さの整数配列（面ごとに別の箱番号。負の値＝
+    その面は除外なし＝床のような「属する箱が無い」面用）のいずれかを受け付ける。
+    後者は「面ごとに 1 回ずつ `_segment_occluded` を呼ぶ」代わりに「複数の面をまとめて
+    1 回で判定する」ための足場（速さのための numpy 一括化。`response()` 側で
+    可視な面すべての求積点を 1 本の配列に積んでから 1 回だけ呼ぶのに使う）。
+    """
+    out_shape = np.broadcast_shapes(A.shape[:-1], B.shape[:-1])
+    if boxes.shape[0] == 0:
+        return np.zeros(out_shape, dtype=bool)
+
+    d = B - A                      # (...,3)  ブロードキャストされる
+    A3 = A[..., None, :]           # (...,1,3)
+    d3 = d[..., None, :]           # (...,1,3)
+    mins = boxes[:, (0, 2, 4)]     # (Nbox,3)
+    maxs = boxes[:, (1, 3, 5)]     # (Nbox,3)
+
+    with np.errstate(divide="ignore", invalid="ignore"):
+        t1 = (mins - A3) / d3      # (...,Nbox,3)
+        t2 = (maxs - A3) / d3
+    t_near = np.minimum(t1, t2)
+    t_far = np.maximum(t1, t2)
+
+    parallel = np.abs(d3) < 1e-15
+    inside = (A3 >= mins) & (A3 <= maxs)
+    t_near = np.where(parallel, np.where(inside, -np.inf, np.inf), t_near)
+    t_far = np.where(parallel, np.where(inside, np.inf, -np.inf), t_far)
+
+    tmin = np.max(t_near, axis=-1)     # (...,Nbox)  3 軸の共通部分の下端
+    tmax = np.min(t_far, axis=-1)      # (...,Nbox)  3 軸の共通部分の上端
+
+    t_enter = np.maximum(tmin, eps_t)
+    t_exit = np.minimum(tmax, 1.0 - eps_t)
+    hit = t_enter < t_exit             # (...,Nbox)
+
+    if isinstance(skip_idx, np.ndarray):
+        # 面ごとに別の箱番号を除外する（先頭軸 = 面の軸という前提。`response()` 側で
+        # そう積んでいる）。負の値の面（床など、属する箱が無い）は何も除外しない。
+        n_facets = skip_idx.shape[0]
+        skip_mask = np.zeros((n_facets, boxes.shape[0]), dtype=bool)
+        valid = skip_idx >= 0
+        skip_mask[np.nonzero(valid)[0], skip_idx[valid]] = True
+        # hit の形は (n_facets, グリッドの軸..., Nbox)。skip_mask ((n_facets, Nbox)) を
+        # 中間のグリッド軸ぶんだけ 1 埋めして reshape し、そのままブロードキャストで引く。
+        broadcast_shape = (n_facets,) + (1,) * (hit.ndim - 2) + (boxes.shape[0],)
+        hit = hit & ~skip_mask.reshape(broadcast_shape)
+    elif skip_idx is not None:
+        hit = hit.copy()
+        hit[..., skip_idx] = False
+
+    return np.any(hit, axis=-1)
+
+
+def _facet_grid(
+    facet: _Facet, led: _Emitter, n_grid: int, half_angle_max_deg: float, separation_m: float,
+) -> Tuple[np.ndarray, np.ndarray]:
+    """面素の求積点（ワールド座標、shape (n_grid, n_grid, 3)）と面積要素 `dA` を作る
+    （`_warped_axis` による tan ワープ格子。詳しくはモジュール docstring「数値積分について」）。
+    """
     anchor_u, anchor_v, w = _facet_anchor_and_scale(facet, led, half_angle_max_deg, separation_m)
     su, wu = _warped_axis(facet.half_u, anchor_u, w, n_grid)
     sv, wv = _warped_axis(facet.half_v, anchor_v, w, n_grid)
@@ -339,7 +455,22 @@ def _integrate_facet(
         + SU[:, :, None] * facet.u[None, None, :]
         + SV[:, :, None] * facet.v[None, None, :]
     )
+    return points, dA
 
+
+def _integrate_facet(
+    facet: _Facet, led: _Emitter, pt: _Emitter, surf: SurfaceSpec,
+    points: np.ndarray, dA: np.ndarray,
+    led_intensity: float, pt_responsivity: float, max_range_m: float,
+    occluded: Optional[np.ndarray] = None,
+) -> float:
+    """`_facet_grid()` で作った求積点 `points`・`dA` を使って、面素ごとの寄与を積分する。
+
+    `occluded`（`None` か、`points.shape[:-1]` と同じ形の bool 配列。True の点は寄与ゼロ）は
+    呼び出し側（`response()`）が渡す。複数の面をまとめて `_segment_occluded` に 1 回だけ
+    通した結果のうち、この面に対応する部分を切り出して渡す形にしてある
+    （速さのための一括化。詳しくは `response()` 側のコメント参照）。
+    """
     d_e = points - led.pos
     r_e = np.linalg.norm(d_e, axis=-1)
     r_e_safe = np.maximum(r_e, 1e-6)
@@ -369,6 +500,10 @@ def _integrate_facet(
 
     contribution = radiance * cos_v * pt_responsivity * pt_sensitivity / (r_v_safe ** 2)
     valid = (r_e < max_range_m) & (r_e > 1e-9) & (r_v > 1e-9)
+
+    if occluded is not None:
+        valid = valid & ~occluded
+
     contribution = np.where(valid, contribution, 0.0)
 
     return float(np.sum(contribution * dA))
@@ -390,6 +525,7 @@ def response(
     max_range_m: float = DEFAULT_MAX_RANGE_M,
     led_intensity: float = 1.0,
     pt_responsivity: float = 1.0,
+    occlusion: bool = True,
 ) -> float:
     """機体姿勢 `pose` のとき、そのセンサが受ける光量（任意単位）を返す。
 
@@ -406,6 +542,11 @@ def response(
         max_range_m: これより遠い壁・遠い面素は積分から除く。
         led_intensity: LED の基準強度 I0（任意単位）。
         pt_responsivity: PT の基準感度（任意単位。面積などを丸めて含む）。
+        occlusion: 面素ごとの寄与を足す前に、LED→点・点→PT の 2 本の線分が他の壁・柱で
+            遮られていないかを判定し、遮られていれば寄与をゼロにするか（既定 True）。
+            `False` にすると遮蔽を計算しない旧挙動と厳密に一致する（否定対照。
+            `research_notes/note_034_ir_sensor_model.md` 追記分・本モジュール冒頭
+            「遮蔽（オクルージョン）について」参照）。
 
     Returns:
         センサが受ける光量（任意単位）。強度のまま使うか距離に直すかはここでは決めない
@@ -414,26 +555,76 @@ def response(
     led, pt = _sensor_world_geometry(sensor, pose)
     half_angle_max = max(sensor.led_half_angle_deg, sensor.pt_half_angle_deg)
 
-    facets: list = []
+    # 速さのための足切り 1: そもそもセンサの最大到達距離に入らない壁は最初から除く
+    # （面積分の対象からも、遮蔽の候補直方体からも除ける。迷路全体の壁数によらず、
+    # センサ周辺だけに計算量を抑える）。
+    near_rects: list = []
     for r in surfaces:
         diag = math.hypot(r.hx, r.hy)
         dist_center = math.hypot(r.cx - led.pos[0], r.cy - led.pos[1])
         if dist_center - diag > max_range_m:
             continue
-        facets.extend(_wall_facets([r], wall_height_m))
+        near_rects.append(r)
+
+    facets: list = []
+    facet_owner: list = []   # 各 facet が属する遮蔽用直方体の番号（床は -1 = 属する箱が無い）
+    for owner_idx, r in enumerate(near_rects):
+        for f in _wall_facets([r], wall_height_m):
+            facets.append(f)
+            facet_owner.append(owner_idx)
 
     if include_floor:
         mid_xy = (led.pos[:2] + pt.pos[:2]) / 2.0
         facets.append(_floor_facet(mid_xy, floor_halfextent_m))
+        facet_owner.append(-1)
 
-    total = 0.0
-    for facet in facets:
+    # 遮蔽の候補直方体（`near_rects` と同じ並び順 = facet_owner の番号と対応）。
+    # occlusion=False のときは空配列にし、下の occluded_list がすべて None になることで
+    # 従来コードと完全に同じ計算経路（同じ演算・同じ浮動小数）を通す（否定対照用）。
+    boxes = _obstacle_boxes(near_rects, wall_height_m) if occlusion else np.zeros((0, 6))
+
+    # バックフェイスカリング（LED から見て向こう向きの面は最初から除く）を先に済ませ、
+    # 残った可視な面だけを以降の求積・遮蔽判定にかける。
+    vis_facets: list = []
+    vis_owner: list = []
+    for facet, owner_idx in zip(facets, facet_owner):
         to_led = led.pos - facet.center
         if float(np.dot(to_led, facet.normal)) <= 0.0:
-            continue  # LED から見て面が向こう向き（バックフェイスカリング）
+            continue
+        vis_facets.append(facet)
+        vis_owner.append(owner_idx)
+
+    if not vis_facets:
+        return 0.0
+
+    grids = [_facet_grid(f, led, n_grid, half_angle_max, sensor.separation_m) for f in vis_facets]
+    points_list = [g[0] for g in grids]
+    dA_list = [g[1] for g in grids]
+
+    # 速さのための足切り 2: 交差判定を numpy でまとめて行う。
+    # 面ごとに `_segment_occluded` を逐次呼ぶと（可視な面の枚数）× 2 回の小さな numpy 呼び出しに
+    # なる。可視な面すべての求積点を先頭軸にまとめて 1 本の配列に積み、LED 側・PT 側それぞれ
+    # 1 回だけ `_segment_occluded` を呼ぶことで、小さな呼び出しの繰り返しを大きな配列演算
+    # 1 回にまとめる（結果は数学的に「面ごとに呼んだ場合」と同一。詰め方が変わるだけ。
+    # 計測では Python 呼び出し回数はこれで 30〜40 分の 1 に減ったが、実測時間の大半は
+    # 呼び出しオーバーヘッドではなく（面の枚数）×（格子点数）×（候補直方体数）に比例する
+    # 素の演算量だった。現実の迷路のように候補直方体数が多い場面で本当に効くのは、
+    # `max_range_m` によるセンサ周辺への足切り＝上の「足切り 1」の方である）。
+    if occlusion and boxes.shape[0] > 0:
+        all_points = np.stack(points_list, axis=0)      # (n_vis, n_grid, n_grid, 3)
+        owner_arr = np.array(vis_owner, dtype=int)       # 床は -1（除外なしの目印）
+        occ_led = _segment_occluded(all_points, led.pos, boxes, owner_arr)
+        occ_pt = _segment_occluded(all_points, pt.pos, boxes, owner_arr)
+        occluded_all = occ_led | occ_pt                  # (n_vis, n_grid, n_grid)
+        occluded_list = [occluded_all[i] for i in range(len(vis_facets))]
+    else:
+        occluded_list = [None] * len(vis_facets)
+
+    total = 0.0
+    for facet, points, dA, occluded in zip(vis_facets, points_list, dA_list, occluded_list):
         total += _integrate_facet(
-            facet, led, pt, surf, n_grid, led_intensity, pt_responsivity,
-            max_range_m, half_angle_max, sensor.separation_m,
+            facet, led, pt, surf, points, dA, led_intensity, pt_responsivity,
+            max_range_m, occluded,
         )
 
     return total * sensor.gain

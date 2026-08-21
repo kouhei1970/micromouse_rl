@@ -7,6 +7,12 @@
 - 峰の位置は壁の有無・床の有無・格子の細かさで動きうる（note_034 参照）ため、
   「41mm」のような教授セッションの見積もりに合わせ込まず、ここで実測した値
   （既定パラメータ・n_grid=28 で 44mm）を基準として固定する。
+- **遮蔽（オクルージョン）判定を追加（2026-08-21）。** `response()` の既定は
+  `occlusion=True`。単一の壁＋床という以下の共通セットアップでは、床パッチの一部が
+  その壁自身に遮られる分だけ値が下がる（壁の裏側はもともとバックフェイスカリングで
+  積分対象外なので、変わるのは床の寄与だけ）。ピーク位置は変わらず 44mm のまま、
+  ピーク値は 0.8337 → 0.829894 に下がった（下の各検査は再実測した値で閾値を
+  確認済み。壁・柱どうしの遮蔽そのものの検査は `test_near_wall_blocks_far_wall` 等）。
 
 共通のセンサ配置: `pos=(0, 0, 0.010)`・`axis=(1, 0, 0)`（機体原点に取付高さ10mm・
 光軸+x）。この配置は機体座標の原点にあるため、機体姿勢 `(x, y, theta)` がそのまま
@@ -65,8 +71,12 @@ def _flat_wall_response(distance_m: float, incidence_deg: float = 0.0,
 def test_response_is_not_monotonic_in_distance():
     """壁に正対したときの応答を 20〜70mm で 1mm 刻みに走らせ、山なりであることを確認する。
 
-    実測（本テストの `print` 出力、既定パラメータ・n_grid=28）: ピークは 44mm、
-    値は 0.8337（任意単位）。5mm ではピークの 0.45% 未満。
+    実測（本テストの `print` 出力、既定パラメータ・n_grid=28、遮蔽あり）: ピークは 44mm、
+    値は 0.829894（任意単位）。5mm ではピークの 1e-25 倍未満（遮蔽なしのときの旧実測値
+    0.45% 未満よりさらに小さい。近距離では壁の直接寄与がほぼ消え、床の寄与が支配的だが、
+    その床の主要な照射域はセンサ直近の壁自身の陰に入るため、遮蔽ありだとほぼ完全に
+    落ちる。壁が無い条件での床のみの応答は距離に依らずほぼ一定値になることも別途確認済み
+    — 詳細は `mouse/ir_sensor.py` の「遮蔽（オクルージョン）について」）。
     """
     distances_mm = np.arange(20, 71, 1)
     values = np.array([_flat_wall_response(d / 1000.0) for d in distances_mm])
@@ -96,7 +106,7 @@ def test_response_is_not_monotonic_in_distance():
     # 5mm はピークの 1% 未満（近づきすぎると値が下がる、という現象そのものの確認）。
     v5 = _flat_wall_response(0.005)
     ratio = v5 / peak_v
-    print(f"[response-vs-distance] 5mm value = {v5:.6f}, ratio to peak = {ratio:.4%}")
+    print(f"[response-vs-distance] 5mm value = {v5:.6e}, ratio to peak = {ratio:.6e}")
     assert ratio < 0.01
 
 
@@ -161,9 +171,12 @@ def test_vertical_and_horizontal_differ_somewhere():
     「差が出るとしたら次の条件」のうち 1（近距離・応答のピークより内側）と
     5（床の反射。縦配置では PT が床に近い）を実際に試す。
 
-    実測（本テストの `print` 出力）: d=10mm（ピーク44mmの内側の近距離）で、
-    縦配置 3.787e-3・横配置 4.217e-3（相対差 約11.4%）。n_grid を 20〜120 まで振っても
-    比はほぼ一定（0.898）なので、格子の粗さによる数値誤差ではなく構造的な差である。
+    実測（本テストの `print` 出力、遮蔽あり・既定）: d=10mm（ピーク44mmの内側の近距離）で、
+    縦配置 4.347e-7・横配置 4.815e-7（相対差 約10.8%）。遮蔽を入れる前の実測（縦配置
+    3.787e-3・横配置 4.217e-3・相対差 約11.4%）から絶対値は 4 桁近く落ちたが
+    （d=10mm では壁自身の陰になる床の領域が主要な照射域だったため。遮蔽ありでは壁の
+    直接寄与が支配的になる。上のテスト参照）、相対差はほぼ同じ大きさのままなので、
+    格子の粗さによる数値誤差ではなく構造的な差であるという結論は変わらない。
     """
     sensor_v = IrSensorSpec(name="V", pos=(0.0, 0.0, 0.010), axis=(1.0, 0.0, 0.0),
                              layout="vertical")
@@ -253,7 +266,8 @@ def test_table_roundtrip(tmp_path: Path):
 def test_specular_component_changes_response():
     """`specular` を 0→0.5 にすると応答が変わり、0 のままなら一致する（対で確認する）。
 
-    実測: d=44mm 正対で specular=0 → 0.8337、specular=0.5 → 2.1700（+160%）。
+    実測（遮蔽あり・既定）: d=44mm 正対で specular=0 → 0.829894、specular=0.5 → 2.166238
+    （+161.0%）。
     """
     surf_a = SurfaceSpec(specular=0.0)
     surf_b = SurfaceSpec(specular=0.0)  # 別インスタンスの「0のまま」（否定対照）
@@ -270,6 +284,152 @@ def test_specular_component_changes_response():
     assert v_a == v_b, "specular=0 のままなのに値が変わった（再現性が壊れている）"
     assert v_c != v_a
     assert abs(v_c - v_a) / v_a > 0.10, "specular=0.5 にしても応答がほとんど変わらなかった"
+
+
+# ============================================================================
+# 7. 遮蔽（オクルージョン）: 手前の壁が奥の壁を隠す／柱が壁の一部を隠す
+# ============================================================================
+def _wall_at(front_x: float, cy: float = 0.0, hy: float = WALL_HY,
+             thickness_m: float = 0.012) -> Rect:
+    """壁面（法線 -x 側）が世界 x=`front_x` に来るように置いた `Rect`（`WALL` と同じ厚み）。"""
+    return Rect(cx=front_x + thickness_m / 2.0, cy=cy, hx=thickness_m / 2.0, hy=hy)
+
+
+def test_near_wall_blocks_far_wall():
+    """手前 84mm・奥 264mm の 2 枚の壁（センサから見て同じ y 帯・光軸上に重なる配置）で、
+    遮蔽ありの応答が「手前の壁だけ」の応答と一致し、遮蔽なしだと奥の壁の寄与ぶん
+    過大になることを確認する（note_034 の教授セッション実測: 手前だけ 0.5168・
+    奥だけ 0.0489・遮蔽なしの合計 0.5657＝手前だけの 1.095 倍、と同じ現象）。
+    """
+    near = _wall_at(0.084)
+    far = _wall_at(0.264)
+    pose = (0.0, 0.0, 0.0)  # SENSOR.pos が機体原点にあるので、そのまま world 位置になる
+
+    v_near_only = response(SENSOR, pose, [near], SURF)
+    v_far_only = response(SENSOR, pose, [far], SURF)
+    v_both_occl_on = response(SENSOR, pose, [near, far], SURF, occlusion=True)
+    v_both_occl_off = response(SENSOR, pose, [near, far], SURF, occlusion=False)
+
+    print(f"[occlusion] near-only(84mm)  = {v_near_only:.6f}")
+    print(f"[occlusion] far-only(264mm)  = {v_far_only:.6f}")
+    print(f"[occlusion] both, occl=True  = {v_both_occl_on:.6f}")
+    print(f"[occlusion] both, occl=False = {v_both_occl_off:.6f}  "
+          f"(vs near-only: {100 * (v_both_occl_off - v_near_only) / v_near_only:+.2f}%)")
+
+    rel_err_on = abs(v_both_occl_on - v_near_only) / v_near_only
+    print(f"[occlusion] 遮蔽あり vs 手前だけ の相対誤差 = {rel_err_on:.3e}")
+    assert rel_err_on < 0.01, "遮蔽ありなのに奥の壁の寄与が漏れている"
+
+    # 遮蔽なしは奥の壁の寄与が素通しで足されるぶん過大になる（否定対照。note_034 の
+    # 9.5% 程度と同じ桁の過大評価が実際に起きることを確認する）。
+    overage = (v_both_occl_off - v_near_only) / v_near_only
+    assert overage > 0.03, "遮蔽なしでも奥の壁の寄与がほとんど足されていない（前提が崩れている）"
+
+
+def test_opening_still_sees_far_wall():
+    """手前の壁に開口部（幅60mm の隙間）を空けると、遮蔽ありでも奥の壁が見えることを確認する
+    （note_034: 「手前に壁が無いとき（開口部）に奥の壁が見えるのは正しい挙動」）。
+
+    手前を隙間なしの1枚壁にした `test_near_wall_blocks_far_wall` では奥の壁の寄与が
+    ほぼゼロまで落ちる一方、ここでは光軸が通る隙間を空けることで「奥の壁だけ」の応答と
+    ほぼ一致することを示す。
+    """
+    far = _wall_at(0.264)
+    # 手前の壁（元は y in [-0.09, 0.09] の1枚）を y=0 中心に幅60mm（gap_half=30mm）だけ
+    # 空けた2枚に分ける。隙間の外側 [gap_half, 0.09] と [-0.09, -gap_half] を
+    # それぞれ 1 枚の Rect にするので、半長は (0.09-gap_half)/2、中心は (0.09+gap_half)/2。
+    gap_half = 0.03
+    seg_hy = (0.09 - gap_half) / 2.0
+    seg_cy = (0.09 + gap_half) / 2.0
+    near_left = _wall_at(0.084, cy=seg_cy, hy=seg_hy)
+    near_right = _wall_at(0.084, cy=-seg_cy, hy=seg_hy)
+    pose = (0.0, 0.0, 0.0)
+
+    v_far_only = response(SENSOR, pose, [far], SURF)
+    v_gap_only = response(SENSOR, pose, [near_left, near_right], SURF, occlusion=True)
+    v_opening = response(SENSOR, pose, [near_left, near_right, far], SURF, occlusion=True)
+    far_contribution_open = v_opening - v_gap_only
+
+    # 比較対象: 開口部を塞いだ（隙間なし）手前の壁のとき、奥の壁の寄与がどれだけ残るか
+    # （`test_near_wall_blocks_far_wall` と同じ現象を、ここでは「寄与の差分」で見る）。
+    near_solid = _wall_at(0.084)
+    v_solid_only = response(SENSOR, pose, [near_solid], SURF, occlusion=True)
+    v_solid_with_far = response(SENSOR, pose, [near_solid, far], SURF, occlusion=True)
+    far_contribution_solid = v_solid_with_far - v_solid_only
+
+    print(f"[opening] far-only                = {v_far_only:.6f}")
+    print(f"[opening] gap-60mm(壁分だけ)      = {v_gap_only:.6f}")
+    print(f"[opening] gap-60mm + far          = {v_opening:.6f}  "
+          f"(vs far-only: {100 * (v_opening - v_far_only) / v_far_only:+.3f}%)")
+    print(f"[opening] 開口部での奥の壁の寄与  = {far_contribution_open:.6f}")
+    print(f"[opening] 隙間なしでの奥の壁の寄与 = {far_contribution_solid:.6f} (参考: ほぼ消える方)")
+
+    # 開口部があるときは、奥の壁単体の応答とほぼ一致する（奥の壁がそのまま見えている）。
+    rel_err = abs(v_opening - v_far_only) / v_far_only
+    assert rel_err < 0.01, "開口部があるのに奥の壁がほとんど見えていない"
+    # 隙間なし（壁で塞いだ）ときは奥の壁の寄与がほぼ消えるのに対し、開口部があるときは
+    # 奥の壁の寄与がほぼ丸ごと残る、という対比を実測値で確認する。
+    assert far_contribution_solid < 0.01 * v_far_only, "隙間なしなのに奥の壁が見えてしまっている"
+    assert far_contribution_open > 0.9 * v_far_only, "開口部があるのに奥の壁の寄与が回復していない"
+
+
+def test_post_blocks_part_of_wall():
+    """センサと壁の間に柱を1本置くと、その陰になる壁の部分の寄与が消えて応答が下がることを
+    実測値で示す（柱自身が反射で足す寄与は遮蔽の有無に関わらず同じぶんだけ乗るので、
+    occl=True と occl=False の差がそのまま「柱の陰になった壁の寄与」に対応する）。
+    """
+    d = 0.084
+    post = Rect(cx=-0.04, cy=0.0, hx=0.006, hy=0.006)   # 12mm角の柱。壁との間、光軸上
+    pose = (-d, 0.0, 0.0)
+
+    v_wall_alone = _flat_wall_response(d)
+    v_with_post_on = response(SENSOR, pose, [WALL, post], SURF, occlusion=True)
+    v_with_post_off = response(SENSOR, pose, [WALL, post], SURF, occlusion=False)
+
+    print(f"[post] wall alone             = {v_wall_alone:.6f}")
+    print(f"[post] wall+post, occl=True   = {v_with_post_on:.6f}")
+    print(f"[post] wall+post, occl=False  = {v_with_post_off:.6f}")
+    print(f"[post] 柱の陰で消えた分 (off-on) = {v_with_post_off - v_with_post_on:.6f} "
+          f"({100 * (v_with_post_off - v_with_post_on) / v_with_post_off:.1f}% of occl=False)")
+
+    assert v_with_post_off > v_with_post_on, (
+        "柱を置いても遮蔽の有無で応答が変わらない（陰になる部分が消えていない）"
+    )
+    shadow_ratio = (v_with_post_off - v_with_post_on) / v_with_post_off
+    assert shadow_ratio > 0.10, "柱の陰の効果が小さすぎる（遮蔽が効いていない疑い）"
+    # 柱の有無で応答が変わることそのものも確認する（note_034 の要求どおり）。
+    assert v_with_post_on != v_wall_alone
+
+
+def test_occlusion_off_matches_legacy():
+    """`occlusion=False` は遮蔽を計算しない旧挙動と厳密に一致する（否定対照。回帰検査で固定）。
+
+    単一の壁+床（既存テストの共通セットアップ）で、44mm 正対の値が本モジュール変更前の
+    実測値 0.8336798263697903（旧 docstring の 0.8337 の元値）とビット単位で一致することを
+    確認する。
+    """
+    d = 0.044
+    v_off = _flat_wall_response(d, occlusion=False)
+    LEGACY_VALUE_AT_44MM = 0.8336798263697903
+    print(f"[legacy] occlusion=False, d=44mm = {v_off!r} (legacy = {LEGACY_VALUE_AT_44MM!r})")
+    assert v_off == LEGACY_VALUE_AT_44MM, "occlusion=False が遮蔽実装前の値と一致しない"
+
+    # 2枚壁（近い壁が遠い壁を隠すはずの配置）でも、occlusion=False なら両方の寄与が
+    # 単純に足し合わされる（= 遮蔽を考えない「面ごとに独立積分」という旧モデルの定義どおり）。
+    # 床は `include_floor=True` だと壁の枚数によらず 1 枚だけ足されるので、素朴に
+    # 「別々に呼んだ和 == まとめて呼んだ値」にはならない（床の寄与が二重に乗る）。
+    # ここでは床を含めない条件（`include_floor=False`）で壁どうしの単純加法だけを見る。
+    near = _wall_at(0.084)
+    far = _wall_at(0.264)
+    pose = (0.0, 0.0, 0.0)
+    v_near = response(SENSOR, pose, [near], SURF, occlusion=False, include_floor=False)
+    v_far = response(SENSOR, pose, [far], SURF, occlusion=False, include_floor=False)
+    v_both = response(SENSOR, pose, [near, far], SURF, occlusion=False, include_floor=False)
+    print(f"[legacy] near={v_near:.6f} + far={v_far:.6f} = {v_near + v_far:.6f} "
+          f"vs both={v_both:.6f}")
+    assert v_both == pytest.approx(v_near + v_far, rel=1e-9), (
+        "occlusion=False なのに単純な足し合わせから外れている"
+    )
 
 
 # ============================================================================
