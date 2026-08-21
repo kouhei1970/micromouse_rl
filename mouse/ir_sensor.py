@@ -130,6 +130,11 @@ DEFAULT_WALL_HALF_LENGTH_M: float = 0.084   # 実際の迷路の壁半長 [m]（
 DEFAULT_FLOOR_SAMPLE_RADIUS_M: float = 0.03
 DEFAULT_FLOOR_SAMPLE_RING: int = 8
 DEFAULT_N_OCCLUSION_SAMPLES: int = 5    # 壁・柱の辺ごとの遮蔽判定の標本点数
+# 同一平面上で連続する矩形（壁・柱を区別しない）をまとめる隙間の閾値 [m]。
+# 教授セッションの実測（2026-08-21）: 連続している場合の隙間は厳密に0.000mm、
+# 本物の開口部（区画1つぶん欠けている）は168mm級。どちらでもない中間の隙間は
+# 迷路の規格上存在しないので、閾値はこの2つの間ならどこでもよい。
+_COPLANAR_GAP_EPS_M: float = 0.005
 DEFAULT_POST_HALF_EXTENT_THRESHOLD_M: float = 0.01  # これ未満の半長×半長の矩形は柱とみなす
 DEFAULT_POST_HALF_LENGTH_M: float = 0.006           # 柱の半幅 [m]（post_size/2）。柱表の反射面の半長
 
@@ -1158,84 +1163,186 @@ def _fast_response_breakdown(
     sensor_xy = (led.pos[:2] + pt.pos[:2]) / 2.0  # sensor.pos の world 変換先（表の基準点）
     query_z = (led.pos[2] + pt.pos[2]) / 2.0      # 可視判定の代表点の高さ（LED・PTの中間）
 
-    # --- 壁・柱: 近傍の矩形すべてについて、センサ側を向いている辺を候補にする ---
-    # 遮蔽は代表点1点ではなく、辺の実際の長さに沿った `n_occlusion_samples` 点で判定し、
-    # 見えている点の割合を表引きの値に掛ける（2026-08-21・精度検査で発覚: 隣り合う
-    # 壁どうしが斜めから見ると互いの一部だけを隠す場面があり、1点判定だと「全部見える」
-    # か「全部隠れる」の二択になって誤差が残った。実例: 3枚の隣接パネルの直接積分combined
-    # 0.170に対し、1点判定では0.316(+86%)。点で割合を近似すると精度が上がる。
-    # なお「同一平面の隣接パネルをまとめて1枚として表引きする」案も試したが、実装の
-    # バグ込みで悪化したため撤回している。誤差の残りは note_034 に正直に書くこと）。
-    cand_owner: list = []
-    cand_group_key: list = []   # (法線, 平面位置) — 同一平面上の別々の矩形をまとめる鍵
-    cand_dtl: list = []
-    cand_is_post: list = []
-    cand_samples_xy: list = []   # 各候補の標本点列（(n_occlusion_samples, 2)）
+    # --- 壁・柱: 同一平面上で隙間ゼロで連続する矩形（壁・柱を区別しない）をまとめる ---
+    # 教授セッションが実測で確認した事実（2026-08-21）: 迷路の壁（厚み12mm）と柱
+    # （12mm角）はどちらも格子線上に中心を持つので、同じ壁面の上では中心x・半長xが
+    # 完全に一致し、y方向の隙間が厳密に0.000mmになる（規格による。偶然ではない）。
+    # 本物の切れ目（開口部）だけが1区画ぶん（168mm）の隙間になる。したがって
+    # 「同じ法線・同じ平面位置の矩形を、隙間が本物の開口部よりずっと小さい
+    # `_COPLANAR_GAP_EPS_M` 以下なら連続とみなしてまとめる」ことで、壁と柱を区別せず
+    # 物理的に1枚の連続した面を1枚として扱える（以前の失敗: 壁だけをまとめて柱を
+    # 除外していたため隙間が残り、隣接する矩形どうしの干渉が消えなかった）。
+    plane_groups: Dict[Tuple[float, float, float], list] = {}
     for owner_idx, r in enumerate(near_rects):
         for n_hat, face_center, half_u in _rect_candidate_faces(r):
-            rel = sensor_xy - face_center
-            if float(np.dot(rel, n_hat)) <= 0.0:
-                continue  # バックフェイスカリング（この辺はセンサに背を向けている）
-            d, inc, lat = _face_dtl(sensor_xy, axis_xy_hat, face_center, n_hat)
-            if d > max_range_m:
-                continue
+            plane_coord = round(float(np.dot(face_center, n_hat)), 6)
+            key = (round(float(n_hat[0]), 3), round(float(n_hat[1]), 3), plane_coord)
             u_hat = np.array([n_hat[1], -n_hat[0]])
-            offsets = np.linspace(-half_u, half_u, n_occlusion_samples)
-            samples_xy = face_center[None, :] + offsets[:, None] * u_hat[None, :]
-            cand_owner.append(owner_idx)
-            cand_group_key.append(owner_idx)  # 既定は矩形ごと（同一平面をまとめる案は
-            # 一部の姿勢を直しても別の姿勢を悪化させたため撤回した。詳細は下のコメント）
-            cand_dtl.append((d, inc, lat))
-            cand_is_post.append(half_u < post_half_extent_threshold_m)
-            cand_samples_xy.append(samples_xy)
+            center_u = float(np.dot(face_center, u_hat))
+            plane_groups.setdefault(key, []).append((owner_idx, center_u, half_u))
+
+    # 平面ごとに、隙間が `_COPLANAR_GAP_EPS_M` 以下の矩形を連続クラスタへまとめる
+    # （壁の妻面どうしの隙間は実測0.000mm、本物の開口部は168mm級なので、
+    # 間の値ならどこで閾値を切ってもよい）。
+    clusters: list = []   # 各要素: (n_hat, plane_coord, members, u_min, u_max)
+    for (nx, ny, plane_coord), members in plane_groups.items():
+        members.sort(key=lambda m: m[1])
+        n_hat = np.array([nx, ny])
+        cur = [members[0]]
+        cur_min = members[0][1] - members[0][2]
+        cur_max = members[0][1] + members[0][2]
+        for m in members[1:]:
+            m_min = m[1] - m[2]
+            m_max = m[1] + m[2]
+            if m_min - cur_max <= _COPLANAR_GAP_EPS_M:
+                cur.append(m)
+                cur_max = max(cur_max, m_max)
+            else:
+                clusters.append((n_hat, plane_coord, cur, cur_min, cur_max))
+                cur = [m]
+                cur_min, cur_max = m_min, m_max
+        clusters.append((n_hat, plane_coord, cur, cur_min, cur_max))
+
+    # 遮蔽は代表点1点ではなく、面の実際の長さに沿った `n_occlusion_samples` 点で判定し、
+    # 見えている点の割合を表引きの値に掛ける（縁をまたぐ場合の階段状の誤差を抑える）。
+    cluster_owners: list = []   # 各クラスタが束ねる元の矩形番号の集合（角判定に使う）
+    cluster_dtl: list = []
+    cluster_is_post: list = []
+    cluster_samples_xy: list = []
+    cluster_sample_owner: list = []
+    for n_hat, plane_coord, members, u_min, u_max in clusters:
+        u_hat = np.array([n_hat[1], -n_hat[0]])
+        center_u = (u_min + u_max) / 2.0
+        half_u = (u_max - u_min) / 2.0
+        # クラスタ（合成パネル）の実際の中心点。平面位置は掃引時に得た `plane_coord` を
+        # そのまま使う（元の矩形の面を検索し直して復元する回り道はしない。以前の
+        # 実装ミスの元だった。u 成分を含めないと「横ずれ」が中心からのずれではなく
+        # 原点からのずれになるので、必ず center_u もここで足すこと）。
+        face_center = plane_coord * n_hat + center_u * u_hat
+
+        rel = sensor_xy - face_center
+        if float(np.dot(rel, n_hat)) <= 0.0:
+            continue  # バックフェイスカリング
+        d, inc, lat = _face_dtl(sensor_xy, axis_xy_hat, face_center, n_hat)
+        if d > max_range_m:
+            continue
+
+        # 表引き専用の「横ずれ」の補正（2026-08-21・統合後に発覚した2つ目のバグ）。
+        # 上の `lat` はクラスタ（合成パネル）の中心からのずれだが、表は
+        # `DEFAULT_WALL_HALF_LENGTH_M`（84mm半長）の1枚パネルを前提に作ってある。
+        # 統合で合成パネルが84mm半長よりずっと長くなると、センサが合成パネルの
+        # 端の近くにいても「中心からのずれ」は大きな値のままになり、表の届く範囲を
+        # 外れて `_lookup_or_zero` がゼロを返してしまう（実例: 直接0.82に対し
+        # 表引きが3e-12まで潰れた）。合成パネルが十分長い場合は、「センサの垂線の
+        # 足に最も近い、表がカバーできる範囲（半長ぶん）の仮想中心」を使う
+        # （足がパネル奥深くにあれば横ずれ0＝内部の値に収束し、端の近くにあれば
+        # 端からのずれとして正しく評価できる）。
+        half_ref = DEFAULT_POST_HALF_LENGTH_M if half_u < post_half_extent_threshold_m \
+            else DEFAULT_WALL_HALF_LENGTH_M
+        sample_u_min, sample_u_max = u_min, u_max
+        if half_u > half_ref:
+            foot_u = float(np.dot(sensor_xy, u_hat))
+            virtual_center = min(max(foot_u, u_min + half_ref), u_max - half_ref)
+            lat = foot_u - virtual_center
+            # 遮蔽判定の標本点も、合成パネル全体ではなく「表が実際にカバーしている
+            # 局所窓」（仮想中心±半長）に絞る（2026-08-21・上の横ずれ補正だけでは
+            # 直らなかった3つ目のバグ: 合成パネル全体に一様配置した標本点だと、
+            # 足の近くが完全に見えていても、遠く離れた無関係な区間がたまたま
+            # 遮られているだけで見えている割合が薄まってしまい、過小評価が残った
+            # 実例が見つかった）。
+            sample_u_min = max(u_min, virtual_center - half_ref)
+            sample_u_max = min(u_max, virtual_center + half_ref)
+
+        offsets_abs = np.linspace(sample_u_min, sample_u_max, n_occlusion_samples)
+        samples_xy = face_center[None, :] + (offsets_abs - center_u)[:, None] * u_hat[None, :]
+        sample_owner = np.empty(n_occlusion_samples, dtype=int)
+        for j, off_abs in enumerate(offsets_abs):
+            best_owner, best_gap = members[0][0], math.inf
+            for owner_idx, c, h in members:
+                gap = max(c - h - off_abs, off_abs - (c + h), 0.0)
+                if gap < best_gap:
+                    best_gap = gap
+                    best_owner = owner_idx
+            sample_owner[j] = best_owner
+
+        cluster_owners.append({m[0] for m in members})
+        cluster_dtl.append((d, inc, lat))
+        cluster_is_post.append(half_u < post_half_extent_threshold_m)
+        cluster_samples_xy.append(samples_xy)
+        cluster_sample_owner.append(sample_owner)
 
     total = 0.0
-    if cand_owner:
-        n_cand = len(cand_owner)
-        all_samples_xy = np.concatenate(cand_samples_xy, axis=0)   # (n_cand*n_occlusion_samples, 2)
+    best_per_group: Dict[int, Tuple[float, float]] = {}
+    if cluster_owners:
+        n_cand = len(cluster_owners)
+        all_samples_xy = np.concatenate(cluster_samples_xy, axis=0)
         query_points = np.concatenate(
             [all_samples_xy, np.full((all_samples_xy.shape[0], 1), query_z)], axis=1,
         )
-        owner_arr = np.repeat(np.array(cand_owner, dtype=int), n_occlusion_samples)
-        occluded = _segment_occluded(query_points, led.pos, boxes, owner_arr)
+        skip_idx = np.concatenate(cluster_sample_owner)
+        occluded = _segment_occluded(query_points, led.pos, boxes, skip_idx)
         if dual_origin:
-            occluded = occluded | _segment_occluded(query_points, pt.pos, boxes, owner_arr)
+            occluded = occluded | _segment_occluded(query_points, pt.pos, boxes, skip_idx)
         occluded = occluded.reshape(n_cand, n_occlusion_samples)
-        visible_frac_per_cand = np.mean(~occluded, axis=1)
+        visible_frac_per_cluster = np.mean(~occluded, axis=1)
 
-        # 同じ矩形の複数の辺が同時にセンサを向く場合（角を見ている配置。柱で起きやすい）、
-        # 独立に足すと過大評価になる（2026-08-21・精度検査で発覚。柱の角で単純な和が
-        # 直接積分の約2倍になる実例があった）。直接積分は同じ箱の複数面をまとめて
-        # 1回の放射計算で扱うため、隣り合う面どうしが互いを一部自己遮蔽する
-        # （平らな1枚パネルを仮定した表はこの自己遮蔽を知らない）。実測では
-        # 「複数面のうち表引きが最大のものだけを使う」近似が直接積分に近い値になった
-        # （実例: 直接0.2748、2面の表引き0.2714/0.2711 → 最大値0.2714で誤差1.2%、
-        # 単純和0.5425では誤差97%）。そこで矩形ごとに最大値だけを採用する。
-        #
-        # 同じ理由が、迷路の連続する壁のように「別々の矩形だが同一平面を作る」場合にも
-        # 起きる（柱を挟んだ隣接パネルどうし。実測: 直接積分combined 0.170に対し、
-        # 別々に表引きして最大値だけ足しても 0.316（+86%）。同一平面をまとめて1枚の
-        # 合成パネルとして扱う案も試したが実装のバグで悪化したため撤回した——ここでは
-        # 「同一平面の候補どうしも同じグループとみなし、その中の最大値だけを使う」という
-        # より単純な近似にとどめる。1本の矩形の複数面の場合と同じ考え方の延長）。
-        best_per_group: Dict[Tuple[float, float, float], Tuple[float, float]] = {}
+        cluster_values = []
         for i in range(n_cand):
-            visible_frac = float(visible_frac_per_cand[i])
+            visible_frac = float(visible_frac_per_cluster[i])
             if visible_frac <= 0.0:
+                cluster_values.append(0.0)
                 continue
-            d, inc, lat = cand_dtl[i]
-            if cand_is_post[i]:
+            d, inc, lat = cluster_dtl[i]
+            if cluster_is_post[i]:
                 v = _lookup_or_zero(post_table, d, inc, lat) if post_table is not None else 0.0
             else:
                 v = _lookup_or_zero(wall_table, d, inc, lat)
-            v *= visible_frac
-            key = cand_group_key[i]
-            if key not in best_per_group or v > best_per_group[key][0]:
-                best_per_group[key] = (v, d)
-        total = sum(v for v, _d in best_per_group.values())
+            cluster_values.append(v * visible_frac)
+
+        # 同じ矩形（角の柱など）が複数のクラスタ（別の法線方向）に同時に属す場合は、
+        # 独立に足すと過大評価になる（角を見ている配置。直接積分は同じ箱の複数面を
+        # まとめて1回の放射計算で扱うため、隣り合う面どうしが互いを一部自己遮蔽する）。
+        # クラスタどうしが元の矩形を1つでも共有していれば同じグループとみなし
+        # （Union-Find）、グループ内は最大値だけを、グループをまたいでは合計する。
+        parent = list(range(n_cand))
+
+        def _find(x: int) -> int:
+            while parent[x] != x:
+                parent[x] = parent[parent[x]]
+                x = parent[x]
+            return x
+
+        def _union(a: int, b: int) -> None:
+            ra, rb = _find(a), _find(b)
+            if ra != rb:
+                parent[ra] = rb
+
+        owner_to_cluster: Dict[int, int] = {}
+        for i, owners in enumerate(cluster_owners):
+            for o in owners:
+                if o in owner_to_cluster:
+                    _union(i, owner_to_cluster[o])
+                else:
+                    owner_to_cluster[o] = i
+
+        best_by_root: Dict[int, Tuple[float, int]] = {}
+        for i in range(n_cand):
+            root = _find(i)
+            v = cluster_values[i]
+            if root not in best_by_root or v > best_by_root[root][0]:
+                best_by_root[root] = (v, i)
+        total = sum(v for v, _i in best_by_root.values())
+
+        # best_per_owner（フォールバック判定用）: クラスタが束ねるすべての元の矩形に、
+        # そのクラスタの (寄与, 距離) を割り当てる（矩形番号ベースの判定と互換にする）。
+        for v, i in best_by_root.values():
+            d_i = cluster_dtl[i][0]
+            for owner_idx in cluster_owners[i]:
+                if owner_idx not in best_per_group or v > best_per_group[owner_idx][0]:
+                    best_per_group[owner_idx] = (v, d_i)
 
     # (寄与, 距離) の組。距離は「精度が粗くなる姿勢」の判定（近距離だけに絞る）に使う。
-    best_per_owner_out: Dict[int, Tuple[float, float]] = dict(best_per_group) if cand_owner else {}
+    best_per_owner_out: Dict[int, Tuple[float, float]] = best_per_group
 
     # --- 床: 代表点（中心＋リング）ごとに可視判定し、見えている割合ぶんだけ足す ---
     if include_floor:
@@ -1307,8 +1414,8 @@ def fast_response(
 # fast_response の精度が粗くなる姿勢を検出し、そこだけ直接積分に落とす
 # ============================================================================
 DEFAULT_ADJACENCY_GAP_M: float = 0.02   # これ以下の隙間の矩形どうしは「隣接」とみなす
-DEFAULT_ADJACENCY_SIGNIFICANCE_FRAC: float = 0.02   # 最大寄与のこの割合以上を「支配的」とみなす
-DEFAULT_ADJACENCY_DOMINANT_MAX_D_M: float = DEFAULT_MAX_RANGE_M  # 事実上、距離では絞らない（下記コメント参照）
+DEFAULT_ADJACENCY_SIGNIFICANCE_FRAC: float = 0.05   # 最大寄与のこの割合以上を「支配的」とみなす
+DEFAULT_ADJACENCY_DOMINANT_MAX_D_M: float = 0.30    # 支配的な矩形の距離がこれ以内のときだけ調べる
 
 
 def _has_ambiguous_adjacency(
