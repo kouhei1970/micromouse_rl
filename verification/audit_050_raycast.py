@@ -485,6 +485,7 @@ def raycast_response(
     wall_height_m: float = 0.05,
     floor_halfextent_m: float = 0.20,
     diffuse: float = 0.8,
+    separation_m: float = 0.0065,
 ) -> float:
     """センサ 1 本の応答を、`n_rays` 本の光線でモンテカルロ推定する。
 
@@ -501,7 +502,8 @@ def raycast_response(
     axis_b = np.asarray(sensor.axis, dtype=float)
     axis_b = axis_b / np.linalg.norm(axis_b)
 
-    sep_half = np.array([0.0, 0.0, 0.00325])  # 離隔 0.0065m の半分。縦配置（LED が上、PT が下）
+    # 離隔の半分。縦配置（LED が上、PT が下）。既定 0.0065m は PREREG §1-1 の値。
+    sep_half = np.array([0.0, 0.0, separation_m / 2.0])
     led_pos_b = pos_b + sep_half
     pt_pos_b = pos_b - sep_half
 
