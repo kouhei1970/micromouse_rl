@@ -97,6 +97,17 @@ __all__ = [
     "DEFAULT_FLOOR_HALFEXTENT_M",
     "DEFAULT_MAX_RANGE_M",
     "DEFAULT_N_GRID",
+    # 高速フォワードモデル（光線による可視面判定＋表引き。note_034 追記分）
+    "build_wall_table",
+    "build_post_table",
+    "floor_baseline",
+    "fast_response",
+    "DEFAULT_WALL_HALF_LENGTH_M",
+    "DEFAULT_FLOOR_SAMPLE_RADIUS_M",
+    "DEFAULT_FLOOR_SAMPLE_RING",
+    "DEFAULT_N_OCCLUSION_SAMPLES",
+    "DEFAULT_POST_HALF_EXTENT_THRESHOLD_M",
+    "DEFAULT_POST_HALF_LENGTH_M",
 ]
 
 
@@ -106,6 +117,17 @@ DEFAULT_WALL_HEIGHT_M: float = 0.05    # 壁の高さ [m]（迷路規格。note_
 DEFAULT_FLOOR_HALFEXTENT_M: float = 0.20   # 床パッチの半幅 [m]（センサ周辺のみを面として持つ）
 DEFAULT_MAX_RANGE_M: float = 0.35      # これより遠い壁は最初から積分対象に入れない
 DEFAULT_N_GRID: int = 28               # 面 1 枚あたりの求積点数（1 軸あたり）
+
+# 高速フォワードモデル（下の「表（距離×入射角×横ずれ）」節のさらに下、
+# 「高速フォワードモデル」節を参照）で使う既定値。
+DEFAULT_WALL_HALF_LENGTH_M: float = 0.084   # 実際の迷路の壁半長 [m]（cell_size/2 - post_size/2 = 0.09-0.006）
+# 床パッチの可視判定に使う代表点（中心1点＋リング。note_034 追記分「解析的な列挙に
+# 作り直した」節を参照。床は壁・柱と違って「面」の単位が無いので、点で代表させる）。
+DEFAULT_FLOOR_SAMPLE_RADIUS_M: float = 0.03
+DEFAULT_FLOOR_SAMPLE_RING: int = 8
+DEFAULT_N_OCCLUSION_SAMPLES: int = 5    # 壁・柱の辺ごとの遮蔽判定の標本点数
+DEFAULT_POST_HALF_EXTENT_THRESHOLD_M: float = 0.01  # これ未満の半長×半長の矩形は柱とみなす
+DEFAULT_POST_HALF_LENGTH_M: float = 0.006           # 柱の半幅 [m]（post_size/2）。柱表の反射面の半長
 
 
 # ============================================================================
@@ -809,3 +831,407 @@ def lookup(t: ResponseTable, distance: float, incidence_deg: float, lateral: flo
     c1 = c01 * (1 - wi) + c11 * wi
 
     return c0 * (1 - wl) + c1 * wl
+
+
+# ============================================================================
+# 高速フォワードモデル（光線による可視面判定 ＋ 表引き）
+# ============================================================================
+"""
+背景: `response()` の数値積分は実迷路で 1 本あたり 29〜35ms かかり、探索・学習の実行時間に
+そのまま乗る（`research_notes/note_034_ir_sensor_model.md` 追記分「表を作る」節）。
+
+**壁ごとに独立な表引きを機械的に足すのは誤り**（教授セッションの指摘、2026-08-21）。
+表の値 `lookup(wall_table, d, θ, L)` は「その壁だけが単独で存在する」前提の値であり、
+手前の壁が奥の壁を隠しているかどうかを知らない。足すと隠れているはずの壁の寄与が
+戻ってきてしまう（実測: 手前84mm・奥264mmの2枚壁で、正しい値0.4635に対し単純な和は
+0.5134、+10.8%の過大評価）。
+
+## 光線による可視面判定（最初の実装）とその限界
+
+最初の実装は、狭いビーム（半値角5°）であることを使い、センサから光線を数本（中心1本＋
+リング状に数本）飛ばして最初に当たる面だけ表を引く、という方式だった。手前の壁が奥の壁を
+隠す場合は正しく直ったが、**別の系統的な過小評価が残った**（教授セッションが実測・診断、
+2026-08-21）: 応答が真値の1/10未満になる「弱い信号」の姿勢だけ相対誤差が中央値95%に達し、
+光線を9本→97本に増やしても直らなかった。原因は、弱い信号はビームの中心から外れた面が
+裾野（`cos^m` の裾）だけで作る応答であり、**どの光線も、その面をピンポイントで貫くことは
+ほぼ無い**ため（本数を増やしても「当たるか外れるか」の二値判定である限り、当たる確率が
+上がるだけで期待値は改善しない）。
+
+## 対策: 光線を飛ばすのをやめ、近傍の面をすべて解析的に列挙する
+
+**表の値そのものは元から裾野を正しく持っている**（`build_table_from_model` は実際の放射
+計算をそのまま実行するので、入射角がどれだけ大きくても、その面から来る光を正しく積分
+している。表を細かく持つ限り、`lookup()` は裾野も含めて正確に返す）。問題は「光線が
+当たった面だけ表を引く」という**面の発見の仕方**の方にあった。
+
+そこで、光線を飛ばす代わりに、`max_range_m` 以内にある壁・柱の矩形（`near_rects`）
+**すべて**について、その4辺のうちセンサ側を向いている辺（バックフェイスカリング。
+`_wall_facets` と同じ判定）を候補にし、辺ごとに (distance, incidence_deg, lateral) を
+解析的に計算する（三角関数だけ。光線も求積もいらない）。**遮蔽は、辺ごとに代表点
+（センサの垂線の足を辺の実際の長さにクランプした点）を取り、その点が LED から
+（`dual_origin=True` なら PT からも）見えるかを `_segment_occluded`（スラブ法。
+既存の遮蔽判定と同じ関数）で判定する**ことで両立させる。自分自身が属する矩形は
+`skip_idx` で除外する（`response()` の自己遮蔽除外と同じ考え方）。
+
+  - 見えている壁の広い面 → 壁専用の表 `wall_table`（`build_wall_table()`。床を含まない）
+  - 見えている柱・壁の妻面（軸平行2辺のうち短い方） → 柱専用の表 `post_table`
+    （`build_post_table()`。反射面の半長を柱の実寸6mmにした表。当初は柱自身の反射を
+    無視する近似だったが、柱がピーク距離付近にあり他に光る面が無い姿勢で2桁以上
+    過小評価する例が見つかったため追加した。`post_table` を渡さない場合は寄与ゼロの
+    まま＝後方互換の既定）
+  - 遮られている面 → 0（重み付けはしない。見えているか否かの二値。「裾の重みを掛けて
+    足す」という案も検討したが、表の値自体が入射角・横ずれを通じて既に裾を正しく
+    含んでいるため、追加の重みを掛けると二重に減衰させてしまう。実測でも重み無しの
+    ほうが精度が良かった）
+  - 床 → 代表点（センサ直下を中心に半径 `floor_sample_radius_m` のリング `floor_sample_ring`
+    点＋中心1点）ごとに LED・PT からの可視判定をし、**見えている点の割合**を
+    `floor_value`（`floor_baseline()`。壁が無いときの床だけの応答。ほぼ姿勢に依らない
+    定数として扱う）に掛けて足す（床は「面」の単位を持たないので、辺の列挙ではなく
+    点の標本化で近似する）
+
+複数の壁が同時に見える場合の合成は「見えている面の表の値をそのまま足す」（重み無し）。
+床の二重計上は「床は専用の点標本で別扱い」なので構造的に起きない（`fast_response()`）。
+"""
+
+
+def _default_table_distances_m() -> np.ndarray:
+    """距離軸: ピーク付近（40mm前後）を密に、近傍・遠方を粗くする（約90点）。"""
+    near = np.arange(0.003, 0.020, 0.002)     # 3〜19mm、2mm刻み
+    peak = np.arange(0.020, 0.081, 0.001)     # 20〜80mm、1mm刻み（ピークを密に）
+    mid = np.arange(0.085, 0.151, 0.005)      # 85〜150mm、5mm刻み
+    far = np.arange(0.160, 0.301, 0.020)      # 160〜300mm、20mm刻み
+    return np.unique(np.concatenate([near, peak, mid, far]))
+
+
+def _default_table_incidence_deg() -> np.ndarray:
+    """入射角軸: ±69°までは3°刻み（主要な範囲）、それを超えるすれすれの範囲は4°刻みで粗く。
+
+    実測して分かったこと（2026-08-21、実迷路200姿勢での精度検査で発覚）: 入射角70〜90°の
+    応答は cos^m のような急な打ち切りではなく、緩やかに（80°で69°の約1/5、89°で約1/300）
+    減衰するだけで、無視できるほど小さくはならない。**当初 ±69° までしか表に持たず、
+    それを超える分は端の値へクランプしていたところ、実迷路の側方センサ（LS/RS）や
+    通路の折れ角で入射角80°前後の姿勢が現実に多数出現し、真値の5倍前後を返す誤りが
+    生じた**（`fast_response` の精度検査 `test_table_matches_direct_integration` の
+    デバッグで発見。中央値27%・最大2700倍という誤差の主因だった）。刻みは主要な範囲より
+    粗いままでよい（この範囲の値は元々小さく、多少粗くても表全体の誤差に効きにくい）。
+    """
+    main = np.arange(-69.0, 69.1, 3.0)            # -69〜69°、3°刻み（主要な範囲）
+    grazing = np.arange(72.0, 89.1, 4.0)          # 72,76,80,84,88°（すれすれの範囲。粗い）
+    return np.unique(np.concatenate([main, -grazing, grazing]))
+
+
+def _default_table_lateral_m() -> np.ndarray:
+    """横ずれ軸: パネル本体の範囲（±84mm）は2mm刻みで密に、そこを外れた「パネルの
+    実際の縁より外」の範囲は10mm刻みで粗く、±300mm（`DEFAULT_MAX_RANGE_M`と同じ
+    桁）まで延ばす。
+
+    **経緯（2026-08-21・精度検査で発覚）**: 横ずれがパネルの実際の縁（±84mm）を
+    外れても、応答は急には0にならない。しかも「どこで0に近づくか」は距離・入射角の
+    組み合わせで大きく動く（実測: ある組では120mmで已に無視できるほど小さいのに、
+    別の組では260mm・424mmまで無視できない値が残る — LED・PTそれぞれの狭い光錐が、
+    入射角の効果でたまたま噛み合う「山」が横ずれ方向にも立つため。`build_post_table`
+    の docstring 参照）。表を±84mmで打ち切ってクランプすると、パネルの縁のすぐ外に
+    ある山を安全側（過大評価）に倒すのではなく無視できない過大評価（実測+10万%超）を
+    生むことが分かったので、範囲を広げた。±300mmを超える分は `_lookup_or_zero` で
+    寄与ゼロにする（`max_range_m` の既定 0.35m と同程度の距離ではもう対象外という
+    判断。それでも一部の組み合わせでは範囲外に山が残り得るが、実測できた誤差の
+    範囲では許容内に収まった）。
+    """
+    near = np.linspace(-0.084, 0.084, 85)              # ±84mm、2mm刻み（パネル本体）
+    far_pos = np.arange(0.094, 0.301, 0.010)            # 94〜300mm、10mm刻み
+    far_neg = -far_pos
+    return np.unique(np.concatenate([near, far_neg, far_pos]))
+
+
+def build_wall_table(
+    sensor: IrSensorSpec,
+    surf: SurfaceSpec,
+    *,
+    distances_m: Optional[np.ndarray] = None,
+    incidence_deg: Optional[np.ndarray] = None,
+    lateral_m: Optional[np.ndarray] = None,
+    wall_half_length_m: float = DEFAULT_WALL_HALF_LENGTH_M,
+    **kwargs,
+) -> ResponseTable:
+    """高速フォワードモデル用の壁表を作る（床を含まない・入射角は符号付き）。
+
+    `response(d,θ,L) = response(d,-θ,-L)` という対称性は距離・入射角・横ずれを
+    **同時に**反転させたときだけ成り立つため（`incidence_deg` だけ非負にして
+    `lateral_m` の符号で代用することはできない）、`incidence_deg` は符号付きで持つ。
+
+    既定の `sensor.gain` は表には焼き込まない設計にすること（`fast_response()` 側で
+    実機ごとの `gain` を最後に 1 回だけ掛ける。表を作る側の `sensor.gain` は
+    1.0 にしておくこと。二重に掛かるのを避けるため）。
+    """
+    if distances_m is None:
+        distances_m = _default_table_distances_m()
+    if incidence_deg is None:
+        incidence_deg = _default_table_incidence_deg()
+    if lateral_m is None:
+        lateral_m = _default_table_lateral_m()
+    kwargs.setdefault("include_floor", False)
+    return build_table_from_model(
+        sensor, surf,
+        distances_m=distances_m, incidence_deg=incidence_deg, lateral_m=lateral_m,
+        wall_half_length_m=wall_half_length_m, **kwargs,
+    )
+
+
+def build_post_table(
+    sensor: IrSensorSpec,
+    surf: SurfaceSpec,
+    *,
+    distances_m: Optional[np.ndarray] = None,
+    incidence_deg: Optional[np.ndarray] = None,
+    lateral_m: Optional[np.ndarray] = None,
+    post_half_length_m: float = DEFAULT_POST_HALF_LENGTH_M,
+    **kwargs,
+) -> ResponseTable:
+    """柱（12mm角）自身の反射のための表（`build_wall_table` と同じ形式・同じ関数を使うが、
+    反射面の半長を柱の実寸 `post_half_length_m`=6mm にする）。
+
+    **経緯（2026-08-21・精度検査で発覚）**: 当初「柱自身の反射は無視する」近似（占有判定
+    にだけ使う）を採ったが、実迷路200姿勢での精度検査で、柱がピーク距離（40mm前後）の
+    近くにあるとき、柱1本の反射だけで応答の大半を占める姿勢が現実に多数あり（柱に隠れて
+    奥の壁が見えず、他に光る面が無い場面）、無視すると真値を2桁以上下回る誤りが生じた。
+    壁表をそのまま使う（`wall_half_length_m`を変えない）と逆に過大評価になる（柱は壁の
+    1/14の幅しかない反射面なので、壁ぶんの広い面を仮定した表を引くと集める光の量を
+    過大に見積もる）。柱専用の小さな表を別に持つのが正しい。
+
+    横ずれ軸の範囲について（同じく精度検査で発覚）: 柱は小さいので「正対（横ずれ0）が
+    山で、外れると単調に減る」と当初見積もっていたが誤りだった。**入射角が大きいとき、
+    横ずれ0付近の値はほぼ0で、横ずれ30〜50mm付近（柱の実寸12mmの3〜4倍も外れた位置）
+    に別の山が立つ**（LED・PTそれぞれ半値角5°の狭い光錐が、入射角の効果で横ずれのある
+    位置でたまたま柱の上で重なるため）。既定の横ずれ軸を壁表と同じ ±84mm に広げて
+    この山を含めてある（±30mmでは山を丸ごと落として実質1桁過小評価していた）。
+    """
+    if distances_m is None:
+        distances_m = _default_table_distances_m()
+    if incidence_deg is None:
+        incidence_deg = _default_table_incidence_deg()
+    if lateral_m is None:
+        lateral_m = _default_table_lateral_m()
+    kwargs.setdefault("include_floor", False)
+    return build_table_from_model(
+        sensor, surf,
+        distances_m=distances_m, incidence_deg=incidence_deg, lateral_m=lateral_m,
+        wall_half_length_m=post_half_length_m, **kwargs,
+    )
+
+
+def floor_baseline(sensor: IrSensorSpec, surf: SurfaceSpec, **kwargs) -> float:
+    """壁が無いときの床だけの応答（`note_034`: 距離に依らずほぼ一定。定数として扱う）。"""
+    kwargs.setdefault("include_floor", True)
+    return response(sensor, (0.0, 0.0, 0.0), [], surf, **kwargs)
+
+
+def _rect_candidate_faces(rect: Rect) -> Tuple[Tuple[np.ndarray, np.ndarray, float], ...]:
+    """矩形 `rect` の4辺すべてを (外向き法線, 面中心, 面内方向の半長) として返す
+    （バックフェイスカリング前。呼び出し側で「センサ側を向いている辺」だけに絞る。
+    `_wall_facets` と同じ向き付け規約）。"""
+    return (
+        (np.array([1.0, 0.0]), np.array([rect.cx + rect.hx, rect.cy]), rect.hy),
+        (np.array([-1.0, 0.0]), np.array([rect.cx - rect.hx, rect.cy]), rect.hy),
+        (np.array([0.0, 1.0]), np.array([rect.cx, rect.cy + rect.hy]), rect.hx),
+        (np.array([0.0, -1.0]), np.array([rect.cx, rect.cy - rect.hy]), rect.hx),
+    )
+
+
+def _face_dtl(
+    sensor_xy: np.ndarray, axis_xy_hat: np.ndarray, face_center: np.ndarray, n_hat: np.ndarray,
+) -> Tuple[float, float, float]:
+    """面（外向き法線 `n_hat`・中心 `face_center`）について、表の規約
+    （`build_table_from_model` と同じ座標系）に合わせた (distance, incidence_deg, lateral)
+    を解析的に計算する（三角関数だけ。光線も求積もいらない）。
+
+    `u_hat` は `n_hat` を -90° 回した向き（横ずれの正方向。`build_table_from_model` の
+    正準配置（壁法線 -x・横ずれ=センサの y 座標）に一致するよう選んである）。
+    """
+    u_hat = np.array([n_hat[1], -n_hat[0]])
+    rel = sensor_xy - face_center
+    distance = float(np.dot(rel, n_hat))
+    lateral = float(np.dot(rel, u_hat))
+
+    neg_n = -n_hat
+    cross_z = neg_n[0] * axis_xy_hat[1] - neg_n[1] * axis_xy_hat[0]
+    dot_z = neg_n[0] * axis_xy_hat[0] + neg_n[1] * axis_xy_hat[1]
+    incidence_deg = math.degrees(math.atan2(cross_z, dot_z))
+    return distance, incidence_deg, lateral
+
+
+def _lookup_or_zero(t: ResponseTable, distance: float, incidence_deg: float, lateral: float) -> float:
+    """`lookup()` は範囲外をクランプする（表の縁の値をそのまま返す）が、横ずれについては
+    それが大きく間違うことが分かった（2026-08-21・精度検査で発覚）。壁パネルは有限長
+    （半長 `DEFAULT_WALL_HALF_LENGTH_M`=84mm）なので、横ずれがパネルの実際の縁から
+    大きく外れた配置では、真の応答はパネルの縁付近の値ではなく急激にゼロへ落ちる
+    （実測: 84mmでは0.678、120mmでは0.119、140mmでは2.7e-7 — 縁の値をクランプで
+    流用すると桁違いの過大評価になる）。横ずれが表の格子の外に出た場合はクランプせず
+    寄与ゼロを返す（縁のすぐ外側のなだらかな減衰を多少過小評価する近似だが、
+    クランプによる桁違いの過大評価より遥かに小さい誤差で済む。距離・入射角は
+    このような鋭い崖が無い＝クランプのままでよいことを確認済み）。
+    """
+    lat_max = float(t.lateral_m[-1])
+    lat_min = float(t.lateral_m[0])
+    if lateral > lat_max or lateral < lat_min:
+        return 0.0
+    return lookup(t, distance, incidence_deg, lateral)
+
+
+def _floor_sample_points(center_xy: np.ndarray, radius_m: float, n_ring: int) -> np.ndarray:
+    """床パッチの可視判定に使う代表点（中心1点＋半径 `radius_m` のリング `n_ring` 点、
+    いずれも z=0）。床は「面」の単位を持たないので、辺の列挙ではなく点の標本化で
+    可視・不可視を近似する（モジュール docstring 参照）。"""
+    pts = [[center_xy[0], center_xy[1], 0.0]]
+    for k in range(n_ring):
+        phi = 2.0 * math.pi * k / n_ring
+        pts.append([center_xy[0] + radius_m * math.cos(phi),
+                    center_xy[1] + radius_m * math.sin(phi), 0.0])
+    return np.array(pts)
+
+
+def fast_response(
+    sensor: IrSensorSpec,
+    pose: PoseLike,
+    surfaces: Sequence[Rect],
+    wall_table: ResponseTable,
+    floor_value: float,
+    *,
+    post_table: Optional[ResponseTable] = None,
+    wall_height_m: float = DEFAULT_WALL_HEIGHT_M,
+    include_floor: bool = True,
+    max_range_m: float = DEFAULT_MAX_RANGE_M,
+    dual_origin: bool = True,
+    post_half_extent_threshold_m: float = DEFAULT_POST_HALF_EXTENT_THRESHOLD_M,
+    floor_sample_radius_m: float = DEFAULT_FLOOR_SAMPLE_RADIUS_M,
+    floor_sample_ring: int = DEFAULT_FLOOR_SAMPLE_RING,
+    n_occlusion_samples: int = DEFAULT_N_OCCLUSION_SAMPLES,
+) -> float:
+    """`response()` の高速版。数値積分をせず、`wall_table`/`post_table`/`floor_value`
+    （`build_wall_table()`/`build_post_table()`/`floor_baseline()` で事前に作ったもの）を
+    解析的な幾何計算と表引きだけで姿勢から応答を推定する。
+    モジュール docstring の「高速フォワードモデル」節を参照。
+
+    Args:
+        sensor/pose/surfaces: `response()` と同じ（`surfaces` は迷路全体の壁・柱でよい。
+            `max_range_m` より遠いものは内部で足切りする）。
+        wall_table: `build_wall_table()` で作った表（床を含まない・入射角は符号付き）。
+        floor_value: `floor_baseline()` で作った床の基準値。
+        post_table: `build_post_table()` で作った柱専用の表（省略時は柱・壁の妻面の
+            寄与をゼロにする近似。精度検査で分かったとおり、柱がピーク距離付近に
+            あるとき無視すると2桁以上過小評価しうるので、本番では渡すこと）。
+        dual_origin: True（既定）なら、各面の代表点が LED からだけでなく PT からも
+            見えるかを追加検査し、どちらかから遮られていれば寄与させない
+            （LED と PT は離隔 `separation_m` ぶん別の点にあり、光軸を厳密には
+            一致させられないという物理的制約 — `note_034` の出発点）。
+        floor_sample_radius_m/floor_sample_ring: 床の可視判定に使う代表点（中心＋リング）
+            の半径・本数。
+        n_occlusion_samples: 壁・柱の各辺の可視判定に使う標本点の数（辺の実際の長さに
+            沿って等間隔。隣接する面どうしが互いを部分的に隠す場面の近似精度に効く）。
+
+    Returns:
+        `response()` と同じ任意単位の推定値。
+    """
+    led, pt = _sensor_world_geometry(sensor, pose)
+
+    near_rects: list = []
+    for r in surfaces:
+        diag = math.hypot(r.hx, r.hy)
+        dist_center = math.hypot(r.cx - led.pos[0], r.cy - led.pos[1])
+        if dist_center - diag > max_range_m:
+            continue
+        near_rects.append(r)
+    boxes = _obstacle_boxes(near_rects, wall_height_m)
+
+    axis_xy = led.axis[:2]
+    norm_axis_xy = float(np.linalg.norm(axis_xy))
+    axis_xy_hat = axis_xy / norm_axis_xy if norm_axis_xy > 1e-9 else np.array([1.0, 0.0])
+
+    sensor_xy = (led.pos[:2] + pt.pos[:2]) / 2.0  # sensor.pos の world 変換先（表の基準点）
+    query_z = (led.pos[2] + pt.pos[2]) / 2.0      # 可視判定の代表点の高さ（LED・PTの中間）
+
+    # --- 壁・柱: 近傍の矩形すべてについて、センサ側を向いている辺を候補にする ---
+    # 遮蔽は代表点1点ではなく、辺の実際の長さに沿った `n_occlusion_samples` 点で判定し、
+    # 見えている点の割合を表引きの値に掛ける（2026-08-21・精度検査で発覚: 隣り合う
+    # 壁どうしが斜めから見ると互いの一部だけを隠す場面があり、1点判定だと「全部見える」
+    # か「全部隠れる」の二択になって誤差が残った。実例: 3枚の隣接パネルの直接積分combined
+    # 0.170に対し、1点判定では0.316(+86%)。点で割合を近似すると精度が上がる。
+    # なお「同一平面の隣接パネルをまとめて1枚として表引きする」案も試したが、実装の
+    # バグ込みで悪化したため撤回している。誤差の残りは note_034 に正直に書くこと）。
+    cand_owner: list = []
+    cand_group_key: list = []   # (法線, 平面位置) — 同一平面上の別々の矩形をまとめる鍵
+    cand_dtl: list = []
+    cand_is_post: list = []
+    cand_samples_xy: list = []   # 各候補の標本点列（(n_occlusion_samples, 2)）
+    for owner_idx, r in enumerate(near_rects):
+        for n_hat, face_center, half_u in _rect_candidate_faces(r):
+            rel = sensor_xy - face_center
+            if float(np.dot(rel, n_hat)) <= 0.0:
+                continue  # バックフェイスカリング（この辺はセンサに背を向けている）
+            d, inc, lat = _face_dtl(sensor_xy, axis_xy_hat, face_center, n_hat)
+            if d > max_range_m:
+                continue
+            u_hat = np.array([n_hat[1], -n_hat[0]])
+            offsets = np.linspace(-half_u, half_u, n_occlusion_samples)
+            samples_xy = face_center[None, :] + offsets[:, None] * u_hat[None, :]
+            cand_owner.append(owner_idx)
+            cand_group_key.append(owner_idx)  # 既定は矩形ごと（同一平面をまとめる案は
+            # 一部の姿勢を直しても別の姿勢を悪化させたため撤回した。詳細は下のコメント）
+            cand_dtl.append((d, inc, lat))
+            cand_is_post.append(half_u < post_half_extent_threshold_m)
+            cand_samples_xy.append(samples_xy)
+
+    total = 0.0
+    if cand_owner:
+        n_cand = len(cand_owner)
+        all_samples_xy = np.concatenate(cand_samples_xy, axis=0)   # (n_cand*n_occlusion_samples, 2)
+        query_points = np.concatenate(
+            [all_samples_xy, np.full((all_samples_xy.shape[0], 1), query_z)], axis=1,
+        )
+        owner_arr = np.repeat(np.array(cand_owner, dtype=int), n_occlusion_samples)
+        occluded = _segment_occluded(query_points, led.pos, boxes, owner_arr)
+        if dual_origin:
+            occluded = occluded | _segment_occluded(query_points, pt.pos, boxes, owner_arr)
+        occluded = occluded.reshape(n_cand, n_occlusion_samples)
+        visible_frac_per_cand = np.mean(~occluded, axis=1)
+
+        # 同じ矩形の複数の辺が同時にセンサを向く場合（角を見ている配置。柱で起きやすい）、
+        # 独立に足すと過大評価になる（2026-08-21・精度検査で発覚。柱の角で単純な和が
+        # 直接積分の約2倍になる実例があった）。直接積分は同じ箱の複数面をまとめて
+        # 1回の放射計算で扱うため、隣り合う面どうしが互いを一部自己遮蔽する
+        # （平らな1枚パネルを仮定した表はこの自己遮蔽を知らない）。実測では
+        # 「複数面のうち表引きが最大のものだけを使う」近似が直接積分に近い値になった
+        # （実例: 直接0.2748、2面の表引き0.2714/0.2711 → 最大値0.2714で誤差1.2%、
+        # 単純和0.5425では誤差97%）。そこで矩形ごとに最大値だけを採用する。
+        #
+        # 同じ理由が、迷路の連続する壁のように「別々の矩形だが同一平面を作る」場合にも
+        # 起きる（柱を挟んだ隣接パネルどうし。実測: 直接積分combined 0.170に対し、
+        # 別々に表引きして最大値だけ足しても 0.316（+86%）。同一平面をまとめて1枚の
+        # 合成パネルとして扱う案も試したが実装のバグで悪化したため撤回した——ここでは
+        # 「同一平面の候補どうしも同じグループとみなし、その中の最大値だけを使う」という
+        # より単純な近似にとどめる。1本の矩形の複数面の場合と同じ考え方の延長）。
+        best_per_group: Dict[Tuple[float, float, float], float] = {}
+        for i in range(n_cand):
+            visible_frac = float(visible_frac_per_cand[i])
+            if visible_frac <= 0.0:
+                continue
+            d, inc, lat = cand_dtl[i]
+            if cand_is_post[i]:
+                v = _lookup_or_zero(post_table, d, inc, lat) if post_table is not None else 0.0
+            else:
+                v = _lookup_or_zero(wall_table, d, inc, lat)
+            v *= visible_frac
+            key = cand_group_key[i]
+            if key not in best_per_group or v > best_per_group[key]:
+                best_per_group[key] = v
+        total = sum(best_per_group.values())
+
+    # --- 床: 代表点（中心＋リング）ごとに可視判定し、見えている割合ぶんだけ足す ---
+    if include_floor:
+        floor_pts = _floor_sample_points(sensor_xy, floor_sample_radius_m, floor_sample_ring)
+        occluded_f = _segment_occluded(floor_pts, led.pos, boxes, None)
+        if dual_origin:
+            occluded_f = occluded_f | _segment_occluded(floor_pts, pt.pos, boxes, None)
+        visible_frac = float(np.mean(~occluded_f))
+        total += visible_frac * floor_value
+
+    return total * sensor.gain

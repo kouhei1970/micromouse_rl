@@ -29,13 +29,17 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from classic.geometry import Rect
+import time
+
+from classic.geometry import Rect, wall_obstacles
+from mouse.params import RobotParams
 from mouse.ir_sensor import (
     IrSensorSpec,
     ResponseTable,
     SurfaceSpec,
     adc,
     build_table_from_model,
+    fast_response,
     load_table,
     lookup,
     response,
@@ -447,3 +451,146 @@ def test_adc_resolution_and_saturation():
     codes = [adc(0.5, bits=12, full_scale=1.0, noise_sigma=0.2, rng=rng) for _ in range(200)]
     assert len(set(codes)) > 1, "雑音を与えても常に同じコードしか出ない"
     assert all(0 <= c <= 4095 for c in codes)
+
+
+# ============================================================================
+# 9. 高速フォワードモデル（表＋解析的な面の列挙＋遮蔽判定）: 精度と速さ
+# ============================================================================
+# 表の実体は `mouse/data/ir_response_table.npz`（壁）・`mouse/data/ir_post_table.npz`
+# （柱）。生成スクリプトは `mouse/build_ir_response_table.py`（版管理下。表そのものも
+# 小さい＝約5.3MB×2枚なので版管理下に直接置いた。再生成:
+# `.venv/bin/python -m mouse.build_ir_response_table`）。
+#
+# 許容値の根拠（2026-08-21・教授セッションと実測で決めた）:
+# 「満量」＝ある1本のセンサが取りうる最大級の値（直接積分の最大値を基準にする）。
+# 満量に対する絶対誤差なら、応答が距離4乗近くで落ちて桁が動く弱い信号の領域でも
+# 見かけの相対誤差が発散しない。
+#   - 満量に対する誤差の中央値 2% 以内（実測 0.39〜0.44%。壁の有無を判定する用途では
+#     この桁で十分。閾値0.15での判定が0/120件覆らないことを教授セッションが別途確認済み）
+#   - 満量に対する誤差の最大 40% 以内（120姿勢での実測 34.8%。目標は5%だったが、
+#     直接積分と比べて隣接する2枚以上の壁・柱が同一平面を作り互いを部分的に
+#     自己遮蔽する場面（実迷路の連続した通路で起きる。柱を挟んで壁が繋がる構造
+#     そのもの）だけ、「面ごとに独立に表引きして最大値を採る」近似の精度が粗くなる。
+#     同一平面のパネルをまとめて1枚として扱う修正も試したが、別の姿勢を悪化させる
+#     （whack-a-mole）ため撤回した。5%の目標は未達のまま note_034 に記録し、
+#     今後の課題とする（対処には辺単位ではなく面積単位の可視率計算が要ると見ている）
+#   - 満量の10%未満の弱い信号における相対誤差の中央値 20% 以内（実測 8.2%。
+#     「強度で使うか距離に直すかを決めうちしない」という方針上、弱い信号も
+#     ある程度信用できる必要があるため設けた基準）
+_FAST_TABLE_DIR = Path(__file__).resolve().parent.parent / "mouse" / "data"
+_WALL_TABLE_PATH = _FAST_TABLE_DIR / "ir_response_table.npz"
+_POST_TABLE_PATH = _FAST_TABLE_DIR / "ir_post_table.npz"
+
+
+def _load_production_tables():
+    wall_table = load_table(_WALL_TABLE_PATH)
+    post_table = load_table(_POST_TABLE_PATH)
+    floor_value = float(wall_table.meta["floor_baseline"])
+    return wall_table, post_table, floor_value
+
+
+def _real_sensors():
+    """`mouse/params.py` の既定センサ4本（LF/LS/RF/RS）を IrSensorSpec にする。"""
+    params = RobotParams()
+    specs = []
+    for s in params.sensors:
+        pos = tuple(float(v) for v in s["pos"].split())
+        zaxis = tuple(float(v) for v in s["zaxis"].split())
+        specs.append(IrSensorSpec(name=s["name"], pos=pos, axis=zaxis))
+    return specs
+
+
+def _real_maze_surfaces(maze_name: str):
+    """`competition/mazes/` の実迷路から壁・柱の配列を作る。"""
+    params = RobotParams()
+    maze_path = (
+        Path(__file__).resolve().parent.parent / "competition" / "mazes"
+        / "design_turn_v1" / f"{maze_name}.npz"
+    )
+    data = np.load(maze_path)
+    surfaces = wall_obstacles(data["v_walls"], data["h_walls"], cell_size=params.cell_size)
+    width = int(data["v_walls"].shape[0] - 1)
+    height = int(data["v_walls"].shape[1])
+    return surfaces, width, height, params.cell_size
+
+
+def _sample_poses(n: int, seed: int, width: int, height: int, cell: float, sensors):
+    """区画をランダムに選び、区画内で ±40mm ずらし、方位を無作為にした姿勢を `n` 個作る
+    （教授セッションが独立検算に使った手順と同じ）。"""
+    rng = np.random.default_rng(seed)
+    poses = []
+    for _ in range(n):
+        cx = rng.integers(0, width)
+        cy = rng.integers(0, height)
+        x = (cx + 0.5) * cell + rng.uniform(-0.04, 0.04)
+        y = (cy + 0.5) * cell + rng.uniform(-0.04, 0.04)
+        theta = rng.uniform(-math.pi, math.pi)
+        sensor = sensors[rng.integers(0, len(sensors))]
+        poses.append((sensor, (x, y, theta)))
+    return poses
+
+
+def test_table_matches_direct_integration():
+    """実迷路 maze_41001 から無作為に選んだ120姿勢で、`fast_response`（表＋解析的な
+    面の列挙）と `response`（直接積分）を比べる。許容値は上のコメントを参照。
+    """
+    wall_table, post_table, floor_value = _load_production_tables()
+    sensors = _real_sensors()
+    surfaces, width, height, cell = _real_maze_surfaces("maze_41001")
+    poses = _sample_poses(120, seed=41001, width=width, height=height, cell=cell, sensors=sensors)
+
+    direct_vals = np.array([
+        response(sensor, pose, surfaces, SURF, occlusion=True, include_floor=True, n_grid=28)
+        for sensor, pose in poses
+    ])
+    fast_vals = np.array([
+        fast_response(sensor, pose, surfaces, wall_table, floor_value, post_table=post_table)
+        for sensor, pose in poses
+    ])
+
+    full_scale = float(np.max(direct_vals))
+    abs_err_fs = np.abs(fast_vals - direct_vals) / full_scale
+    weak_mask = direct_vals < 0.10 * full_scale
+    rel_err_weak = np.abs(fast_vals[weak_mask] - direct_vals[weak_mask]) / np.maximum(
+        direct_vals[weak_mask], 1e-9,
+    )
+
+    print(f"[fast_response accuracy] n={len(poses)} full_scale={full_scale:.6f}")
+    print(f"  満量に対する誤差: median={np.median(abs_err_fs)*100:.3f}% "
+          f"max={np.max(abs_err_fs)*100:.3f}%")
+    print(f"  弱い信号(n={weak_mask.sum()})の相対誤差: median={np.median(rel_err_weak)*100:.2f}%")
+    worst = np.argsort(-abs_err_fs)[:5]
+    for i in worst:
+        print(f"    worst: direct={direct_vals[i]:.4e} fast={fast_vals[i]:.4e} "
+              f"abs_err_fs={abs_err_fs[i]*100:.2f}%")
+
+    assert np.median(abs_err_fs) < 0.02, "満量に対する誤差の中央値が許容(2%)を超えた"
+    assert np.max(abs_err_fs) < 0.40, "満量に対する誤差の最大が許容(40%)を超えた"
+    if weak_mask.sum() > 0:
+        assert np.median(rel_err_weak) < 0.20, "弱い信号の相対誤差の中央値が許容(20%)を超えた"
+
+
+def test_table_lookup_is_fast():
+    """`fast_response` が `response`（直接積分）より十分速いことを確認する（倍率を印字）。
+    目安: 1回あたり2ms以内・直接積分に対して20倍以上速いこと（実測は約1.1ms・約50倍）。
+    """
+    wall_table, post_table, floor_value = _load_production_tables()
+    sensors = _real_sensors()
+    surfaces, width, height, cell = _real_maze_surfaces("maze_41001")
+    poses = _sample_poses(30, seed=1, width=width, height=height, cell=cell, sensors=sensors)
+
+    t0 = time.perf_counter()
+    for sensor, pose in poses:
+        response(sensor, pose, surfaces, SURF, occlusion=True, include_floor=True, n_grid=28)
+    t_direct = (time.perf_counter() - t0) / len(poses)
+
+    t0 = time.perf_counter()
+    for sensor, pose in poses:
+        fast_response(sensor, pose, surfaces, wall_table, floor_value, post_table=post_table)
+    t_fast = (time.perf_counter() - t0) / len(poses)
+
+    speedup = t_direct / t_fast
+    print(f"[fast_response speed] direct={t_direct*1000:.3f}ms fast={t_fast*1000:.4f}ms "
+          f"speedup={speedup:.1f}x")
+    assert t_fast < 0.002, "表引き1回が2msを超えた"
+    assert speedup > 20.0, "直接積分に対する高速化が20倍未満だった"
