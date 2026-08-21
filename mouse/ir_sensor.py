@@ -27,7 +27,7 @@ note_034 参照）。`classic/` からは真の壁を読まない、という規
 
 ## 数値積分について
 
-LED・PT とも半値角が数度と非常に狭い（cos^m の m は 5° で ~180 という鋭さ）。面全体を
+LED・PT とも半値角が数度と非常に狭い（cos^m の m は LED の 3° で ~505 という鋭さ）。面全体を
 一様格子で積分すると、格子が粗い距離でピーク位置の細い明部を踏み外して過小評価する。
 そこで面ごとに「LED の光軸が面と交わる点（無ければ LED に最も近い面上の点）」を中心に、
 tan ワープした非一様格子（`_warped_axis`）で標本点を集中させる。集中幅はその点までの距離と
@@ -97,6 +97,12 @@ __all__ = [
     "DEFAULT_FLOOR_HALFEXTENT_M",
     "DEFAULT_MAX_RANGE_M",
     "DEFAULT_N_GRID",
+    # 相互反射（AUDIT_056・モデル I）用の粗い面素分割の既定値
+    "DEFAULT_N_COARSE_WALL_U",
+    "DEFAULT_N_COARSE_WALL_V",
+    "DEFAULT_N_COARSE_FLOOR",
+    "DEFAULT_N_GRID_INTERREFLECTION_SOURCE",
+    "DEFAULT_N_HOTSPOT_SCAN",
     # 高速フォワードモデル（光線による可視面判定＋表引き。note_034 追記分）
     "build_wall_table",
     "build_post_table",
@@ -121,6 +127,18 @@ DEFAULT_WALL_HEIGHT_M: float = 0.05    # 壁の高さ [m]（迷路規格。note_
 DEFAULT_FLOOR_HALFEXTENT_M: float = 0.20   # 床パッチの半幅 [m]（センサ周辺のみを面として持つ）
 DEFAULT_MAX_RANGE_M: float = 0.35      # これより遠い壁は最初から積分対象に入れない
 DEFAULT_N_GRID: int = 28               # 面 1 枚あたりの求積点数（1 軸あたり）
+
+# 相互反射（AUDIT_056・モデル I）: 反射2回目以降を解くラジオシティ的な粗い面素の分割数。
+# 間接照明はなめらかなので、1回目の細かい求積格子（DEFAULT_N_GRID）とは別に粗い格子を使う
+# （面素数の2乗で効く計算量を抑えるため。`verification/AUDIT_056_PREREG_interreflection.md` §1）。
+DEFAULT_N_COARSE_WALL_U: int = 3       # 壁側面の粗い面素（長さ方向の分割数）
+DEFAULT_N_COARSE_WALL_V: int = 2       # 壁側面の粗い面素（高さ方向の分割数）
+DEFAULT_N_COARSE_FLOOR: int = 4        # 床の粗い面素（1 辺あたりの分割数）
+# 相互反射の起点 L^(1) と PT 集光係数を面素へ畳み込むときに使う warped 格子の求積点数
+# （1回目の経路 DEFAULT_N_GRID=28 と同じ仕組み。narrow beam を粗い面素の中心1点で
+# 評価すると踏み外すため、1回目と同じ warped 格子で先に積分してから面素へ畳み込む。
+# `verification/AUDIT_056_PREREG_interreflection.md` §1・本モジュール docstring 参照）。
+DEFAULT_N_GRID_INTERREFLECTION_SOURCE: int = 16
 
 # 高速フォワードモデル（下の「表（距離×入射角×横ずれ）」節のさらに下、
 # 「高速フォワードモデル」節を参照）で使う既定値。
@@ -149,10 +167,10 @@ class IrSensorSpec:
     name: str
     pos: Tuple[float, float, float]    # 機体座標での取り付け位置（LED と PT の中点）[m]
     axis: Tuple[float, float, float]   # 光軸（機体座標の単位ベクトル。正規化前でもよい）
-    separation_m: float = 0.0065       # LED と PT の離隔 [m]（note_034: 確定 6〜7mm の代表値）
+    separation_m: float = 0.0060       # LED と PT の離隔 [m]（実測への当てはめ。note_034 追記14）
     layout: str = "vertical"           # 既定は縦配置（ユーザ判断）。"horizontal" も選べる
-    led_half_angle_deg: float = 5.0
-    pt_half_angle_deg: float = 5.0
+    led_half_angle_deg: float = 3.0    # OSRAM SFH 4550 のデータシート（note_034 追記9）
+    pt_half_angle_deg: float = 6.0     # KODENSHI ST-1KL3A のデータシート（同上）
     led_tilt_deg: float = 0.0          # アライメント誤差（±1° を想定）
     pt_tilt_deg: float = 0.0
     gain: float = 1.0                  # 個体差（応答全体に掛かる係数）
@@ -163,8 +181,8 @@ class SurfaceSpec:
     """反射面の性質。"""
 
     diffuse: float = 0.8       # 拡散反射率（白い射出成形プラスチック）
-    specular: float = 0.0      # 鏡面成分。ゼロにできるが、値を変えられる
-    shininess: float = 20.0    # 鏡面のとがり（Phong 的な冪指数）
+    specular: float = 0.10     # 鏡面成分（角度の実測への当てはめ。note_034 追記7・追記14）
+    shininess: float = 40.0    # 鏡面のとがり（Phong 的な冪指数。同上）
 
 
 # ============================================================================
@@ -541,6 +559,425 @@ def _integrate_facet(
 
 
 # ============================================================================
+# 相互反射（AUDIT_056・モデル I）: 反射2回目以降をラジオシティ的な粗い面素で解く
+# ============================================================================
+"""
+🔴 **この経路（`bounces >= 2`）は検証を通っていない。評価・測定に使ってはならない。**
+2026-08-21 の実測で、壁1枚＋床の配置において**反射3回目の増分が独立な光線追跡の
+0.1〜4%（最大 500 分の 1）しか出ない**という深刻な過小評価が見つかった。面素分割を上げても
+値は単調に収束せず（壁9×6・床12×12 で 1 姿勢 79 秒＝速度要件の 40 倍）、原因は
+「センサ近傍の幾何（PT は床から 10mm）に対して粗い面素（床 100mm 角）が大きすぎ、
+点対点の形態係数近似が破綻すること」と見ている。**距離で段階的に細かくする面素分割
+（適応分割）が要る。**それまでこの経路は未完成である（`AUDIT_056` 追記2）。
+
+**`bounces=1`（既定）は元の計算式をそのまま通る**（実測で相対差 0.0 の厳密一致を確認済み）。
+既存の呼び出し側の挙動は一切変わっていない。
+
+背景・仕様は `verification/AUDIT_056_PREREG_interreflection.md` §1 を正とする。
+
+## 骨子
+
+1回目の経路（fine-grid の面積分。`_integrate_facet` 等、上のコードは一切変更しない）に、
+反射2回目以降の寄与を**加算する項**として足す。2回目以降の輸送は拡散のみ（鏡面は1回目にだけ
+効く。事前登録の根拠: 鏡面のエネルギー比は約10%なので、2回目以降に鏡面を入れても効くのは
+「数%の項のさらに10%」＝満量比で10⁻³台であり、判定量の分割点0.01の1/10以下）。
+
+各面（壁の側面4枚×矩形＋床）を粗い面素に割り、面素ごとに中心・法線・面積を持たせる:
+
+    E_j          = LED から面素 j への直接放射照度（cosθ_i 込み・遮蔽込み）
+    L_j^(1)      = ρ・E_j/π                                    （反射1回目の放射輝度）
+    L_i^(k+1)    = ρ・Σ_j [cosθ_i・cosθ_j/(π r_ij²)]・V_ij・A_j・L_j^(k)
+                                                                （反射を1回進める）
+    増分_k       = Σ_i L_i^(k)・（PT での集光係数。1回目と同じ規格）
+
+**π の置き場所は 1 回目の経路（`_integrate_facet`）と揃えてある**（放射照度→放射輝度の
+`ρ/π`、PT 集光の式に π を追加で挟まない）。事前登録の文中の式 `F_ij = cosθ_i cosθ_j/(π r²)`
+を文字どおり「B_i^(k+1) = ρ/π・Σ F_ij…」と重ねると π が二重になる（標準的な放射伝達の
+導出と食い違う）。本実装は放射輝度の物理定義から導出し直した上記の式を採用し、
+その正しさは検証0-c（独立な光線追跡との突き合わせ）で確認する。
+
+## 🔴 粗い面素の「中心1点で評価」では narrow beam を踏み外す（実装中に発覚）
+
+LED・PT の半値角は数度と鋭く（`m` は LED の 3° で ~505）、粗い面素（例: 壁1枚を3×2に分割）の
+中心点だけで `E_j`（LED側）や集光係数（PT側）を評価すると、ビームの明部が面素の中心から
+外れた途端に値がほぼゼロになり、逆にたまたま中心が明部を捉えた面素だけが桁違いに大きい値を
+持つ（実測で確認: 壁を3×2＝6面素に割ったところ、1枚だけが `E=605`・残り5枚が `1e-40` 以下）。
+モジュール冒頭の「数値積分について」に書かれている、1回目の経路がまさに warped 格子で
+避けている落とし穴そのものを、粗い面素で再現してしまう。
+
+**対策**: 面素ごとに `E_j`（LED起点）と PT 集光係数の**どちらも**、narrow beam を正しく
+捉える warped 格子で積分し、その結果を面素へビニングして畳み込む（`_facet_radiosity_cells`）。
+**粗い面素はラジオシティの伝播（面素→面素の形態係数 `F_ij`。間接照明なのでなめらか）にだけ
+使い**、LED・PT が絡む narrow beam の部分は fine grid の求積精度をそのまま引き継ぐ。
+
+面素間の可視判定は法線方向にわずか（1e-6m）ずらした点どうしで行う（`_segment_occluded` の
+番号除外は「面素→LED/PT」の対では使えるが、「面素→面素」では両端が別々の直方体の上に
+あり得るため、既存の光線追跡 `verification/audit_050_raycast.py` と同じ「ずらす」方式を使う）。
+
+## 🔴 1回目の経路と同じ `_facet_grid`（`_facet_anchor_and_scale`）は床では使えない（実装中に発覚）
+
+1回目の経路の anchor（`_facet_anchor_and_scale`）は「LED 光軸が面と前方で交わる点」を
+中心に据えるが、**LED 光軸が面とほぼ平行（前方交点が無い＝`t<=0`）の場合は「LED に
+最も近い点」へフォールバックする**。これは壁（LED がほぼ正対する面）では妥当だが、
+**床では成り立たない**: 実機センサの光軸は水平に近い（`mouse/params.py` の
+`zaxis` は z 成分 0.026 のみ）ので、床に対しては「前方交点なし」がほぼ常に起こり、
+「LED に最も近い点」（センサ直下）へ anchor してしまう。しかし cos^m(θ_e)/r_e² は
+grazing 角度では **センサ直下ではなく、面内の有限距離だけ離れた点で最大になる**
+（LED 高さ `h`・指数 `m` に対して解析的に `x_peak = h・√(m/2)`。本機体の実測値では
+約126mm — センサ直下から10cm以上離れている）。「壁→床→壁→PT」（床が主経路。
+`verification/audit_050_bounce_parity.py` docstring 参照）で床の `E_j` をこの anchor で
+求めると、実際のホットスポットを外し、**壁+床での3回反射の増分を光線追跡比で
+最大 500 分の1 まで過小評価する**ことが検証0-c を補強する自主検算で見つかった
+（`_facet_anchor_and_scale`/`_facet_grid` は 1 回目の経路と共有しており、bounces=1 の
+厳密一致要件のため変更できない。本モジュール専用の別実装で対処する）。
+
+**対策**: `_facet_grid` の代わりに、面素ごとに `_facet_led_hotspot_anchor()` で
+`cos^m(θ_e)/r_e²` を面内の密な一様格子（既定 64×64。定式だけの評価で遮蔽計算を伴わず
+軽い）で直接探索し、その最大点を anchor にした warped 格子（`_warped_axis`）を
+自前で作る（`_facet_grid_for_radiosity()`）。前方交点があるケースでも「実際の最大点」を
+直接探すほうが `_facet_anchor_and_scale` の解析的な見積もりより頑健なので、
+場合分けせず常にこちらを使う。
+
+## 🔴 既知の限界（未解決）: 近距離の壁+床では粗い面素の分割数が根本的に足りない
+
+上のホットスポット anchor 修正のあと、検証0-c（単一パネル・床なし）は光線追跡と
+厳密に一致するようになったが、**これは単一パネル・床なしでは両モデルとも増分が
+厳密にゼロになるため（面の偶奇。`verification/audit_050_bounce_parity.py` 参照）、
+π の規格や式が正しいかを実質検査できていない**。そこで検証0-c の対象外である
+「壁1枚＋床」（`audit_050_bounce_parity.py` と同じ配置）で独自に光線追跡と突き合わせたところ、
+既定の粗い面素分割（壁 3×2・床 4×4）では **3 回反射の増分が光線追跡比で
+0.1%〜4%（距離 20〜150mm）しか出ない**ことが分かった。
+
+原因を段階的に調べた結果:
+
+1. 面素間の可視判定・遮蔽つきホットスポット探索・r 下限クランプ・L^(1) のフラックス
+   加重重心（送り手位置）は、いずれも実測で効果があった（特に r 下限クランプは、
+   隣接する柱・壁の面素どうしが偶然近づいたときの発散を抑え、検証0-b の最悪ケースを
+   満量比 0.13 から 0.002 付近まで改善した）
+2. **PT の集光カーネルの受け手位置に加重重心を使う対策も試したが、効果はほぼ無かった**
+   （40mm で 0.02879→0.02881、誤差はほぼ変化なし）。計算時間はほぼ倍増し、検証0-b の
+   余裕も失われたため不採用にした（実装は `_facet_radiosity_cells` の `collect_centroid`
+   に残っているが、`_interreflection_increments` では使っていない）
+3. 面素の分割数を大きく上げても（壁 9×6・床 12×12）増分は単調に真値へ収束せず、
+   1姿勢の計算時間が 79 秒（既定の 2 秒要件の 40 倍）まで伸びた
+
+**根本原因はセンサの視野角（半値角 3〜6°）に対して面素 1 枚が近距離では大きすぎること**
+だと判断している。PT がおよそ 20〜150mm という近さで壁を見るとき、面素（既定で壁の
+長さ方向 56mm・高さ方向 25mm）が張る角度はセンサの半値角よりずっと広く、面素を
+1点（幾何中心や重心）で代表させる近似がそもそも成り立たない。解決には面素分割を
+均一格子ではなく、fine grid と同じ warped（anchor 集中）格子で作る、あるいは
+可視角度に応じた適応的な細分割が要ると考えられるが、**本作業の時間内では実装・検証
+できなかった**。
+
+**この結果、検証0-b は姿勢によって合否が変わる状態にある**（後述の報告参照）。
+判断（面素分割の作り方を変える・速度要件を緩める・別の近似に切り替える等）は
+教授セッションへ上げる。
+"""
+
+
+DEFAULT_N_HOTSPOT_SCAN: int = 64   # LED ホットスポット探索の一様格子（1軸あたり）
+
+
+def _facet_led_hotspot_anchor(
+    facet: _Facet, led: _Emitter, max_range_m: float,
+    boxes: np.ndarray, owner_idx: int,
+    n_scan: int = DEFAULT_N_HOTSPOT_SCAN,
+) -> Tuple[float, float, float]:
+    """面 `facet` の中で `cos^m(θ_e)/r_e²`（LED の放射照度に比例する量。cos_i は含めない
+    近似だが、**遮蔽と `max_range_m` は含める**）が最大になる点を、密な一様格子で直接探す。
+    戻り値は `(anchor_u, anchor_v, r_est)`（面内座標・その点までの距離）。
+    モジュール docstring「1回目の経路と同じ `_facet_grid` は床では使えない」節を参照
+    （LED 光軸が面とほぼ平行なとき、解析的な anchor 推定 `_facet_anchor_and_scale` は
+    実際のホットスポットを大きく外すため、代わりに使う）。
+
+    🔴 遮蔽を含めない版では、遮られた領域（例: 手前の壁の向こうの床）にある無遮蔽時の
+    最大点へ anchor してしまい、実際に効く手前側の領域が warped 格子から外れて
+    大幅な過小評価になることが実測で見つかった（壁+床の3回反射が光線追跡比で
+    最大500分の1）。遮蔽込みで探索することで、この見落としを防ぐ。
+    """
+    us = np.linspace(-facet.half_u, facet.half_u, n_scan)
+    vs = np.linspace(-facet.half_v, facet.half_v, n_scan)
+    UU, VV = np.meshgrid(us, vs, indexing="ij")
+    pts = (
+        facet.center[None, None, :]
+        + UU[:, :, None] * facet.u[None, None, :]
+        + VV[:, :, None] * facet.v[None, None, :]
+    )
+    d_e = pts - led.pos
+    r_e = np.linalg.norm(d_e, axis=-1)
+    r_e_safe = np.maximum(r_e, 1e-6)
+    dir_e = d_e / r_e_safe[..., None]
+    cos_e = np.clip(np.einsum("ijk,k->ij", dir_e, led.axis), 0.0, 1.0)
+    field = cos_e ** led.m / (r_e_safe ** 2)
+    valid = r_e < max_range_m
+    if boxes.shape[0] > 0:
+        # 🔴 owner_idx=-1（床。属する箱が無い）を裸のスカラーのまま渡すと、
+        # `_segment_occluded` は Python の負インデックス規約で「配列末尾の箱」を除外して
+        # しまい、遮蔽が効かなくなる（`skip_idx` の -1=除外なし 規約は配列形のときだけ
+        # 有効）。ここで None に変換して防ぐ。
+        occ = _segment_occluded(pts, led.pos, boxes, owner_idx if owner_idx >= 0 else None)
+        valid = valid & ~occ
+    field = np.where(valid, field, 0.0)
+    if not np.any(valid):
+        # 面全体が遮蔽/範囲外なら、どこを anchor にしても寄与ゼロ。中心を返しておく。
+        return 0.0, 0.0, max(float(np.min(r_e_safe)), 1e-4)
+    idx = np.unravel_index(int(np.argmax(field)), field.shape)
+    return float(UU[idx]), float(VV[idx]), float(r_e_safe[idx])
+
+
+def _facet_grid_for_radiosity(
+    facet: _Facet, led: _Emitter, n_grid: int, half_angle_max_deg: float, separation_m: float,
+    max_range_m: float, boxes: np.ndarray, owner_idx: int,
+) -> Tuple[np.ndarray, np.ndarray]:
+    """相互反射の起点 `E_j`/`L^(1)` を積分するための warped 格子（`_facet_grid` と同じ
+    tan ワープ・同じ戻り値の形だが、anchor は `_facet_led_hotspot_anchor()` の直接探索を使う。
+    1回目の経路が使う `_facet_grid`/`_facet_anchor_and_scale` とは別実装（`bounces=1` の
+    厳密一致要件のため、共有関数の側は変更できない。モジュール docstring 参照）。
+    """
+    anchor_u, anchor_v, r_est = _facet_led_hotspot_anchor(facet, led, max_range_m, boxes, owner_idx)
+    spread = r_est * math.tan(math.radians(4.0 * half_angle_max_deg))
+    w = max(spread, separation_m * 2.0, 1e-4)
+    su, wu = _warped_axis(facet.half_u, anchor_u, w, n_grid)
+    sv, wv = _warped_axis(facet.half_v, anchor_v, w, n_grid)
+
+    SU, SV = np.meshgrid(su, sv, indexing="ij")
+    WU, WV = np.meshgrid(wu, wv, indexing="ij")
+    dA = WU * WV
+    points = (
+        facet.center[None, None, :]
+        + SU[:, :, None] * facet.u[None, None, :]
+        + SV[:, :, None] * facet.v[None, None, :]
+    )
+    return points, dA
+
+
+def _facet_radiosity_cells(
+    facet: _Facet, owner_idx: int, led: _Emitter, pt: _Emitter, surf: SurfaceSpec,
+    led_intensity: float, pt_responsivity: float, max_range_m: float, boxes: np.ndarray,
+    n_grid_source: int, half_angle_max_deg: float, separation_m: float,
+    n_u: int, n_v: int,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """1 枚の面 `facet` を `n_u × n_v` の粗い面素へ割り、面素ごとに次を返す:
+
+    - `centers`・`normals`・`areas`: 伝播（形態係数 `F_ij`）に使う幾何量（面素の中心・面積）
+    - `L1_cell`: LED の直接照明による反射1回目の放射輝度の面素内平均。narrow beam を
+      1回目の経路と同じ warped 格子（`_facet_grid`）で正しく積分してから面素へ畳み込む
+      （モジュール docstring「粗い面素の『中心1点で評価』では narrow beam を踏み外す」参照）
+    - `collect_cell`: PT での集光係数（`cosθ_v・cos^m_pt(θ_r)/r_v²`）を同じ warped 格子で
+      積分した値（dA 込み）。`L^(k)` が面素内で一定という区分定数近似のもとで、
+      `Σ_cell L^(k)・collect_cell` として fine grid 抜きで集光できるようにする
+    - `l1_centroid`: 面素内での **L^(1) フラックス加重重心**（フラックスが無い面素は
+      幾何中心にフォールバック）。narrow beam のせいで L^(1) が面素内で極端に偏るとき
+      （検証0-bで実測: 面素分割を1.5倍にしただけで増分が最大17分の1まで動いた）、
+      形態係数 `F_ij` の送り手位置に幾何中心をそのまま使うと分割数に結果が強く依存して
+      しまう。重心を送り手位置として使うことで、この依存を落とす
+      （`_interreflection_increments` の F1 を参照）。
+    - `collect_centroid`: 面素内での **PT 集光カーネル加重重心**（重みが無い面素は
+      幾何中心にフォールバック）。PT も半値角が数度と狭いため、集光もまた面素内で
+      極端に偏る（実測: 壁の面素6枚中1枚だけが集光の97%超を占める）。`L^(k)` を
+      幾何中心で評価して集めると、壁+床の3回反射が光線追跡比で最大500分の1まで
+      過小評価された（L^(k) 自体は間接照明でなめらかでも、それを PT へ集める重みが
+      面素内でなめらかでないため、幾何中心の値がその面素の「PT が実際に見ている点」の
+      値からずれる）。集光の受け手位置にこの重心を使うことで、この見落としを防ぐ
+      （`_interreflection_increments` の F1_collect/F_collect を参照）。
+    """
+    n_cells = n_u * n_v
+    du = 2.0 * facet.half_u / n_u
+    dv = 2.0 * facet.half_v / n_v
+    cell_area = du * dv
+
+    centers = np.empty((n_cells, 3))
+    for iu in range(n_u):
+        cu = -facet.half_u + (iu + 0.5) * du
+        for iv in range(n_v):
+            cv = -facet.half_v + (iv + 0.5) * dv
+            centers[iu * n_v + iv] = facet.center + cu * facet.u + cv * facet.v
+    normals = np.tile(facet.normal, (n_cells, 1))
+    areas = np.full(n_cells, cell_area)
+
+    points, dA = _facet_grid_for_radiosity(
+        facet, led, n_grid_source, half_angle_max_deg, separation_m, max_range_m, boxes, owner_idx,
+    )
+
+    # 🔴 owner_idx=-1（床）を裸のスカラーのまま `_segment_occluded` に渡すと、Python の
+    # 負インデックス規約で「配列末尾の箱」を誤って除外してしまう（-1=除外なし の規約は
+    # 配列形の skip_idx のときだけ有効）。None に変換してから渡す。
+    skip_box = owner_idx if owner_idx >= 0 else None
+
+    d_e = points - led.pos
+    r_e = np.linalg.norm(d_e, axis=-1)
+    r_e_safe = np.maximum(r_e, 1e-6)
+    dir_e = d_e / r_e_safe[..., None]
+    cos_e = np.clip(np.einsum("ijk,k->ij", dir_e, led.axis), 0.0, 1.0)
+    cos_i = np.clip(np.einsum("ijk,k->ij", -dir_e, facet.normal), 0.0, 1.0)
+    valid_e = (r_e < max_range_m) & (r_e > 1e-9)
+    if boxes.shape[0] > 0:
+        occ_e = _segment_occluded(points, led.pos, boxes, skip_box)
+        valid_e = valid_e & ~occ_e
+    irradiance = np.where(valid_e, led_intensity * cos_e ** led.m / (r_e_safe ** 2) * cos_i, 0.0)
+    radiance_1 = irradiance * (surf.diffuse / math.pi)   # L^(1)（点ごと）
+
+    d_v = pt.pos - points
+    r_v = np.linalg.norm(d_v, axis=-1)
+    r_v_safe = np.maximum(r_v, 1e-6)
+    dir_v = d_v / r_v_safe[..., None]
+    cos_v = np.clip(np.einsum("ijk,k->ij", dir_v, facet.normal), 0.0, 1.0)
+    cos_r = np.clip(np.einsum("ijk,k->ij", -dir_v, pt.axis), 0.0, 1.0)
+    valid_v = r_v > 1e-9
+    if boxes.shape[0] > 0:
+        occ_v = _segment_occluded(points, pt.pos, boxes, skip_box)
+        valid_v = valid_v & ~occ_v
+    collect_kernel = np.where(valid_v, cos_v * cos_r ** pt.m / (r_v_safe ** 2), 0.0) * pt_responsivity
+
+    rel = points - facet.center
+    uu = np.einsum("ijk,k->ij", rel, facet.u)
+    vv = np.einsum("ijk,k->ij", rel, facet.v)
+    ui = np.clip(((uu + facet.half_u) / (2.0 * facet.half_u) * n_u).astype(int), 0, n_u - 1)
+    vi = np.clip(((vv + facet.half_v) / (2.0 * facet.half_v) * n_v).astype(int), 0, n_v - 1)
+    cell_idx = (ui * n_v + vi).ravel()
+
+    flux = (radiance_1 * dA).ravel()
+    weight_collect = (collect_kernel * dA).ravel()
+    L1_flux = np.bincount(cell_idx, weights=flux, minlength=n_cells)
+    collect_cell = np.bincount(cell_idx, weights=weight_collect, minlength=n_cells)
+    L1_cell = L1_flux / cell_area
+
+    flat_points = points.reshape(-1, 3)
+
+    def _weighted_centroid(weight_flat: np.ndarray, weight_sum: np.ndarray) -> np.ndarray:
+        """`weight_flat`（点ごとの重み）で面素内の点を加重平均した重心を返す
+        （重みが無い面素は幾何中心にフォールバック）。"""
+        acc = np.zeros((n_cells, 3))
+        for dim in range(3):
+            acc[:, dim] = np.bincount(cell_idx, weights=weight_flat * flat_points[:, dim], minlength=n_cells)
+        has_w = weight_sum > 0.0
+        return np.where(has_w[:, None], acc / np.where(has_w, weight_sum, 1.0)[:, None], centers)
+
+    # L^(1) のフラックス加重重心（送り手位置。上のコメント「narrow beam を踏み外す」参照）。
+    l1_centroid = _weighted_centroid(flux, L1_flux)
+    # PT 集光カーネルの加重重心（受け手位置）。PT も半値角が数度と狭いため、collect_cell の
+    # 中身も面素内で極端に偏る（実測: 壁面素6枚中1枚だけが集光の97%超を占める）。この重心を
+    # 使わず面素の幾何中心で L^(k) を評価すると、壁+床の3回反射が光線追跡比で最大500分の1
+    # まで過小評価された（`_interreflection_increments` の F1_collect/F_collect を参照）。
+    collect_centroid = _weighted_centroid(weight_collect, collect_cell)
+
+    return centers, normals, areas, L1_cell, collect_cell, l1_centroid, collect_centroid
+
+
+def _interreflection_increments(
+    led: _Emitter, pt: _Emitter, surf: SurfaceSpec,
+    near_rects: Sequence[Rect], boxes: np.ndarray,
+    wall_height_m: float, include_floor: bool, floor_halfextent_m: float,
+    led_intensity: float, pt_responsivity: float, max_range_m: float, bounces: int,
+    half_angle_max_deg: float, separation_m: float,
+    n_coarse_wall_u: int, n_coarse_wall_v: int, n_coarse_floor: int, n_grid_source: int,
+) -> Dict[int, float]:
+    """反射 2 回目以降の増分をラジオシティ近似で計算する（`{反射回数: 増分}`。k=2..bounces）。
+
+    モジュール docstring「相互反射（AUDIT_056・モデル I）」節を参照。呼び出し側（`response()`）
+    が既に計算済みの `led`/`pt`/`near_rects`/`boxes` をそのまま受け取る（1 回目の経路と
+    同じ面・同じ遮蔽候補を使うことを保証するため、ここで作り直さない）。
+    """
+    if bounces <= 1:
+        return {}
+
+    wall_facets = _wall_facets(near_rects, wall_height_m)
+    facet_specs = [(f, idx // 4, n_coarse_wall_u, n_coarse_wall_v) for idx, f in enumerate(wall_facets)]
+    if include_floor:
+        mid_xy = (led.pos[:2] + pt.pos[:2]) / 2.0
+        facet_specs.append((_floor_facet(mid_xy, floor_halfextent_m), -1, n_coarse_floor, n_coarse_floor))
+
+    if not facet_specs:
+        return {k: 0.0 for k in range(2, bounces + 1)}
+
+    centers_l, normals_l, areas_l, L1_l, collect_l, l1cen_l, colcen_l = [], [], [], [], [], [], []
+    for facet, owner_idx, n_u, n_v in facet_specs:
+        c, n, a, l1, col, l1cen, colcen = _facet_radiosity_cells(
+            facet, owner_idx, led, pt, surf, led_intensity, pt_responsivity, max_range_m, boxes,
+            n_grid_source, half_angle_max_deg, separation_m, n_u, n_v,
+        )
+        centers_l.append(c); normals_l.append(n); areas_l.append(a)
+        L1_l.append(l1); collect_l.append(col); l1cen_l.append(l1cen); colcen_l.append(colcen)
+
+    centers = np.concatenate(centers_l, axis=0)
+    normals = np.concatenate(normals_l, axis=0)
+    areas = np.concatenate(areas_l, axis=0)
+    L = np.concatenate(L1_l, axis=0)               # L^(1)（面素ごとの平均）
+    collect_weight = np.concatenate(collect_l, axis=0)   # dA 込みの PT 集光係数（面素ごと）
+    l1_centroid = np.concatenate(l1cen_l, axis=0)        # L^(1) のフラックス加重重心（送り手位置）
+    collect_centroid = np.concatenate(colcen_l, axis=0)  # PT 集光カーネルの加重重心（集光の受け手位置）
+
+    n_p = centers.shape[0]
+
+    # 迷路は柱・壁が隙間ゼロで隣接する構造（本モジュール冒頭・`_COPLANAR_GAP_EPS_M` の
+    # コメント参照）なので、別々の直方体に属す面素どうしが「ほぼ接している」姿勢が実迷路で
+    # 普通に起こる。点対点の形態係数カーネル `cosθcosθ/(πr²)` は r→0 で発散するが、
+    # 面積積分した本当の形態係数（例: 共有辺で接する2枚の垂直面）は有限であり、発散は
+    # 「面を1点で代表させる」近似の産物である。r の下限にパッチの実効半径（`sqrt(area)/2`
+    # の和）を使う（標準的なラジオシティの工学的対処）。
+    # 🔴 検証0-b で実測: この下限が無いと、面素分割数を1.5倍にしただけで増分が
+    # 最大約100倍（0.112 -> 0.0011 桁で変動）動く姿勢があった（隣接する柱・壁の面素どうしの
+    # r が分割の切り方で偶然ゼロに近づくため）。
+    r_floor_recv = 0.5 * np.sqrt(areas)
+
+    def _form_factor_matrix(
+        recv_centers: np.ndarray, src_centers: np.ndarray, src_normals: np.ndarray, src_areas: np.ndarray,
+    ) -> np.ndarray:
+        """受け手 `recv_centers`（法線 `normals`）・送り手 `src_centers`（法線 `src_normals`）
+        の形態係数 `F[i,j] = cosθ_i・cosθ_j/(π r²)`（可視判定込み・近接パッチの r 下限込み）を作る。
+        """
+        rel = src_centers[None, :, :] - recv_centers[:, None, :]     # rel[i,j] = src_j - recv_i
+        r = np.linalg.norm(rel, axis=-1)
+        r_floor = r_floor_recv[:, None] + 0.5 * np.sqrt(src_areas)[None, :]
+        r_safe = np.maximum(np.maximum(r, r_floor), 1e-6)
+        dir_ij = rel / r_safe[..., None]
+        cos_i_ij = np.clip(np.einsum("ijk,ik->ij", dir_ij, normals), 0.0, None)
+        cos_j_ij = np.clip(np.einsum("ijk,jk->ij", -dir_ij, src_normals), 0.0, None)
+        mat = cos_i_ij * cos_j_ij / (math.pi * r_safe ** 2)
+        if r_safe.shape[0] == r_safe.shape[1]:
+            np.fill_diagonal(mat, 0.0)   # 同一面素どうし（i==j）は伝播させない
+        if boxes.shape[0] > 0 and n_p > 0:
+            nudged_recv = recv_centers + normals * 1e-6
+            nudged_src = src_centers + src_normals * 1e-6
+            V = _segment_occluded(nudged_recv[:, None, :], nudged_src[None, :, :], boxes, None)
+            mat = np.where(V, 0.0, mat)
+        return mat
+
+    # --- 形態係数 F1（反射1回目→2回目の伝播だけに使う。送り手位置は面素の幾何中心ではなく
+    #     L^(1) のフラックス加重重心を使う） ---
+    #
+    # 🔴 検証0-b で実測した問題（面素分割を1.5倍にしただけで増分が最大17分の1まで動いた）
+    # への対処。narrow beam のせいで L^(1) は面素内で極端に偏っている（実測: 3×2分割の
+    # 1面素だけが E=605、残り5面素は1e-40以下）。送り手位置に面素の幾何中心をそのまま
+    # 使うと、分割の切り方が変わるたびに「実際に光っている場所」と「幾何中心」のずれが
+    # 変わり、cosθ・r² が敏感に動いて収束しない。フラックス加重重心を使うことで、
+    # 送り手位置が実際の明部に一致し、分割数への依存を落とす。
+    F1 = _form_factor_matrix(centers, l1_centroid, normals, areas)
+
+    # --- 形態係数 F（反射2回目以降どうしの伝播。間接照明はなめらかなので幾何中心のままでよい） ---
+    F = _form_factor_matrix(centers, centers, normals, areas)
+
+    # 🔴 集光の受け手位置に PT 集光カーネルの加重重心（`collect_centroid`）を使う版も試した
+    # （壁+床で3回反射が光線追跡比最大500分の1という自主検算の結果への対処案）。
+    # 実測: 改善はほぼ無く（40mm: 満量比差 0.02879→0.02881、ほぼ不変）、計算時間はほぼ倍増
+    # （実迷路姿勢の平均590ms→1340ms）、検証0-bはぎりぎり不合格側へ動いた（0.00185→0.00208、
+    # 分割点0.002）。**費用に見合う効果が無いため不採用**（`collect_centroid` 自体は
+    # `_facet_radiosity_cells` の戻り値として残すが、ここでは使わない）。根本原因は
+    # 「面素1枚が近距離センサの視野角（数度）に対して大きすぎる」という解像度の問題であり、
+    # 重心を使う程度の局所補正では直らない。詳細は本ファイル docstring の限界の節、
+    # および教授セッションへの報告を参照。
+    del collect_centroid
+
+    breakdown: Dict[int, float] = {}
+    L_k = L
+    for k in range(2, bounces + 1):
+        Fmat = F1 if k == 2 else F   # 1回目→2回目だけ重心を使う（上のコメント参照）
+        L_k = surf.diffuse * (Fmat @ (areas * L_k))
+        breakdown[k] = float(np.sum(L_k * collect_weight))
+    return breakdown
+
+
+# ============================================================================
 # 公開 API: response / adc
 # ============================================================================
 def response(
@@ -557,7 +994,13 @@ def response(
     led_intensity: float = 1.0,
     pt_responsivity: float = 1.0,
     occlusion: bool = True,
-) -> float:
+    bounces: int = 1,
+    return_breakdown: bool = False,
+    n_coarse_wall_u: int = DEFAULT_N_COARSE_WALL_U,
+    n_coarse_wall_v: int = DEFAULT_N_COARSE_WALL_V,
+    n_coarse_floor: int = DEFAULT_N_COARSE_FLOOR,
+    n_grid_interreflection_source: int = DEFAULT_N_GRID_INTERREFLECTION_SOURCE,
+) -> Union[float, Tuple[float, Dict[int, float]]]:
     """機体姿勢 `pose` のとき、そのセンサが受ける光量（任意単位）を返す。
 
     Args:
@@ -578,10 +1021,24 @@ def response(
             `False` にすると遮蔽を計算しない旧挙動と厳密に一致する（否定対照。
             `research_notes/note_034_ir_sensor_model.md` 追記分・本モジュール冒頭
             「遮蔽（オクルージョン）について」参照）。
+        bounces: 反射回数（既定 1）。🔴 `bounces=1` は本引数を追加する前の `response()` と
+            数値まで同一になる（相対差 1e-12 以下。`verification/AUDIT_056_PREREG_interreflection.md`
+            検証0-a）。`bounces>=2` では、反射2回目以降の寄与をラジオシティ近似
+            （粗い面素・拡散のみ。モジュール docstring「相互反射（AUDIT_056・モデル I）」節）で
+            加算する。4 まで扱える。
+        return_breakdown: True のとき `(total, breakdown)` を返す。`breakdown` は
+            `{反射回数: その回数ちょうどの増分（gain 込み）}`（`bounces=1` のときは空 dict）。
+            既定 False のときの戻り値の型は変わらない（float のまま）。
+        n_coarse_wall_u/n_coarse_wall_v/n_coarse_floor: `bounces>=2` のときだけ使う、
+            相互反射を解くラジオシティ用の粗い面素の分割数（壁側面: 長さ方向×高さ方向、床: 1辺）。
+        n_grid_interreflection_source: `bounces>=2` のときだけ使う、相互反射の起点 `L^(1)` と
+            PT 集光係数を粗い面素へ畳み込むときの warped 格子の求積点数（1軸あたり。
+            narrow beam を正しく積分するために使う。`n_grid` とは独立）。
 
     Returns:
         センサが受ける光量（任意単位）。強度のまま使うか距離に直すかはここでは決めない
         （`adc()` で AD 変換器の生の値に変換してから、使い方はアルゴリズム側で選ぶ）。
+        `return_breakdown=True` のときは `(total, breakdown)` のタプル。
     """
     led, pt = _sensor_world_geometry(sensor, pose)
     half_angle_max = max(sensor.led_half_angle_deg, sensor.pt_half_angle_deg)
@@ -626,7 +1083,9 @@ def response(
         vis_owner.append(owner_idx)
 
     if not vis_facets:
-        return 0.0
+        # LED を向いている面が1枚も無い＝1回目の直接光がゼロ。相互反射の起点
+        # （L^(1) = ρ・E/π）も全面素でゼロになるので、bounces>1 でも増分は必ずゼロ。
+        return (0.0, {}) if return_breakdown else 0.0
 
     grids = [_facet_grid(f, led, n_grid, half_angle_max, sensor.separation_m) for f in vis_facets]
     points_list = [g[0] for g in grids]
@@ -658,7 +1117,30 @@ def response(
             max_range_m, occluded,
         )
 
-    return total * sensor.gain
+    if bounces <= 1 and not return_breakdown:
+        # 🔴 検証0-a: bounces=1・breakdown不要のときは、ここまでの式・演算を一切変えない
+        # （本引数を追加する前の `response()` と数値まで同一という要件そのもの）。
+        return total * sensor.gain
+
+    breakdown: Dict[int, float] = {}
+    if bounces > 1:
+        # 反射2回目以降は、1回目と同じ near_rects/boxes/led/pt を使うラジオシティ近似で加算する
+        # （反射1回目の経路である上のループには一切触れない。モジュール docstring
+        # 「相互反射（AUDIT_056・モデル I）」節参照）。
+        increments = _interreflection_increments(
+            led, pt, surf, near_rects, boxes, wall_height_m, include_floor, floor_halfextent_m,
+            led_intensity, pt_responsivity, max_range_m, bounces,
+            half_angle_max, sensor.separation_m,
+            n_coarse_wall_u, n_coarse_wall_v, n_coarse_floor, n_grid_interreflection_source,
+        )
+        for k, delta in increments.items():
+            total += delta
+            breakdown[k] = delta * sensor.gain
+
+    final = total * sensor.gain
+    if return_breakdown:
+        return final, breakdown
+    return final
 
 
 def adc(

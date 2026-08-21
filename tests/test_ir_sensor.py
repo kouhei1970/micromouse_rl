@@ -414,7 +414,16 @@ def test_occlusion_off_matches_legacy():
     確認する。
     """
     d = 0.044
-    v_off = _flat_wall_response(d, occlusion=False)
+    # 🔴 固定値は「遮蔽の実装前」の値であり、当時の既定値（半値角 5°/5°・離隔 6.5mm・
+    # 鏡面なし・とがり 20）で計算されている。2026-08-21 に既定値が更新された（note_034 追記14）
+    # ため、既定値を使うと当然この固定値からずれる。**この検査が見たいのは遮蔽の実装が
+    # 旧挙動を壊していないことなので、当時のパラメータを明示的に渡して固定値の意味を保つ。**
+    legacy_sensor = IrSensorSpec(
+        name="T", pos=(0.0, 0.0, 0.010), axis=(1.0, 0.0, 0.0),
+        separation_m=0.0065, led_half_angle_deg=5.0, pt_half_angle_deg=5.0,
+    )
+    legacy_surf = SurfaceSpec(diffuse=0.8, specular=0.0, shininess=20.0)
+    v_off = _flat_wall_response(d, occlusion=False, sensor=legacy_sensor, surf=legacy_surf)
     LEGACY_VALUE_AT_44MM = 0.8336798263697903
     print(f"[legacy] occlusion=False, d=44mm = {v_off!r} (legacy = {LEGACY_VALUE_AT_44MM!r})")
     assert v_off == LEGACY_VALUE_AT_44MM, "occlusion=False が遮蔽実装前の値と一致しない"
