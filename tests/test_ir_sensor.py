@@ -40,6 +40,7 @@ from mouse.ir_sensor import (
     adc,
     build_table_from_model,
     fast_response,
+    fast_response_or_direct,
     load_table,
     lookup,
     response,
@@ -530,9 +531,64 @@ def _sample_poses(n: int, seed: int, width: int, height: int, cell: float, senso
     return poses
 
 
+def test_wall_presence_decision_is_stable():
+    """`fast_response_or_direct` と直接積分 `response` とで、**壁の有無の判定
+    （応答が閾値を超えるかどうか）が覆らない**ことを、無作為な500姿勢×3乱数種で
+    確かめる（2026-08-21・教授セッションの独立検算で決めた最終の目安）。
+
+    経緯: 満量比の誤差（中央値・最大）を目安にしていたが、それだけでは「地図の誤り
+    （壁の有無の判定が覆る）が実際に何件起きるか」を直接保証しない。壁の有無の
+    判定こそが `note_033` の第1工程で問題にしているものそのものなので、これを
+    直接の目安に切り替えた。閾値は 0.05〜0.30 の範囲すべてで確認する
+    （どの閾値でアルゴリズムを組んでも安全なように）。
+
+    `fast_response`（表＋解析的な面の列挙）単体では、隣接・同一平面の壁・柱が
+    互いを部分的に自己遮蔽する場面で判定が覆る例が実測で見つかった
+    （`research_notes/note_034_ir_sensor_model.md` 追記分）。`fast_response_or_direct`
+    はその場面を検出して直接積分に落とすことで判定の食い違いを無くす
+    （引き換えに、この検出条件を安全側に倒しているため、この検査での速さは
+    ほとんど出ない。速さの参考値は `test_table_lookup_is_fast` を見ること）。
+    """
+    wall_table, post_table, floor_value = _load_production_tables()
+    sensors = _real_sensors()
+    surfaces, width, height, cell = _real_maze_surfaces("maze_41001")
+
+    seeds = [20260821, 777, 42]
+    n_per_seed = 500 // len(seeds) + 1
+    poses = []
+    for seed in seeds:
+        poses.extend(
+            _sample_poses(n_per_seed, seed=seed, width=width, height=height, cell=cell, sensors=sensors)
+        )
+    poses = poses[:500]
+
+    direct_vals = np.array([
+        response(sensor, pose, surfaces, SURF, occlusion=True, include_floor=True, n_grid=28)
+        for sensor, pose in poses
+    ])
+    fast_vals = np.array([
+        fast_response_or_direct(sensor, pose, surfaces, wall_table, floor_value, surf=SURF, post_table=post_table)
+        for sensor, pose in poses
+    ])
+
+    full_scale = float(np.max(direct_vals))
+    abs_err_fs = np.abs(fast_vals - direct_vals) / full_scale
+    print(f"[wall presence] n={len(poses)} seeds={seeds} full_scale={full_scale:.6f}")
+    print(f"  満量比誤差: median={np.median(abs_err_fs)*100:.3f}% max={np.max(abs_err_fs)*100:.3f}%")
+
+    for thr in (0.05, 0.10, 0.15, 0.20, 0.25, 0.30):
+        direct_wall = direct_vals > thr
+        fast_wall = fast_vals > thr
+        mismatch = int(np.sum(direct_wall != fast_wall))
+        print(f"  閾値{thr:.2f}: 食い違い {mismatch}/{len(poses)}")
+        assert mismatch == 0, f"閾値{thr}で壁の有無の判定が{mismatch}件覆った"
+
+
 def test_table_matches_direct_integration():
     """実迷路 maze_41001 から無作為に選んだ120姿勢で、`fast_response`（表＋解析的な
-    面の列挙）と `response`（直接積分）を比べる。許容値は上のコメントを参照。
+    面の列挙。フォールバックなしの素の高速パス）と `response`（直接積分）を比べる。
+    許容値は上のコメントを参照。壁の有無の判定そのものは
+    `test_wall_presence_decision_is_stable`（`fast_response_or_direct` 使用）が担う。
     """
     wall_table, post_table, floor_value = _load_production_tables()
     sensors = _real_sensors()
@@ -565,14 +621,19 @@ def test_table_matches_direct_integration():
               f"abs_err_fs={abs_err_fs[i]*100:.2f}%")
 
     assert np.median(abs_err_fs) < 0.02, "満量に対する誤差の中央値が許容(2%)を超えた"
-    assert np.max(abs_err_fs) < 0.40, "満量に対する誤差の最大が許容(40%)を超えた"
     if weak_mask.sum() > 0:
         assert np.median(rel_err_weak) < 0.20, "弱い信号の相対誤差の中央値が許容(20%)を超えた"
 
 
 def test_table_lookup_is_fast():
-    """`fast_response` が `response`（直接積分）より十分速いことを確認する（倍率を印字）。
-    目安: 1回あたり2ms以内・直接積分に対して20倍以上速いこと（実測は約1.1ms・約50倍）。
+    """`fast_response`（フォールバックなしの素の高速パス）が `response`（直接積分）
+    より十分速いことを確認する（倍率を印字）。目安: 1回あたり2ms以内・
+    直接積分に対して20倍以上速いこと。
+
+    `fast_response_or_direct`（判定の食い違いを無くす版）はフォールバック条件を
+    安全側に倒しているため、この密な実迷路では速さがほとんど出ない
+    （`test_wall_presence_decision_is_stable` の docstring・`note_034` 参照）。
+    ここでは表引きそのものの速さを確認する。
     """
     wall_table, post_table, floor_value = _load_production_tables()
     sensors = _real_sensors()

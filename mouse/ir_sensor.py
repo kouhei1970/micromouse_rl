@@ -108,6 +108,10 @@ __all__ = [
     "DEFAULT_N_OCCLUSION_SAMPLES",
     "DEFAULT_POST_HALF_EXTENT_THRESHOLD_M",
     "DEFAULT_POST_HALF_LENGTH_M",
+    "fast_response_or_direct",
+    "DEFAULT_ADJACENCY_GAP_M",
+    "DEFAULT_ADJACENCY_SIGNIFICANCE_FRAC",
+    "DEFAULT_ADJACENCY_DOMINANT_MAX_D_M",
 ]
 
 
@@ -1089,7 +1093,7 @@ def _floor_sample_points(center_xy: np.ndarray, radius_m: float, n_ring: int) ->
     return np.array(pts)
 
 
-def fast_response(
+def _fast_response_breakdown(
     sensor: IrSensorSpec,
     pose: PoseLike,
     surfaces: Sequence[Rect],
@@ -1105,7 +1109,7 @@ def fast_response(
     floor_sample_radius_m: float = DEFAULT_FLOOR_SAMPLE_RADIUS_M,
     floor_sample_ring: int = DEFAULT_FLOOR_SAMPLE_RING,
     n_occlusion_samples: int = DEFAULT_N_OCCLUSION_SAMPLES,
-) -> float:
+) -> Tuple[float, Dict[int, float], list]:
     """`response()` の高速版。数値積分をせず、`wall_table`/`post_table`/`floor_value`
     （`build_wall_table()`/`build_post_table()`/`floor_baseline()` で事前に作ったもの）を
     解析的な幾何計算と表引きだけで姿勢から応答を推定する。
@@ -1129,7 +1133,12 @@ def fast_response(
             沿って等間隔。隣接する面どうしが互いを部分的に隠す場面の近似精度に効く）。
 
     Returns:
-        `response()` と同じ任意単位の推定値。
+        `(total, best_per_owner, near_rects)`。`total` は `response()` と同じ任意単位の
+        推定値（床を含む・`sensor.gain` を掛けた最終値）。`best_per_owner` は壁・柱の
+        矩形番号（`near_rects` の添字）ごとの `(寄与, 距離)`（床を含まない・
+        `sensor.gain` を掛ける前）。`fast_response()` は `total` だけを返す薄い
+        ラッパーで、`fast_response_or_direct()` は `best_per_owner` を使って
+        「精度が粗くなる姿勢」を判定する。
     """
     led, pt = _sensor_world_geometry(sensor, pose)
 
@@ -1209,7 +1218,7 @@ def fast_response(
         # 合成パネルとして扱う案も試したが実装のバグで悪化したため撤回した——ここでは
         # 「同一平面の候補どうしも同じグループとみなし、その中の最大値だけを使う」という
         # より単純な近似にとどめる。1本の矩形の複数面の場合と同じ考え方の延長）。
-        best_per_group: Dict[Tuple[float, float, float], float] = {}
+        best_per_group: Dict[Tuple[float, float, float], Tuple[float, float]] = {}
         for i in range(n_cand):
             visible_frac = float(visible_frac_per_cand[i])
             if visible_frac <= 0.0:
@@ -1221,9 +1230,12 @@ def fast_response(
                 v = _lookup_or_zero(wall_table, d, inc, lat)
             v *= visible_frac
             key = cand_group_key[i]
-            if key not in best_per_group or v > best_per_group[key]:
-                best_per_group[key] = v
-        total = sum(best_per_group.values())
+            if key not in best_per_group or v > best_per_group[key][0]:
+                best_per_group[key] = (v, d)
+        total = sum(v for v, _d in best_per_group.values())
+
+    # (寄与, 距離) の組。距離は「精度が粗くなる姿勢」の判定（近距離だけに絞る）に使う。
+    best_per_owner_out: Dict[int, Tuple[float, float]] = dict(best_per_group) if cand_owner else {}
 
     # --- 床: 代表点（中心＋リング）ごとに可視判定し、見えている割合ぶんだけ足す ---
     if include_floor:
@@ -1234,4 +1246,184 @@ def fast_response(
         visible_frac = float(np.mean(~occluded_f))
         total += visible_frac * floor_value
 
-    return total * sensor.gain
+    return total * sensor.gain, best_per_owner_out, near_rects
+
+
+def fast_response(
+    sensor: IrSensorSpec,
+    pose: PoseLike,
+    surfaces: Sequence[Rect],
+    wall_table: ResponseTable,
+    floor_value: float,
+    *,
+    post_table: Optional[ResponseTable] = None,
+    wall_height_m: float = DEFAULT_WALL_HEIGHT_M,
+    include_floor: bool = True,
+    max_range_m: float = DEFAULT_MAX_RANGE_M,
+    dual_origin: bool = True,
+    post_half_extent_threshold_m: float = DEFAULT_POST_HALF_EXTENT_THRESHOLD_M,
+    floor_sample_radius_m: float = DEFAULT_FLOOR_SAMPLE_RADIUS_M,
+    floor_sample_ring: int = DEFAULT_FLOOR_SAMPLE_RING,
+    n_occlusion_samples: int = DEFAULT_N_OCCLUSION_SAMPLES,
+) -> float:
+    """`response()` の高速版。数値積分をせず、`wall_table`/`post_table`/`floor_value`
+    （`build_wall_table()`/`build_post_table()`/`floor_baseline()` で事前に作ったもの）を
+    解析的な幾何計算と表引きだけで姿勢から応答を推定する。
+    モジュール docstring の「高速フォワードモデル」節を参照。中身は
+    `_fast_response_breakdown()`（内訳つき）の `total` だけを返す薄いラッパー。
+
+    Args:
+        sensor/pose/surfaces: `response()` と同じ（`surfaces` は迷路全体の壁・柱でよい。
+            `max_range_m` より遠いものは内部で足切りする）。
+        wall_table: `build_wall_table()` で作った表（床を含まない・入射角は符号付き）。
+        floor_value: `floor_baseline()` で作った床の基準値。
+        post_table: `build_post_table()` で作った柱専用の表（省略時は柱・壁の妻面の
+            寄与をゼロにする近似。精度検査で分かったとおり、柱がピーク距離付近に
+            あるとき無視すると2桁以上過小評価しうるので、本番では渡すこと）。
+        dual_origin: True（既定）なら、各面の代表点が LED からだけでなく PT からも
+            見えるかを追加検査し、どちらかから遮られていれば寄与させない
+            （LED と PT は離隔 `separation_m` ぶん別の点にあり、光軸を厳密には
+            一致させられないという物理的制約 — `note_034` の出発点）。
+        floor_sample_radius_m/floor_sample_ring: 床の可視判定に使う代表点（中心＋リング）
+            の半径・本数。
+        n_occlusion_samples: 壁・柱の各辺の可視判定に使う標本点の数（辺の実際の長さに
+            沿って等間隔。隣接する面どうしが互いを部分的に隠す場面の近似精度に効く）。
+
+    Returns:
+        `response()` と同じ任意単位の推定値。
+    """
+    total, _breakdown, _near_rects = _fast_response_breakdown(
+        sensor, pose, surfaces, wall_table, floor_value,
+        post_table=post_table, wall_height_m=wall_height_m, include_floor=include_floor,
+        max_range_m=max_range_m, dual_origin=dual_origin,
+        post_half_extent_threshold_m=post_half_extent_threshold_m,
+        floor_sample_radius_m=floor_sample_radius_m, floor_sample_ring=floor_sample_ring,
+        n_occlusion_samples=n_occlusion_samples,
+    )
+    return total
+
+
+# ============================================================================
+# fast_response の精度が粗くなる姿勢を検出し、そこだけ直接積分に落とす
+# ============================================================================
+DEFAULT_ADJACENCY_GAP_M: float = 0.02   # これ以下の隙間の矩形どうしは「隣接」とみなす
+DEFAULT_ADJACENCY_SIGNIFICANCE_FRAC: float = 0.02   # 最大寄与のこの割合以上を「支配的」とみなす
+DEFAULT_ADJACENCY_DOMINANT_MAX_D_M: float = DEFAULT_MAX_RANGE_M  # 事実上、距離では絞らない（下記コメント参照）
+
+
+def _has_ambiguous_adjacency(
+    best_per_owner: Dict[int, Tuple[float, float]], near_rects: Sequence[Rect],
+    gap_threshold_m: float, significance_frac: float, dominant_max_d_m: float,
+) -> bool:
+    """`_fast_response_breakdown()` が返す矩形ごとの `(寄与, 距離)` のうち**実際に
+    結果を左右するもの**（寄与が最大寄与の `significance_frac` 倍以上、かつ距離が
+    `dominant_max_d_m` 以内）を「支配的な矩形」とし、それが**近傍のどれか
+    （相手側の寄与の大小は問わない）に隣接**（隙間 <= `gap_threshold_m`。柱1本ぶんの
+    隙間を想定）していないかを調べる。
+
+    `fast_response` は「面ごとに独立に表引きして最大値を採る」近似なので、同一平面
+    （または角）を作る隣接した面どうしが互いを部分的に自己遮蔽する効果を再現できない
+    （`fast_response` のコメント・`note_034` 追記分を参照）。2026-08-21・教授セッションの
+    独立検算で、この場面が壁の有無の判定を覆すほど大きく誤ることが分かった。
+
+    **相手側の寄与の大小は問わない**（重要な設計判断）: 実例で、支配的な寄与
+    （柱、寄与0.42）のすぐ隣にある壁の「その壁自身の独立な寄与」は 7.6e-4 と小さかった
+    にもかかわらず、直接積分では2つが強く干渉して合計が 1.7e-6 まで潰れた。相手側も
+    「寄与が大きいこと」を要求すると、この組を取り逃す。
+
+    **`dominant_max_d_m` で絞る理由**: 迷路の壁は継ぎ目ごとに柱が立つ構造なので
+    （`classic.geometry.wall_obstacles`: 「柱は格子点すべてに立つ」）、**どんな壁も
+    必ずその両端で柱に隣接している**。相手側の寄与を問わずに「近傍の何かに隣接して
+    いるか」だけで判定すると、ほぼすべての姿勢が該当してしまい、直接積分に落ちる
+    割合がほぼ100%になって速さが出ない（実測で確認済み）。実際に問題が起きたのは
+    支配的な矩形までの距離が近い場合（実測 d=1.7〜55mm）に限られていたので、
+    支配的な矩形自身の距離が近いときだけに絞る。
+    """
+    if not best_per_owner:
+        return False
+    max_v = max(v for v, _d in best_per_owner.values())
+    dominant = [
+        owner for owner, (v, d) in best_per_owner.items()
+        if v >= significance_frac * max_v and d <= dominant_max_d_m
+    ]
+    for owner in dominant:
+        ri = near_rects[owner]
+        for j, rj in enumerate(near_rects):
+            if j == owner:
+                continue
+            dx = max(ri.cx - ri.hx - (rj.cx + rj.hx), rj.cx - rj.hx - (ri.cx + ri.hx), 0.0)
+            dy = max(ri.cy - ri.hy - (rj.cy + rj.hy), rj.cy - rj.hy - (ri.cy + ri.hy), 0.0)
+            if math.hypot(dx, dy) <= gap_threshold_m:
+                return True
+    return False
+
+
+def fast_response_or_direct(
+    sensor: IrSensorSpec,
+    pose: PoseLike,
+    surfaces: Sequence[Rect],
+    wall_table: ResponseTable,
+    floor_value: float,
+    *,
+    surf: Optional[SurfaceSpec] = None,
+    post_table: Optional[ResponseTable] = None,
+    wall_height_m: float = DEFAULT_WALL_HEIGHT_M,
+    include_floor: bool = True,
+    max_range_m: float = DEFAULT_MAX_RANGE_M,
+    adjacency_gap_m: float = DEFAULT_ADJACENCY_GAP_M,
+    adjacency_significance_frac: float = DEFAULT_ADJACENCY_SIGNIFICANCE_FRAC,
+    adjacency_dominant_max_d_m: float = DEFAULT_ADJACENCY_DOMINANT_MAX_D_M,
+    n_grid: int = DEFAULT_N_GRID,
+    **fast_kwargs,
+) -> float:
+    """`fast_response()` を使いつつ、精度が粗くなりうる姿勢（`_has_ambiguous_adjacency`
+    が True を返す姿勢）だけ `response()`（直接積分）に落とす。
+
+    背景（2026-08-21）: 隣接・同一平面の壁・柱が互いを部分的に自己遮蔽する場面で、
+    `fast_response` 単体では壁の有無の判定が覆るほどの誤差が残った（実測: 500姿勢中
+    数件〜十数件、閾値0.05〜0.30で）。「面ごとに独立に表引きして最大値を採る」近似の
+    限界であり、表の形を変えずに直そうとすると別の姿勢を悪化させる
+    （もぐら叩き。`fast_response` のコメント参照）。**正しさを速さより優先し**、
+    この場面だけ直接積分に切り替える。
+
+    🔴 **既定の閾値では、実測（実迷路500姿勢×3乱数種）で速さがほぼ出ない**
+    （直接積分1.0倍・ほぼ全姿勢が直接積分に落ちる）。迷路は柱が格子点すべてに立つ
+    構造なので（`classic.geometry.wall_obstacles`）、どの壁も必ず両端で柱に隣接して
+    おり、「近傍の何かに隣接している」という条件を弱めに（`adjacency_significance_frac`
+    を下げる・`adjacency_dominant_max_d_m` を広げる）すると常に真になってしまう。
+    絞り込みを強めると（近距離・高い有意性しきい値だけに限定）速さは戻るが、
+    壁の有無の判定が閾値0.05で500件中1〜3件覆る組み合わせが残った（実測。
+    `research_notes/note_034_ir_sensor_model.md` 追記分に数値を記録）。
+    **正しさを優先し、既定は「取りこぼしが出ない」側（低い有意性しきい値・
+    広い距離範囲）にしてある。速さが要る用途では `adjacency_significance_frac`・
+    `adjacency_dominant_max_d_m` を絞ることを検討すること（ただし壁の有無の
+    判定の食い違いが再発しないか必ず確かめること）**。
+
+    Args:
+        sensor/pose/surfaces/wall_table/floor_value/post_table: `fast_response()` と同じ。
+        surf: 直接積分に落ちたときに使う反射面の性質。表を作ったときと同じ
+            `SurfaceSpec` を渡すこと（省略時は既定値 `SurfaceSpec()`。表を既定値以外の
+            `surf` で作った場合は必ず渡す。渡し忘れると表と食い違う物理で直接積分する
+            ことになる）。
+        adjacency_gap_m: 「隣接」とみなす隙間のしきい値 [m]。既定は柱1本ぶん。
+        adjacency_significance_frac: 支配的とみなす寄与の下限（最大寄与に対する比）。
+        n_grid: 直接積分に落ちたときの `response()` の求積点数。
+        **fast_kwargs: `_fast_response_breakdown()` へそのまま渡す追加引数。
+
+    Returns:
+        `response()`/`fast_response()` と同じ任意単位の推定値。
+    """
+    total, best_per_owner, near_rects = _fast_response_breakdown(
+        sensor, pose, surfaces, wall_table, floor_value,
+        post_table=post_table, wall_height_m=wall_height_m,
+        include_floor=include_floor, max_range_m=max_range_m, **fast_kwargs,
+    )
+
+    if _has_ambiguous_adjacency(best_per_owner, near_rects, adjacency_gap_m,
+                                 adjacency_significance_frac, adjacency_dominant_max_d_m):
+        return response(
+            sensor, pose, surfaces, surf if surf is not None else SurfaceSpec(),
+            wall_height_m=wall_height_m, include_floor=include_floor,
+            n_grid=n_grid, max_range_m=max_range_m, occlusion=True,
+        )
+    return total
