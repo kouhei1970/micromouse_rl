@@ -84,7 +84,7 @@ def main() -> None:
     s5_text = "速くなったではなく、限界の何割まで来たかで語れます。"
 
     # ナレーション実測 39.072s（ffprobe, 2026-08-20。台本改訂で再合成済み） + 余韻 1.0s。
-    total_seconds = 40.072
+    total_seconds = C.target_seconds(40.072)
     n_active = C.seconds_to_active_frames(total_seconds)
     b = C.stage_bounds(
         [len(s1_text), len(s2_text), len(s3_text), len(s4_text), len(s5_text)], n_active)

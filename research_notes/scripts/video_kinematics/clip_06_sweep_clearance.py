@@ -110,7 +110,7 @@ def main() -> None:
                    "弧を描くとき機体の前後端は中心より外側を通ります。その分が入っていませんでした。")
 
     # ナレーション実測 48.720s（ffprobe, 2026-08-20） + 余韻 1.0s。
-    total_seconds = 49.720
+    total_seconds = C.target_seconds(49.720)
     n_active = C.seconds_to_active_frames(total_seconds)
     n_cases = len(cases)
     b = C.stage_bounds(

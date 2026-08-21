@@ -133,6 +133,21 @@ def render_clip(fig, draw_frame: Callable[[int], Iterable], n_active_frames: int
     return out_path
 
 
+def target_seconds(default: float) -> float:
+    """このクリップの映像長 [秒] を決める。
+
+    `build_part1.py` が環境変数 `VIDEO_KINEMATICS_TARGET_SECONDS` に
+    「ナレーションの実測長 ＋ 余韻」を入れて渡してくる。無ければ `default` を使う
+    （クリップ単体で走らせたときのため）。
+
+    🔴 尺をスクリプトに直書きしないこと。台本を直すと長さが変わるので、
+    直書きすると音声と映像がずれる（実際に起きた）。
+    """
+    import os
+    v = os.environ.get("VIDEO_KINEMATICS_TARGET_SECONDS")
+    return float(v) if v else float(default)
+
+
 def seconds_to_active_frames(total_seconds: float, hold_frames: int = HOLD_FRAMES,
                               fps: int = FPS) -> int:
     """クリップ全体の目標秒数から、保持を除いた可動フレーム数を求める。"""

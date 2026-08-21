@@ -90,7 +90,7 @@ def main() -> None:
     ]
 
     # ナレーション実測 56.856s（ffprobe, 2026-08-20） + 余韻 1.0s。
-    total_seconds = 57.856
+    total_seconds = C.target_seconds(57.856)
     n_active = C.seconds_to_active_frames(total_seconds)
     n_cases = len(cases)
     b = C.stage_bounds([len(intro_text)] + [len(t) for t in case_texts], n_active)

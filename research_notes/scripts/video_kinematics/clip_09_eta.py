@@ -114,7 +114,7 @@ def main() -> None:
     s6 = "ターン方式が2.17倍、速度上限が4.23倍。制御そのものは1.83倍にすぎません。"
 
     # ナレーション実測 58.128s（ffprobe, 2026-08-20） + 余韻 1.0s。
-    total_seconds = 59.128
+    total_seconds = C.target_seconds(59.128)
     n_active = C.seconds_to_active_frames(total_seconds)
     b = C.stage_bounds([len(t) for t in (s1, s2, s3a, s3b, s4, s5, s6)], n_active)
     # b = [0, S1末, S2末, S3a末, S3b末, S4末, S5末, n_active(S6末)]

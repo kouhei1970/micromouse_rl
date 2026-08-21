@@ -87,7 +87,7 @@ def main() -> None:
     conclusion_text = "ターンが消えて、長い直線が残る。斜めの価値の本体はこちらです。"
 
     # ナレーション実測 38.880s（ffprobe, 2026-08-20） + 余韻 1.0s。
-    total_seconds = 39.880
+    total_seconds = C.target_seconds(39.880)
     n_active = C.seconds_to_active_frames(total_seconds)
     n_cases = len(k_values)
     b = C.stage_bounds(

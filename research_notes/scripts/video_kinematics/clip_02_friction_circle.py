@@ -32,9 +32,8 @@ SENTENCES = [
 ]
 
 # ナレーション実測 37.752s（ffprobe, 2026-08-20） + 余韻 1.0s。
-TOTAL_SECONDS = 38.752
-
-
+# 🔴 尺は build_part1.py が環境変数で渡す（下の値はクリップ単体で走らせたときの既定）
+_DEFAULT_TOTAL_SECONDS = 38.752
 def main() -> None:
     C.setup_style()
     lim = vehicle_limits()
@@ -43,7 +42,7 @@ def main() -> None:
     V_TOP = lim.V_TOP
     alpha_yaw_max = lim.alpha_yaw_max
 
-    n_active = C.seconds_to_active_frames(TOTAL_SECONDS)
+    n_active = C.seconds_to_active_frames(C.target_seconds(_DEFAULT_TOTAL_SECONDS))
     b = C.stage_bounds([len(s) for s in SENTENCES], n_active)
     # b[0]=0（文1開始）, b[1]=文2開始, b[2]=文3開始, b[3]=文4開始, b[4]=n_active
 
