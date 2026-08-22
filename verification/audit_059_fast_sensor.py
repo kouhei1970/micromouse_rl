@@ -47,6 +47,7 @@ from mouse.ir_sensor import (
     _facet_maybe_in_cone,
     _stack_facets,
     _facets_maybe_in_cone_batch,
+    _Facet,
     DEFAULT_N_GRID_FAST,
     DEFAULT_LED_CONE_MARGIN_DEG,
     DEFAULT_PT_CONE_MARGIN_DEG,
@@ -54,6 +55,7 @@ from mouse.ir_sensor import (
     DEFAULT_CONE_FILTER_N_V,
     DEFAULT_MAX_RANGE_M,
     DEFAULT_WALL_HEIGHT_M,
+    DEFAULT_OCCLUSION_POINT_WEIGHT_FRAC,
 )
 from mouse.params import RobotParams
 
@@ -408,69 +410,95 @@ def _response_fast_timed(sensor, pose, rects, surf, n_grid=DEFAULT_N_GRID_FAST):
     """response_fast() と同じ処理を、区間ごとに計測しながら行う（診断専用の複製。
     本番コード mouse/ir_sensor.py には一切手を入れない）。
 
-    2026-08-22: response_fast() 本体の変更（絞り込み判定のnumpy一括化・遮蔽候補直方体の
-    AABB削減）に合わせて複製し直した。区間は cone（絞り込み・一括版）／grid（積分格子構築）／
-    prune（遮蔽候補のAABB削減）／occ（遮蔽の一括判定）／integrate（面積分）。
+    2026-08-22（速さの追加対策・その2）: response_fast() 本体の変更（射程の足切り・面の
+    展開・バックフェイスカリングの numpy 一括化＝prep、求積点の足切り＝ptprune）に合わせて
+    複製し直した。区間は prep（射程足切り＋面展開＋バックフェイスカリング）／
+    cone（絞り込み・一括版）／grid（積分格子構築）／boxprune（遮蔽候補直方体のAABB削減）／
+    ptprune（求積点の足切り: 寄与見積り計算＋累積予算での選別）／occ（遮蔽の一括判定）／
+    integrate（面積分）。
     """
+    t_prep = 0.0
     t_cone = 0.0
     t_grid = 0.0
-    t_prune = 0.0
+    t_boxprune = 0.0
+    t_ptprune = 0.0
     t_occ = 0.0
     t_integrate = 0.0
 
     led, pt = _sensor_world_geometry(sensor, pose)
     half_angle_max = max(sensor.led_half_angle_deg, sensor.pt_half_angle_deg)
 
-    near_rects = []
-    for r in rects:
-        diag = math.hypot(r.hx, r.hy)
-        dist_center = math.hypot(r.cx - led.pos[0], r.cy - led.pos[1])
-        if dist_center - diag > DEFAULT_MAX_RANGE_M:
-            continue
-        near_rects.append(r)
+    t0 = time.perf_counter()
+    rect_arr = np.asarray(rects, dtype=float)
+    diag_all = np.hypot(rect_arr[:, 2], rect_arr[:, 3])
+    dist_center_all = np.hypot(rect_arr[:, 0] - led.pos[0], rect_arr[:, 1] - led.pos[1])
+    near_mask = (dist_center_all - diag_all) <= DEFAULT_MAX_RANGE_M
+    near_arr = rect_arr[near_mask]
+    M = near_arr.shape[0]
 
-    facets = []
-    facet_owner = []
-    for owner_idx, r in enumerate(near_rects):
-        for f in _wall_facets([r], DEFAULT_WALL_HEIGHT_M):
-            facets.append(f)
-            facet_owner.append(owner_idx)
+    all_boxes = np.zeros((0, 6))
+    if M > 0:
+        cx, cy, hx, hy = near_arr[:, 0], near_arr[:, 1], near_arr[:, 2], near_arr[:, 3]
+        all_boxes = np.column_stack([
+            cx - hx, cx + hx, cy - hy, cy + hy, np.zeros(M), np.full(M, DEFAULT_WALL_HEIGHT_M),
+        ])
+        zc = np.full(M, DEFAULT_WALL_HEIGHT_M / 2.0)
+        centers4 = np.stack([
+            np.stack([cx + hx, cy, zc], axis=-1), np.stack([cx - hx, cy, zc], axis=-1),
+            np.stack([cx, cy + hy, zc], axis=-1), np.stack([cx, cy - hy, zc], axis=-1),
+        ], axis=0)
+        normals4 = np.array([[1.0, 0.0, 0.0], [-1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, -1.0, 0.0]])
+        u_y = np.array([0.0, 1.0, 0.0]); u_x = np.array([1.0, 0.0, 0.0]); v_z = np.array([0.0, 0.0, 1.0])
+        u_vecs4 = np.array([u_y, u_y, u_x, u_x])
+        v_vecs4 = np.array([v_z, v_z, v_z, v_z])
+        half_u4 = np.stack([hy, hy, hx, hx], axis=0)
+        half_v4 = np.full((4, M), DEFAULT_WALL_HEIGHT_M / 2.0)
+        owner4 = np.tile(np.arange(M), (4, 1))
+        to_led4 = led.pos[None, None, :] - centers4
+        vis_mask4 = np.einsum("fmk,fk->fm", to_led4, normals4) > 0.0
+        f_sel, m_sel = np.nonzero(vis_mask4)
+    else:
+        f_sel = np.zeros(0, dtype=int)
 
-    all_boxes = _obstacle_boxes(near_rects, DEFAULT_WALL_HEIGHT_M)
+    t_prep += time.perf_counter() - t0
 
-    vis_facets = []
-    vis_owner = []
-    for facet, owner_idx in zip(facets, facet_owner):
-        to_led = led.pos - facet.center
-        if float(np.dot(to_led, facet.normal)) <= 0.0:
-            continue
-        vis_facets.append(facet)
-        vis_owner.append(owner_idx)
-
-    zero_breakdown = {"cone": 0.0, "grid": 0.0, "prune": 0.0, "occ": 0.0, "integrate": 0.0,
-                       "n_before": 0, "n_after": 0,
+    zero_breakdown = {"prep": t_prep, "cone": 0.0, "grid": 0.0, "boxprune": 0.0, "ptprune": 0.0,
+                       "occ": 0.0, "integrate": 0.0, "n_before": 0, "n_after": 0,
                        "n_boxes_before": int(all_boxes.shape[0]), "n_boxes_after": 0}
-    if not vis_facets:
+    if f_sel.size == 0:
         return 0.0, zero_breakdown
 
-    n_before = len(vis_facets)
+    centers_sel = centers4[f_sel, m_sel]
+    normals_sel = normals4[f_sel]
+    u_sel = u_vecs4[f_sel]
+    v_sel = v_vecs4[f_sel]
+    half_u_sel = half_u4[f_sel, m_sel]
+    half_v_sel = half_v4[f_sel, m_sel]
+    owner_sel = owner4[f_sel, m_sel]
+
+    n_before = centers_sel.shape[0]
 
     t0 = time.perf_counter()
-    stacked = _stack_facets(vis_facets)
+    stacked = (centers_sel, normals_sel, u_sel, v_sel, half_u_sel, half_v_sel)
     led_mask = _facets_maybe_in_cone_batch(stacked, led.pos, led.axis, DEFAULT_LED_CONE_MARGIN_DEG,
                                             DEFAULT_CONE_FILTER_N_U, DEFAULT_CONE_FILTER_N_V)
     pt_mask = _facets_maybe_in_cone_batch(stacked, pt.pos, pt.axis, DEFAULT_PT_CONE_MARGIN_DEG,
                                            DEFAULT_CONE_FILTER_N_U, DEFAULT_CONE_FILTER_N_V)
-    keep_mask = led_mask & pt_mask
-    vis_facets = [f for f, k in zip(vis_facets, keep_mask) if k]
-    vis_owner = [o for o, k in zip(vis_owner, keep_mask) if k]
+    keep = np.nonzero(led_mask & pt_mask)[0]
     t_cone += time.perf_counter() - t0
-    n_after = len(vis_facets)
+    n_after = keep.size
 
-    if not vis_facets:
-        return 0.0, {"cone": t_cone, "grid": 0.0, "prune": 0.0, "occ": 0.0, "integrate": 0.0,
-                      "n_before": n_before, "n_after": 0,
+    if keep.size == 0:
+        return 0.0, {"prep": t_prep, "cone": t_cone, "grid": 0.0, "boxprune": 0.0, "ptprune": 0.0,
+                      "occ": 0.0, "integrate": 0.0, "n_before": n_before, "n_after": 0,
                       "n_boxes_before": int(all_boxes.shape[0]), "n_boxes_after": 0}
+
+    vis_facets = [
+        _Facet(center=centers_sel[i], u=u_sel[i], v=v_sel[i], normal=normals_sel[i],
+               half_u=float(half_u_sel[i]), half_v=float(half_v_sel[i]))
+        for i in keep
+    ]
+    vis_owner = [int(owner_sel[i]) for i in keep]
 
     t0 = time.perf_counter()
     grids = [_facet_grid(f, led, n_grid, half_angle_max, sensor.separation_m) for f in vis_facets]
@@ -492,20 +520,49 @@ def _response_fast_timed(sensor, pose, rects, surf, n_grid=DEFAULT_N_GRID_FAST):
         keep_box = np.all((box_maxs >= aabb_min) & (box_mins <= aabb_max), axis=1)
         kept_idx = np.nonzero(keep_box)[0]
         boxes = all_boxes[kept_idx]
-        remap = -np.ones(len(near_rects), dtype=int)
+        remap = -np.ones(M, dtype=int)
         remap[kept_idx] = np.arange(len(kept_idx))
         owner_arr = remap[owner_arr]
-    t_prune += time.perf_counter() - t0
+    t_boxprune += time.perf_counter() - t0
 
-    t0 = time.perf_counter()
     if boxes.shape[0] > 0:
-        occ_led = _segment_occluded(all_points, led.pos, boxes, owner_arr)
-        occ_pt = _segment_occluded(all_points, pt.pos, boxes, owner_arr)
-        occluded_all = occ_led | occ_pt
+        t0 = time.perf_counter()
+        d_e_all = all_points - led.pos
+        r_e_all_safe = np.maximum(np.linalg.norm(d_e_all, axis=-1), 1e-6)
+        cos_e_all = np.clip(np.einsum("aijk,k->aij", d_e_all / r_e_all_safe[..., None], led.axis), 0.0, 1.0)
+        weight_led_all = cos_e_all ** led.m / (r_e_all_safe ** 2)
+
+        d_v_all = pt.pos - all_points
+        r_v_all_safe = np.maximum(np.linalg.norm(d_v_all, axis=-1), 1e-6)
+        cos_r_all = np.clip(np.einsum("aijk,k->aij", -d_v_all / r_v_all_safe[..., None], pt.axis), 0.0, 1.0)
+        weight_pt_all = cos_r_all ** pt.m / (r_v_all_safe ** 2)
+
+        dA_all = np.stack(dA_list, axis=0)
+        flux_all = weight_led_all * weight_pt_all * dA_all
+        flat_flux = flux_all.reshape(flux_all.shape[0], -1)
+        order = np.argsort(flat_flux, axis=1)
+        sorted_flux = np.take_along_axis(flat_flux, order, axis=1)
+        cumsum = np.cumsum(sorted_flux, axis=1)
+        budget = cumsum[:, -1:] * DEFAULT_OCCLUSION_POINT_WEIGHT_FRAC
+        keep_sorted = ~(cumsum <= budget)
+        keep_flat = np.empty_like(keep_sorted)
+        np.put_along_axis(keep_flat, order, keep_sorted, axis=1)
+        keep_pts = keep_flat.reshape(all_points.shape[:-1])
+        fi, ui, vi = np.nonzero(keep_pts)
+        pts_flat = all_points[fi, ui, vi]
+        owner_flat = owner_arr[fi]
+        t_ptprune += time.perf_counter() - t0
+
+        t0 = time.perf_counter()
+        occluded_all = np.ones(all_points.shape[:-1], dtype=bool)
+        if pts_flat.shape[0] > 0:
+            occ_led_flat = _segment_occluded(pts_flat, led.pos, boxes, owner_flat)
+            occ_pt_flat = _segment_occluded(pts_flat, pt.pos, boxes, owner_flat)
+            occluded_all[fi, ui, vi] = occ_led_flat | occ_pt_flat
         occluded_list = [occluded_all[i] for i in range(len(vis_facets))]
+        t_occ += time.perf_counter() - t0
     else:
         occluded_list = [None] * len(vis_facets)
-    t_occ += time.perf_counter() - t0
 
     t0 = time.perf_counter()
     total = 0.0
@@ -515,14 +572,16 @@ def _response_fast_timed(sensor, pose, rects, surf, n_grid=DEFAULT_N_GRID_FAST):
     t_integrate += time.perf_counter() - t0
 
     return total * sensor.gain, {
-        "cone": t_cone, "grid": t_grid, "prune": t_prune, "occ": t_occ, "integrate": t_integrate,
+        "prep": t_prep, "cone": t_cone, "grid": t_grid, "boxprune": t_boxprune,
+        "ptprune": t_ptprune, "occ": t_occ, "integrate": t_integrate,
         "n_before": n_before, "n_after": n_after,
         "n_boxes_before": int(all_boxes.shape[0]), "n_boxes_after": int(boxes.shape[0]),
     }
 
 
 def stage_breakdown(specs, rects, poses) -> None:
-    acc = {"cone": 0.0, "grid": 0.0, "prune": 0.0, "occ": 0.0, "integrate": 0.0}
+    acc = {"prep": 0.0, "cone": 0.0, "grid": 0.0, "boxprune": 0.0, "ptprune": 0.0,
+           "occ": 0.0, "integrate": 0.0}
     n_before_list = []
     n_after_list = []
     n_boxes_before_list = []
