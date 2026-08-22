@@ -62,3 +62,4 @@ outputs/**
 
 # 秘密情報（API 鍵など）。版管理に入れない
 .secrets/
+mouse/data/ir_cumulative_table.npz
