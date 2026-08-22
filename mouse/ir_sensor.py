@@ -118,6 +118,13 @@ __all__ = [
     "DEFAULT_ADJACENCY_GAP_M",
     "DEFAULT_ADJACENCY_SIGNIFICANCE_FRAC",
     "DEFAULT_ADJACENCY_DOMINANT_MAX_D_M",
+    # 高速版直接光モデル（AUDIT_059・段A: 反射1回・床なし）
+    "response_fast",
+    "DEFAULT_N_GRID_FAST",
+    "DEFAULT_LED_CONE_MARGIN_DEG",
+    "DEFAULT_PT_CONE_MARGIN_DEG",
+    "DEFAULT_CONE_FILTER_N_U",
+    "DEFAULT_CONE_FILTER_N_V",
 ]
 
 
@@ -1170,6 +1177,223 @@ def adc(
     normalized = v / full_scale if full_scale != 0.0 else 0.0
     code = int(round(normalized * max_code))
     return max(0, min(max_code, code))
+
+
+# ============================================================================
+# 高速フォワードモデル（AUDIT_059・段A: 直接光のみ）
+# ============================================================================
+"""
+背景・事前登録: `verification/AUDIT_059_PREREG_fast_sensor.md`。`response()` は実迷路で
+1 回あたり 59ms（`n_grid=28`・床なし）かかる。射程 350mm には壁・柱が約 42 枚（面素で
+168 枚）入るが、読みに効くのは中央値 2 枚・最大 5 枚（寄与が全体の 0.1% 超のもの）で、
+残りにも同じだけ格子を敷いて積分・遮蔽判定をしているのが遅さの理由（教授セッションの実測）。
+
+`response_fast()` は反射 1 回（直接光）だけを、次の 2 段構えで高速化する:
+
+1. **積分する面を絞る。** LED の光錐 **かつ** PT の視野の**両方**に入り得る面だけを積分対象
+   にする（`_facet_maybe_in_cone`）。判定は保守的（寄与する面を絶対に落とさない）に作る:
+   面の四隅・中心だけの抜き取りでは、長い壁では光が壁の途中（端でも中心でもない点）に
+   当たる場合を見落とす（教授セッションの試作で実際に起きた失敗。読みが 0.61→0.07 まで
+   落ちた）。そこで、光軸（射線）が面の平面と交わる点を面の矩形範囲へクランプした
+   **解析点**（`_facet_closest_direction_point`。壁の途中の当たり点を厳密に当てる）を
+   必ず候補に加え、さらに面内の密な格子（既定 9×5）を加えた候補点全体の中で最小角度
+   （＝最大 `cos`）を取る。カットオフ角は既定で LED ±15°・PT ±25°（`cos^m` がそれぞれ
+   1e-8・7e-6 まで落ちる角度。note_034 の実測に基づく、余裕を大きく取った値）。
+2. **遮る面は絞らない。** 射程内の矩形（`near_rects`。`response()` と同じ足切り）は
+   すべて遮蔽の候補直方体として残す（積分対象と遮蔽候補は別々に選ぶ。積分対象を
+   絞り込むのと同じ基準で遮蔽候補も絞ると、手前の壁を誤って落として奥の壁が
+   見えてしまう事故が教授セッションの試作で 60 姿勢中 2 件起きた）。
+
+積分の格子（`_facet_grid`。tan ワープした非一様格子）と遮蔽の一括判定
+（`_segment_occluded`）は `response()` と同じ実装をそのまま使う（作り直さない）。
+反射は 1 回のみ（`bounces=1` 相当）・床は含めない（ユーザの決定。`note_034` 追記16:
+「床の反射は無視する」）。**`response()` 自体は一切変更しない。**
+"""
+
+DEFAULT_N_GRID_FAST: int = 20              # 積分格子（既定。誤差と速さの表から選定。事前登録§4）
+DEFAULT_LED_CONE_MARGIN_DEG: float = 15.0  # LED光錐の絞り込みカットオフ角（cos^mが1e-8まで落ちる角）
+DEFAULT_PT_CONE_MARGIN_DEG: float = 25.0   # PT視野の絞り込みカットオフ角（cos^mが7e-6まで落ちる角）
+DEFAULT_CONE_FILTER_N_U: int = 9           # 絞り込み判定の標本数（面の長さ方向。解析点に加える格子）
+DEFAULT_CONE_FILTER_N_V: int = 5           # 絞り込み判定の標本数（面の高さ方向）
+
+
+def _facet_closest_direction_point(facet: _Facet, apex: np.ndarray, axis: np.ndarray) -> np.ndarray:
+    """`facet` の矩形範囲内で、頂点 `apex`・軸 `axis` の光軸に最も近い点を返す（解析点）。
+
+    光軸（射線）が面の平面と前方で交わるならその交点を、面の矩形範囲
+    （`half_u`/`half_v`）へクランプして返す。前方交点が無ければ `apex` を面の平面へ
+    投影した点（同じくクランプ）を返す（`_facet_anchor_and_scale` と発想は同じだが、
+    あちらは積分格子の集中点を決めるためのもので矩形範囲へクランプしない。こちらは
+    常に「面の上の点」を返す必要があるので必ずクランプする）。
+
+    抜き取り（四隅＋中心の 5 点）だけで絞り込み判定をすると、長い壁では光が壁の途中
+    （端でも中心でもない点）に当たる場合を見落とす — 本関数はその「途中」の当たり点を
+    解析的に当てることでこの見落としを防ぐ（`_facet_maybe_in_cone` が使う）。
+    """
+    denom = float(np.dot(axis, facet.normal))
+    t = float(np.dot(facet.center - apex, facet.normal)) / denom if abs(denom) > 1e-9 else -1.0
+    if t > 0.0:
+        p_hit = apex + t * axis
+        rel = p_hit - facet.center
+    else:
+        rel = apex - facet.center
+    pu = float(np.clip(np.dot(rel, facet.u), -facet.half_u, facet.half_u))
+    pv = float(np.clip(np.dot(rel, facet.v), -facet.half_v, facet.half_v))
+    return facet.center + pu * facet.u + pv * facet.v
+
+
+def _facet_maybe_in_cone(
+    facet: _Facet, apex: np.ndarray, axis: np.ndarray, margin_deg: float, n_u: int, n_v: int,
+) -> bool:
+    """`facet` が、頂点 `apex`・軸 `axis` の円錐（半頂角 `margin_deg`）に入り得るかを
+    保守的に判定する（モジュール docstring「高速フォワードモデル」節を参照）。
+
+    解析点（`_facet_closest_direction_point`）＋面内の密な格子（`n_u × n_v`）を合わせた
+    候補点の中で最小角度（＝最大 `cos`）を取り、カットオフ角と比べる。候補点のどれか 1 つ
+    でもカットオフ角以内なら「入り得る」と判定して残す（抜き取りではなく、壁の途中の
+    当たり点を解析点で必ず拾う設計。詳細はモジュール docstring 参照）。
+    """
+    p_analytic = _facet_closest_direction_point(facet, apex, axis)
+
+    us = np.linspace(-facet.half_u, facet.half_u, n_u)
+    vs = np.linspace(-facet.half_v, facet.half_v, n_v)
+    UU, VV = np.meshgrid(us, vs, indexing="ij")
+    grid_pts = (
+        facet.center[None, None, :]
+        + UU[:, :, None] * facet.u[None, None, :]
+        + VV[:, :, None] * facet.v[None, None, :]
+    ).reshape(-1, 3)
+
+    pts = np.vstack([p_analytic[None, :], grid_pts])
+    d = pts - apex[None, :]
+    r = np.linalg.norm(d, axis=-1)
+    r_safe = np.maximum(r, 1e-9)
+    cos_ang = (d @ axis) / r_safe
+    max_cos = float(np.max(cos_ang))
+    return max_cos >= math.cos(math.radians(margin_deg))
+
+
+def response_fast(
+    sensor: IrSensorSpec,
+    pose: PoseLike,
+    surfaces: Sequence[Rect],
+    surf: SurfaceSpec,
+    *,
+    wall_height_m: float = DEFAULT_WALL_HEIGHT_M,
+    n_grid: int = DEFAULT_N_GRID_FAST,
+    max_range_m: float = DEFAULT_MAX_RANGE_M,
+    led_intensity: float = 1.0,
+    pt_responsivity: float = 1.0,
+    occlusion: bool = True,
+    narrow_facets: bool = True,
+    led_cone_margin_deg: float = DEFAULT_LED_CONE_MARGIN_DEG,
+    pt_cone_margin_deg: float = DEFAULT_PT_CONE_MARGIN_DEG,
+    cone_filter_n_u: int = DEFAULT_CONE_FILTER_N_U,
+    cone_filter_n_v: int = DEFAULT_CONE_FILTER_N_V,
+) -> float:
+    """`response()` の高速版（段A: 直接光のみ・反射1回・床なし）。
+
+    設計の骨子はモジュール docstring「高速フォワードモデル（AUDIT_059・段A: 直接光のみ）」
+    節を参照。`response()` の面積分（`_facet_grid`/`_integrate_facet`）・遮蔽の一括判定
+    （`_segment_occluded`）はそのまま使い回し、積分対象の面を LED 光錐＋PT 視野の両方に
+    入り得るものだけへ絞り込む点だけが違う（遮蔽の候補は絞らない＝`near_rects` 全体）。
+
+    Args:
+        sensor/pose/surfaces/surf/wall_height_m/n_grid/max_range_m/led_intensity/
+        pt_responsivity/occlusion: `response()` と同じ意味（`include_floor`・`bounces`・
+            `return_breakdown`・相互反射関連の引数は無い。床は含めず反射は 1 回だけを
+            扱うため）。`n_grid` の既定は `response()`（28）と異なり `DEFAULT_N_GRID_FAST`
+            （20）。
+        narrow_facets: `False` にすると積分対象の絞り込みを行わず、射程内の可視な面
+            すべてを積分する（自己検査用。同じ `n_grid` なら絞り込みありと一致するはず、
+            という検査に使う。既定 `True`）。
+        led_cone_margin_deg/pt_cone_margin_deg/cone_filter_n_u/cone_filter_n_v:
+            絞り込み判定のカットオフ角・標本密度（既定は事前登録の設計値。否定対照で
+            意図的に緩めた/崩した値を渡す）。
+
+    Returns:
+        センサが受ける光量（任意単位・`response()` と同じ規格。`gain` を含む）。
+    """
+    led, pt = _sensor_world_geometry(sensor, pose)
+    half_angle_max = max(sensor.led_half_angle_deg, sensor.pt_half_angle_deg)
+
+    # 速さのための足切り1（response()と同じ）: 射程に入らない壁は最初から除く。
+    near_rects: list = []
+    for r in surfaces:
+        diag = math.hypot(r.hx, r.hy)
+        dist_center = math.hypot(r.cx - led.pos[0], r.cy - led.pos[1])
+        if dist_center - diag > max_range_m:
+            continue
+        near_rects.append(r)
+
+    facets: list = []
+    facet_owner: list = []   # 各facetが属する遮蔽用直方体の番号
+    for owner_idx, r in enumerate(near_rects):
+        for f in _wall_facets([r], wall_height_m):
+            facets.append(f)
+            facet_owner.append(owner_idx)
+    # 床は含めない（ユーザの決定。note_034 追記16）。
+
+    # 🔴 遮蔽の候補直方体は絞らない: near_rects 全体（response() と同じ集合）を使う
+    # （モジュール docstring「遮る面は絞らない」節参照）。
+    boxes = _obstacle_boxes(near_rects, wall_height_m) if occlusion else np.zeros((0, 6))
+
+    # バックフェイスカリング（response()と同じ）。
+    vis_facets: list = []
+    vis_owner: list = []
+    for facet, owner_idx in zip(facets, facet_owner):
+        to_led = led.pos - facet.center
+        if float(np.dot(to_led, facet.normal)) <= 0.0:
+            continue
+        vis_facets.append(facet)
+        vis_owner.append(owner_idx)
+
+    if not vis_facets:
+        return 0.0
+
+    if narrow_facets:
+        # 積分対象の絞り込み: LED光錐 かつ PT視野 の両方に入り得る面だけを残す
+        # （保守的な判定。モジュール docstring 参照）。
+        kept_facets: list = []
+        kept_owner: list = []
+        for facet, owner_idx in zip(vis_facets, vis_owner):
+            if not _facet_maybe_in_cone(
+                facet, led.pos, led.axis, led_cone_margin_deg, cone_filter_n_u, cone_filter_n_v,
+            ):
+                continue
+            if not _facet_maybe_in_cone(
+                facet, pt.pos, pt.axis, pt_cone_margin_deg, cone_filter_n_u, cone_filter_n_v,
+            ):
+                continue
+            kept_facets.append(facet)
+            kept_owner.append(owner_idx)
+        vis_facets, vis_owner = kept_facets, kept_owner
+
+    if not vis_facets:
+        return 0.0
+
+    grids = [_facet_grid(f, led, n_grid, half_angle_max, sensor.separation_m) for f in vis_facets]
+    points_list = [g[0] for g in grids]
+    dA_list = [g[1] for g in grids]
+
+    if occlusion and boxes.shape[0] > 0:
+        all_points = np.stack(points_list, axis=0)
+        owner_arr = np.array(vis_owner, dtype=int)
+        occ_led = _segment_occluded(all_points, led.pos, boxes, owner_arr)
+        occ_pt = _segment_occluded(all_points, pt.pos, boxes, owner_arr)
+        occluded_all = occ_led | occ_pt
+        occluded_list = [occluded_all[i] for i in range(len(vis_facets))]
+    else:
+        occluded_list = [None] * len(vis_facets)
+
+    total = 0.0
+    for facet, points, dA, occluded in zip(vis_facets, points_list, dA_list, occluded_list):
+        total += _integrate_facet(
+            facet, led, pt, surf, points, dA, led_intensity, pt_responsivity,
+            max_range_m, occluded,
+        )
+
+    return total * sensor.gain
 
 
 # ============================================================================
