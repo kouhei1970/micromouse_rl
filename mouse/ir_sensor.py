@@ -133,6 +133,11 @@ __all__ = [
     "DEFAULT_CORNER_GATE_N_GRID",
     "DEFAULT_CORNER_N_GRID",
     "DEFAULT_CORNER_GATE_THRESHOLD",
+    # 表引きモデル（AUDIT_060・第2/3段階: 幾何を区画索引で引き、表引きで組み上げる）
+    "build_maze_cell_index",
+    "response_table",
+    "DEFAULT_TABLE_MARCH_N",
+    "DEFAULT_TABLE_NEIGHBORHOOD",
 ]
 
 
@@ -2356,6 +2361,421 @@ def response_fast_batch(
         results.append(v)
 
     return results
+
+
+# ============================================================================
+# response_table(): AUDIT_060・第2/3段階 — 幾何を区画索引で引き、表引きで組み上げる
+# ============================================================================
+"""
+背景・事前登録: `verification/AUDIT_060_PREREG_table_sensor.md`。`mouse/ir_table.py` が作った
+累積表 `G(d,θ,u)`（1枚の平面の表。第1段階で完成済み）を使って、実際の迷路姿勢での応答を
+「幾何（どの面のどの範囲が見えるか）＋表引き（G(a)-G(b)）＋隅の相互反射（`response_fast()`と
+同じ実装）」で組み立てる。積分（`_facet_grid`/`_integrate_facet`）も遮蔽の一括判定
+（`_segment_occluded`）も直接光には使わない——それらの代わりに、面ごとの「見える区間」を
+解析的に求めて表を引く。
+
+## 幾何: 区画索引で候補を集める（事前登録§0-5・本作業の指示A）
+
+1. **迷路1枚につき1回**、`build_maze_cell_index()` で「区画→そこに接する壁・柱の通し番号」の
+   索引を作る（壁・柱の足跡がその区画の正方形と重なれば登録する。壁・柱を区別しない）。
+2. `response_table()` は、LED光軸に沿って `n_march` 点（既定7点、0〜`max_range_m`を等間隔）を
+   辿り、各点の周囲 `2*neighborhood+1` 四方（既定3×3）の区画から候補矩形を集める（辞書引きの
+   小さな Python ループ。63回程度の辞書引きは無視できるコストで、後段の面ごとの計算だけを
+   numpy でまとめる——事前登録が禁じているのは「面や遮る辺の組ごとのループ」であって、
+   この区画走査そのものではない）。
+3. 候補矩形を4側面へ展開し、`response_fast()` と同じ式で裏向きの面（LEDから見て向こう向き）を
+   除く。さらに `_facets_maybe_in_cone_batch`（`response_fast()` と同じ実装を流用）で
+   LED光錐 **かつ** PT視野に入り得る面だけを「表引きの対象」として残す（残りは§B「隅の
+   相互反射」でだけ使う候補として保持する——`response_fast()` の `narrow_facets` と同じ位置づけ）。
+
+## 「見える範囲」の求め方（事前登録§0-3・指示A-4。ここが本段階の核）
+
+LED と PT は縦配置（`layout="vertical"`）のとき水平位置が完全に一致する（`_sensor_world_geometry`
+参照）。したがって遮る辺（他の矩形の鉛直な辺）がどの高さにあっても、センサから見た影の境目は
+面内で**ただ1本の鉛直線**になり、境目の水平位置は高さに依存しない（事前登録の実測: 999通り
+すべてで確認済み）。これにより「面の可視範囲」は3次元の遮蔽判定ではなく、**2次元（トップビュー）
+の投影**だけで厳密に求まる。
+
+対象の面 `F`（法線 `n`・センサ側の局所座標 `u_hat = (n_y, -n_x)`。この向きは表の構築
+（`mouse/ir_table.py`: 面法線=(-1,0,0)・`u_hat`=(0,1,0)）と整合する「法線を-90°回した」もの——
+`_wall_facets()` の `u` ベクトル（符号は任意でよい対称な積分にしか使わない）とは別に、ここでは
+符号が意味を持つので独自に定義し直す）について、他の候補矩形（自分自身は除く）の4隅を
+「センサから見てその隅を通る光線」で `F` の平面へ投影する。センサから見てその隅が `F` の
+平面より手前にあるとき（投影の媒介変数 `t>=1`）だけ、その隅は影の境目になり得る。1つの矩形が
+落とす影は、そうして得た（最大4個の）隅の投影の `[min,max]` 区間（`F` の実際の広がりへ
+クランプ）になる——矩形は凸なので、その2端点（幾何学的には陰線側の2隅）の間がまるごと
+影になる。
+
+複数の遮る矩形からの影区間を、`F` の**両端から**削る形でまとめる（事前登録の実測: 999通り
+すべてで見える範囲は1本の区間になる——影は `F` の内部に孤立した穴を作らず、常に片方の端から
+食い込む）。影区間が `F` の左端に触れていれば左端を、右端に触れていれば右端を、その影区間の
+反対側の端まで押し込む。両方から押し込まれて `u_start > u_end` になれば、その面は全遮蔽
+（寄与ゼロ）。この一連の計算は面の枚数×候補矩形の枚数×4隅の3階テンソルを一度に処理する
+numpy 演算で行い、面や矩形ごとの Python ループは書かない。
+
+## 表引き（事前登録の「組み上げ」節）
+
+見える区間 `[u_start, u_end]`（各面の局所座標。センサ基準点=`led.pos`のxy、縦配置の前提で
+PTと共通）を、その面での `(d, θ)` とあわせて表座標に変換する。
+`d = (S - F.center)·n`（センサ基準点から面までの垂直距離）、
+`θ = atan2(axis·u_hat, -axis·n)`（LED光軸の、面に正対する方向を0とした符号付き角度）、
+`u` の原点は「LED光軸が面の平面と交わる点」（`table_u = u - u_origin`）。
+面の寄与 = `interp_G(d,θ,table_u_start) - interp_G(d,θ,table_u_end)`（表の3次元線形補間）。
+全対象面ぶん合計する。
+
+## 隅の相互反射（指示どおり `response_fast()` の実装をそのまま流用する）
+
+`_corner_interreflection_total()`（`response_fast()`/`_response_fast_core()` が使っているのと
+同じ関数、変更なし）に、区画索引で集めた候補（裏向きの面を除いた後・光錐で絞り込む前の集合。
+`response_fast()` の `centers_sel` に相当）をそのまま渡す。遮蔽候補の直方体
+（LED→面・PT→面の`_segment_occluded`判定に使う）も、同じ索引で集めた候補矩形の集合を使う
+（`response_fast()` の `near_arr`/`all_boxes` に相当する、ローカルな母集団）。
+"""
+
+DEFAULT_TABLE_MARCH_N: int = 7           # 光軸に沿って辿る点数（事前登録の目安「7点ほど」）
+DEFAULT_TABLE_NEIGHBORHOOD: int = 1      # 各点の周囲に集める区画の半幅（1 = 3×3）
+_TABLE_SHADOW_EPS_M: float = 1e-9        # 見える範囲の端を判定する数値誤差の許容（m）
+_TABLE_DENOM_EPS: float = 1e-12          # 投影の分母がほぼ0（光線が面とほぼ平行）を弾く許容
+
+
+def build_maze_cell_index(surfaces: Sequence[Rect], cell_size: float) -> Dict[Tuple[int, int], np.ndarray]:
+    """迷路1枚につき1回作る「区画 → そこに接する壁・柱の通し番号」の索引。
+
+    `surfaces[k]`（壁・柱を区別しない `Rect`）の足跡が区画 `(ix,iy)`
+    （`[ix*cell_size,(ix+1)*cell_size] × [iy*cell_size,(iy+1)*cell_size]`）と重なれば、
+    その区画の候補として `k` を登録する。壁は必ず2区画（両隣）に、柱は必ず最大4区画
+    （四隅）に登録される（`classic.geometry.wall_obstacles` の座標規約——壁・柱の中心は
+    必ず格子線・格子点上にあるため）。`response_table()` はこの索引を持ち回って使う
+    （迷路が変わるたびに作り直すこと。同じ `surfaces` の並び順で使うことが前提）。
+    """
+    idx: Dict[Tuple[int, int], list] = {}
+    eps = 1e-9
+    for k, r in enumerate(surfaces):
+        ix_lo = int(math.floor((r.cx - r.hx + eps) / cell_size))
+        ix_hi = int(math.floor((r.cx + r.hx - eps) / cell_size))
+        iy_lo = int(math.floor((r.cy - r.hy + eps) / cell_size))
+        iy_hi = int(math.floor((r.cy + r.hy - eps) / cell_size))
+        for ix in range(ix_lo, ix_hi + 1):
+            for iy in range(iy_lo, iy_hi + 1):
+                idx.setdefault((ix, iy), []).append(k)
+    return {key: np.array(v, dtype=int) for key, v in idx.items()}
+
+
+def _table_candidate_ids(
+    led_pos_xy: np.ndarray, axis_xy: np.ndarray, cell_index: Dict[Tuple[int, int], np.ndarray],
+    cell_size: float, max_range_m: float, n_march: int, neighborhood: int,
+) -> np.ndarray:
+    """LED光軸に沿って `n_march` 点を辿り、周囲 `(2*neighborhood+1)²` 区画から候補矩形の
+    通し番号を集める（重複なし・昇順）。区画辞書の引き方だけの小さな Python ループ
+    （幾何計算・表引きは呼び出し側で numpy 一括で行う）。"""
+    norm_axis = float(np.linalg.norm(axis_xy))
+    axis_hat = axis_xy / norm_axis if norm_axis > 1e-9 else np.array([1.0, 0.0])
+    ts = np.linspace(0.0, max_range_m, n_march)
+    march_pts = led_pos_xy[None, :] + ts[:, None] * axis_hat[None, :]
+
+    cand: set = set()
+    for mp in march_pts:
+        icx = int(math.floor(mp[0] / cell_size))
+        icy = int(math.floor(mp[1] / cell_size))
+        for dx in range(-neighborhood, neighborhood + 1):
+            for dy in range(-neighborhood, neighborhood + 1):
+                ids = cell_index.get((icx + dx, icy + dy))
+                if ids is not None:
+                    cand.update(int(v) for v in ids)
+    if not cand:
+        return np.zeros(0, dtype=int)
+    return np.array(sorted(cand), dtype=int)
+
+
+def response_table(
+    sensor: IrSensorSpec,
+    pose: PoseLike,
+    surfaces: Sequence[Rect],
+    surf: SurfaceSpec,
+    table,   # mouse.ir_table.CumulativeTable（循環importを避けるため型注釈はつけない）
+    cell_index: Dict[Tuple[int, int], np.ndarray],
+    cell_size: float,
+    *,
+    wall_height_m: float = DEFAULT_WALL_HEIGHT_M,
+    max_range_m: float = DEFAULT_MAX_RANGE_M,
+    led_intensity: float = 1.0,
+    pt_responsivity: float = 1.0,
+    n_march: int = DEFAULT_TABLE_MARCH_N,
+    neighborhood: int = DEFAULT_TABLE_NEIGHBORHOOD,
+    led_cone_margin_deg: float = DEFAULT_LED_CONE_MARGIN_DEG,
+    pt_cone_margin_deg: float = DEFAULT_PT_CONE_MARGIN_DEG,
+    cone_filter_n_u: int = DEFAULT_CONE_FILTER_N_U,
+    cone_filter_n_v: int = DEFAULT_CONE_FILTER_N_V,
+    ignore_shadow_boundary: bool = False,
+    interreflection: bool = True,
+    corner_adjacency_tol_m: float = DEFAULT_CORNER_ADJACENCY_TOL_M,
+    corner_gate_n_grid: int = DEFAULT_CORNER_GATE_N_GRID,
+    corner_n_grid: int = DEFAULT_CORNER_N_GRID,
+    corner_gate_threshold: float = DEFAULT_CORNER_GATE_THRESHOLD,
+    corner_both_directions: bool = True,
+    corner_occlusion: bool = True,
+    corner_stats: Optional[Dict] = None,
+    return_candidate_ids: bool = False,
+    time_breakdown: Optional[Dict] = None,
+):
+    """`response()`/`response_fast()` の表引き版（AUDIT_060・第2/3段階）。
+
+    直接光は数値積分をせず、`mouse/ir_table.py` の累積表 `G(d,θ,u)` を面ごとに2回
+    （`u_start`・`u_end`）引いて差を取る。遮蔽も `_segment_occluded` のような点ごとの
+    判定はせず、「見える範囲」を解析的に求めてから表引きする（モジュール docstring
+    「response_table(): AUDIT_060・第2/3段階」を参照）。隅の相互反射は `response_fast()`
+    と同じ `_corner_interreflection_total()` をそのまま呼ぶ（実装は変更しない）。
+
+    Args:
+        sensor/pose/surfaces/surf: `response()`/`response_fast()` と同じ。**`sensor` は
+            `layout="vertical"`・`led_tilt_deg=pt_tilt_deg=0`（既定値）であること**
+            （表がその前提で作られているため。`mouse/ir_table.py` モジュール docstring参照）。
+        table: `mouse.ir_table.load_cumulative_table()` で読み込んだ `CumulativeTable`。
+        cell_index: `build_maze_cell_index(surfaces, cell_size)` の戻り値（`surfaces` と
+            対応が取れていること——通し番号がずれると誤った矩形を引く）。
+        cell_size: 迷路の区画サイズ [m]（`RobotParams().cell_size`）。
+        n_march/neighborhood: 候補矩形を集める区画走査の密度（既定7点・3×3）。
+        ignore_shadow_boundary: `True` にすると「見える範囲」の計算をせず、表引きの対象に
+            なった面はすべて全長 `[face_lo,face_hi]` を使う（事前登録§5否定対照2用）。
+        corner_occlusion: 隅の相互反射（LED→面・PT→面）の遮蔽判定を行うか
+            （`response_fast()` の `occlusion` に相当。既定 `True`）。
+        return_candidate_ids: `True` のとき、値の代わりに区画索引で集めた候補矩形の
+            通し番号集合（`set[int]`）を返す（自己検査4用。幾何計算・表引きは行わない）。
+        time_breakdown: 渡すと `{"geometry":…, "lookup":…, "corner":…}`（秒）を書き込む
+            （時間の内訳測定用）。
+
+    Returns:
+        センサが受ける光量（任意単位・`response()`/`response_fast()` と同じ規格）。
+        `return_candidate_ids=True` のときは候補矩形の通し番号の `set[int]`。
+    """
+    t_geom0 = time.perf_counter()
+    led, pt = _sensor_world_geometry(sensor, pose)
+    half_angle_max = max(sensor.led_half_angle_deg, sensor.pt_half_angle_deg)
+    S = led.pos[:2].copy()   # LED・PTは縦配置なら水平位置が一致する（モジュール docstring参照）
+
+    cand_idx = _table_candidate_ids(
+        S, led.axis[:2], cell_index, cell_size, max_range_m, n_march, neighborhood,
+    )
+    if return_candidate_ids:
+        return set(int(v) for v in cand_idx)
+
+    if cand_idx.size == 0:
+        return 0.0
+
+    surf_arr = np.asarray(surfaces, dtype=float)
+    near_arr = surf_arr[cand_idx]   # (M,4) cx,cy,hx,hy。M個の候補（response_fast の near_arr に相当）
+    # 射程で絞る（response()/response_fast() の「近傍」と同じ足切り基準。索引が広めに拾った
+    # 遠方の候補を落とす）。
+    diag = np.hypot(near_arr[:, 2], near_arr[:, 3])
+    dist_center = np.hypot(near_arr[:, 0] - S[0], near_arr[:, 1] - S[1])
+    keep_range = (dist_center - diag) <= max_range_m
+    cand_idx = cand_idx[keep_range]
+    near_arr = near_arr[keep_range]
+    M = near_arr.shape[0]
+    if M == 0:
+        return 0.0
+    near_rects_list = [surfaces[int(i)] for i in cand_idx]
+
+    # --- 4側面へ展開・裏向きの面を除く（response_fast() と同じ式） ---
+    cx, cy, hx, hy = near_arr[:, 0], near_arr[:, 1], near_arr[:, 2], near_arr[:, 3]
+    zc = np.full(M, wall_height_m / 2.0)
+    centers4 = np.stack([
+        np.stack([cx + hx, cy, zc], axis=-1),
+        np.stack([cx - hx, cy, zc], axis=-1),
+        np.stack([cx, cy + hy, zc], axis=-1),
+        np.stack([cx, cy - hy, zc], axis=-1),
+    ], axis=0)                                                    # (4,M,3)
+    normals4 = np.array([[1.0, 0.0, 0.0], [-1.0, 0.0, 0.0],
+                          [0.0, 1.0, 0.0], [0.0, -1.0, 0.0]])
+    u_y = np.array([0.0, 1.0, 0.0]); u_x = np.array([1.0, 0.0, 0.0]); v_z = np.array([0.0, 0.0, 1.0])
+    u_vecs4 = np.array([u_y, u_y, u_x, u_x])       # 符号は任意（cone filter/隅の相互反射でのみ使用）
+    v_vecs4 = np.array([v_z, v_z, v_z, v_z])
+    half_u4 = np.stack([hy, hy, hx, hx], axis=0)
+    half_v4 = np.full((4, M), wall_height_m / 2.0)
+    owner4 = np.tile(np.arange(M), (4, 1))
+
+    to_led4 = led.pos[None, None, :] - centers4
+    vis_mask4 = np.einsum("fmk,fk->fm", to_led4, normals4) > 0.0
+    f_sel, m_sel = np.nonzero(vis_mask4)
+
+    if f_sel.size == 0:
+        centers_sel = np.zeros((0, 3)); normals_sel = np.zeros((0, 3))
+        u_sel = np.zeros((0, 3)); v_sel = np.zeros((0, 3))
+        half_u_sel = np.zeros(0); half_v_sel = np.zeros(0); owner_sel = np.zeros(0, dtype=int)
+    else:
+        centers_sel = centers4[f_sel, m_sel]
+        normals_sel = normals4[f_sel]
+        u_sel = u_vecs4[f_sel]
+        v_sel = v_vecs4[f_sel]
+        half_u_sel = half_u4[f_sel, m_sel]
+        half_v_sel = half_v4[f_sel, m_sel]
+        owner_sel = owner4[f_sel, m_sel]
+
+    # --- 表引きの対象: LED光錐 かつ PT視野 に入り得る面だけ（response_fast の narrow_facets） ---
+    if centers_sel.shape[0] > 0:
+        stacked = (centers_sel, normals_sel, u_sel, v_sel, half_u_sel, half_v_sel)
+        led_mask = _facets_maybe_in_cone_batch(
+            stacked, led.pos, led.axis, led_cone_margin_deg, cone_filter_n_u, cone_filter_n_v,
+        )
+        pt_mask = _facets_maybe_in_cone_batch(
+            stacked, pt.pos, pt.axis, pt_cone_margin_deg, cone_filter_n_u, cone_filter_n_v,
+        )
+        keep_idx = np.nonzero(led_mask & pt_mask)[0]
+    else:
+        keep_idx = np.zeros(0, dtype=int)
+
+    t_geom1 = time.perf_counter()
+    direct_total = 0.0
+    if keep_idx.size > 0:
+        n2 = normals_sel[keep_idx][:, :2]                  # (K,2)
+        c2 = centers_sel[keep_idx][:, :2]                   # (K,2)
+        half_u_k = half_u_sel[keep_idx]                     # (K,)
+        owner_k = owner_sel[keep_idx].astype(int)            # (K,) near_arr内の通し番号
+        K = n2.shape[0]
+
+        u_hat_k = np.stack([n2[:, 1], -n2[:, 0]], axis=1)    # (K,2)   法線を-90°回した向き
+        center_u_k = np.einsum("kj,kj->k", c2, u_hat_k)
+        p_k = np.einsum("kj,kj->k", c2, n2)                  # 面の平面位置（法線方向の座標）
+        face_lo = center_u_k - half_u_k
+        face_hi = center_u_k + half_u_k
+
+        S_dot_n = n2[:, 0] * S[0] + n2[:, 1] * S[1]          # (K,)
+        S_dot_u = u_hat_k[:, 0] * S[0] + u_hat_k[:, 1] * S[1]  # (K,)
+        depth_S = S_dot_n - p_k                               # = d（バックフェイスカリングにより>0）
+
+        if ignore_shadow_boundary:
+            # 否定対照2: 見える範囲の計算をせず全長を使う。
+            u_start = face_lo.copy()
+            u_end = face_hi.copy()
+            occluded_fully = np.zeros(K, dtype=bool)
+        else:
+            # 🔴 実装中に見つかった誤り・その1（重要）: 最初の実装は「隅ごとにセンサから隅を
+            # 通る光線を面の平面まで延長し、そこでのuを取る（媒介変数t>=1のものだけ採用）」
+            # という方式だったが、これは遮る矩形がセンサのすぐそば（数mm）にあるとき誤る。
+            # 近い矩形はセンサから見て非常に広い角度（ほぼ180°近く）を占めることがあり、
+            # その見かけの陰線（真の輪郭）を作る隅が、面の深さ方向には「センサより手前どころか
+            # 反対側」にあることがある（実測: 764姿勢中の1例で、本来ゼロになるべき応答
+            # （response()実測 3e-11）が表引きでは0.27＝満量比0.33の誤検出になっていた）。
+            #
+            # 🔴 誤り・その2: 「4隅の方位角（bearing）の最小・最大」に直しても、まだ誤る。
+            # 方位角からuへの変換 `u = S_dot_u + depth_target*tan(φ)` は `φ=±90°`（矩形と面が
+            # 直交する向き）で発散するため、矩形の4隅の方位角が±90°をまたぐとき
+            # （＝矩形が面の真横近くまで広がっているとき）、単純な最小・最大では「またいだ側」を
+            # 逆向きに扱ってしまい、実際には遮っていない矩形を「面全体を遮った」と誤判定した
+            # （実測: 別の1例で、本来強い直接反射（response()実測0.62）が表引きでは0.0まで
+            # 消えていた）。
+            #
+            # **正しい方法**: 矩形は凸なので、4隅の方位角を円環上に並べ、**隣り合う隅どうしの
+            # 隙間が最大になる箇所**を見つける（4隅が円環上を占める真の範囲＝輪郭は、その
+            # 最大の隙間の「残り」——標準的な「点群の円環上の被覆区間」の求め方）。得られた
+            # 輪郭区間を、面に正対する側の半球 `(-90°,+90°)`（この外側は面の正面に来ようがない
+            # ので無関係）と交わる部分だけに絞ってから `tan` でu座標へ変換する
+            # （境界が±90°ちょうどのときは無限遠＝面の端まで塞がっているのと同じに扱われる。
+            # `HALF_PI_EPS` でわずかに内側にクランプして発散を避ける）。
+            occ_cx, occ_cy = near_arr[:, 0], near_arr[:, 1]
+            occ_hx, occ_hy = near_arr[:, 2], near_arr[:, 3]
+            corners_x = np.stack([occ_cx - occ_hx, occ_cx - occ_hx, occ_cx + occ_hx, occ_cx + occ_hx], axis=1)
+            corners_y = np.stack([occ_cy - occ_hy, occ_cy + occ_hy, occ_cy - occ_hy, occ_cy + occ_hy], axis=1)
+            # (K,M,4) へブロードキャスト
+            cxb = corners_x[None, :, :]; cyb = corners_y[None, :, :]
+            nkx = n2[:, 0][:, None, None]; nky = n2[:, 1][:, None, None]
+            ukx = u_hat_k[:, 0][:, None, None]; uky = u_hat_k[:, 1][:, None, None]
+
+            rel_x = cxb - S[0]; rel_y = cyb - S[1]
+            # local_x = (隅-S)・(-n) = S・n - 隅・n = その隅の「面と同じ法線方向で測った深さ」
+            #          （隅がセンサよりどれだけ面側にあるか。面自身の深さ depth_S と同じ規約）
+            local_x = -(rel_x * nkx + rel_y * nky)
+            local_y = rel_x * ukx + rel_y * uky
+            phi = np.arctan2(local_y, local_x)                          # (K,M,4) 方位角（面が正対=0°）
+
+            depth_b = depth_S[:, None, None]
+            # 遮る候補として意味があるのは、隅の少なくとも1つが面より手前（深さが小さい）のとき
+            # だけ（面よりすべて奥にある矩形は、その面自身より先にセンサから見えないので
+            # 遮りようがない）。
+            candidate = np.any(local_x < depth_b - _TABLE_SHADOW_EPS_M, axis=2)   # (K,M)
+
+            # 「最大の隙間」法（円環上の4隅から真の輪郭区間を求める）。
+            TWO_PI = 2.0 * math.pi
+            sorted_phi = np.sort(phi, axis=2)                            # (K,M,4)
+            gaps = np.empty(sorted_phi.shape[:2] + (4,), dtype=sorted_phi.dtype)
+            gaps[..., :3] = sorted_phi[..., 1:] - sorted_phi[..., :3]
+            gaps[..., 3] = (sorted_phi[..., 0] + TWO_PI) - sorted_phi[..., 3]
+            gap_argmax = np.argmax(gaps, axis=2)                         # (K,M)
+            max_gap = np.take_along_axis(gaps, gap_argmax[..., None], axis=2)[..., 0]
+            start_idx = (gap_argmax + 1) % 4
+            occ_start = np.take_along_axis(sorted_phi, start_idx[..., None], axis=2)[..., 0]
+            occ_end = occ_start + (TWO_PI - max_gap)                     # occ_start以上（輪郭の幅ぶん）
+
+            HALF_PI_EPS = math.pi / 2.0 - 1e-6
+            lo_ang = np.maximum(occ_start, -HALF_PI_EPS)
+            hi_ang = np.minimum(occ_end, HALF_PI_EPS)
+            has_any = candidate & (lo_ang < hi_ang)                      # 正面半球と交わる部分があるか
+
+            S_dot_u_b = S_dot_u[:, None]
+            depth_row = depth_S[:, None]
+            lo_r = S_dot_u_b + depth_row * np.tan(lo_ang)                # (K,M)
+            hi_r = S_dot_u_b + depth_row * np.tan(hi_ang)
+
+            same_owner = owner_k[:, None] == np.arange(M)[None, :]      # (K,M)
+            has_any = has_any & ~same_owner
+
+            face_lo_b = face_lo[:, None]; face_hi_b = face_hi[:, None]
+            lo_c = np.clip(lo_r, face_lo_b, face_hi_b)
+            hi_c = np.clip(hi_r, face_lo_b, face_hi_b)
+
+            touches_left = has_any & (lo_c <= face_lo_b + _TABLE_SHADOW_EPS_M)
+            touches_right = has_any & (hi_c >= face_hi_b - _TABLE_SHADOW_EPS_M)
+
+            left_candidates = np.where(touches_left, hi_c, -np.inf)
+            right_candidates = np.where(touches_right, lo_c, np.inf)
+            u_start = np.maximum(face_lo, np.max(left_candidates, axis=1))
+            u_end = np.minimum(face_hi, np.min(right_candidates, axis=1))
+            occluded_fully = u_start > u_end + _TABLE_SHADOW_EPS_M
+
+        # --- (d, θ, u_origin) を求め、表座標へ変換して引く ---
+        axis2 = led.axis[:2]
+        axis_local_x = -(axis2[0] * n2[:, 0] + axis2[1] * n2[:, 1])
+        axis_local_y = axis2[0] * u_hat_k[:, 0] + axis2[1] * u_hat_k[:, 1]
+        theta_k = np.degrees(np.arctan2(axis_local_y, axis_local_x))
+
+        denom_axis = axis2[0] * n2[:, 0] + axis2[1] * n2[:, 1]
+        t_axis = np.where(np.abs(denom_axis) > _TABLE_DENOM_EPS, -depth_S / denom_axis, 0.0)
+        Qx = S[0] + t_axis * axis2[0]
+        Qy = S[1] + t_axis * axis2[1]
+        u_origin_k = Qx * u_hat_k[:, 0] + Qy * u_hat_k[:, 1]
+
+        table_u_start = np.minimum(u_start, u_end) - u_origin_k
+        table_u_end = np.maximum(u_start, u_end) - u_origin_k
+
+        from mouse import ir_table as _ir_table   # 循環import回避の遅延import
+        g_start = _ir_table.interp_G(table, depth_S, theta_k, table_u_start)
+        g_end = _ir_table.interp_G(table, depth_S, theta_k, table_u_end)
+        contributions = np.where(occluded_fully, 0.0, g_start - g_end)
+        contributions = np.maximum(contributions, 0.0)   # 数値誤差の下振れだけを弾く安全弁
+        direct_total = float(np.sum(contributions)) * led_intensity * pt_responsivity
+
+    t_lookup1 = time.perf_counter()
+
+    corner_total = 0.0
+    if interreflection:
+        boxes = _obstacle_boxes(near_rects_list, wall_height_m)
+        corner_total = _corner_interreflection_total(
+            centers_sel, normals_sel, u_sel, v_sel, half_u_sel, half_v_sel, owner_sel, near_arr,
+            led, pt, surf, led_intensity, pt_responsivity, max_range_m,
+            boxes, corner_occlusion, sensor.separation_m, half_angle_max,
+            corner_adjacency_tol_m, corner_gate_n_grid, corner_n_grid,
+            corner_gate_threshold, corner_both_directions,
+            led_cone_margin_deg, pt_cone_margin_deg, cone_filter_n_u, cone_filter_n_v,
+            corner_stats,
+        )
+    t_corner1 = time.perf_counter()
+
+    if time_breakdown is not None:
+        time_breakdown["geometry"] = t_geom1 - t_geom0
+        time_breakdown["lookup"] = t_lookup1 - t_geom1
+        time_breakdown["corner"] = t_corner1 - t_lookup1
+
+    return (direct_total + corner_total) * sensor.gain
 
 
 # ============================================================================

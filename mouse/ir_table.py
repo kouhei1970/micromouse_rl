@@ -111,6 +111,7 @@ __all__ = [
     "load_cumulative_table",
     "segment_from_indices",
     "nearest_index",
+    "interp_G",
 ]
 
 
@@ -420,6 +421,57 @@ def segment_from_indices(table: CumulativeTable, i_d: int, i_theta: int, i_u_a: 
     """区間 `[u_a, u_b]`（`u_a <= u_b` を仮定）への面の寄与を、表の格子点そのもの
     （線形補間なし）で `G(u_a) - G(u_b)` として返す。"""
     return float(table.values[i_d, i_theta, i_u_a] - table.values[i_d, i_theta, i_u_b])
+
+
+# ============================================================================
+# 3次元線形補間（第2段階: response_table() から使う。事前登録の「組み上げ」節
+# 「G(d,θ,u_start)−G(d,θ,u_end)（表の3次元線形補間）」に対応する）
+# ============================================================================
+def interp_G(table: CumulativeTable, d_m, theta_deg, u_m) -> np.ndarray:
+    """`G(d,θ,u)` を表の格子上で3次元線形補間する（ベクトル化。`d_m`/`theta_deg`/`u_m` は
+    同じ形の `np.ndarray` かスカラー。戻り値は入力と同じ形）。
+
+    3軸とも等間隔格子（`d_axis_m`・`theta_axis_deg`・`u_axis_m` はいずれも `_axis_points`
+    で作った一様刻み）なので、各軸で `(値-始点)/刻み` から浮動小数の格子位置を出し、
+    整数部で下側ノードを、小数部で補間比を取る。範囲外は軸の端にクランプする
+    （`nearest_index`/`segment_from_indices` と同じ「格子の外は端の値」という規約を、
+    ここでは最近傍ではなく線形補間の対象範囲のクランプとして踏襲する）。
+    """
+    d_arr = np.asarray(d_m, dtype=np.float64)
+    th_arr = np.asarray(theta_deg, dtype=np.float64)
+    u_arr = np.asarray(u_m, dtype=np.float64)
+
+    def _frac(axis: np.ndarray, val: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+        lo = float(axis[0])
+        step = float(axis[1] - axis[0])
+        n = len(axis)
+        pos = (val - lo) / step
+        pos = np.clip(pos, 0.0, n - 1)
+        i0 = np.clip(np.floor(pos).astype(np.int64), 0, n - 2)
+        frac = pos - i0
+        return i0, frac
+
+    id0, fd = _frac(table.d_axis_m, d_arr)
+    it0, ft = _frac(table.theta_axis_deg, th_arr)
+    iu0, fu = _frac(table.u_axis_m, u_arr)
+
+    V = table.values
+
+    def _g(di: int, ti: int, ui: int) -> np.ndarray:
+        return V[id0 + di, it0 + ti, iu0 + ui].astype(np.float64)
+
+    c000, c001 = _g(0, 0, 0), _g(0, 0, 1)
+    c010, c011 = _g(0, 1, 0), _g(0, 1, 1)
+    c100, c101 = _g(1, 0, 0), _g(1, 0, 1)
+    c110, c111 = _g(1, 1, 0), _g(1, 1, 1)
+
+    c00 = c000 * (1.0 - fd) + c100 * fd
+    c01 = c001 * (1.0 - fd) + c101 * fd
+    c10 = c010 * (1.0 - fd) + c110 * fd
+    c11 = c011 * (1.0 - fd) + c111 * fd
+    c0 = c00 * (1.0 - ft) + c10 * ft
+    c1 = c01 * (1.0 - ft) + c11 * ft
+    return c0 * (1.0 - fu) + c1 * fu
 
 
 if __name__ == "__main__":
