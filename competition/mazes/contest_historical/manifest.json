@@ -1,0 +1,44 @@
+{
+ "purpose": "全日本マイクロマウス大会の**実際の競技迷路**（第1回1980〜第15回1994）。既存の contest_reference（2012〜2019）が届いていない年代を埋める。**学習・調整には使わない。**生成迷路の性質が実物とずれていないかを確かめる材料。",
+ "provenance": {
+  "source": "https://www.ntf.or.jp/archives/directory/jp/ntf-HP/mouse/taikai/map.html",
+  "title": "All Japan MicroMouse Contest(maze) 1980-2003",
+  "form": "HTML の <pre> 内にアスキー文字で埋め込まれていたものを読み取った（| = 縦壁、_ = 横壁）。1995〜2003 年ぶんは画像なので未取得。",
+  "parser": "research_notes/scripts/parse_ntf_maze_archive.py",
+  "validation": "15 面すべてで往復検証（読み取った壁から元のアスキーを再生成し 1 文字単位で照合）に一致。NG=0",
+  "retrieved": "2026-08-23"
+ },
+ "coordinate_system": "docs/COORDINATE_SYSTEM.md に従う（x=東、y=北、(0,0)=南西=スタート区画）",
+ "assumptions": [
+  "ゴールは中央 2x2。15 面すべてで、中央 2x2 に内壁が無いことを実際に確かめた",
+  "スタートは (0,0)。15 面すべてで、開口が 1 つだけの隅が (0,0) であることを確かめた",
+  "**元データにゴール・スタートの明示的な印は無い。**上の 2 つは構造から判定したものである"
+ ],
+ "mazes": [
+  "maze_16AJ1994",
+  "maze_16AJ1993",
+  "maze_16AJ1992",
+  "maze_16AJ1991",
+  "maze_16AJ1990",
+  "maze_16AJ1989",
+  "maze_16AJ1988",
+  "maze_16AJ1987",
+  "maze_16AJ1986",
+  "maze_16AJ1985",
+  "maze_16AJ1984",
+  "maze_16AJ1983",
+  "maze_16AJ1982",
+  "maze_16AJ1981",
+  "maze_16AJ1980"
+ ],
+ "metrics_1980_1994": {
+  "D_true_median": 68,
+  "D_true_range": [
+   39,
+   92
+  ],
+  "detour_median": 4.86,
+  "beta_median": 14,
+  "dead_ends_median": 20
+ }
+}
