@@ -1208,6 +1208,26 @@ def adc(
 （`_segment_occluded`）は `response()` と同じ実装をそのまま使う（作り直さない）。
 反射は 1 回のみ（`bounces=1` 相当）・床は含めない（ユーザの決定。`note_034` 追記16:
 「床の反射は無視する」）。**`response()` 自体は一切変更しない。**
+
+## 速さの追加対策（AUDIT_059 §4 実測: `M6` 合格・`T`=6.01ms で目標未達。2026-08-22）
+
+実測で支配的だった 2 箇所を、**判定の中身を変えずに**速くする。
+
+1. **遮蔽候補直方体を、「絞る」のではなく数学的に安全な範囲で「削る」。**
+   上の「2. 遮る面は絞らない」は**積分対象の絞り込みと同じ近似的な基準**で遮蔽候補も
+   絞ることを禁じたものであり、幾何学的に厳密な削減まで禁じてはいない。遮る可能性の
+   ある直方体は、必ず「センサ（LED・PT）と、積分対象の面の求積点」を結ぶ線分の
+   どれかと交わる。線分の両端は凸な軸平行直方体（AABB）
+   `{LED,PT} ∪ {積分対象の面の求積点すべて}` の内部にあるので、線分全体がその AABB の
+   内部に収まる。**この AABB と足跡がまったく交わらない直方体は、原理的にどの線分とも
+   交わり得ない**（`prune_occlusion_boxes`。既定 True）。積分対象を絞り込んだ**あと**の
+   求積点で AABB を作るので、この削減は「2. 遮る面は絞らない」の意図（積分対象の
+   絞り込み基準をそのまま遮蔽候補に流用しない）と両立する。`prune_occlusion_boxes=False`
+   にすると削減前（`near_rects` 全体を遮蔽候補にする旧挙動）に戻る（自己検査2用）。
+2. **絞り込み判定（`_facet_maybe_in_cone`）を numpy で面をまたいで一括化する。**
+   判定の中身・カットオフ角・候補点の作り方（解析点＋面内格子）は変えない。
+   `_facets_maybe_in_cone_batch()` が面ごとの Python ループを、面を軸に積んだ配列への
+   一括演算に置き換える（`_facet_maybe_in_cone` は自己検査3の比較対象として残す）。
 """
 
 DEFAULT_N_GRID_FAST: int = 20              # 積分格子（既定。誤差と速さの表から選定。事前登録§4）
@@ -1273,6 +1293,74 @@ def _facet_maybe_in_cone(
     return max_cos >= math.cos(math.radians(margin_deg))
 
 
+def _stack_facets(facets: Sequence[_Facet]) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """`facets` の位置・向き・寸法を numpy 配列へまとめてスタックする
+    （`_facets_maybe_in_cone_batch` で LED・PT 両方の判定に使い回す）。
+    戻り値: `(centers, normals, u_vecs, v_vecs, half_u, half_v)`（先頭軸は面の枚数）。
+    """
+    centers = np.stack([f.center for f in facets])
+    normals = np.stack([f.normal for f in facets])
+    u_vecs = np.stack([f.u for f in facets])
+    v_vecs = np.stack([f.v for f in facets])
+    half_u = np.array([f.half_u for f in facets])
+    half_v = np.array([f.half_v for f in facets])
+    return centers, normals, u_vecs, v_vecs, half_u, half_v
+
+
+def _facets_maybe_in_cone_batch(
+    stacked: Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray],
+    apex: np.ndarray, axis: np.ndarray, margin_deg: float, n_u: int, n_v: int,
+) -> np.ndarray:
+    """`_facet_maybe_in_cone()` の numpy 一括版（面をまたいでループしない）。
+
+    判定の中身・カットオフ角・候補点の作り方（解析点＋面内の密な格子）は一切変えない。
+    `_facet_maybe_in_cone` を面ごとに呼んだ場合と同じ結果になることは自己検査3
+    （`verification/audit_059_fast_sensor.py`）で全姿勢・全面について確認している。
+    `stacked` は `_stack_facets()` の戻り値。戻り値は shape `(n_facets,)` の bool 配列。
+    """
+    centers, normals, u_vecs, v_vecs, half_u, half_v = stacked
+    n_facets = centers.shape[0]
+    if n_facets == 0:
+        return np.zeros(0, dtype=bool)
+
+    # 解析点（`_facet_closest_direction_point` の一括版。同じ場合分けをベクトル化しただけ）。
+    denom = normals @ axis
+    safe_denom = np.where(np.abs(denom) > 1e-9, denom, 1.0)
+    t = np.where(
+        np.abs(denom) > 1e-9,
+        np.einsum("nk,nk->n", centers - apex[None, :], normals) / safe_denom,
+        -1.0,
+    )
+    p_hit = apex[None, :] + t[:, None] * axis[None, :]
+    rel_hit = p_hit - centers
+    rel_apex = apex[None, :] - centers
+    rel = np.where((t > 0.0)[:, None], rel_hit, rel_apex)
+    pu = np.clip(np.einsum("nk,nk->n", rel, u_vecs), -half_u, half_u)
+    pv = np.clip(np.einsum("nk,nk->n", rel, v_vecs), -half_v, half_v)
+    analytic_pts = centers + pu[:, None] * u_vecs + pv[:, None] * v_vecs   # (n_facets,3)
+
+    # 面内の密な格子（n_u×n_v点。面ごとに half_u/half_v でスケールした linspace(-h,h,n) と等価）。
+    t_u = np.linspace(-1.0, 1.0, n_u)
+    t_v = np.linspace(-1.0, 1.0, n_v)
+    us = t_u[None, :] * half_u[:, None]        # (n_facets, n_u)
+    vs = t_v[None, :] * half_v[:, None]        # (n_facets, n_v)
+    grid_pts = (
+        centers[:, None, None, :]
+        + us[:, :, None, None] * u_vecs[:, None, None, :]
+        + vs[:, None, :, None] * v_vecs[:, None, None, :]
+    )   # (n_facets, n_u, n_v, 3)
+    grid_pts = grid_pts.reshape(n_facets, n_u * n_v, 3)
+
+    all_pts = np.concatenate([analytic_pts[:, None, :], grid_pts], axis=1)  # (n_facets, 1+n_u*n_v, 3)
+
+    d = all_pts - apex[None, None, :]
+    r = np.linalg.norm(d, axis=-1)
+    r_safe = np.maximum(r, 1e-9)
+    cos_ang = np.einsum("fck,k->fc", d, axis) / r_safe
+    max_cos = np.max(cos_ang, axis=1)
+    return max_cos >= math.cos(math.radians(margin_deg))
+
+
 def response_fast(
     sensor: IrSensorSpec,
     pose: PoseLike,
@@ -1290,13 +1378,15 @@ def response_fast(
     pt_cone_margin_deg: float = DEFAULT_PT_CONE_MARGIN_DEG,
     cone_filter_n_u: int = DEFAULT_CONE_FILTER_N_U,
     cone_filter_n_v: int = DEFAULT_CONE_FILTER_N_V,
+    prune_occlusion_boxes: bool = True,
 ) -> float:
     """`response()` の高速版（段A: 直接光のみ・反射1回・床なし）。
 
     設計の骨子はモジュール docstring「高速フォワードモデル（AUDIT_059・段A: 直接光のみ）」
     節を参照。`response()` の面積分（`_facet_grid`/`_integrate_facet`）・遮蔽の一括判定
     （`_segment_occluded`）はそのまま使い回し、積分対象の面を LED 光錐＋PT 視野の両方に
-    入り得るものだけへ絞り込む点だけが違う（遮蔽の候補は絞らない＝`near_rects` 全体）。
+    入り得るものだけへ絞り込む点だけが違う（遮蔽の候補は近似的には絞らない＝`near_rects`
+    全体が母集団。ただし `prune_occlusion_boxes` で数学的に安全な削減はする。下記参照）。
 
     Args:
         sensor/pose/surfaces/surf/wall_height_m/n_grid/max_range_m/led_intensity/
@@ -1310,6 +1400,9 @@ def response_fast(
         led_cone_margin_deg/pt_cone_margin_deg/cone_filter_n_u/cone_filter_n_v:
             絞り込み判定のカットオフ角・標本密度（既定は事前登録の設計値。否定対照で
             意図的に緩めた/崩した値を渡す）。
+        prune_occlusion_boxes: `False` にすると遮蔽候補直方体の AABB 削減
+            （モジュール docstring「速さの追加対策」節参照）を行わず、`near_rects` 全体を
+            遮蔽候補にする（削減前の旧挙動。自己検査2用。既定 `True`）。
 
     Returns:
         センサが受ける光量（任意単位・`response()` と同じ規格。`gain` を含む）。
@@ -1334,9 +1427,10 @@ def response_fast(
             facet_owner.append(owner_idx)
     # 床は含めない（ユーザの決定。note_034 追記16）。
 
-    # 🔴 遮蔽の候補直方体は絞らない: near_rects 全体（response() と同じ集合）を使う
-    # （モジュール docstring「遮る面は絞らない」節参照）。
-    boxes = _obstacle_boxes(near_rects, wall_height_m) if occlusion else np.zeros((0, 6))
+    # 🔴 遮蔽の候補直方体は近似的には絞らない: near_rects 全体（response() と同じ集合）が
+    # 母集団（モジュール docstring「遮る面は絞らない」節参照）。AABB による安全な削減は
+    # 積分対象を絞り込んだあとに行う（下記）。
+    all_boxes = _obstacle_boxes(near_rects, wall_height_m) if occlusion else np.zeros((0, 6))
 
     # バックフェイスカリング（response()と同じ）。
     vis_facets: list = []
@@ -1353,21 +1447,18 @@ def response_fast(
 
     if narrow_facets:
         # 積分対象の絞り込み: LED光錐 かつ PT視野 の両方に入り得る面だけを残す
-        # （保守的な判定。モジュール docstring 参照）。
-        kept_facets: list = []
-        kept_owner: list = []
-        for facet, owner_idx in zip(vis_facets, vis_owner):
-            if not _facet_maybe_in_cone(
-                facet, led.pos, led.axis, led_cone_margin_deg, cone_filter_n_u, cone_filter_n_v,
-            ):
-                continue
-            if not _facet_maybe_in_cone(
-                facet, pt.pos, pt.axis, pt_cone_margin_deg, cone_filter_n_u, cone_filter_n_v,
-            ):
-                continue
-            kept_facets.append(facet)
-            kept_owner.append(owner_idx)
-        vis_facets, vis_owner = kept_facets, kept_owner
+        # （保守的な判定。モジュール docstring 参照）。面をまたいで numpy で一括判定する
+        # （`_facets_maybe_in_cone_batch`。判定の中身は `_facet_maybe_in_cone` と同じ）。
+        stacked = _stack_facets(vis_facets)
+        led_mask = _facets_maybe_in_cone_batch(
+            stacked, led.pos, led.axis, led_cone_margin_deg, cone_filter_n_u, cone_filter_n_v,
+        )
+        pt_mask = _facets_maybe_in_cone_batch(
+            stacked, pt.pos, pt.axis, pt_cone_margin_deg, cone_filter_n_u, cone_filter_n_v,
+        )
+        keep_mask = led_mask & pt_mask
+        vis_facets = [f for f, k in zip(vis_facets, keep_mask) if k]
+        vis_owner = [o for o, k in zip(vis_owner, keep_mask) if k]
 
     if not vis_facets:
         return 0.0
@@ -1376,13 +1467,41 @@ def response_fast(
     points_list = [g[0] for g in grids]
     dA_list = [g[1] for g in grids]
 
-    if occlusion and boxes.shape[0] > 0:
+    if occlusion and all_boxes.shape[0] > 0:
         all_points = np.stack(points_list, axis=0)
         owner_arr = np.array(vis_owner, dtype=int)
-        occ_led = _segment_occluded(all_points, led.pos, boxes, owner_arr)
-        occ_pt = _segment_occluded(all_points, pt.pos, boxes, owner_arr)
-        occluded_all = occ_led | occ_pt
-        occluded_list = [occluded_all[i] for i in range(len(vis_facets))]
+
+        if prune_occlusion_boxes:
+            # 🔴 安全な削減（絞り込みではない）: {LED,PT} ∪ {積分対象の求積点すべて} を
+            # 包む AABB と足跡が交わらない直方体は、どの遮蔽判定用の線分とも交わり得ない
+            # （線分の両端が凸な AABB の内部にあるので線分全体が AABB に収まるため）。
+            # モジュール docstring「速さの追加対策」節参照。自己検査2で答えが変わらない
+            # ことを確認済み。
+            pts_flat = all_points.reshape(-1, 3)
+            combined = np.vstack([pts_flat, led.pos[None, :], pt.pos[None, :]])
+            aabb_min = combined.min(axis=0)
+            aabb_max = combined.max(axis=0)
+            box_mins = all_boxes[:, (0, 2, 4)]
+            box_maxs = all_boxes[:, (1, 3, 5)]
+            keep_box = np.all((box_maxs >= aabb_min) & (box_mins <= aabb_max), axis=1)
+            kept_idx = np.nonzero(keep_box)[0]
+            boxes = all_boxes[kept_idx]
+            # 面の owner 番号（near_rects の通し番号）を、削減後の boxes 配列の番号へ張り替える。
+            # 削減されなかった箱の番号は必ず見つかる（積分対象の面はその owner 箱の表面上に
+            # 求積点を持つので、その箱は AABB と必ず交わる。上のコメント参照）。
+            remap = -np.ones(len(near_rects), dtype=int)
+            remap[kept_idx] = np.arange(len(kept_idx))
+            owner_arr = remap[owner_arr]
+        else:
+            boxes = all_boxes
+
+        if boxes.shape[0] > 0:
+            occ_led = _segment_occluded(all_points, led.pos, boxes, owner_arr)
+            occ_pt = _segment_occluded(all_points, pt.pos, boxes, owner_arr)
+            occluded_all = occ_led | occ_pt
+            occluded_list = [occluded_all[i] for i in range(len(vis_facets))]
+        else:
+            occluded_list = [None] * len(vis_facets)
     else:
         occluded_list = [None] * len(vis_facets)
 
