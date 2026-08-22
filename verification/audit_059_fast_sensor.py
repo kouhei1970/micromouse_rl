@@ -56,17 +56,31 @@ from mouse.ir_sensor import (
     DEFAULT_MAX_RANGE_M,
     DEFAULT_WALL_HEIGHT_M,
     DEFAULT_OCCLUSION_POINT_WEIGHT_FRAC,
+    DEFAULT_CORNER_ADJACENCY_TOL_M,
+    DEFAULT_CORNER_GATE_N_GRID,
+    DEFAULT_CORNER_N_GRID,
+    DEFAULT_CORNER_GATE_THRESHOLD,
 )
 from mouse.params import RobotParams
+from verification.audit_050_raycast import raycast_response, Sensor
 
 I_FULL = 0.8298934   # 満量（AUDIT_050 §2-2 と同じ固定値。事前登録がこの規約を踏襲）
 MAZE_PATH = REPO_ROOT / "competition" / "mazes" / "design_turn_v1" / "maze_41001.npz"
 FRONT_GRID_PATH = REPO_ROOT / "outputs" / "audit_056" / "front_grid.json"
+FRONT_GRID_DELTA_PATH = REPO_ROOT / "outputs" / "audit_056" / "audit058_front_floor0.00.json"
 OUT_DIR = REPO_ROOT / "outputs" / "audit_059"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
+CORNER_OUT_DIR = OUT_DIR / "corner"
+CORNER_OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 SEED = 20260822
 N_RANDOM = 400
+
+# 段Bの基準（事前登録§4「段Bでは基準を response(n_grid=48) ＋ 光線追跡の増分とし…」）に使う
+# 光線追跡の規約。AUDIT_050 追記3・audit_058_dark_floor.py と同じ（乱数種・本数・床の反射率）。
+RAYCAST_SEED = 777001
+RAYCAST_N_RAYS = 15_000
+RAYCAST_WALL_RHO = 0.8   # 壁の拡散反射率（surf.diffuse=0.8 と同じ）
 
 SURF = SurfaceSpec()   # 既定のまま（diffuse=0.8・specular=0.10・shininess=40。事前登録§0）
 
@@ -675,17 +689,189 @@ def stage_summary() -> None:
 
 
 # ============================================================================
+# 段B（隅の相互反射）: 自己検査5・基準（光線追跡の増分）・本測定・否定対照
+# ============================================================================
+def stage_corner_selfcheck5(specs, rects, poses) -> None:
+    """自己検査5（段Bの指示・最優先）: `interreflection=False` が段A（`main.json`。
+    このパラメータを追加する前の `response_fast()`）と厳密に一致すること。"""
+    main_path = OUT_DIR / "main.json"
+    assert main_path.exists(), "段Aの main.json が無い（先に段Aの本測定を済ませておくこと）"
+    stageA = json.loads(main_path.read_text(encoding="utf-8"))
+    vA = np.array(stageA["values"])
+    assert len(vA) == len(poses), f"段Aの姿勢数と不一致: {len(vA)} vs {len(poses)}"
+
+    diffs = []
+    for pose_d, va in zip(poses, vA):
+        sensor = specs[pose_d["sensor_idx"]]
+        pose = (pose_d["x"], pose_d["y"], pose_d["theta"])
+        v = response_fast(sensor, pose, rects, SURF, interreflection=False)
+        diffs.append(abs(v - va))
+    diffs = np.array(diffs)
+    rel = diffs / np.maximum(np.abs(vA), 1e-300)
+    out = {"n_poses": len(poses), "max_abs_diff": float(diffs.max()), "max_rel_diff": float(rel.max())}
+    (OUT_DIR / "corner_selfcheck5.json").write_text(json.dumps(out), encoding="utf-8")
+    print(f"corner_selfcheck5: 最大絶対差={out['max_abs_diff']:.3e} 最大相対差={out['max_rel_diff']:.3e}"
+          f"（判定: {'合格' if out['max_rel_diff'] <= 1e-12 else '不合格'} — 基準1e-12以下）")
+
+
+def stage_corner_baseline_random(specs, rects, poses_random, start: int, end: int) -> None:
+    """事前登録§4「段Bの基準」の光線追跡ぶん（無作為400姿勢）。1回の呼び出しは
+    `--start`/`--end` で範囲を区切り10分以内に収める（1姿勢あたり b1+b4 で約2.2秒）。
+    `audit_058_dark_floor.py` と同じ規約（乱数種777001・15,000本・floor_diffuse=0.0）。
+    """
+    path = CORNER_OUT_DIR / "baseline_random.json"
+    rec = json.loads(path.read_text(encoding="utf-8"))["records"] if path.exists() else {}
+    end = min(end, len(poses_random))
+    t0 = time.perf_counter()
+    for i in range(start, end):
+        pose_d = poses_random[i]
+        k = str(pose_d["idx"])
+        if k in rec:
+            continue
+        sp = specs[pose_d["sensor_idx"]]
+        s = Sensor(name=sp.name, pos=tuple(sp.pos), axis=tuple(sp.axis))
+        kw = dict(n_rays=RAYCAST_N_RAYS, seed=RAYCAST_SEED, led_half_angle_deg=sp.led_half_angle_deg,
+                  pt_half_angle_deg=sp.pt_half_angle_deg, separation_m=sp.separation_m,
+                  diffuse=RAYCAST_WALL_RHO, floor_diffuse=0.0)
+        pose = (pose_d["x"], pose_d["y"], pose_d["theta"])
+        b1 = raycast_response(s, pose, rects, max_bounces=1, **kw)
+        b4 = raycast_response(s, pose, rects, max_bounces=4, **kw)
+        rec[k] = {"b1": b1 / I_FULL, "delta": (b4 - b1) / I_FULL}   # front_grid の json と同じ規格（満量比）
+        if (i - start) % 10 == 0:
+            path.write_text(json.dumps({"records": rec}), encoding="utf-8")
+    path.write_text(json.dumps({"records": rec}), encoding="utf-8")
+    print(f"corner_baseline_random: idx[{start},{end}) 完了。累計 {len(rec)}/{len(poses_random)} 件。"
+          f"所要 {time.perf_counter()-t0:.1f}s")
+
+
+def _corner_baseline_values(poses: List[Dict], v48: np.ndarray) -> np.ndarray:
+    """段Bの基準（response(n_grid=48) ＋ 光線追跡の増分。事前登録§4）を764姿勢ぶん作る。
+    `poses` は `all_poses()` の並び（無作為400 → 行き止まりの奥364）。`v48` は同じ並びの
+    `response(n_grid=48)` 生値（`baseline48.json`）。戻り値は生値（満量比ではない）。
+    """
+    front_delta = json.loads(FRONT_GRID_DELTA_PATH.read_text(encoding="utf-8"))["records"]
+    random_path = CORNER_OUT_DIR / "baseline_random.json"
+    random_delta = json.loads(random_path.read_text(encoding="utf-8"))["records"] if random_path.exists() else {}
+
+    out = np.empty(len(poses))
+    for n, (pose_d, base) in enumerate(zip(poses, v48)):
+        k = str(pose_d["idx"])
+        if pose_d["group"] == "front_grid":
+            delta_norm = front_delta[k]["delta"]
+        else:
+            assert k in random_delta, f"無作為姿勢 idx={k} の光線追跡増分が無い（corner_baseline_random を先に実行）"
+            delta_norm = random_delta[k]["delta"]
+        out[n] = base + delta_norm * I_FULL
+    return out
+
+
+def stage_corner_main(specs, rects, poses) -> None:
+    """段Bの本測定: `response_fast()`（既定＝隅の相互反射込み）の値・時間・隅の判定の
+    作動状況（`corner_stats`）を764姿勢ぶん記録する。"""
+    values = []
+    times = []
+    corner_records = []
+    for pose_d in poses:
+        sensor = specs[pose_d["sensor_idx"]]
+        pose = (pose_d["x"], pose_d["y"], pose_d["theta"])
+        stats: Dict = {}
+        t0 = time.perf_counter()
+        v = response_fast(sensor, pose, rects, SURF, corner_stats=stats)
+        t1 = time.perf_counter()
+        values.append(float(v))
+        times.append(t1 - t0)
+        corner_records.append(stats)
+    out = {"n_poses": len(poses), "values": values, "times": times, "corner_stats": corner_records}
+    (OUT_DIR / "corner_main.json").write_text(json.dumps(out), encoding="utf-8")
+    print(f"corner_main: 完了 平均時間 {1000.0 * sum(times) / len(times):.3f} ms")
+
+
+def stage_corner_negctrl(specs, rects, poses) -> None:
+    """事前登録§5の否定対照（段B版）: 隅の相互反射を「A→Bの片方向だけ」にした版
+    （`corner_both_directions=False`）。教授セッションの試作では基準の0.64倍にしか
+    ならなかった（=悪化する）ことを実測で確かめる。"""
+    values = []
+    for pose_d in poses:
+        sensor = specs[pose_d["sensor_idx"]]
+        pose = (pose_d["x"], pose_d["y"], pose_d["theta"])
+        v = response_fast(sensor, pose, rects, SURF, corner_both_directions=False)
+        values.append(float(v))
+    out = {"n_poses": len(poses), "values": values, "variant": "corner_both_directions=False"}
+    (OUT_DIR / "corner_negctrl.json").write_text(json.dumps(out), encoding="utf-8")
+    print("corner_negctrl: 完了")
+
+
+def stage_corner_summary() -> None:
+    b48 = json.loads((OUT_DIR / "baseline48.json").read_text(encoding="utf-8"))
+    v48 = np.array(b48["values"])
+
+    p, rects, W, H, cell = load_geometry()
+    specs = build_ir_specs(p)
+    poses = all_poses(specs, W, H, cell)
+    assert len(poses) == len(v48)
+
+    baseline = _corner_baseline_values(poses, v48)
+
+    sc5 = json.loads((OUT_DIR / "corner_selfcheck5.json").read_text(encoding="utf-8"))
+    print(f"自己検査5: 最大相対差 = {sc5['max_rel_diff']:.3e}"
+          f"（判定: {'合格' if sc5['max_rel_diff'] <= 1e-12 else '不合格'} — 基準1e-12以下）")
+
+    def m6_of(values: np.ndarray) -> float:
+        return _percentile95(np.abs(values - baseline)) / I_FULL
+
+    main = json.loads((OUT_DIR / "corner_main.json").read_text(encoding="utf-8"))
+    v_main = np.array(main["values"])
+    m6_main = m6_of(v_main)
+    T = 1000.0 * float(np.mean(main["times"]))
+
+    neg = json.loads((OUT_DIR / "corner_negctrl.json").read_text(encoding="utf-8"))
+    v_neg = np.array(neg["values"])
+    m6_neg = m6_of(v_neg)
+
+    corner_stats = main["corner_stats"]
+    n_activated = sum(1 for cs in corner_stats if cs.get("activated"))
+    n_found_any = sum(1 for cs in corner_stats if cs.get("n_pairs_found", 0) > 0)
+    t_gate_mean = 1000.0 * float(np.mean([cs.get("time_gate_s", 0.0) for cs in corner_stats]))
+    t_full_mean = 1000.0 * float(np.mean([cs.get("time_full_s", 0.0) for cs in corner_stats]))
+
+    print()
+    print("=== 段B: 事前登録§4の判定（基準=response(n_grid=48)+光線追跡の増分） ===")
+    print(f"M6 = {m6_main:.6f}  ->  {'合格(<=0.01)' if m6_main <= 0.01 else ('惜しい(0.01-0.03)' if m6_main <= 0.03 else '不合格(>0.03)')}")
+    print(f"T  = {T:.4f} ms -> {'合格(<=2ms)' if T <= 2.0 else ('目標未達(2-5ms)' if T <= 5.0 else '不合格(>5ms)')}")
+    print()
+    print("=== 段B: 否定対照（片方向だけ。M6が悪化するべき） ===")
+    print(f"本測定 M6={m6_main:.6f} / 片方向だけ M6={m6_neg:.6f} -> "
+          f"{'想定どおり悪化' if m6_neg > m6_main else '★悪化しなかった(検査が甘い)'}")
+    print()
+    print("=== 隅の判定の作動状況（764姿勢） ===")
+    print(f"幾何学的な隅ペアが見つかった姿勢: {n_found_any}/{len(poses)} "
+          f"({100.0*n_found_any/len(poses):.1f}%)")
+    print(f"作動した（本計算まで進んだ）姿勢: {n_activated}/{len(poses)} "
+          f"({100.0*n_activated/len(poses):.1f}%)")
+    print(f"隅の項の平均時間: 安い判定 {t_gate_mean:.4f} ms／本計算 {t_full_mean:.4f} ms"
+          f"（764姿勢平均。T={T:.4f}msに占める割合: "
+          f"{100.0*(t_gate_mean+t_full_mean)/T:.1f}%）")
+
+
+# ============================================================================
 # main
 # ============================================================================
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--stage", required=True,
                      choices=["baseline48", "baseline64", "selfcheck", "selfcheck2", "selfcheck3",
-                              "negctrl1", "negctrl1b", "negctrl2", "main", "breakdown", "summary"])
+                              "negctrl1", "negctrl1b", "negctrl2", "main", "breakdown", "summary",
+                              "corner_selfcheck5", "corner_baseline_random", "corner_main",
+                              "corner_negctrl", "corner_summary"])
+    ap.add_argument("--start", type=int, default=0, help="corner_baseline_random 用: 開始インデックス")
+    ap.add_argument("--end", type=int, default=N_RANDOM, help="corner_baseline_random 用: 終了インデックス")
     args = ap.parse_args()
 
     if args.stage == "summary":
         stage_summary()
+        return
+    if args.stage == "corner_summary":
+        stage_corner_summary()
         return
 
     p, rects, W, H, cell = load_geometry()
@@ -714,6 +900,14 @@ def main() -> None:
         stage_main(specs, rects, poses_all)
     elif args.stage == "breakdown":
         stage_breakdown(specs, rects, poses_all)
+    elif args.stage == "corner_selfcheck5":
+        stage_corner_selfcheck5(specs, rects, poses_all)
+    elif args.stage == "corner_baseline_random":
+        stage_corner_baseline_random(specs, rects, poses_random, args.start, args.end)
+    elif args.stage == "corner_main":
+        stage_corner_main(specs, rects, poses_all)
+    elif args.stage == "corner_negctrl":
+        stage_corner_negctrl(specs, rects, poses_all)
 
 
 if __name__ == "__main__":

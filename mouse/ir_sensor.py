@@ -73,6 +73,7 @@ from __future__ import annotations
 
 import json
 import math
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, Optional, Sequence, Tuple, Union
@@ -126,6 +127,11 @@ __all__ = [
     "DEFAULT_CONE_FILTER_N_U",
     "DEFAULT_CONE_FILTER_N_V",
     "DEFAULT_OCCLUSION_POINT_WEIGHT_FRAC",
+    # 隅の相互反射（AUDIT_059・段B: 直角に交わる2壁の2〜4回反射）
+    "DEFAULT_CORNER_ADJACENCY_TOL_M",
+    "DEFAULT_CORNER_GATE_N_GRID",
+    "DEFAULT_CORNER_N_GRID",
+    "DEFAULT_CORNER_GATE_THRESHOLD",
 ]
 
 
@@ -1412,6 +1418,356 @@ def _facets_maybe_in_cone_batch(
     return max_cos >= math.cos(math.radians(margin_deg))
 
 
+"""
+# ============================================================================
+# 隅の相互反射（AUDIT_059・段B: 直角に交わる2壁の2〜4回反射）
+# ============================================================================
+背景・事前登録: `verification/AUDIT_059_PREREG_fast_sensor.md`（段B）。ユーザの決定
+（`note_034` 追記16: ρ=0.8・**床は無視する**）により、間接光は「直角に交わる2枚の壁が
+作る隅」だけに絞られる（平らな壁1枚では面の偶奇により厳密にゼロ。実測で確認済み）。
+
+## 隅の見つけ方（安い判定）
+
+迷路の壁・柱の矩形足跡（`Rect`）はすべて軸平行なので、面（`_wall_facets` が壁1枚を
+展開した側面4枚）は法線が必ず ±x か ±y のどちらかを向く。**直角に交わる面のペア**は
+「法線が x 向きの面」と「法線が y 向きの面」の組み合わせだけである。
+
+**柱（`hx`・`hy` がともに `DEFAULT_POST_HALF_EXTENT_THRESHOLD_M` 未満の矩形）に属する
+面はペア候補から除く。**理由: 壁は柱ぶんの半長（`post_size/2`）を引いた位置で止まるため、
+壁の端と柱の面は隙間ゼロで接するが、**壁どうし（柱を挟んだ向かい）は柱1個ぶん
+（`post_size/2`＝6mm）の隙間がある**。柱自身の2面（同じ柱の隣り合う面どうし）は
+常に凸（外向きの corner）で、両方の面が互いを見る向き（`cosθ` が正）にならず光が
+通らない（`_corner_pairs()` の判定式そのものが凹の隅だけを正の寄与にする。凸の隅は
+`cosθ` の clip でゼロになるため、含めても無害だが計算が無駄になる。柱を候補から
+除くことで、この無駄と柱どうしの偽陽性を両方減らす）。壁どうしを直接ペアにし、
+柱ぶんの隙間は許容差 `DEFAULT_CORNER_ADJACENCY_TOL_M`（=post_size 相当＋余裕）で
+橋渡しする（柱自体を経由する2ホップより、柱を無視して壁どうしを直接結ぶほうが、
+柱の面積が壁よりずっと小さい＝支配的な壁-壁結合を過小評価しない）。
+
+判定式（`_corner_pairs()`）: 法線 ±x の面 A（位置 `x0`・y方向の範囲 `[y_lo,y_hi]`）と
+法線 ±y の面 B（位置 `y0`・x方向の範囲 `[x_lo,x_hi]`）が隅を作るのは、
+`x_lo - tol <= x0 <= x_hi + tol` かつ `y_lo - tol <= y0 <= y_hi + tol` のとき
+（＝互いの「延長線」が相手の矩形範囲内で交わる）。同じ矩形（柱・壁）に属する面どうし
+はそもそも候補から除いてあるので、`owner` が同じペアは出てこない。
+
+## 隅の寄与（教授セッションの試作。式の由来はモジュール docstring 冒頭を参照）
+
+    寄与 = (ρ/π)² × Σ_x Σ_y E(x)・[cosθ_x cosθ_y / r_xy²]・G(y)・dA_x dA_y
+
+`E(x)` は面 A 上の点 `x` での LED 放射照度（cos^m(θ_e)/r_e²・cosθ_i。`response()`/
+`response_fast()` の `_integrate_facet` の `irradiance*cos_i` と同じ量）、`G(y)` は
+面 B 上の点 `y` での PT 集光係数（`cosθ_v・cos^m(θ_r)/r_v²`）。**A・B とも積分点は
+`_facet_grid()`（LED 光軸のホットスポットに集中させた tan ワープ格子。直接光と同じ
+実装をそのまま流用）で取る**——A・B の少なくとも一方は LED の光軸から外れて grazing
+にしか当たらないが、鋭い指向性でもまだ無視できない重みが残ることを教授セッションが
+実測で確認済み（モジュール docstring 冒頭）。窓の幅は離隔ぶんの余裕（`separation_m`）
+を含むので、PT のホットスポットが LED と少しずれていてもおおむね拾える。
+
+**向きは2通りあり、両方足す**（教授セッションの実測: 片方向だけだと基準の0.64倍にしか
+ならない）。A が LED に照らされ B を PT が見る「A→B」と、その逆「B→A」を両方計算する
+（`corner_both_directions=False` で片方向だけにできる。否定対照用）。
+
+**3回目・4回目の反射も、同じ核行列 `K`（cosθ_x cosθ_y/r_xy²、A・B の点の対ごと）を
+再利用して安く足す。**2回目で「A→Bに届く放射照度」`irr_b2`（=A の送信ベクトルに `K` を
+掛けたもの）が副産物として手に入るので、これを B の新しい送信ベクトルにして `K` に
+もう一度通せば3回目（B→A）が、さらにもう一度通せば4回目（A→B）が出る（行列 `K` を
+毎回作り直さない。追加コストは行列ベクトル積1回ぶんだけ）。分布はすでに2回散っていて
+なめらかという教授セッションの見立て（モジュール docstring 冒頭）とも整合する
+（`K` そのものは変えず、送信ベクトルだけを更新する反復なので、暗に「送り手位置は
+そのつどのなめらかな分布」を使っている）。
+
+**A・B間（隅を挟んだ点どうし）の遮蔽は判定しない**（凹の隅なので原理的に自分自身
+どうしには遮られない。他の壁による遮蔽は近似的に無視——隅のごく近傍が主経路なので
+影響は小さいと考えている。既知の限界）。LED→A・LED→B・PT→A・PT→B の4方向は
+`response_fast()` 本体と同じ `_segment_occluded()`（`near_arr` 由来の全遮蔽候補直方体、
+自分自身は owner 番号で除外）で判定する。
+
+🔴 **実装時に見つかった誤り（重要）**: `E(x)`・`G(y)` を1回だけ `ρ/π` で結んだ式
+（Σ_x Σ_y E(x)K(x,y)G(y)dAxdAy に `(ρ/π)¹` だけ掛ける）を最初に実装したところ、
+行き止まりの奥の実測値（光線追跡の増分）に対して3〜4倍の過大評価になった。
+原因は「面に届く放射照度」と「その面が送り出す放射輝度」の取り違え——
+PT の集光係数 `G` は放射輝度に掛ける量なので、受け取った放射照度に**もう一段** `ρ/π`
+（その面自身の反射）を掛けて放射輝度に変換してから `G` と結ぶ必要がある
+（`(ρ/π)²` になるのはこのため。式の由来どおり）。この段になって、当初「面素の
+大きさでクランプする」としていた `r_xy²` の下限クランプも誤りの産物だったと判明した
+——過大評価をこの過大なクランプ値が偶然打ち消し、つじつまが合っているように
+見えていただけだった。式を正しく直すと、warped 格子（`_facet_grid`。直接光と同じ
+実装）は `r_xy²` に格子依存のクランプを掛けなくても素直に収束する（`n_grid` を
+上げるほど光線追跡の増分に近づくことを実測で確認済み）。`r_xy²` の下限は
+0除算を避けるためだけの極小値（`r_clamp_min`）にとどめてある。
+
+## 安い判定で「隅が効く姿勢」だけ計算する
+
+`_corner_pairs()` で見つかる幾何学的なペアは、行き止まりの奥では姿勢によらず**常に
+存在する**（隅そのものは姿勢に関係なく物理的にそこにある）。効くかどうかは
+向き（LED/PT がどれだけ隅を向いているか）に強く依存するため、幾何学的な存在だけでは
+「安い判定」にならない。そこで2段構えにする:
+
+1. **粗い格子（`corner_gate_n_grid`。既定 1 面あたり数点角）** で `_corner_pair_contribution`
+   を計算し、`contribution2+3+4` が `corner_gate_threshold` を超えたペアだけを残す
+   （2〜4回すべてを含めて判定する。既定の粗さでも安価——面あたりの点数が小さいので
+   核行列 `K` も小さい）。
+2. 残ったペアだけ、**細かい格子（`corner_n_grid`）** で本計算をやり直す。
+
+`corner_stats`（呼び出し側が渡す `dict`）に、姿勢ごとの作動状況
+（見つかったペア数・作動したペア数・粗い/細かい計算に使った時間）を記録できる
+（`verification/audit_059_fast_sensor.py` の測定で「作動した割合」を出すのに使う）。
+"""
+
+
+DEFAULT_CORNER_ADJACENCY_TOL_M: float = 0.010   # 柱1個ぶん(6mm)の隙間を橋渡しする許容差
+DEFAULT_CORNER_GATE_N_GRID: int = 6             # 作動判定（安い判定）用の格子（1面あたり6×6）
+DEFAULT_CORNER_N_GRID: int = 16                 # 本計算用の格子（1面あたり16×16。速さ優先の実測で選定）
+DEFAULT_CORNER_GATE_THRESHOLD: float = 1.0e-4   # 作動判定のしきい値（生値。led_intensity=1基準）
+
+
+def _corner_pairs(
+    centers: np.ndarray, normals: np.ndarray, half_u: np.ndarray, owner: np.ndarray,
+    near_arr: np.ndarray, tol: float, cand_mask: Optional[np.ndarray] = None,
+) -> list:
+    """`centers`/`normals`/`half_u`/`owner`（`response_fast()` の射程内・バックフェイス
+    カリング済みの候補面。`narrow_facets` の絞り込み前の集合）から、直角に交わり
+    柱1個ぶんの隙間以内で接する壁の面ペアを列挙する（モジュール docstring「隅の
+    相互反射」節参照）。戻り値は `(i, j)` のリスト（`i` は法線 ±x の面、`j` は法線 ±y
+    の面。どちらも `centers` 等と同じ通し番号）。
+
+    `cand_mask`（`centers` と同じ長さの bool 配列。省略時は絞り込みなし）を渡すと、
+    `cand_mask` が `False` の面は候補から除く（`_corner_interreflection_total()` が
+    LED光錐・PT視野のどちらにも入り得ない面をあらかじめ落とすのに使う。安い判定・
+    本計算の対象そのものを減らす、計算量削減のための絞り込み）。
+    """
+    is_post = (near_arr[:, 2] < DEFAULT_POST_HALF_EXTENT_THRESHOLD_M) & \
+              (near_arr[:, 3] < DEFAULT_POST_HALF_EXTENT_THRESHOLD_M)
+    if centers.shape[0] == 0:
+        return []
+    owner_is_post = is_post[owner]
+    x_facing = (np.abs(normals[:, 0]) > 0.5) & ~owner_is_post
+    y_facing = (np.abs(normals[:, 1]) > 0.5) & ~owner_is_post
+    if cand_mask is not None:
+        x_facing = x_facing & cand_mask
+        y_facing = y_facing & cand_mask
+    idx_x = np.nonzero(x_facing)[0]
+    idx_y = np.nonzero(y_facing)[0]
+    if idx_x.size == 0 or idx_y.size == 0:
+        return []
+
+    x0 = centers[idx_x, 0]
+    y_lo = centers[idx_x, 1] - half_u[idx_x]
+    y_hi = centers[idx_x, 1] + half_u[idx_x]
+    y0 = centers[idx_y, 1]
+    x_lo = centers[idx_y, 0] - half_u[idx_y]
+    x_hi = centers[idx_y, 0] + half_u[idx_y]
+    owner_x = owner[idx_x]
+    owner_y = owner[idx_y]
+
+    cond_x = (x_lo[None, :] - tol <= x0[:, None]) & (x0[:, None] <= x_hi[None, :] + tol)
+    cond_y = (y_lo[:, None] - tol <= y0[None, :]) & (y0[None, :] <= y_hi[:, None] + tol)
+    same_owner = owner_x[:, None] == owner_y[None, :]
+    touch = cond_x & cond_y & ~same_owner
+    ii, jj = np.nonzero(touch)
+    return [(int(idx_x[a]), int(idx_y[b])) for a, b in zip(ii, jj)]
+
+
+def _corner_face_led_irradiance(
+    points: np.ndarray, normal: np.ndarray, led: _Emitter, led_intensity: float,
+    max_range_m: float, boxes: np.ndarray, owner: int, occlusion: bool,
+) -> np.ndarray:
+    """面上の点群 `points`（shape (N,3)）での LED 放射照度 `E(x)`
+    （`cos^m(θ_e)/r_e²・cosθ_i`。`_integrate_facet` の `irradiance*cos_i` と同じ式）。"""
+    d = points - led.pos
+    r = np.maximum(np.linalg.norm(d, axis=-1), 1e-6)
+    dirv = d / r[:, None]
+    cos_e = np.clip(dirv @ led.axis, 0.0, 1.0)
+    cos_i = np.clip(np.einsum("ik,k->i", -dirv, normal), 0.0, 1.0)
+    val = led_intensity * cos_e ** led.m / (r ** 2) * cos_i
+    valid = (r < max_range_m) & (r > 1e-9)
+    if occlusion and boxes.shape[0] > 0:
+        occ = _segment_occluded(points, led.pos, boxes, owner if owner >= 0 else None)
+        valid = valid & ~occ
+    return np.where(valid, val, 0.0)
+
+
+def _corner_face_pt_collection(
+    points: np.ndarray, normal: np.ndarray, pt: _Emitter, pt_responsivity: float,
+    boxes: np.ndarray, owner: int, occlusion: bool,
+) -> np.ndarray:
+    """面上の点群 `points` での PT 集光係数 `G(y)`（`cosθ_v・cos^m(θ_r)/r_v²`）。"""
+    d = pt.pos - points
+    r = np.maximum(np.linalg.norm(d, axis=-1), 1e-6)
+    dirv = d / r[:, None]
+    cos_v = np.clip(np.einsum("ik,k->i", dirv, normal), 0.0, 1.0)
+    cos_r = np.clip(np.einsum("ik,k->i", -dirv, pt.axis), 0.0, 1.0)
+    val = cos_v * cos_r ** pt.m / (r ** 2) * pt_responsivity
+    valid = r > 1e-9
+    if occlusion and boxes.shape[0] > 0:
+        occ = _segment_occluded(points, pt.pos, boxes, owner if owner >= 0 else None)
+        valid = valid & ~occ
+    return np.where(valid, val, 0.0)
+
+
+def _corner_pair_contribution(
+    facet_a: _Facet, facet_b: _Facet, owner_a: int, owner_b: int,
+    led: _Emitter, pt: _Emitter, surf: SurfaceSpec,
+    n_grid: int, half_angle_max_deg: float, separation_m: float,
+    led_intensity: float, pt_responsivity: float, max_range_m: float,
+    boxes: np.ndarray, occlusion: bool, both_directions: bool,
+) -> float:
+    """面 A・B の隅で2〜4回目の反射を計算する（モジュール docstring「隅の相互反射」節）。
+
+    `both_directions=False` にすると「A→B」だけ（LED が A を照らし PT が B を見る経路）
+    にする（否定対照用。教授セッションの実測では基準の0.64倍にしかならなかった）。
+    """
+    pts_a, dA_a = _facet_grid(facet_a, led, n_grid, half_angle_max_deg, separation_m)
+    pts_b, dA_b = _facet_grid(facet_b, led, n_grid, half_angle_max_deg, separation_m)
+    pts_a = pts_a.reshape(-1, 3)
+    dA_a = dA_a.reshape(-1)
+    pts_b = pts_b.reshape(-1, 3)
+    dA_b = dA_b.reshape(-1)
+
+    E_a = _corner_face_led_irradiance(pts_a, facet_a.normal, led, led_intensity, max_range_m, boxes, owner_a, occlusion)
+    G_a = _corner_face_pt_collection(pts_a, facet_a.normal, pt, pt_responsivity, boxes, owner_a, occlusion)
+    vec_ga = G_a * dA_a
+
+    if both_directions:
+        E_b = _corner_face_led_irradiance(pts_b, facet_b.normal, led, led_intensity, max_range_m, boxes, owner_b, occlusion)
+    else:
+        E_b = np.zeros(pts_b.shape[0])
+    G_b = _corner_face_pt_collection(pts_b, facet_b.normal, pt, pt_responsivity, boxes, owner_b, occlusion)
+    vec_gb = G_b * dA_b
+
+    # r_xy² の下限クランプ（0除算・数値的な特異点の回避だけが目的の極小値）。
+    # 🔴 当初は「面素の大きさ」（格子が細かいほど縮む量）でクランプしていたが、
+    # これは実測で誤り（下の「見つかった実装の誤り」参照）と判明したバグと
+    # 見かけ上つじつまが合ってしまっていた（過大評価をこの過大なクランプが打ち消して
+    # いた）ため取り除いた。正しい式（下記）は warped 格子のまま r_clamp 無しで
+    # 収束することを実測で確認済み（自己検査5とは別に、光線追跡の増分との突き合わせ
+    # で確認。`verification/audit_059_fast_sensor.py` の段Bステージ参照）。
+    r_clamp_min = 1e-6
+
+    diff = pts_a[:, None, :] - pts_b[None, :, :]        # (Na, Nb, 3)  a側 - b側
+    r2 = np.maximum(np.sum(diff * diff, axis=-1), r_clamp_min ** 2)
+    r = np.sqrt(r2)
+    dir_ba = diff / r[..., None]                        # B→A 方向
+    cos_a = np.clip(np.einsum("ijk,k->ij", -dir_ba, facet_a.normal), 0.0, 1.0)   # A→B 方向で評価
+    cos_b = np.clip(np.einsum("ijk,k->ij", dir_ba, facet_b.normal), 0.0, 1.0)    # B→A 方向で評価
+    K = cos_a * cos_b / r2                               # (Na, Nb)
+
+    coef = surf.diffuse / math.pi
+
+    send_a1 = coef * E_a * dA_a      # A(直接光)が送る量＝A から出る放射輝度×面積要素
+    send_b1 = coef * E_b * dA_b      # B(直接光)が送る量（both_directions=False なら0）
+
+    # 🔴 見つかった実装の誤り（実測で発覚。行き止まりの奥の実測値との突き合わせで
+    # 3〜4倍の過大評価が出て発覚した）: `irr_bN`/`irr_aN` は「面に届く放射照度」であって
+    # 「その面が送り出す放射輝度」ではない。PT の集光係数 `G` は放射輝度に掛ける量
+    # （`_integrate_facet` の `radiance * cos_v * pt_sensitivity / r_v²` と同じ規格）なので、
+    # 収集する直前に必ずもう一段 `coef`（=ρ/π。その面自身の反射）を掛けて放射輝度に
+    # 変換してから `G` と内積を取る（`send_*` へ変換するのと同じ変換をコレクトの直前にも
+    # 適用する。3回目・4回目も同様——`irr_a3`/`irr_b3`/`irr_a4`/`irr_b4` はいずれも
+    # 「届いた放射照度」であり、コレクトの直前に `coef` を掛けるまでは放射輝度になっていない）。
+    irr_b2 = send_a1 @ K             # A→B: 2回目の反射でBに届く放射照度
+    irr_a2 = K @ send_b1             # B→A: 2回目の反射でAに届く放射照度
+    contrib2 = coef * float(irr_b2 @ vec_gb + irr_a2 @ vec_ga)
+
+    send_b2 = coef * irr_b2 * dA_b
+    send_a2 = coef * irr_a2 * dA_a
+    irr_a3 = K @ send_b2             # 3回目: B→A
+    irr_b3 = send_a2 @ K             # 3回目: A→B
+    contrib3 = coef * float(irr_a3 @ vec_ga + irr_b3 @ vec_gb)
+
+    send_a3 = coef * irr_a3 * dA_a
+    send_b3 = coef * irr_b3 * dA_b
+    irr_b4 = send_a3 @ K             # 4回目: A→B
+    irr_a4 = K @ send_b3             # 4回目: B→A
+    contrib4 = coef * float(irr_b4 @ vec_gb + irr_a4 @ vec_ga)
+
+    return contrib2 + contrib3 + contrib4
+
+
+def _corner_interreflection_total(
+    centers_sel: np.ndarray, normals_sel: np.ndarray, u_sel: np.ndarray, v_sel: np.ndarray,
+    half_u_sel: np.ndarray, half_v_sel: np.ndarray, owner_sel: np.ndarray, near_arr: np.ndarray,
+    led: _Emitter, pt: _Emitter, surf: SurfaceSpec,
+    led_intensity: float, pt_responsivity: float, max_range_m: float,
+    boxes: np.ndarray, occlusion: bool, separation_m: float, half_angle_max_deg: float,
+    corner_adjacency_tol_m: float, corner_gate_n_grid: int, corner_n_grid: int,
+    corner_gate_threshold: float, both_directions: bool,
+    led_cone_margin_deg: float, pt_cone_margin_deg: float,
+    cone_filter_n_u: int, cone_filter_n_v: int,
+    corner_stats: Optional[Dict] = None,
+) -> float:
+    """`response_fast()` の射程内・バックフェイスカリング済みの候補面すべてから隅の
+    ペアを見つけ、安い判定（粗い格子）→本計算（細かい格子）の2段で合計する
+    （モジュール docstring「隅の相互反射」節参照）。
+
+    候補を絞る前に、直接光の絞り込みと同じ光錐判定（`_facets_maybe_in_cone_batch`。
+    既定の余裕角 LED±15°・PT±25°は直接光向けの実測に基づく大きな余裕）を再利用して
+    候補面自体を間引く: 隅のペア (A,B) が寄与し得るのは「A が LED 光錐に入り得て
+    B が PT 視野に入り得る」（A→B）か「B が LED 光錐・A が PT 視野」（B→A）のどちらか
+    だけなので、LED 光錐にもPT視野にも入り得ない面はどちらの役にも立てず除外できる
+    （教授セッションの実測: 隅の近くの面でも LED 光軸から 4.4° と、既定の余裕角
+    15°の中に収まっていた。この絞り込みで安全に候補を減らせる）。
+    """
+    t0 = time.perf_counter()
+
+    if centers_sel.shape[0] > 0:
+        stacked = (centers_sel, normals_sel, u_sel, v_sel, half_u_sel, half_v_sel)
+        led_mask = _facets_maybe_in_cone_batch(
+            stacked, led.pos, led.axis, led_cone_margin_deg, cone_filter_n_u, cone_filter_n_v,
+        )
+        pt_mask = _facets_maybe_in_cone_batch(
+            stacked, pt.pos, pt.axis, pt_cone_margin_deg, cone_filter_n_u, cone_filter_n_v,
+        )
+        cand_mask = led_mask | pt_mask
+    else:
+        cand_mask = np.zeros(0, dtype=bool)
+
+    pairs = _corner_pairs(centers_sel, normals_sel, half_u_sel, owner_sel, near_arr,
+                           corner_adjacency_tol_m, cand_mask)
+    n_activated = 0
+    total = 0.0
+    t_gate = 0.0
+    t_full = 0.0
+
+    for i, j in pairs:
+        facet_a = _Facet(center=centers_sel[i], u=u_sel[i], v=v_sel[i], normal=normals_sel[i],
+                          half_u=float(half_u_sel[i]), half_v=float(half_v_sel[i]))
+        facet_b = _Facet(center=centers_sel[j], u=u_sel[j], v=v_sel[j], normal=normals_sel[j],
+                          half_u=float(half_u_sel[j]), half_v=float(half_v_sel[j]))
+        owner_a = int(owner_sel[i])
+        owner_b = int(owner_sel[j])
+
+        tg0 = time.perf_counter()
+        gate_val = _corner_pair_contribution(
+            facet_a, facet_b, owner_a, owner_b, led, pt, surf,
+            corner_gate_n_grid, half_angle_max_deg, separation_m,
+            led_intensity, pt_responsivity, max_range_m, boxes, occlusion, both_directions,
+        )
+        t_gate += time.perf_counter() - tg0
+
+        if abs(gate_val) <= corner_gate_threshold:
+            continue
+
+        n_activated += 1
+        tf0 = time.perf_counter()
+        total += _corner_pair_contribution(
+            facet_a, facet_b, owner_a, owner_b, led, pt, surf,
+            corner_n_grid, half_angle_max_deg, separation_m,
+            led_intensity, pt_responsivity, max_range_m, boxes, occlusion, both_directions,
+        )
+        t_full += time.perf_counter() - tf0
+
+    if corner_stats is not None:
+        corner_stats["n_pairs_found"] = len(pairs)
+        corner_stats["n_pairs_activated"] = n_activated
+        corner_stats["activated"] = n_activated > 0
+        corner_stats["time_gate_s"] = t_gate
+        corner_stats["time_full_s"] = t_full
+        corner_stats["time_total_s"] = time.perf_counter() - t0
+
+    return total
+
+
 def response_fast(
     sensor: IrSensorSpec,
     pose: PoseLike,
@@ -1432,6 +1788,13 @@ def response_fast(
     prune_occlusion_boxes: bool = True,
     prune_occlusion_points: bool = True,
     occlusion_point_weight_frac: float = DEFAULT_OCCLUSION_POINT_WEIGHT_FRAC,
+    interreflection: bool = True,
+    corner_adjacency_tol_m: float = DEFAULT_CORNER_ADJACENCY_TOL_M,
+    corner_gate_n_grid: int = DEFAULT_CORNER_GATE_N_GRID,
+    corner_n_grid: int = DEFAULT_CORNER_N_GRID,
+    corner_gate_threshold: float = DEFAULT_CORNER_GATE_THRESHOLD,
+    corner_both_directions: bool = True,
+    corner_stats: Optional[Dict] = None,
 ) -> float:
     """`response()` の高速版（段A: 直接光のみ・反射1回・床なし）。
 
@@ -1465,6 +1828,17 @@ def response_fast(
         occlusion_point_weight_frac: 求積点の足切りの予算（面ごとの寄与見積りの総和に対する
             比率。小さい点から順にこの割合に達するまでを落とす。既定
             `DEFAULT_OCCLUSION_POINT_WEIGHT_FRAC` = 1e-9）。
+        interreflection: `True`（既定）で隅の相互反射（段B。モジュール docstring「隅の
+            相互反射」節）を足す。`False` にすると段Aだけ（直接光のみ）になり、この
+            引数を追加する前の `response_fast()` と厳密に一致する（自己検査5）。
+        corner_adjacency_tol_m/corner_gate_n_grid/corner_n_grid/corner_gate_threshold:
+            隅の検出・安い判定・本計算の設定（既定は事前登録の設計値。否定対照で
+            意図的に崩した値を渡す）。
+        corner_both_directions: `False` にすると隅の相互反射を「A→B」の片方向だけにする
+            （否定対照用。教授セッションの実測では基準の0.64倍にしかならなかった）。
+        corner_stats: 渡すと、隅の判定の作動状況（見つかったペア数・作動したペア数・
+            粗い/細かい計算に使った時間）をこの `dict` に書き込む（測定用。既定 `None`
+            で何もしない）。
 
     Returns:
         センサが受ける光量（任意単位・`response()` と同じ規格。`gain` を含む）。
@@ -1553,21 +1927,31 @@ def response_fast(
     else:
         keep = np.arange(centers_sel.shape[0])
 
-    if keep.size == 0:
-        return 0.0
+    # 🔴 keep.size==0（絞り込みで直接光の積分対象がゼロ）でもここで打ち切らない。
+    # `interreflection=True` のとき、隅のペア探索は `narrow_facets` の絞り込み前の
+    # `centers_sel` 等（このすぐ下、直接光の絞り込みには影響されない）を使うため、
+    # 直接光がゼロでも隅の間接光だけが残る姿勢がありうる（モジュール docstring
+    # 「隅の相互反射」節）。そのため直接光パートは `keep.size>0` のときだけ実行し、
+    # 段Bは常に（`interreflection=True` なら）評価する。
+    vis_facets: list = []
+    vis_owner: list = []
+    points_list: list = []
+    dA_list: list = []
+    occluded_list: list = []
 
-    vis_facets = [
-        _Facet(center=centers_sel[i], u=u_sel[i], v=v_sel[i], normal=normals_sel[i],
-               half_u=float(half_u_sel[i]), half_v=float(half_v_sel[i]))
-        for i in keep
-    ]
-    vis_owner = [int(owner_sel[i]) for i in keep]
+    if keep.size > 0:
+        vis_facets = [
+            _Facet(center=centers_sel[i], u=u_sel[i], v=v_sel[i], normal=normals_sel[i],
+                   half_u=float(half_u_sel[i]), half_v=float(half_v_sel[i]))
+            for i in keep
+        ]
+        vis_owner = [int(owner_sel[i]) for i in keep]
 
-    grids = [_facet_grid(f, led, n_grid, half_angle_max, sensor.separation_m) for f in vis_facets]
-    points_list = [g[0] for g in grids]
-    dA_list = [g[1] for g in grids]
+        grids = [_facet_grid(f, led, n_grid, half_angle_max, sensor.separation_m) for f in vis_facets]
+        points_list = [g[0] for g in grids]
+        dA_list = [g[1] for g in grids]
 
-    if occlusion and all_boxes.shape[0] > 0:
+    if keep.size > 0 and occlusion and all_boxes.shape[0] > 0:
         all_points = np.stack(points_list, axis=0)
         owner_arr = np.array(vis_owner, dtype=int)
 
@@ -1672,6 +2056,23 @@ def response_fast(
         total += _integrate_facet(
             facet, led, pt, surf, points, dA, led_intensity, pt_responsivity,
             max_range_m, occluded,
+        )
+
+    if interreflection:
+        # 段B（隅の相互反射。モジュール docstring「隅の相互反射」節）: `narrow_facets`
+        # の絞り込み前の候補面全体（`centers_sel` 等）から隅を探す。直接光の積分対象
+        # （`vis_facets`）とは独立な処理なので、`narrow_facets`/`prune_occlusion_*` の
+        # 設定には左右されない。遮蔽候補は `all_boxes`（削減前。母集団は近傍矩形すべて）
+        # をそのまま使う（隅は作動する姿勢が少数なので、削減の手間を省いても速さへの
+        # 影響は小さい）。
+        total += _corner_interreflection_total(
+            centers_sel, normals_sel, u_sel, v_sel, half_u_sel, half_v_sel, owner_sel, near_arr,
+            led, pt, surf, led_intensity, pt_responsivity, max_range_m,
+            all_boxes, occlusion, sensor.separation_m, half_angle_max,
+            corner_adjacency_tol_m, corner_gate_n_grid, corner_n_grid,
+            corner_gate_threshold, corner_both_directions,
+            led_cone_margin_deg, pt_cone_margin_deg, cone_filter_n_u, cone_filter_n_v,
+            corner_stats,
         )
 
     return total * sensor.gain
