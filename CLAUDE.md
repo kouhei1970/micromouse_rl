@@ -16,7 +16,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 1. `docs/RESEARCH_PLAN.md` — プログラム研究計画書（ミッション、評価規約、マイルストーン、実験規律、体制）
 2. `docs/MODEL_VERIFICATION_PLAN.md` — 物理モデルの確定仕様と検証プロトコル（ロボットパラメータの正本。改訂履歴は同文書の冒頭を見ること）
-3. `research_notes/` — 研究ノート（最新の番号のノートに直近の意思決定と経緯がある）
+3. `docs/COORDINATE_SYSTEM.md` — **座標系の正本**（方位・座標軸・原点・角度の基準・機体固定座標系。2026-08-23 制定）
+4. `research_notes/` — 研究ノート（最新の番号のノートに直近の意思決定と経緯がある）
 
 ### ⚠️ 本ファイルに数値を書かないこと（2026-08-11 制定）
 
@@ -35,6 +36,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **競技プロトコル（迷路の規格・持ち時間・走行回数・計時・成績指標）** → 同 §2
 - マイルストーンと合格基準 → 同 §5
 - **センサの構成・本数・取り付け・モータ定数** → `docs/ROBOT_SPEC.md`、`docs/MODEL_VERIFICATION_PLAN.md`
+- **座標系（方位・軸・原点・角度・機体固定座標系）** → `docs/COORDINATE_SYSTEM.md`
 
 ## 体制（⚠️ 2026-08-18 単独運用へ移行）
 
