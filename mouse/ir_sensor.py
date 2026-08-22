@@ -76,7 +76,7 @@ import math
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, Optional, Sequence, Tuple, Union
+from typing import Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 
@@ -121,6 +121,7 @@ __all__ = [
     "DEFAULT_ADJACENCY_DOMINANT_MAX_D_M",
     # 高速版直接光モデル（AUDIT_059・段A: 反射1回・床なし）
     "response_fast",
+    "response_fast_batch",
     "DEFAULT_N_GRID_FAST",
     "DEFAULT_LED_CONE_MARGIN_DEG",
     "DEFAULT_PT_CONE_MARGIN_DEG",
@@ -1768,149 +1769,39 @@ def _corner_interreflection_total(
     return total
 
 
-def response_fast(
-    sensor: IrSensorSpec,
-    pose: PoseLike,
-    surfaces: Sequence[Rect],
-    surf: SurfaceSpec,
+# ============================================================================
+# response_fast() 本体（下ごしらえの後）: response_fast() と response_fast_batch() が
+# 共有する唯一の計算コード（AUDIT_059追記2・センサ複数本の一括API）
+# ============================================================================
+def _response_fast_core(
+    led: _Emitter, pt: _Emitter, half_angle_max: float, sensor: IrSensorSpec, surf: SurfaceSpec,
+    centers_sel: np.ndarray, normals_sel: np.ndarray, u_sel: np.ndarray, v_sel: np.ndarray,
+    half_u_sel: np.ndarray, half_v_sel: np.ndarray, owner_sel: np.ndarray,
+    near_arr: np.ndarray, all_boxes: np.ndarray,
     *,
-    wall_height_m: float = DEFAULT_WALL_HEIGHT_M,
-    n_grid: int = DEFAULT_N_GRID_FAST,
-    max_range_m: float = DEFAULT_MAX_RANGE_M,
-    led_intensity: float = 1.0,
-    pt_responsivity: float = 1.0,
-    occlusion: bool = True,
-    narrow_facets: bool = True,
-    led_cone_margin_deg: float = DEFAULT_LED_CONE_MARGIN_DEG,
-    pt_cone_margin_deg: float = DEFAULT_PT_CONE_MARGIN_DEG,
-    cone_filter_n_u: int = DEFAULT_CONE_FILTER_N_U,
-    cone_filter_n_v: int = DEFAULT_CONE_FILTER_N_V,
-    prune_occlusion_boxes: bool = True,
-    prune_occlusion_points: bool = True,
-    occlusion_point_weight_frac: float = DEFAULT_OCCLUSION_POINT_WEIGHT_FRAC,
-    interreflection: bool = True,
-    corner_adjacency_tol_m: float = DEFAULT_CORNER_ADJACENCY_TOL_M,
-    corner_gate_n_grid: int = DEFAULT_CORNER_GATE_N_GRID,
-    corner_n_grid: int = DEFAULT_CORNER_N_GRID,
-    corner_gate_threshold: float = DEFAULT_CORNER_GATE_THRESHOLD,
-    corner_both_directions: bool = True,
-    corner_stats: Optional[Dict] = None,
+    n_grid: int, max_range_m: float, led_intensity: float, pt_responsivity: float,
+    occlusion: bool, narrow_facets: bool,
+    led_cone_margin_deg: float, pt_cone_margin_deg: float,
+    cone_filter_n_u: int, cone_filter_n_v: int,
+    prune_occlusion_boxes: bool, prune_occlusion_points: bool, occlusion_point_weight_frac: float,
+    interreflection: bool,
+    corner_adjacency_tol_m: float, corner_gate_n_grid: int, corner_n_grid: int,
+    corner_gate_threshold: float, corner_both_directions: bool,
+    corner_stats: Optional[Dict],
 ) -> float:
-    """`response()` の高速版（段A: 直接光のみ・反射1回・床なし）。
+    """`response_fast()` の下ごしらえ（射程の足切り→側面4枚への展開→バックフェイスカリング。
+    センサ1本ぶんの `centers_sel` 等・`near_arr`・`all_boxes` を作るところ）が終わったあとの
+    本体（絞り込み→積分格子→遮蔽→積分→隅の相互反射）。
 
-    設計の骨子はモジュール docstring「高速フォワードモデル（AUDIT_059・段A: 直接光のみ）」
-    節・「速さの追加対策」節・「速さの追加対策・その2」節を参照。`response()` の面積分
-    （`_facet_grid`/`_integrate_facet`）・遮蔽の一括判定（`_segment_occluded`）はそのまま
-    使い回す。積分対象の面を LED 光錐＋PT 視野の両方に入り得るものだけへ絞り込む点、
-    射程の足切り・面の展開・バックフェイスカリングを numpy で一括処理する点、遮蔽を
-    判定する前に寄与しない求積点を落とす点が `response()` と違う（遮蔽の候補直方体
-    そのものは近似的には絞らない＝`near_rects` 全体が母集団。ただし
-    `prune_occlusion_boxes`/`prune_occlusion_points` で数学的に安全な削減はする。下記参照）。
-
-    Args:
-        sensor/pose/surfaces/surf/wall_height_m/n_grid/max_range_m/led_intensity/
-        pt_responsivity/occlusion: `response()` と同じ意味（`include_floor`・`bounces`・
-            `return_breakdown`・相互反射関連の引数は無い。床は含めず反射は 1 回だけを
-            扱うため）。`n_grid` の既定は `response()`（28）と異なり `DEFAULT_N_GRID_FAST`
-            （20）。
-        narrow_facets: `False` にすると積分対象の絞り込みを行わず、射程内の可視な面
-            すべてを積分する（自己検査用。同じ `n_grid` なら絞り込みありと一致するはず、
-            という検査に使う。既定 `True`）。
-        led_cone_margin_deg/pt_cone_margin_deg/cone_filter_n_u/cone_filter_n_v:
-            絞り込み判定のカットオフ角・標本密度（既定は事前登録の設計値。否定対照で
-            意図的に緩めた/崩した値を渡す）。
-        prune_occlusion_boxes: `False` にすると遮蔽候補直方体の AABB 削減
-            （モジュール docstring「速さの追加対策」節参照）を行わず、`near_rects` 全体を
-            遮蔽候補にする（削減前の旧挙動。自己検査2用。既定 `True`）。
-        prune_occlusion_points: `False` にすると求積点の足切り（モジュール docstring
-            「速さの追加対策・その2」節参照）を行わず、積分対象の全求積点を遮蔽判定に
-            かける（削減前の旧挙動。自己検査4用。既定 `True`）。
-        occlusion_point_weight_frac: 求積点の足切りの予算（面ごとの寄与見積りの総和に対する
-            比率。小さい点から順にこの割合に達するまでを落とす。既定
-            `DEFAULT_OCCLUSION_POINT_WEIGHT_FRAC` = 1e-9）。
-        interreflection: `True`（既定）で隅の相互反射（段B。モジュール docstring「隅の
-            相互反射」節）を足す。`False` にすると段Aだけ（直接光のみ）になり、この
-            引数を追加する前の `response_fast()` と厳密に一致する（自己検査5）。
-        corner_adjacency_tol_m/corner_gate_n_grid/corner_n_grid/corner_gate_threshold:
-            隅の検出・安い判定・本計算の設定（既定は事前登録の設計値。否定対照で
-            意図的に崩した値を渡す）。
-        corner_both_directions: `False` にすると隅の相互反射を「A→B」の片方向だけにする
-            （否定対照用。教授セッションの実測では基準の0.64倍にしかならなかった）。
-        corner_stats: 渡すと、隅の判定の作動状況（見つかったペア数・作動したペア数・
-            粗い/細かい計算に使った時間）をこの `dict` に書き込む（測定用。既定 `None`
-            で何もしない）。
-
-    Returns:
-        センサが受ける光量（任意単位・`response()` と同じ規格。`gain` を含む）。
+    `response_fast()`（1本ずつ呼ぶ）と `response_fast_batch()`（姿勢1つに対し複数本を
+    まとめて呼ぶ。AUDIT_059追記2）が共有する唯一の計算コード——下ごしらえさえ渡せば
+    どちらから呼んでも厳密に同じ結果になる。これにより「両者の戻り値が相対差1e-12以下で
+    一致すること」（自己検査6）は実装のレベルで保証される（同じ関数を呼んでいる以上、
+    渡す `centers_sel` 等が下ごしらえの時点で個別呼び出しと一致してさえいれば、結果が
+    食い違いようがない）。中身は元 `response_fast()` 本体からの単純な切り出しで、
+    ロジック・計算式は一切変えていない。
     """
-    led, pt = _sensor_world_geometry(sensor, pose)
-    half_angle_max = max(sensor.led_half_angle_deg, sensor.pt_half_angle_deg)
-
-    if len(surfaces) == 0:
-        return 0.0
-
-    # 速さの追加対策4（モジュール docstring 参照）: 射程の足切り1（response()と同じ判定）・
-    # 壁1枚→側面4枚への展開・バックフェイスカリングを、矩形ごとの Python ループではなく
-    # numpy でまとめて行う。判定の中身・使う値は `_wall_facets`/response() の元ループと
-    # 完全に同じ（`Rect` は `NamedTuple` なので `np.asarray` でそのまま (N,4) 配列にできる）。
-    rect_arr = np.asarray(surfaces, dtype=float)   # (N,4) = cx,cy,hx,hy
-    diag_all = np.hypot(rect_arr[:, 2], rect_arr[:, 3])
-    dist_center_all = np.hypot(rect_arr[:, 0] - led.pos[0], rect_arr[:, 1] - led.pos[1])
-    near_mask = (dist_center_all - diag_all) <= max_range_m
-    near_arr = rect_arr[near_mask]                  # (M,4)
     M = near_arr.shape[0]
-    if M == 0:
-        return 0.0
-
-    # 遮蔽の候補直方体（`_obstacle_boxes(near_rects, wall_height_m)` と同じ式。床は含めない）。
-    # 🔴 近似的には絞らない: near_arr 全体（response() の near_rects と同じ集合）が母集団
-    # （モジュール docstring「遮る面は絞らない」節参照）。AABB による安全な削減は
-    # 積分対象を絞り込んだあとに行う（下記）。
-    if occlusion:
-        cx, cy, hx, hy = near_arr[:, 0], near_arr[:, 1], near_arr[:, 2], near_arr[:, 3]
-        all_boxes = np.column_stack([
-            cx - hx, cx + hx, cy - hy, cy + hy,
-            np.zeros(M), np.full(M, wall_height_m),
-        ])
-    else:
-        all_boxes = np.zeros((0, 6))
-
-    cx, cy, hx, hy = near_arr[:, 0], near_arr[:, 1], near_arr[:, 2], near_arr[:, 3]
-    zc = np.full(M, wall_height_m / 2.0)
-    # 壁1枚→側面4枚への展開（`_wall_facets` と面の並び順・center/u/v/normal/half_u/half_v の
-    # 値がすべて同じ。床は含めない＝ユーザの決定。note_034 追記16）。
-    centers4 = np.stack([
-        np.stack([cx + hx, cy, zc], axis=-1),
-        np.stack([cx - hx, cy, zc], axis=-1),
-        np.stack([cx, cy + hy, zc], axis=-1),
-        np.stack([cx, cy - hy, zc], axis=-1),
-    ], axis=0)                                                    # (4,M,3)
-    normals4 = np.array([[1.0, 0.0, 0.0], [-1.0, 0.0, 0.0],
-                          [0.0, 1.0, 0.0], [0.0, -1.0, 0.0]])       # (4,3)
-    u_y = np.array([0.0, 1.0, 0.0])
-    u_x = np.array([1.0, 0.0, 0.0])
-    v_z = np.array([0.0, 0.0, 1.0])
-    u_vecs4 = np.array([u_y, u_y, u_x, u_x])                       # (4,3)
-    v_vecs4 = np.array([v_z, v_z, v_z, v_z])                       # (4,3)
-    half_u4 = np.stack([hy, hy, hx, hx], axis=0)                   # (4,M)
-    half_v4 = np.full((4, M), wall_height_m / 2.0)
-    owner4 = np.tile(np.arange(M), (4, 1))    # (4,M) 遮蔽候補直方体の番号（near_arr内の通し番号）
-
-    # バックフェイスカリング（LED から見て向こう向きの面を除く。response() と同じ判定）。
-    to_led4 = led.pos[None, None, :] - centers4                    # (4,M,3)
-    vis_mask4 = np.einsum("fmk,fk->fm", to_led4, normals4) > 0.0    # (4,M)
-
-    f_sel, m_sel = np.nonzero(vis_mask4)
-    if f_sel.size == 0:
-        return 0.0
-
-    centers_sel = centers4[f_sel, m_sel]      # (K,3)
-    normals_sel = normals4[f_sel]              # (K,3)
-    u_sel = u_vecs4[f_sel]                     # (K,3)
-    v_sel = v_vecs4[f_sel]                     # (K,3)
-    half_u_sel = half_u4[f_sel, m_sel]         # (K,)
-    half_v_sel = half_v4[f_sel, m_sel]         # (K,)
-    owner_sel = owner4[f_sel, m_sel]           # (K,)
 
     if narrow_facets:
         # 積分対象の絞り込み: LED光錐 かつ PT視野 の両方に入り得る面だけを残す
@@ -2076,6 +1967,395 @@ def response_fast(
         )
 
     return total * sensor.gain
+
+
+def response_fast(
+    sensor: IrSensorSpec,
+    pose: PoseLike,
+    surfaces: Sequence[Rect],
+    surf: SurfaceSpec,
+    *,
+    wall_height_m: float = DEFAULT_WALL_HEIGHT_M,
+    n_grid: int = DEFAULT_N_GRID_FAST,
+    max_range_m: float = DEFAULT_MAX_RANGE_M,
+    led_intensity: float = 1.0,
+    pt_responsivity: float = 1.0,
+    occlusion: bool = True,
+    narrow_facets: bool = True,
+    led_cone_margin_deg: float = DEFAULT_LED_CONE_MARGIN_DEG,
+    pt_cone_margin_deg: float = DEFAULT_PT_CONE_MARGIN_DEG,
+    cone_filter_n_u: int = DEFAULT_CONE_FILTER_N_U,
+    cone_filter_n_v: int = DEFAULT_CONE_FILTER_N_V,
+    prune_occlusion_boxes: bool = True,
+    prune_occlusion_points: bool = True,
+    occlusion_point_weight_frac: float = DEFAULT_OCCLUSION_POINT_WEIGHT_FRAC,
+    interreflection: bool = True,
+    corner_adjacency_tol_m: float = DEFAULT_CORNER_ADJACENCY_TOL_M,
+    corner_gate_n_grid: int = DEFAULT_CORNER_GATE_N_GRID,
+    corner_n_grid: int = DEFAULT_CORNER_N_GRID,
+    corner_gate_threshold: float = DEFAULT_CORNER_GATE_THRESHOLD,
+    corner_both_directions: bool = True,
+    corner_stats: Optional[Dict] = None,
+) -> float:
+    """`response()` の高速版（段A: 直接光のみ・反射1回・床なし）。
+
+    設計の骨子はモジュール docstring「高速フォワードモデル（AUDIT_059・段A: 直接光のみ）」
+    節・「速さの追加対策」節・「速さの追加対策・その2」節を参照。`response()` の面積分
+    （`_facet_grid`/`_integrate_facet`）・遮蔽の一括判定（`_segment_occluded`）はそのまま
+    使い回す。積分対象の面を LED 光錐＋PT 視野の両方に入り得るものだけへ絞り込む点、
+    射程の足切り・面の展開・バックフェイスカリングを numpy で一括処理する点、遮蔽を
+    判定する前に寄与しない求積点を落とす点が `response()` と違う（遮蔽の候補直方体
+    そのものは近似的には絞らない＝`near_rects` 全体が母集団。ただし
+    `prune_occlusion_boxes`/`prune_occlusion_points` で数学的に安全な削減はする。下記参照）。
+
+    Args:
+        sensor/pose/surfaces/surf/wall_height_m/n_grid/max_range_m/led_intensity/
+        pt_responsivity/occlusion: `response()` と同じ意味（`include_floor`・`bounces`・
+            `return_breakdown`・相互反射関連の引数は無い。床は含めず反射は 1 回だけを
+            扱うため）。`n_grid` の既定は `response()`（28）と異なり `DEFAULT_N_GRID_FAST`
+            （20）。
+        narrow_facets: `False` にすると積分対象の絞り込みを行わず、射程内の可視な面
+            すべてを積分する（自己検査用。同じ `n_grid` なら絞り込みありと一致するはず、
+            という検査に使う。既定 `True`）。
+        led_cone_margin_deg/pt_cone_margin_deg/cone_filter_n_u/cone_filter_n_v:
+            絞り込み判定のカットオフ角・標本密度（既定は事前登録の設計値。否定対照で
+            意図的に緩めた/崩した値を渡す）。
+        prune_occlusion_boxes: `False` にすると遮蔽候補直方体の AABB 削減
+            （モジュール docstring「速さの追加対策」節参照）を行わず、`near_rects` 全体を
+            遮蔽候補にする（削減前の旧挙動。自己検査2用。既定 `True`）。
+        prune_occlusion_points: `False` にすると求積点の足切り（モジュール docstring
+            「速さの追加対策・その2」節参照）を行わず、積分対象の全求積点を遮蔽判定に
+            かける（削減前の旧挙動。自己検査4用。既定 `True`）。
+        occlusion_point_weight_frac: 求積点の足切りの予算（面ごとの寄与見積りの総和に対する
+            比率。小さい点から順にこの割合に達するまでを落とす。既定
+            `DEFAULT_OCCLUSION_POINT_WEIGHT_FRAC` = 1e-9）。
+        interreflection: `True`（既定）で隅の相互反射（段B。モジュール docstring「隅の
+            相互反射」節）を足す。`False` にすると段Aだけ（直接光のみ）になり、この
+            引数を追加する前の `response_fast()` と厳密に一致する（自己検査5）。
+        corner_adjacency_tol_m/corner_gate_n_grid/corner_n_grid/corner_gate_threshold:
+            隅の検出・安い判定・本計算の設定（既定は事前登録の設計値。否定対照で
+            意図的に崩した値を渡す）。
+        corner_both_directions: `False` にすると隅の相互反射を「A→B」の片方向だけにする
+            （否定対照用。教授セッションの実測では基準の0.64倍にしかならなかった）。
+        corner_stats: 渡すと、隅の判定の作動状況（見つかったペア数・作動したペア数・
+            粗い/細かい計算に使った時間）をこの `dict` に書き込む（測定用。既定 `None`
+            で何もしない）。
+
+    Returns:
+        センサが受ける光量（任意単位・`response()` と同じ規格。`gain` を含む）。
+    """
+    led, pt = _sensor_world_geometry(sensor, pose)
+    half_angle_max = max(sensor.led_half_angle_deg, sensor.pt_half_angle_deg)
+
+    if len(surfaces) == 0:
+        return 0.0
+
+    # 速さの追加対策4（モジュール docstring 参照）: 射程の足切り1（response()と同じ判定）・
+    # 壁1枚→側面4枚への展開・バックフェイスカリングを、矩形ごとの Python ループではなく
+    # numpy でまとめて行う。判定の中身・使う値は `_wall_facets`/response() の元ループと
+    # 完全に同じ（`Rect` は `NamedTuple` なので `np.asarray` でそのまま (N,4) 配列にできる）。
+    rect_arr = np.asarray(surfaces, dtype=float)   # (N,4) = cx,cy,hx,hy
+    diag_all = np.hypot(rect_arr[:, 2], rect_arr[:, 3])
+    dist_center_all = np.hypot(rect_arr[:, 0] - led.pos[0], rect_arr[:, 1] - led.pos[1])
+    near_mask = (dist_center_all - diag_all) <= max_range_m
+    near_arr = rect_arr[near_mask]                  # (M,4)
+    M = near_arr.shape[0]
+    if M == 0:
+        return 0.0
+
+    # 遮蔽の候補直方体（`_obstacle_boxes(near_rects, wall_height_m)` と同じ式。床は含めない）。
+    # 🔴 近似的には絞らない: near_arr 全体（response() の near_rects と同じ集合）が母集団
+    # （モジュール docstring「遮る面は絞らない」節参照）。AABB による安全な削減は
+    # 積分対象を絞り込んだあとに行う（下記）。
+    if occlusion:
+        cx, cy, hx, hy = near_arr[:, 0], near_arr[:, 1], near_arr[:, 2], near_arr[:, 3]
+        all_boxes = np.column_stack([
+            cx - hx, cx + hx, cy - hy, cy + hy,
+            np.zeros(M), np.full(M, wall_height_m),
+        ])
+    else:
+        all_boxes = np.zeros((0, 6))
+
+    cx, cy, hx, hy = near_arr[:, 0], near_arr[:, 1], near_arr[:, 2], near_arr[:, 3]
+    zc = np.full(M, wall_height_m / 2.0)
+    # 壁1枚→側面4枚への展開（`_wall_facets` と面の並び順・center/u/v/normal/half_u/half_v の
+    # 値がすべて同じ。床は含めない＝ユーザの決定。note_034 追記16）。
+    centers4 = np.stack([
+        np.stack([cx + hx, cy, zc], axis=-1),
+        np.stack([cx - hx, cy, zc], axis=-1),
+        np.stack([cx, cy + hy, zc], axis=-1),
+        np.stack([cx, cy - hy, zc], axis=-1),
+    ], axis=0)                                                    # (4,M,3)
+    normals4 = np.array([[1.0, 0.0, 0.0], [-1.0, 0.0, 0.0],
+                          [0.0, 1.0, 0.0], [0.0, -1.0, 0.0]])       # (4,3)
+    u_y = np.array([0.0, 1.0, 0.0])
+    u_x = np.array([1.0, 0.0, 0.0])
+    v_z = np.array([0.0, 0.0, 1.0])
+    u_vecs4 = np.array([u_y, u_y, u_x, u_x])                       # (4,3)
+    v_vecs4 = np.array([v_z, v_z, v_z, v_z])                       # (4,3)
+    half_u4 = np.stack([hy, hy, hx, hx], axis=0)                   # (4,M)
+    half_v4 = np.full((4, M), wall_height_m / 2.0)
+    owner4 = np.tile(np.arange(M), (4, 1))    # (4,M) 遮蔽候補直方体の番号（near_arr内の通し番号）
+
+    # バックフェイスカリング（LED から見て向こう向きの面を除く。response() と同じ判定）。
+    to_led4 = led.pos[None, None, :] - centers4                    # (4,M,3)
+    vis_mask4 = np.einsum("fmk,fk->fm", to_led4, normals4) > 0.0    # (4,M)
+
+    f_sel, m_sel = np.nonzero(vis_mask4)
+    if f_sel.size == 0:
+        return 0.0
+
+    centers_sel = centers4[f_sel, m_sel]      # (K,3)
+    normals_sel = normals4[f_sel]              # (K,3)
+    u_sel = u_vecs4[f_sel]                     # (K,3)
+    v_sel = v_vecs4[f_sel]                     # (K,3)
+    half_u_sel = half_u4[f_sel, m_sel]         # (K,)
+    half_v_sel = half_v4[f_sel, m_sel]         # (K,)
+    owner_sel = owner4[f_sel, m_sel]           # (K,)
+
+    # ここから先（絞り込み→積分格子→遮蔽→積分→隅の相互反射）は `response_fast_batch()`
+    # と共有する `_response_fast_core()` に切り出した（AUDIT_059追記2）。ロジック・計算式は
+    # 変えていない（下ごしらえ＝ここまでの `centers_sel` 等・`near_arr`・`all_boxes` の
+    # 作り方だけが `response_fast()`/`response_fast_batch()` で異なる）。
+    return _response_fast_core(
+        led, pt, half_angle_max, sensor, surf,
+        centers_sel, normals_sel, u_sel, v_sel, half_u_sel, half_v_sel, owner_sel,
+        near_arr, all_boxes,
+        n_grid=n_grid, max_range_m=max_range_m, led_intensity=led_intensity, pt_responsivity=pt_responsivity,
+        occlusion=occlusion, narrow_facets=narrow_facets,
+        led_cone_margin_deg=led_cone_margin_deg, pt_cone_margin_deg=pt_cone_margin_deg,
+        cone_filter_n_u=cone_filter_n_u, cone_filter_n_v=cone_filter_n_v,
+        prune_occlusion_boxes=prune_occlusion_boxes, prune_occlusion_points=prune_occlusion_points,
+        occlusion_point_weight_frac=occlusion_point_weight_frac,
+        interreflection=interreflection,
+        corner_adjacency_tol_m=corner_adjacency_tol_m, corner_gate_n_grid=corner_gate_n_grid,
+        corner_n_grid=corner_n_grid, corner_gate_threshold=corner_gate_threshold,
+        corner_both_directions=corner_both_directions, corner_stats=corner_stats,
+    )
+
+
+# ============================================================================
+# response_fast_batch(): 姿勢1つに対しセンサ複数本をまとめて計算する（AUDIT_059追記2）
+# ============================================================================
+def response_fast_batch(
+    sensors: Sequence[IrSensorSpec],
+    pose: PoseLike,
+    surfaces: Sequence[Rect],
+    surf: SurfaceSpec,
+    *,
+    wall_height_m: float = DEFAULT_WALL_HEIGHT_M,
+    n_grid: int = DEFAULT_N_GRID_FAST,
+    max_range_m: float = DEFAULT_MAX_RANGE_M,
+    led_intensity: float = 1.0,
+    pt_responsivity: float = 1.0,
+    occlusion: bool = True,
+    narrow_facets: bool = True,
+    led_cone_margin_deg: float = DEFAULT_LED_CONE_MARGIN_DEG,
+    pt_cone_margin_deg: float = DEFAULT_PT_CONE_MARGIN_DEG,
+    cone_filter_n_u: int = DEFAULT_CONE_FILTER_N_U,
+    cone_filter_n_v: int = DEFAULT_CONE_FILTER_N_V,
+    prune_occlusion_boxes: bool = True,
+    prune_occlusion_points: bool = True,
+    occlusion_point_weight_frac: float = DEFAULT_OCCLUSION_POINT_WEIGHT_FRAC,
+    interreflection: bool = True,
+    corner_adjacency_tol_m: float = DEFAULT_CORNER_ADJACENCY_TOL_M,
+    corner_gate_n_grid: int = DEFAULT_CORNER_GATE_N_GRID,
+    corner_n_grid: int = DEFAULT_CORNER_N_GRID,
+    corner_gate_threshold: float = DEFAULT_CORNER_GATE_THRESHOLD,
+    corner_both_directions: bool = True,
+    corner_stats: Optional[Sequence[Optional[Dict]]] = None,
+) -> List[float]:
+    """`response_fast()` を姿勢 1 つに対しセンサ複数本（通常 4 本）ぶんまとめて計算する。
+
+    実運用では毎制御周期に 4 本すべてを同じ姿勢で評価する。1 本ずつ `response_fast()` を
+    呼ぶと、姿勢に依存してセンサ間で共有できる計算を 4 回繰り返すことになる。本関数は
+    そのうち安全に共有できる部分だけを 1 回にまとめ、残り（センサごとに向き・位置が違う
+    ために共有できない部分）はセンサごとに計算する。
+
+    🔴 戻り値は `[response_fast(s, pose, surfaces, surf, ...) for s in sensors]` と
+    **厳密に同じ**（相対差 1e-12 以下。764 姿勢での自己検査6で確認済み）。これは
+    近似ではなく、実装上の理由で保証されている: センサごとの「下ごしらえ」
+    （このあとに書く `centers_sel` 等・`near_arr_s`・`all_boxes_s` を作るところ）さえ
+    `response_fast()` 単体呼び出しと同じ中身になるように作れば、そのあとの本体
+    （絞り込み→積分格子→遮蔽→積分→隅の相互反射）は `response_fast()` と**まったく同じ
+    関数** `_response_fast_core()` を呼ぶので、結果が食い違いようがない。
+
+    ## 何を共有し、何を共有しないか
+
+    共有する（1 回にまとめる。すべて姿勢と `surfaces` だけで決まり、センサの位置・向きに
+    依存しない計算）:
+
+    - `surfaces`（`Rect` の Python リスト）を `np.asarray(..., dtype=float)` で数値配列に
+      変換する処理。実測でセンサ1本ぶんの「下ごしらえ」時間の大半（0.181msのうち0.131ms）
+      を占める最大の重複コスト（`Rect` は `NamedTuple` のリストなので、numpy 側は要素ごとに
+      Python レベルで変換する必要があり、リストの長さ（迷路全体の壁数。本迷路で558枚）に
+      比例して遅い。姿勢や個々のセンサには依存しないので、1 回で済む）。
+    - **射程の足切りの和集合**: 各センサの LED 位置は機体原点から数 cm しか離れていない
+      （`mouse/params.py` の既定センサでは最大でも 5cm 程度）。センサごとの厳密な射程判定
+      （個別呼び出しと同じ判定式）を **先に全センサぶん計算してから OR を取る**ことで、
+      「どのセンサにとっても近傍になり得る壁」の和集合を得る（マージンを見積もる近似ではなく、
+      実際に4本ぶんの判定を計算した上での正確な和集合）。
+    - 壁の矩形 → 側面 4 枚への展開・遮蔽候補直方体の配列作り（`_obstacle_boxes` 相当）:
+      和集合の矩形に対して 1 回だけ行う（幾何がセンサに依存しないため）。
+
+    共有しない（センサごとに計算する。LED/PT の位置・光軸に依存するため）:
+
+    - 各センサ自身の射程の足切り（和集合から、そのセンサ本来の対象だけを選び直す。
+      下記「和集合からセンサ本来の集合を復元する」参照）・バックフェイスカリング
+    - 光錐の絞り込み・積分格子・遮蔽候補直方体の AABB 削減・求積点の足切り・遮蔽判定・
+      面積分・隅の相互反射（すべて LED/PT の位置・光軸に依存する。実測でこれらの合計
+      （絞り込み0.211ms＋格子構築0.267ms＋AABB削減0.059ms＋求積点の足切り0.236ms＋
+      遮蔽判定0.771ms＋積分0.399ms＝1.943ms／隅の項0.967ms）が1本あたりの時間の大半を
+      占めており、共有可能な部分ではない）
+
+    ## 和集合からセンサ本来の集合を復元する（相対差 1e-12 以下を保証する要）
+
+    和集合 `near_arr_u`（`Mu` 行）は「どのセンサにとっても近傍になり得る壁」の上位集合
+    （各センサ自身の近傍集合を必ず含む）。センサ `s` の本来の近傍集合は、`near_arr_u` の
+    各行に対して**そのセンサ自身の LED 位置**で射程判定をやり直すことで厳密に復元できる
+    （`tight_u = tight_masks[s][union_mask]`）。これは近似ではない: `near_arr_u[tight_u]`
+    は `rect_arr[wide_mask][tight_masks[s][wide_mask]]` であり、`wide_mask`（和集合）は
+    `tight_masks[s]`（センサ `s` 単体の判定）を包含するので、これは
+    `rect_arr[tight_masks[s]]`（`response_fast()` を単体で呼んだときの `near_arr` そのもの）
+    と完全に一致する（ブールインデックスは元の並び順を保つため、要素・順序とも一致する）。
+
+    側面展開後の面配列 `centers4_u` 等も同様に、`tight_u` とバックフェイスカリングの積
+    （`keep_mask4 = vis_mask4 & tight_u`）で選び出せば、`response_fast()` が
+    センサ本来の（小さい）近傍集合から作る `centers_sel` 等と、値・並び順とも厳密に一致する
+    （面ごとの owner 番号だけは和集合内の通し番号になっているので、`_obstacle_boxes` の
+    自己遮蔽除外が前提とする「近傍集合内の通し番号」へ `remap` で張り替える。既存コードの
+    `prune_occlusion_boxes` が使う張り替えとまったく同じ仕組み）。
+
+    Args:
+        sensors: `IrSensorSpec` の列（通常 4 本）。`pose` は共通の機体姿勢 1 つ。
+        他の引数はすべて `response_fast()` と同じ意味（全センサに共通の設定として使う。
+        センサごとに異なる `n_grid` 等を使いたい場合は本関数ではなく `response_fast()` を
+        個別に呼ぶこと）。
+        corner_stats: 渡す場合は `sensors` と同じ長さの列（各要素は `dict` か `None`）。
+            `corner_stats[i]` に `sensors[i]` の隅の判定の作動状況を書き込む。
+
+    Returns:
+        `sensors` と同じ順序の `list[float]`。各要素は `response_fast()` を個別に呼んだ
+        場合と厳密に一致する（既定の挙動・戻り値の規格は `response_fast()` と同じ）。
+    """
+    n = len(sensors)
+    if n == 0:
+        return []
+    if len(surfaces) == 0:
+        return [0.0] * n
+
+    # 共有その1: `surfaces` の numpy 変換（最大の重複コスト。上のdocstring参照）。
+    rect_arr = np.asarray(surfaces, dtype=float)   # (N,4) = cx,cy,hx,hy
+    diag_all = np.hypot(rect_arr[:, 2], rect_arr[:, 3])
+
+    # センサごとの LED/PT ワールド座標・射程の足切り（センサ本来の厳密な判定式そのもの。
+    # `response_fast()` の `near_mask` と完全に同じ式。ここでは「和集合」を作るために
+    # 先に全センサぶん計算するだけで、判定そのものを緩めてはいない）。
+    led_pt_list = [_sensor_world_geometry(s, pose) for s in sensors]
+    tight_masks = []
+    for led, pt in led_pt_list:
+        dist_center_all = np.hypot(rect_arr[:, 0] - led.pos[0], rect_arr[:, 1] - led.pos[1])
+        tight_masks.append((dist_center_all - diag_all) <= max_range_m)
+
+    union_mask = np.zeros(rect_arr.shape[0], dtype=bool)
+    for tm in tight_masks:
+        union_mask |= tm
+
+    if not np.any(union_mask):
+        return [0.0] * n
+
+    # 共有その2: 和集合の矩形 → 側面4枚への展開・遮蔽候補直方体の配列作り
+    # （`response_fast()` 内の同じ処理と完全に同じ式。対象が和集合である点だけが違う）。
+    near_arr_u = rect_arr[union_mask]           # (Mu,4)
+    Mu = near_arr_u.shape[0]
+    cx, cy, hx, hy = near_arr_u[:, 0], near_arr_u[:, 1], near_arr_u[:, 2], near_arr_u[:, 3]
+
+    if occlusion:
+        all_boxes_u = np.column_stack([
+            cx - hx, cx + hx, cy - hy, cy + hy,
+            np.zeros(Mu), np.full(Mu, wall_height_m),
+        ])
+    else:
+        all_boxes_u = np.zeros((0, 6))
+
+    zc = np.full(Mu, wall_height_m / 2.0)
+    centers4_u = np.stack([
+        np.stack([cx + hx, cy, zc], axis=-1),
+        np.stack([cx - hx, cy, zc], axis=-1),
+        np.stack([cx, cy + hy, zc], axis=-1),
+        np.stack([cx, cy - hy, zc], axis=-1),
+    ], axis=0)                                                    # (4,Mu,3)
+    normals4 = np.array([[1.0, 0.0, 0.0], [-1.0, 0.0, 0.0],
+                          [0.0, 1.0, 0.0], [0.0, -1.0, 0.0]])       # (4,3)
+    u_y = np.array([0.0, 1.0, 0.0])
+    u_x = np.array([1.0, 0.0, 0.0])
+    v_z = np.array([0.0, 0.0, 1.0])
+    u_vecs4 = np.array([u_y, u_y, u_x, u_x])                       # (4,3)
+    v_vecs4 = np.array([v_z, v_z, v_z, v_z])                       # (4,3)
+    half_u4_u = np.stack([hy, hy, hx, hx], axis=0)                 # (4,Mu)
+    half_v4_u = np.full((4, Mu), wall_height_m / 2.0)
+    owner4_u = np.tile(np.arange(Mu), (4, 1))    # (4,Mu) 和集合内の通し番号（センサごとに張り替える）
+
+    results: List[float] = []
+    for i, sensor in enumerate(sensors):
+        led, pt = led_pt_list[i]
+        half_angle_max = max(sensor.led_half_angle_deg, sensor.pt_half_angle_deg)
+
+        # このセンサ本来の近傍集合を和集合から復元する（docstring「和集合からセンサ本来の
+        # 集合を復元する」参照。近似ではなく厳密に一致する）。
+        tight_u = tight_masks[i][union_mask]        # (Mu,) bool
+        if not np.any(tight_u):
+            results.append(0.0)
+            continue
+
+        near_arr_s = near_arr_u[tight_u]             # `response_fast()` 単体呼び出しの near_arr と厳密一致
+        all_boxes_s = all_boxes_u[tight_u] if occlusion else np.zeros((0, 6))
+
+        # バックフェイスカリング（`response_fast()` と同じ判定式）＋このセンサ本来の
+        # 近傍集合への制限を同時に適用する。
+        to_led4 = led.pos[None, None, :] - centers4_u                  # (4,Mu,3)
+        vis_mask4 = np.einsum("fmk,fk->fm", to_led4, normals4) > 0.0    # (4,Mu)
+        keep_mask4 = vis_mask4 & tight_u[None, :]
+        f_sel, m_sel = np.nonzero(keep_mask4)
+        if f_sel.size == 0:
+            results.append(0.0)
+            continue
+
+        # owner 番号の張り替え: 和集合内の通し番号（0..Mu-1）→ `near_arr_s` 内の通し番号
+        # （0..Ms-1）。`_obstacle_boxes`/`_segment_occluded` の自己遮蔽除外は「near_arr の
+        # 通し番号」を前提にしているため必須（`response_fast()` 内の `prune_occlusion_boxes`
+        # が使う張り替えと同じ仕組み）。
+        idx_tight = np.nonzero(tight_u)[0]
+        remap = -np.ones(Mu, dtype=int)
+        remap[idx_tight] = np.arange(idx_tight.size)
+
+        centers_sel = centers4_u[f_sel, m_sel]
+        normals_sel = normals4[f_sel]
+        u_sel = u_vecs4[f_sel]
+        v_sel = v_vecs4[f_sel]
+        half_u_sel = half_u4_u[f_sel, m_sel]
+        half_v_sel = half_v4_u[f_sel, m_sel]
+        owner_sel = remap[owner4_u[f_sel, m_sel]]
+
+        cs = corner_stats[i] if corner_stats is not None else None
+        v = _response_fast_core(
+            led, pt, half_angle_max, sensor, surf,
+            centers_sel, normals_sel, u_sel, v_sel, half_u_sel, half_v_sel, owner_sel,
+            near_arr_s, all_boxes_s,
+            n_grid=n_grid, max_range_m=max_range_m, led_intensity=led_intensity, pt_responsivity=pt_responsivity,
+            occlusion=occlusion, narrow_facets=narrow_facets,
+            led_cone_margin_deg=led_cone_margin_deg, pt_cone_margin_deg=pt_cone_margin_deg,
+            cone_filter_n_u=cone_filter_n_u, cone_filter_n_v=cone_filter_n_v,
+            prune_occlusion_boxes=prune_occlusion_boxes, prune_occlusion_points=prune_occlusion_points,
+            occlusion_point_weight_frac=occlusion_point_weight_frac,
+            interreflection=interreflection,
+            corner_adjacency_tol_m=corner_adjacency_tol_m, corner_gate_n_grid=corner_gate_n_grid,
+            corner_n_grid=corner_n_grid, corner_gate_threshold=corner_gate_threshold,
+            corner_both_directions=corner_both_directions, corner_stats=cs,
+        )
+        results.append(v)
+
+    return results
 
 
 # ============================================================================
