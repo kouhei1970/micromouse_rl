@@ -416,7 +416,7 @@ def chapter3():
         if fi in (0, race_frames - 1):
             _save_repr_png(frame, f"ch3_race{fi:04d}")
 
-    cap_outro = ["表引きだけが最短走行を走り切り、従来のモデルは最初の区画から出ない",
+    cap_outro = ["表引きだけが最短走行を走り切り、従来のモデルは3区画目（290mm）までしか進めない",
                  "実時間14秒でどこまで進んだか＝計算の速さの差そのもの"]
     frame = _render_lanes_frame(rd, CH3_REAL_MOVE_S, cap_outro)
     for _ in range(outro_frames):
