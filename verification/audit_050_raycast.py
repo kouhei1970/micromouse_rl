@@ -392,7 +392,11 @@ def _raycast_core(
     floor_halfextent_m: float,
     diffuse: float,
     floor_center: Tuple[float, float],
+    floor_diffuse: Optional[float] = None,
 ) -> float:
+    # 床だけ別の拡散反射率を持たせる（None なら壁と同じ＝従来と厳密に同じ挙動）。
+    # 実際の競技迷路の床は艶消し黒のベニヤで、白い壁とは反射率が桁で違う（ユーザ指摘 2026-08-22）。
+    rho_floor = diffuse if floor_diffuse is None else float(floor_diffuse)
     rng = np.random.default_rng(seed)
 
     led_pos = np.asarray(led_pos, dtype=float)
@@ -445,9 +449,11 @@ def _raycast_core(
         occluded = _segment_occluded(nudged, np.tile(pt_pos, (n, 1)), mins, maxs, hit_valid)
 
         nee_ok = hit_valid & range_ok & (cos_v > 0.0) & (cos_r > 0.0) & (~occluded)
+        # 当たった面の反射率（hit_kind: 1=壁側面, 2=床）
+        rho_hit = np.where(hit_kind == 2, rho_floor, diffuse)
         g = np.where(
             nee_ok,
-            diffuse / np.pi * cos_v * np.power(cos_r, m_pt) / (r_v_safe ** 2),
+            rho_hit / np.pi * cos_v * np.power(cos_r, m_pt) / (r_v_safe ** 2),
             0.0,
         )
         total += float(np.sum(power * g))
@@ -461,7 +467,7 @@ def _raycast_core(
             new_dir = _sample_cosine_hemisphere(rng, safe_normal, n)
             o = np.where(cont[:, None], nudged, o)
             d = np.where(cont[:, None], new_dir, d)
-            power = np.where(cont, power * diffuse, power)
+            power = np.where(cont, power * rho_hit, power)
             alive = cont
 
     return total / n
@@ -485,6 +491,7 @@ def raycast_response(
     wall_height_m: float = 0.05,
     floor_halfextent_m: float = 0.20,
     diffuse: float = 0.8,
+    floor_diffuse: Optional[float] = None,
     separation_m: float = 0.0065,
 ) -> float:
     """センサ 1 本の応答を、`n_rays` 本の光線でモンテカルロ推定する。
@@ -533,5 +540,6 @@ def raycast_response(
         wall_height_m=wall_height_m,
         floor_halfextent_m=floor_halfextent_m,
         diffuse=diffuse,
+        floor_diffuse=floor_diffuse,
         floor_center=floor_center,
     )
