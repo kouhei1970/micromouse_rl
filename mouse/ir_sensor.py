@@ -138,6 +138,8 @@ __all__ = [
     "response_table",
     "DEFAULT_TABLE_MARCH_N",
     "DEFAULT_TABLE_NEIGHBORHOOD",
+    # 隅の安い判定の前に置く幾何だけの足切り（AUDIT_060 追記2。response_table() 専用）
+    "DEFAULT_CORNER_PREFILTER_METRIC_MAX_MM_DEG",
 ]
 
 
@@ -1526,6 +1528,74 @@ DEFAULT_CORNER_GATE_N_GRID: int = 6             # 作動判定（安い判定）
 DEFAULT_CORNER_N_GRID: int = 16                 # 本計算用の格子（1面あたり16×16。速さ優先の実測で選定）
 DEFAULT_CORNER_GATE_THRESHOLD: float = 1.0e-4   # 作動判定のしきい値（生値。led_intensity=1基準）
 
+# 隅の「安い判定」（粗い格子 corner_gate_n_grid）より手前に置く、幾何だけで済む足切り
+# （AUDIT_060 追記2「隅の安い判定の前に、もっと安い判定を置く」節。response_table() 専用。
+# response_fast() の挙動は変えない——呼び出し側で corner_prefilter=True を明示したときだけ効く）。
+#
+# 🔴 教授セッションの実測（「側方センサから隅までの距離が80mmより遠いと寄与は満量比0.002未満」）を
+# そのまま「距離だけ」の足切りに使うと**危険**だと実装中に判明した: 無作為姿勢の中に、
+# 隅がLED/PT光軸にほぼ正対したまま射程ぎりぎり（距離223mm・光軸からのずれ2.8〜3.9°）まで
+# 効くケースが実在する（自己検査6相当の突き合わせで発見。寄与は満量比0.007＝分割点0.01の
+# 7割に達し、単純な距離80mmは疎か160mmで切っても誤って落ちる）。**距離は「向きが良ければ
+# 遠くまで効く」ため、距離単体のしきい値では安全域を作れない。**
+#
+# そこで「距離 × 隅への角度（LED光軸・PT光軸のうち隅に近い方）」の積を使う。cos^m(θ)/r²という
+# 実際の物理量そのものではないが、764姿勢・683件の隅ペア全数を安い判定(6×6格子)に通して
+# 実測したところ、**活性化した214件はこの積が3777[mm・deg]を超えない**という明確な境界が
+# 見つかった（非活性化側は上限なく広がる＝積が大きいほど安全に落とせる）。実測値の
+# 約1.6倍の安全側の余裕を取った値（6000）を既定にした。この値で自己検査6
+# （764姿勢すべてで満量比の差 <= 1e-6。実測: 差は厳密に0＝落としたペアはもともと
+# 安い判定の閾値未満で最終値に寄与していなかった）を確認済み。プレフィルタが作動した
+# 割合の実測は本作業の報告を参照。
+DEFAULT_CORNER_PREFILTER_METRIC_MAX_MM_DEG: float = 6000.0
+
+
+def _corner_geometric_prefilter(
+    pairs: list, centers_sel: np.ndarray, led: "_Emitter", pt: "_Emitter",
+    metric_max_mm_deg: float,
+) -> Tuple[list, int]:
+    """`_corner_pairs()` が見つけた隅ペアのうち、**幾何（距離・向き）だけ**で明らかに
+    寄与が無視できるものを、既存の安い判定（粗い格子 `corner_gate_n_grid` での
+    `_corner_pair_contribution`）にすら回さず落とす（AUDIT_060 追記2「隅の安い判定の
+    前に、もっと安い判定を置く」節）。
+
+    隅の位置は `_corner_pairs()` と同じ幾何で厳密に求まる: 面A（法線±x、`centers_sel[i]`）の
+    中心x座標・面B（法線±y、`centers_sel[j]`）の中心y座標・共通のz（壁側面はすべて
+    `wall_height_m/2` なので `centers_sel[i,2]` をそのまま使える）。
+
+    判定量は「LED・PT の中点から隅までの距離[mm]」×「隅への角度（LED光軸・PT光軸のうち
+    隅に近い方）[deg]」の積（本関数モジュールレベルの定数コメント参照。距離だけでは
+    向きが良い遠距離ケースを誤って落とすため、向きとの積にしてある）。この積が
+    `metric_max_mm_deg` を超えたペアだけを落とす（角度がゼロ＝完全に正対のときは積も
+    ゼロになるので、その場合は距離によらず必ず残す＝保守側）。
+
+    戻り値: `(残ったペアのリスト, 落とした件数)`。
+    """
+    if not pairs:
+        return pairs, 0
+    idx_i = np.array([p[0] for p in pairs], dtype=int)
+    idx_j = np.array([p[1] for p in pairs], dtype=int)
+    corner = np.stack(
+        [centers_sel[idx_i, 0], centers_sel[idx_j, 1], centers_sel[idx_i, 2]], axis=1,
+    )   # (P,3)
+
+    mid = 0.5 * (led.pos + pt.pos)
+    dist_mm = np.linalg.norm(corner - mid[None, :], axis=1) * 1000.0
+
+    def _angle_deg(apex: np.ndarray, axis: np.ndarray) -> np.ndarray:
+        d = corner - apex[None, :]
+        r = np.maximum(np.linalg.norm(d, axis=1), 1e-9)
+        cos_ang = np.clip((d @ axis) / r, -1.0, 1.0)
+        return np.degrees(np.arccos(cos_ang))
+
+    ang_min_deg = np.minimum(_angle_deg(led.pos, led.axis), _angle_deg(pt.pos, pt.axis))
+    metric = dist_mm * ang_min_deg
+    keep_mask = metric <= metric_max_mm_deg
+
+    n_dropped = int(np.sum(~keep_mask))
+    kept_pairs = [p for p, k in zip(pairs, keep_mask) if k]
+    return kept_pairs, n_dropped
+
 
 def _corner_pairs(
     centers: np.ndarray, normals: np.ndarray, half_u: np.ndarray, owner: np.ndarray,
@@ -1701,6 +1771,9 @@ def _corner_interreflection_total(
     led_cone_margin_deg: float, pt_cone_margin_deg: float,
     cone_filter_n_u: int, cone_filter_n_v: int,
     corner_stats: Optional[Dict] = None,
+    corner_prefilter: bool = False,
+    corner_prefilter_metric_max_mm_deg: float = DEFAULT_CORNER_PREFILTER_METRIC_MAX_MM_DEG,
+    precomputed_cone_masks: Optional[Tuple[np.ndarray, np.ndarray]] = None,
 ) -> float:
     """`response_fast()` の射程内・バックフェイスカリング済みの候補面すべてから隅の
     ペアを見つけ、安い判定（粗い格子）→本計算（細かい格子）の2段で合計する
@@ -1713,10 +1786,27 @@ def _corner_interreflection_total(
     だけなので、LED 光錐にもPT視野にも入り得ない面はどちらの役にも立てず除外できる
     （教授セッションの実測: 隅の近くの面でも LED 光軸から 4.4° と、既定の余裕角
     15°の中に収まっていた。この絞り込みで安全に候補を減らせる）。
+
+    `corner_prefilter=True`（既定 `False`。`response_fast()` の挙動は一切変えない）にすると、
+    上記の光錐判定で見つかったペアに対し、さらに`_corner_geometric_prefilter()`で
+    「隅までの距離×隅への角度」だけの幾何判定を行い、安い判定（粗い格子
+    `corner_gate_n_grid`）にすら回さず落とす（AUDIT_060 追記2「隅の安い判定の前に、
+    もっと安い判定を置く」節。`response_table()` だけがこの経路を使う）。
+
+    `precomputed_cone_masks`（既定 `None`。`response_fast()` は渡さないので挙動は一切
+    変わらない）に `(led_mask, pt_mask)` を渡すと、下記の光錐判定を再計算せず使い回す。
+    `response_table()` は直接光の絞り込み（`narrow_facets`）のために**同じ `centers_sel`・
+    同じ余裕角**で既にこの2つを計算済みなので、ここで再計算するのは完全な二度手間
+    （実測: `_facets_maybe_in_cone_batch` が全時間の3割近くを占め、その半分がこの
+    重複計算だった。速さの改善・本作業の報告参照）。渡された場合は形が一致している
+    という前提で（`response_table()` 側で保証）そのまま使う。
     """
     t0 = time.perf_counter()
 
-    if centers_sel.shape[0] > 0:
+    if precomputed_cone_masks is not None:
+        led_mask, pt_mask = precomputed_cone_masks
+        cand_mask = led_mask | pt_mask
+    elif centers_sel.shape[0] > 0:
         stacked = (centers_sel, normals_sel, u_sel, v_sel, half_u_sel, half_v_sel)
         led_mask = _facets_maybe_in_cone_batch(
             stacked, led.pos, led.axis, led_cone_margin_deg, cone_filter_n_u, cone_filter_n_v,
@@ -1730,6 +1820,12 @@ def _corner_interreflection_total(
 
     pairs = _corner_pairs(centers_sel, normals_sel, half_u_sel, owner_sel, near_arr,
                            corner_adjacency_tol_m, cand_mask)
+    n_pairs_found = len(pairs)
+    n_prefilter_dropped = 0
+    if corner_prefilter and pairs:
+        pairs, n_prefilter_dropped = _corner_geometric_prefilter(
+            pairs, centers_sel, led, pt, corner_prefilter_metric_max_mm_deg,
+        )
     n_activated = 0
     total = 0.0
     t_gate = 0.0
@@ -1764,7 +1860,9 @@ def _corner_interreflection_total(
         t_full += time.perf_counter() - tf0
 
     if corner_stats is not None:
-        corner_stats["n_pairs_found"] = len(pairs)
+        corner_stats["n_pairs_found"] = n_pairs_found
+        corner_stats["n_pairs_prefilter_dropped"] = n_prefilter_dropped
+        corner_stats["n_pairs_after_prefilter"] = len(pairs)
         corner_stats["n_pairs_activated"] = n_activated
         corner_stats["activated"] = n_activated > 0
         corner_stats["time_gate_s"] = t_gate
@@ -2432,7 +2530,9 @@ PTと共通）を、その面での `(d, θ)` とあわせて表座標に変換�
 （`response_fast()` の `near_arr`/`all_boxes` に相当する、ローカルな母集団）。
 """
 
-DEFAULT_TABLE_MARCH_N: int = 7           # 光軸に沿って辿る点数（事前登録の目安「7点ほど」）
+DEFAULT_TABLE_MARCH_N: int = 5           # 光軸に沿って辿る点数（事前登録の目安「7点ほど」から
+# 実測で調整。7→5でも自己検査4（取りこぼし0件）は変わらず、候補矩形数（中央値44）・
+# candidate_ids自体の時間（0.068ms→0.055ms）が減る。詳細は本作業（速さの改善）の報告参照）
 DEFAULT_TABLE_NEIGHBORHOOD: int = 1      # 各点の周囲に集める区画の半幅（1 = 3×3）
 _TABLE_SHADOW_EPS_M: float = 1e-9        # 見える範囲の端を判定する数値誤差の許容（m）
 _TABLE_DENOM_EPS: float = 1e-12          # 投影の分母がほぼ0（光線が面とほぼ平行）を弾く許容
@@ -2514,6 +2614,8 @@ def response_table(
     corner_gate_threshold: float = DEFAULT_CORNER_GATE_THRESHOLD,
     corner_both_directions: bool = True,
     corner_occlusion: bool = True,
+    corner_prefilter: bool = True,
+    corner_prefilter_metric_max_mm_deg: float = DEFAULT_CORNER_PREFILTER_METRIC_MAX_MM_DEG,
     corner_stats: Optional[Dict] = None,
     return_candidate_ids: bool = False,
     time_breakdown: Optional[Dict] = None,
@@ -2524,7 +2626,11 @@ def response_table(
     （`u_start`・`u_end`）引いて差を取る。遮蔽も `_segment_occluded` のような点ごとの
     判定はせず、「見える範囲」を解析的に求めてから表引きする（モジュール docstring
     「response_table(): AUDIT_060・第2/3段階」を参照）。隅の相互反射は `response_fast()`
-    と同じ `_corner_interreflection_total()` をそのまま呼ぶ（実装は変更しない）。
+    と同じ `_corner_interreflection_total()` をそのまま呼ぶ（本体の計算式は変更しない。
+    `corner_prefilter=True`（既定）のときだけ、幾何だけの足切り
+    `_corner_geometric_prefilter()` を安い判定より手前に追加で挟む
+    — AUDIT_060 追記2「隅の安い判定の前に、もっと安い判定を置く」節。
+    `response_fast()` は `corner_prefilter=False` のまま呼ぶので挙動は変わらない）。
 
     Args:
         sensor/pose/surfaces/surf: `response()`/`response_fast()` と同じ。**`sensor` は
@@ -2539,6 +2645,11 @@ def response_table(
             なった面はすべて全長 `[face_lo,face_hi]` を使う（事前登録§5否定対照2用）。
         corner_occlusion: 隅の相互反射（LED→面・PT→面）の遮蔽判定を行うか
             （`response_fast()` の `occlusion` に相当。既定 `True`）。
+        corner_prefilter/corner_prefilter_metric_max_mm_deg:
+            隅の安い判定（粗い格子）より手前に置く幾何だけの足切り（既定 `True`。
+            AUDIT_060 追記2）。「隅までの距離[mm] × 隅への角度[deg]」の積がこの値を
+            超えたペアだけを落とす（`_corner_geometric_prefilter()` 参照）。
+            自己検査6用に `False` で無効化できる。
         return_candidate_ids: `True` のとき、値の代わりに区画索引で集めた候補矩形の
             通し番号集合（`set[int]`）を返す（自己検査4用。幾何計算・表引きは行わない）。
         time_breakdown: 渡すと `{"geometry":…, "lookup":…, "corner":…}`（秒）を書き込む
@@ -2621,8 +2732,10 @@ def response_table(
             stacked, pt.pos, pt.axis, pt_cone_margin_deg, cone_filter_n_u, cone_filter_n_v,
         )
         keep_idx = np.nonzero(led_mask & pt_mask)[0]
+        cone_masks_for_corner = (led_mask, pt_mask)
     else:
         keep_idx = np.zeros(0, dtype=int)
+        cone_masks_for_corner = None
 
     t_geom1 = time.perf_counter()
     direct_total = 0.0
@@ -2766,7 +2879,8 @@ def response_table(
             corner_adjacency_tol_m, corner_gate_n_grid, corner_n_grid,
             corner_gate_threshold, corner_both_directions,
             led_cone_margin_deg, pt_cone_margin_deg, cone_filter_n_u, cone_filter_n_v,
-            corner_stats,
+            corner_stats, corner_prefilter, corner_prefilter_metric_max_mm_deg,
+            cone_masks_for_corner,
         )
     t_corner1 = time.perf_counter()
 
