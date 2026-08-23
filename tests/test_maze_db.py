@@ -16,6 +16,10 @@
        - walls(rec, unknown=...) の3通りの振る舞い
        - disputes が相互に指していること
        - 指紋が一致する組を機械的に洗い出せること（既知の3組を含む）
+    9. 井谷氏Wiki由来（2004・2006年、note_035 続報）固有の検査 -- test_itani_2004_* 以下
+       - 最短経路の区画数・ターン数が、出典が独立な優勝記録の「〇区〇折」と一致すること
+       - 2004年の元画像2枚（cose1.gif/cose2.gif、版管理外）が読み取れる場合だけ、
+         両者の壁配置が完全一致することを検査する（無ければスキップ）
 
     .venv/bin/python -m pytest tests/test_maze_db.py -v
 """
@@ -59,8 +63,9 @@ _CONTEST_NPZ_NAMES = _MANIFEST["mazes"]
 # 0. 前提（データベースが空でないこと）
 # ============================================================================
 def test_database_is_not_empty():
-    # 102 面（NTF・段2）＋ 53 面（kerikun11・段3）＝ 155 面。
-    assert len(_DB) == 155, "contest/ の 155 面（NTF102 + kerikun11 53）が読み込めていない"
+    # 102 面（NTF・段2）＋ 53 面（kerikun11・段3）＋ 2 面（2004・2006年 井谷氏Wiki日記の
+    # 写真/シミュレータ画面からの読み取り、note_035 続報）＝ 157 面。
+    assert len(_DB) == 157, "contest/ の 157 面（NTF102 + kerikun11 53 + 井谷氏Wiki 2）が読み込めていない"
     assert len(ALL_MAZE_FILES) == len(_DB)
 
 
@@ -400,7 +405,9 @@ def test_query_filters_by_kind_stage_confidence():
     # 実測値。NTF 側 22（決勝20＋フレッシュマン決勝2）のうち 2012年面の指紋が
     # kerikun11 の 2012年面と一致して confirmed へ格上げされ 21 に減り、
     # kerikun11 側の全日本エキスパート決勝（2013〜2020, confirmed の2012を除く）8 が加わって 29。
-    assert len(finals) == 29
+    # さらに井谷氏Wiki由来の 2004・2006年エキスパート決勝（confidence: single-source）2 面が
+    # 加わって 31。
+    assert len(finals) == 31
     assert all(r.kind == "contest" and r.stage == "final" for r in finals)
 
 
@@ -415,15 +422,17 @@ def test_query_by_class_accepts_keyword_and_alias():
     via_alias = _DB.query(maze_class="expert")
     assert {r.id for r in via_dict_key} == {r.id for r in via_alias}
     # 実測値。NTF 側 28 に、kerikun11 の全日本エキスパート（決勝9＋予選1）10 が加わって 38。
-    assert len(via_dict_key) == 38
+    # さらに井谷氏Wiki由来の 2004・2006年エキスパート決勝 2 が加わって 40。
+    assert len(via_dict_key) == 40
     assert all(r.maze_class == "expert" for r in via_dict_key)
 
 
 def test_query_by_source_type():
-    # 段2（NTF・bmp）102 ＋ 段3（kerikun11・ascii）53 面。
+    # 段2（NTF・bmp）102 ＋ 井谷氏Wiki由来（2004・2006年、bmp扱い）2 ＝ 104。
+    # ＋ 段3（kerikun11・ascii）53 面。
     bmp_records = _DB.query(source_type="bmp")
     ascii_records = _DB.query(source_type="ascii")
-    assert len(bmp_records) == 102
+    assert len(bmp_records) == 104
     assert len(ascii_records) == 53
     assert len(bmp_records) + len(ascii_records) == len(_DB)
 
@@ -560,3 +569,89 @@ def test_fingerprints_can_be_grouped_mechanically_and_find_known_matches():
         assert (a.confidence == "confirmed" and b.confidence == "confirmed") or (a.notes and b.notes), (
             f"{a_id} / {b_id}: 指紋一致が記録に反映されていない"
         )
+
+
+# ============================================================================
+# 9. 井谷氏Wiki由来（2004・2006年、note_035 続報）固有の検査
+# ============================================================================
+# 出典: https://w.atwiki.jp/mm3sakusya/pages/25.html
+#   （NTF発行冊子「マイクロマウス2000」を出典とする優勝記録の表。最短コース長
+#   欄が「〇区〇折」の形で載っている。読み取った壁配置とは完全に独立な一次資料）。
+_ITANI_RECORD_COURSE = {
+    # (id): (最短区画数, 最小ターン数)
+    "AllJapan_025_2004_exp_fin": (86, 49),
+    "AllJapan_027_2006_exp_fin": (69, 48),
+}
+
+
+@pytest.mark.parametrize("rec_id, expected", sorted(_ITANI_RECORD_COURSE.items()))
+def test_itani_maze_shortest_path_matches_published_record(rec_id, expected):
+    """最短経路の区画数・ターン数が、優勝記録表の「〇区〇折」と一致すること。
+
+    区画数は歩数マップの距離（移動回数）、ターン数は同じ歩数の経路が複数ある
+    場合にターン数最小のものを採る `classic/route.py` の規約に従う（実機が
+    速い方を選ぶのと同じ理由）。両方とも読み取った壁配置だけから計算しており、
+    比較先の「〇区〇折」は読み取りに一切使っていない独立な数字である。
+    """
+    from classic.flood import FloodMode
+    from classic.maze_map import Direction, MazeMap
+    from classic.route import CommandType, path_to_commands, shortest_path
+
+    rec = _DB.get(rec_id)
+    maze = MazeMap(rec.width, rec.height)
+    maze.v_walls = rec.v_walls.copy()
+    maze.h_walls = rec.h_walls.copy()
+
+    path = shortest_path(maze, rec.start, rec.goal, FloodMode.PESSIMISTIC)
+    commands = path_to_commands(path, start_heading=Direction[rec.start_heading])
+
+    cells = len(path) - 1
+    turns = sum(
+        1
+        for c in commands
+        if c.type in (CommandType.TURN_LEFT90, CommandType.TURN_RIGHT90, CommandType.TURN_180)
+    )
+    expected_cells, expected_turns = expected
+    assert (cells, turns) == (expected_cells, expected_turns), (
+        f"{rec_id}: 最短経路が {cells}区画{turns}折 — 記録表の "
+        f"{expected_cells}区{expected_turns}折と食い違う"
+    )
+
+
+def test_itani_2004_cose_images_agree_when_available():
+    """2004年の元画像2枚（斜め優先/直線優先の別経路を解析したスクリーンショット）
+    が手元にある場合だけ、両者から読み取った壁配置が完全一致することを確かめる。
+
+    画像そのものは一次資料の複製可否が未確認のため版管理に含めていない
+    （note_036 §6-3）。そのため既定ではスキップされる。手元に置く場合は
+    次のいずれかに `itani_2004_cose1.gif` / `itani_2004_cose2.gif` を置く。
+    """
+    import os
+
+    from decode_itani_2004_cose import decode
+
+    candidates = []
+    env_dir = os.environ.get("ITANI_2004_COSE_DIR")
+    if env_dir:
+        candidates.append(Path(env_dir))
+    candidates.append(ROOT / "research_notes" / "scripts" / "testdata" / "itani_2004")
+
+    cose_dir = next((d for d in candidates if (d / "itani_2004_cose1.gif").exists()), None)
+    if cose_dir is None:
+        pytest.skip(
+            "元画像（itani_2004_cose1.gif/cose2.gif）が手元に無いためスキップ"
+            "（版管理には含めていない。note_036 §6-3）"
+        )
+
+    v1, h1 = decode(cose_dir / "itani_2004_cose1.gif")
+    v2, h2 = decode(cose_dir / "itani_2004_cose2.gif")
+    assert np.array_equal(v1, v2) and np.array_equal(h1, h2), (
+        "cose1.gif と cose2.gif から読み取った壁配置が食い違う（読み取りが誤っている疑い）"
+    )
+
+    # 読み取り結果は版管理下の .maze 本体とも一致するはず。
+    rec = _DB.get("AllJapan_025_2004_exp_fin")
+    v_db, h_db = _DB.walls(rec)
+    assert np.array_equal(v1, v_db) and np.array_equal(h1, h_db), (
+        "cose1.gif の読み取り結果が mazes/contest/AllJapan_025_2004_exp_fin.maze と食い違う"
+    )
