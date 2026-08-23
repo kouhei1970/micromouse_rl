@@ -1,0 +1,37 @@
+{
+  "timestamp": "20260823_142501",
+  "phase": "exp_036_racing_line",
+  "summary": {
+    "tau_median": 0.9851263878513624,
+    "min_clearance_overall_m": 0.014034856560373754,
+    "max_kappa_jump_overall": 1.1105734224993764
+  },
+  "phase_specific": {
+    "n_mazes": 20,
+    "tau_median": 0.9851263878513624,
+    "tau_min": 0.8851700571619805,
+    "tau_max": 1.1527712643476575,
+    "min_clearance_overall_m": 0.014034856560373754,
+    "max_kappa_jump_overall": 1.1105734224993764,
+    "n_clearance_below_margin": 0,
+    "negative_controls": {
+      "N1_median_unrounded_time_s": 19.809060751090428,
+      "N1_median_racing_time_s": 10.188910393673922,
+      "N1_n_fired": 20,
+      "N2_median_r_ignoring_margin_m": 0.047391370311379424,
+      "N2_median_clearance_at_that_r_m": 0.014036901040833487,
+      "N2_n_fired": 0,
+      "N3_tau_nodiag_median": 1.1227655464624653,
+      "N3_tau_diag_median": 0.9851263878513624,
+      "N3_n_fired": 1
+    },
+    "secondary_records": {
+      "diagonal_length_fraction_median": 0.244984787760804,
+      "corner_count_median": 40.0,
+      "path_shortening_m_median": 0.34098062309545885,
+      "kappa_max_abs_overall": 20.82325167186319,
+      "search_time_s_median": 4.672990202903748
+    },
+    "total_elapsed_s": 694.9687969684601
+  }
+}

@@ -29,7 +29,11 @@ class ClassicExplorerPolicy(MousePolicy):
     def __init__(self, params: Optional[RobotParams] = None,
                  extend_straights: bool = True, fast_mode: str = "command",
                  friction_use: float = 1.0, clearance_margin_m: float = 0.005,
-                 wall_correction: bool = False) -> None:
+                 wall_correction: bool = False,
+                 map_source: str = "threshold",
+                 belief_t_wall: Optional[float] = None,
+                 belief_t_open: Optional[float] = None,
+                 belief_update_every_tick: bool = True) -> None:
         self.params = params if params is not None else RobotParams()
         # S3 最短走行で直線を伸ばすかどうか（exp_024 PREREG §4 の 2 条件
         # "extended"/"percell"）。ClassicExplorer へそのまま渡すだけで、
@@ -52,6 +56,13 @@ class ClassicExplorerPolicy(MousePolicy):
         # 挙動は変えない（`classic/explorer.py` の `clearance_margin_m` 参照）。
         self.clearance_margin_m = float(clearance_margin_m)
         self.wall_correction = bool(wall_correction)
+        # 信念で走る (exp_035)。ClassicExplorer へそのまま渡すだけで、本クラス
+        # 自身の挙動は変えない（`classic/explorer.py` モジュール docstring
+        # 「信念で走る（map_source。exp_035）」参照）。
+        self.map_source = str(map_source)
+        self.belief_t_wall = belief_t_wall
+        self.belief_t_open = belief_t_open
+        self.belief_update_every_tick = bool(belief_update_every_tick)
         self._explorer: Optional[ClassicExplorer] = None
         # ティックごとの「そのとき何をしていたか」の識別子。
         # classic.checks.plan_adherence の入力（note_029 §4-1、型 C 再発防止）。
@@ -80,6 +91,10 @@ class ClassicExplorerPolicy(MousePolicy):
             friction_use=self.friction_use,
             clearance_margin_m=self.clearance_margin_m,
             wall_correction=self.wall_correction,
+            map_source=self.map_source,
+            belief_t_wall=self.belief_t_wall,
+            belief_t_open=self.belief_t_open,
+            belief_update_every_tick=self.belief_update_every_tick,
         )
         self._plan_ids = []
         self._run_phases = []

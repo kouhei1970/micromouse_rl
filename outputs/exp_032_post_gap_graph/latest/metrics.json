@@ -1,0 +1,128 @@
+{
+  "timestamp": "20260823_112829",
+  "phase": "exp_032_post_gap_graph",
+  "summary": {
+    "design_v4_rho_median": 0.8176961178334382,
+    "contest_historical_rho_median": 0.8717482733103232,
+    "n_anchor_fail_total": 0
+  },
+  "phase_specific": {
+    "mode": "pessimistic",
+    "design_v4": {
+      "group": "design_v4",
+      "n_mazes": 20,
+      "n_rho_defined": 20,
+      "rho_median": 0.8176961178334382,
+      "rho_min": 0.7865354858830632,
+      "rho_max": 0.8458456287747861,
+      "n_anchor_fail": 0,
+      "anchor_fail_maze_ids": [],
+      "n_path_changed": 8,
+      "diagonal_fraction_median": 0.538251219717605,
+      "diagonal_run_length_m": {
+        "n_runs": 303,
+        "median": 0.2545584513425403,
+        "mean": 0.3373109332575743,
+        "min": 0.12727909923065484,
+        "max": 1.2727922145653263
+      }
+    },
+    "contest_historical_all": {
+      "group": "contest_historical:\u5168\u4f53",
+      "n_mazes": 102,
+      "n_rho_defined": 102,
+      "rho_median": 0.8717482733103232,
+      "rho_min": 0.7567497814945726,
+      "rho_max": 0.9152153397705897,
+      "n_anchor_fail": 0,
+      "anchor_fail_maze_ids": [],
+      "n_path_changed": 50,
+      "diagonal_fraction_median": 0.3551801448525217,
+      "diagonal_run_length_m": {
+        "n_runs": 1252,
+        "median": 0.12727935211177382,
+        "mean": 0.2735689851033633,
+        "min": 0.12727909923065484,
+        "max": 2.2910262095962626
+      }
+    },
+    "contest_historical_by_category": {
+      "\u6c7a\u52dd": {
+        "group": "contest_historical:\u6c7a\u52dd",
+        "n_mazes": 20,
+        "n_rho_defined": 20,
+        "rho_median": 0.8263891160638315,
+        "rho_min": 0.7567497814945726,
+        "rho_max": 0.9138548023600314,
+        "n_anchor_fail": 0,
+        "anchor_fail_maze_ids": [],
+        "n_path_changed": 12,
+        "diagonal_fraction_median": 0.5269045987925389,
+        "diagonal_run_length_m": {
+          "n_runs": 218,
+          "median": 0.25455845134242866,
+          "mean": 0.47116663888696725,
+          "min": 0.12727909923065484,
+          "max": 2.2910262095962626
+        }
+      },
+      "\u4e88\u9078": {
+        "group": "contest_historical:\u4e88\u9078",
+        "n_mazes": 18,
+        "n_rho_defined": 18,
+        "rho_median": 0.8631221153764665,
+        "rho_min": 0.7907906479752824,
+        "rho_max": 0.9007139894390016,
+        "n_anchor_fail": 0,
+        "anchor_fail_maze_ids": [],
+        "n_path_changed": 11,
+        "diagonal_fraction_median": 0.3828634605610439,
+        "diagonal_run_length_m": {
+          "n_runs": 241,
+          "median": 0.2545583249018866,
+          "mean": 0.2751554829487206,
+          "min": 0.12727909923065484,
+          "max": 1.7819090329563436
+        }
+      },
+      "\u30d5\u30ec\u30c3\u30b7\u30e5\u30de\u30f3": {
+        "group": "contest_historical:\u30d5\u30ec\u30c3\u30b7\u30e5\u30de\u30f3",
+        "n_mazes": 18,
+        "n_rho_defined": 18,
+        "rho_median": 0.8872457815853536,
+        "rho_min": 0.8652691698359564,
+        "rho_max": 0.9152153397705897,
+        "n_anchor_fail": 0,
+        "anchor_fail_maze_ids": [],
+        "n_path_changed": 9,
+        "diagonal_fraction_median": 0.3068220934335558,
+        "diagonal_run_length_m": {
+          "n_runs": 231,
+          "median": 0.12727924674462637,
+          "mean": 0.17576653696467323,
+          "min": 0.12727909923065484,
+          "max": 0.6363961494295918
+        }
+      },
+      "\u7121\u533a\u5206": {
+        "group": "contest_historical:\u7121\u533a\u5206",
+        "n_mazes": 46,
+        "n_rho_defined": 46,
+        "rho_median": 0.8786791275574741,
+        "rho_min": 0.7893223996041787,
+        "rho_max": 0.9081118109455848,
+        "n_anchor_fail": 0,
+        "anchor_fail_maze_ids": [],
+        "n_path_changed": 18,
+        "diagonal_fraction_median": 0.3333370792592083,
+        "diagonal_run_length_m": {
+          "n_runs": 562,
+          "median": 0.12727928889156037,
+          "mean": 0.2364403926024392,
+          "min": 0.12727909923065484,
+          "max": 2.163746836410525
+        }
+      }
+    }
+  }
+}

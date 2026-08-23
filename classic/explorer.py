@@ -171,10 +171,49 @@ T_measured`）を受け、Phase.FAST・Phase.RETURN2 の実行方式を選べる
   - `plan_id` は経路追従中 `"fast:profile"`/`"return2:profile"`、その場旋回中
     `"fast:profile_spin"`/`"return2:profile_spin"` になる（一次記録からどちらの
     区間を走っていたかが分かるようにする。任務指示）。
+
+【信念で走る（`map_source`。exp_035。`experiments/exp_035_belief_driven/PREREG.md`、
+根拠は `research_notes/note_037_probabilistic_localization.md` §19・§20）】
+探索・帰還が経路計算に使う地図の作り方を選べるようにする:
+
+  - `map_source="threshold"`（既定）: 上記どおり、区画中心で 1 回だけ壁センサを
+    読み、しきい値で 3 値に分けて `self.maze` へ書く（`_update_map_from_sensing`）。
+    🔴 **このときのコード経路は本節導入前と完全に同一である**（`self.map_source
+    == "belief"` の分岐へ一切入らない。`pose_estimator`/`wall_belief` は
+    `None` のまま作られず、`classic.wall_belief.WallBelief.update()` の
+    費用（exp_034 実測 約3.9ms/周期）は一切かからない）。
+  - `map_source="belief"`: `classic/pose.py` の `PoseEstimator`（推測航法の
+    連続姿勢推定）と `classic/wall_belief.py` の `WallBelief`（柱間ごとの
+    対数オッズ）を並走させ、`tick()` の先頭で毎周期
+    `pose_estimator.predict(obs)` を呼ぶ。`belief_update_every_tick`（既定
+    True）が True なら同じ場所で `wall_belief.update(pose, cov, ranges)` も
+    毎周期呼ぶ（`experiments/exp_034_wall_belief/run.py` の
+    `_WallBeliefTrackingPolicy.act` と同じ順序・同じ引数 — 数値を比較できる
+    ようにするため）。区画中心（`_on_stationary`）では、しきい値地図の
+    代わりに `_refresh_map_from_belief()` で信念の対数オッズを非対称しきい値
+    （`belief_t_wall`/`belief_t_open`、既定は `classic.wall_belief` の
+    `T_WALL_DEFAULT`/`T_OPEN_DEFAULT`）で宣言し直し、`self.maze` を
+    その場で（中身だけ）更新する。`belief_update_every_tick=False` は
+    exp_035 の否定対照 N2（信念を区画中心でだけ更新する）用で、この場合は
+    `tick()` の先頭では呼ばず、`_on_stationary` の中で 1 回だけ呼ぶ。
+  - 🔴 **設計上の注意（気づいたことを記録するだけで、挙動は変えない）**:
+    信念の宣言は対数オッズが閾値をまたぎ直せば**反転しうる**（一度 WALL/OPEN
+    と決めても、後の観測で UNKNOWN や逆側へ戻ることがある。`note_037` §20-3
+    規則2）。従来の `_update_map_from_sensing` は「確信を持って書いたら
+    上書きされるまで変わらない」だけで、仕様として「未知へ戻らない」ことを
+    保証してはいなかったが、実際には確定判定（WALL/OPEN）は一方向にしか
+    変わらない構造だった。信念地図はこの前提を積極的に崩す。
+    `_on_stationary` の `MAX_REPLANS_PER_CELL` 安全弁（同一区画で判定が
+    振動し続けたら停止する）はこの種の反転にも汎用に対応できる作りに
+    見えるため、既存の歯止めが壊れる具体的な経路は見当たらなかった
+    （観測ではなく設計上の確認。反転の頻度そのものは PREREG §6 の
+    副次記録として実測する）。
 """
 import math
 from enum import Enum, auto
 from typing import List, Optional, Tuple, Union
+
+import numpy as np
 
 from classic.fast_planner import FastPlan, PathBlock, SpinSegment, plan_fast_run
 from classic.flood import FloodMode, UNREACHABLE, compute_flood, is_passable, is_reachable_known
@@ -183,11 +222,13 @@ from classic.localization import Localizer, estimate_lateral_offset
 from classic.maze_map import ALL_DIRECTIONS, Direction, MazeMap, direction_between
 from classic.maze_map import WallState as MapWallState
 from classic.motion import CellMotionController, MotionKind
+from classic.pose import PoseEstimator
 from classic.route import Command, CommandType, NoRouteError, plan_route
 from classic.sensing import WallSensing
 from classic.sensing import WallState as SenseWallState
 from classic.sensing import sense_walls
 from classic.tracker import ProfileTracker, TrackerGains
+from classic.wall_belief import T_OPEN_DEFAULT, T_WALL_DEFAULT, WallBelief
 from mouse.params import RobotParams
 
 Cell = Tuple[int, int]
@@ -371,9 +412,15 @@ class ClassicExplorer:
                  wall_correction: bool = False, wall_correction_mode: str = "blend",
                  wall_correction_alpha: float = DEFAULT_WALL_CORRECTION_ALPHA,
                  wall_correction_max_step_m: float = DEFAULT_WALL_CORRECTION_MAX_STEP_M,
-                 wall_correction_lookahead_m: float = DEFAULT_WALL_CORRECTION_LOOKAHEAD_M) -> None:
+                 wall_correction_lookahead_m: float = DEFAULT_WALL_CORRECTION_LOOKAHEAD_M,
+                 map_source: str = "threshold",
+                 belief_t_wall: Optional[float] = None,
+                 belief_t_open: Optional[float] = None,
+                 belief_update_every_tick: bool = True) -> None:
         if fast_mode not in ("command", "profile"):
             raise ValueError(f"未知の fast_mode: {fast_mode!r}（'command' か 'profile' のいずれか）")
+        if map_source not in ("threshold", "belief"):
+            raise ValueError(f"未知の map_source: {map_source!r}（'threshold' か 'belief' のいずれか）")
         if not (0.0 < friction_use <= 1.0):
             raise ValueError(f"friction_use は (0.0, 1.0] の範囲で指定してください: {friction_use}")
         if not (clearance_margin_m > 0.0):
@@ -529,6 +576,31 @@ class ClassicExplorer:
         self._wc_prev_left: Optional[bool] = None
         self._wc_prev_right: Optional[bool] = None
 
+        # --- 信念で走る (map_source。exp_035) の実行状態 ---
+        # モジュール docstring「信念で走る（map_source。exp_035）」参照。
+        self.map_source = map_source
+        # 非対称しきい値（None なら classic.wall_belief の既定値をそのまま使う。
+        # 既定値そのものをここへ複製しない — 正本は classic/wall_belief.py）。
+        self.belief_t_wall = float(belief_t_wall) if belief_t_wall is not None else float(T_WALL_DEFAULT)
+        self.belief_t_open = float(belief_t_open) if belief_t_open is not None else float(T_OPEN_DEFAULT)
+        # False = 否定対照 N2（信念を毎ティックではなく区画中心でだけ更新する。
+        # PREREG §4-2 N2）。
+        self.belief_update_every_tick = bool(belief_update_every_tick)
+        # WallBelief.update() を呼んだ回数（副次の記録用。PREREG §6）。
+        self.belief_update_count: int = 0
+        if self.map_source == "belief":
+            self.pose_estimator: Optional[PoseEstimator] = PoseEstimator(self.params)
+            self.pose_estimator.reset()  # 既定=発進姿勢(0.09,0.09,pi/2)
+            self.wall_belief: Optional[WallBelief] = WallBelief(width, height, self.params)
+        else:
+            # map_source="threshold"（既定）ではどちらも作らない。属性としては
+            # 常に存在させる（外部から None チェックできるようにする）が、
+            # `WallBelief`/`PoseEstimator` を構築しないことで「しきい値経路には
+            # 信念更新の費用（exp_034 実測 約3.9ms/周期）が一切かからない」を
+            # 保証する。
+            self.pose_estimator = None
+            self.wall_belief = None
+
     # ------------------------------------------------------------------
     # 係員回収（外部から呼ばれる）
     # ------------------------------------------------------------------
@@ -546,6 +618,13 @@ class ClassicExplorer:
         self.cell = self.start_cell
         self.heading = Direction.N
         self.motion.reset(heading_deg=90.0)
+        if self.map_source == "belief":
+            # exp_034 の `_WallBeliefTrackingPolicy.on_retrieval` と同じ考え方:
+            # 係員回収でロボットは物理的にスタートへ再配置されるので、姿勢
+            # 推定器だけ既知の発進姿勢へ再同期する。地図（信念 = WallBelief）
+            # は壁そのものが変わるわけではないので保持する（従来の3値地図が
+            # 走行を通じて保持されるのと同じ）。
+            self.pose_estimator.reset()
         self._active_kind = MotionKind.STOP
         self._active_plan_id = "idle"
         self._pending_heading = None
@@ -594,6 +673,24 @@ class ClassicExplorer:
         再発防止）。電圧の計算と同じ呼び出しの中で確定させるので、
         両者が食い違う（型 B）余地が無い。
         """
+        if self.map_source == "belief":
+            # 信念で走る (exp_035)。モジュール docstring「信念で走る
+            # （map_source。exp_035）」参照。`experiments/exp_034_wall_belief/
+            # run.py` の `_WallBeliefTrackingPolicy.act` と同じ順序・同じ引数
+            # で呼ぶ（比較可能性のため。段階(Phase)によらず毎ティック呼ぶ）。
+            # map_source="threshold"（既定）ではこの分岐そのものへ入らない
+            # （コード経路は本節導入前と完全に同一）。
+            self.pose_estimator.predict(obs)
+            if self.belief_update_every_tick:
+                pose = self.pose_estimator.pose
+                cov = self.pose_estimator.covariance
+                n_sensors = len(self.params.sensors)
+                ranges = np.asarray(obs[:n_sensors], dtype=np.float64)
+                self.wall_belief.update(pose, cov, ranges)
+                self.belief_update_count += 1
+            # belief_update_every_tick=False のときはここでは呼ばない
+            # （否定対照 N2。`_on_stationary` で区画中心にて 1 回だけ呼ぶ）。
+
         if self._need_replan:
             self._on_stationary(obs)
             self._need_replan = False
@@ -683,7 +780,24 @@ class ClassicExplorer:
             return
 
         sensing = sense_walls(obs, self.params)
-        self._update_map_from_sensing(sensing)
+        if self.map_source == "belief":
+            # 信念で走る (exp_035)。しきい値地図の代わりに、区画中心では
+            # WallBelief の対数オッズを宣言し直して self.maze を更新する
+            # （モジュール docstring「信念で走る（map_source。exp_035）」）。
+            if not self.belief_update_every_tick:
+                # 否定対照 N2（PREREG §4-2）: 信念を毎ティックではなく
+                # 区画中心でだけ更新する。この場合 tick() の先頭では呼んで
+                # いないので、ここで 1 回だけ呼ぶ。
+                pose = self.pose_estimator.pose
+                cov = self.pose_estimator.covariance
+                n_sensors = len(self.params.sensors)
+                ranges = np.asarray(obs[:n_sensors], dtype=np.float64)
+                self.wall_belief.update(pose, cov, ranges)
+                self.belief_update_count += 1
+            self._refresh_map_from_belief()
+        else:
+            # map_source="threshold"（既定）。本節導入前と完全に同一の経路。
+            self._update_map_from_sensing(sensing)
 
         if self.phase is Phase.EXPLORE and self.cell in self._goal_cell_set:
             # ゴール到達。次は帰還（このときも地図を更新し続ける）。
@@ -799,6 +913,36 @@ class ClassicExplorer:
             elif state is SenseWallState.CLEAR:
                 self.maze.set_wall(cx, cy, direction, MapWallState.OPEN)
             # AMBIGUOUS: 未知のまま(書き込まない)。
+
+    def _refresh_map_from_belief(self) -> None:
+        """`self.wall_belief` の対数オッズを非対称しきい値で宣言し直し、
+        `self.maze` へその場で（in place で）書き込む（map_source=="belief"
+        のときだけ `_on_stationary` から呼ばれる。モジュール docstring
+        「信念で走る（map_source。exp_035）」参照）。
+
+        🔴 `WallBelief.to_maze_map()` は新しい `MazeMap` を作って返すが、
+        ここでは `self.maze` を別オブジェクトへ差し替えない（`classic/
+        route.py` や描画器など、他所が `self.maze` の参照を握りうるため）。
+        返ってきた `MazeMap` の `v_walls`/`h_walls` の中身だけを書き写す。
+        544 要素ぶんを Python のループで回さない
+        （`WallBelief.to_maze_map` 内部は既にベクトル化済み）。
+
+        🔴 設計上の注意（挙動は変えない。気づいたことの記録）: 信念の宣言は
+        対数オッズが閾値をまたぎ直せば**反転しうる**（`note_037` §20-3
+        規則2）。従来の `_update_map_from_sensing` は「確定させたら未知へは
+        戻らない」ことを仕様として保証してはいなかったが、実際には
+        WALL/OPEN の確定判定は一方向にしか変わらない構造だった。信念地図は
+        この前提を積極的に崩す（WALL/OPEN から UNKNOWN・あるいは逆側へ戻る
+        ことがある）。`_on_stationary` の `MAX_REPLANS_PER_CELL` 安全弁
+        （同一区画で候補方位の判定が振動し続けたら停止する）は、地図の
+        書き換えそのものの原因を区別しない作りなので、この種の反転が
+        増えても壊れるのではなく従来どおり安全側へ停止すると考えられる
+        （実装は変えていない。反転の頻度そのものは PREREG §6 の副次記録と
+        して別途測る対象であり、ここでは対処しない）。
+        """
+        mm = self.wall_belief.to_maze_map(self.belief_t_wall, self.belief_t_open)
+        self.maze.v_walls[:, :] = mm.v_walls
+        self.maze.h_walls[:, :] = mm.h_walls
 
     def _current_goals(self) -> List[Cell]:
         if self.phase is Phase.EXPLORE:
