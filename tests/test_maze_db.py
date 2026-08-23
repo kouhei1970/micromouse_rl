@@ -64,8 +64,11 @@ _CONTEST_NPZ_NAMES = _MANIFEST["mazes"]
 # ============================================================================
 def test_database_is_not_empty():
     # 102 面（NTF・段2）＋ 53 面（kerikun11・段3）＋ 2 面（2004・2006年 井谷氏Wiki日記の
-    # 写真/シミュレータ画面からの読み取り、note_035 続報）＝ 157 面。
-    assert len(_DB) == 157, "contest/ の 157 面（NTF102 + kerikun11 53 + 井谷氏Wiki 2）が読み込めていない"
+    # 写真/シミュレータ画面からの読み取り、note_035 続報）。
+    # 2026-08-23 の一括取り込みで 291 面（contest 221 + handmade 70）になった。
+    # 内訳: NTF の BMP 102・kerikun11 53・井谷氏の日記の画像 2・井谷氏の MAZ.zip 109・
+    #       NTF の年次画像 25。詳しくは note_035 の追記 6〜10。
+    assert len(_DB) == 291, "291 面が読み込めていない"
     assert len(ALL_MAZE_FILES) == len(_DB)
 
 
@@ -402,12 +405,10 @@ def test_get_raises_for_unknown_id():
 
 def test_query_filters_by_kind_stage_confidence():
     finals = _DB.query(kind="contest", stage="final", confidence="single-source")
-    # 実測値。NTF 側 22（決勝20＋フレッシュマン決勝2）のうち 2012年面の指紋が
-    # kerikun11 の 2012年面と一致して confirmed へ格上げされ 21 に減り、
-    # kerikun11 側の全日本エキスパート決勝（2013〜2020, confirmed の2012を除く）8 が加わって 29。
-    # さらに井谷氏Wiki由来の 2004・2006年エキスパート決勝（confidence: single-source）2 面が
-    # 加わって 31。
-    assert len(finals) == 31
+    # 実測値。2026-08-23 の一括取り込み後（note_035 の追記 6〜10）。
+    # 出所は NTF の BMP・kerikun11・井谷氏の日記の画像・井谷氏の MAZ.zip・NTF の年次画像。
+    # confidence が confirmed へ格上げされた面はこの数から外れる。
+    assert len(finals) == 52
     assert all(r.kind == "contest" and r.stage == "final" for r in finals)
 
 
@@ -423,18 +424,22 @@ def test_query_by_class_accepts_keyword_and_alias():
     assert {r.id for r in via_dict_key} == {r.id for r in via_alias}
     # 実測値。NTF 側 28 に、kerikun11 の全日本エキスパート（決勝9＋予選1）10 が加わって 38。
     # さらに井谷氏Wiki由来の 2004・2006年エキスパート決勝 2 が加わって 40。
-    assert len(via_dict_key) == 40
+    assert len(via_dict_key) == 61
     assert all(r.maze_class == "expert" for r in via_dict_key)
 
 
 def test_query_by_source_type():
-    # 段2（NTF・bmp）102 ＋ 井谷氏Wiki由来（2004・2006年、bmp扱い）2 ＝ 104。
-    # ＋ 段3（kerikun11・ascii）53 面。
+    # 2026-08-23 の一括取り込み後の実測値。
+    #   bmp    = NTF の BMP 102 ＋ 井谷氏の日記の画像 2 ＋ NTF の年次画像 22
+    #   ascii  = kerikun11 53 ＋ NTF の taikai の全角アスキー 3
+    #   binary = 井谷氏の MAZ.zip 109
     bmp_records = _DB.query(source_type="bmp")
     ascii_records = _DB.query(source_type="ascii")
-    assert len(bmp_records) == 104
-    assert len(ascii_records) == 53
-    assert len(bmp_records) + len(ascii_records) == len(_DB)
+    binary_records = _DB.query(source_type="binary")
+    assert len(bmp_records) == 126
+    assert len(ascii_records) == 56
+    assert len(binary_records) == 109
+    assert len(bmp_records) + len(ascii_records) + len(binary_records) == len(_DB)
 
 
 def test_walls_returns_evaluator_style_uint8_arrays():
@@ -540,7 +545,9 @@ def test_disputes_point_at_each_other_bidirectionally():
             )
     # 現状は使用例が無いことも合わせて明示する（今後 disputes が実際に使われたら
     # このアサーションだけ外せばよい）。
-    assert any_disputes is False, "disputes の使用例が増えた。上のコメントを更新すること"
+    # 2026-08-23: disputes が実際に使われ始めた（井谷氏の MAZ.zip と既存の面の食い違い。
+    # note_036 §2-4「食い違う資料は両方残し、相互に指す」）。上の相互参照の検査が本体になった。
+    assert any_disputes is True, "disputes が 1 件も無い。食い違いの記録が失われていないか確かめること"
 
 
 def test_fingerprints_can_be_grouped_mechanically_and_find_known_matches():
@@ -551,10 +558,16 @@ def test_fingerprints_can_be_grouped_mechanically_and_find_known_matches():
     duplicate_groups = {sha: sorted(ids) for sha, ids in groups.items() if len(ids) > 1}
 
     # 1) NTF 内部の重複（note_035 の追記で見つかった1992/1995）
-    assert ["AllJapan_013_1992_exp_fin", "AllJapan_016_1995_exp_fin"] in duplicate_groups.values()
+    # 1992 と 1995 は NTF のアーカイブ側の重複（note_035 追記 3）。井谷氏の MAZ.zip の
+    # 同じ迷路が加わって組が 3 つ以上になることがあるので、「同じ組にいる」ことを見る。
+    _pair_group = [g for g in duplicate_groups.values()
+                   if "AllJapan_013_1992_exp_fin" in g and "AllJapan_016_1995_exp_fin" in g]
+    assert _pair_group, "1992 と 1995 が同じ指紋の組に入っていない"
 
     # 2) NTF と kerikun11 が同じ大会・同じ年で一致した組（段3で確認）
-    assert ["AllJapan_033_2012_exp_fin", "AllJapan_033_2012_exp_fin__kerikun11"] in duplicate_groups.values()
+    _k11_group = [g for g in duplicate_groups.values()
+                  if "AllJapan_033_2012_exp_fin" in g and "AllJapan_033_2012_exp_fin__kerikun11" in g]
+    assert _k11_group, "2012 の NTF 版と kerikun11 版が同じ指紋の組に入っていない"
 
     # 3) 🔴 別大会・別年のはずなのに一致した組（段3で発見。未解決のまま報告済み）
     assert ["APEC2002_2002", "AllJapan_039_2018_exp_fin"] in duplicate_groups.values()

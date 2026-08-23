@@ -1,29 +1,45 @@
 id	kind	source_type	confidence	series	edition	year	class	stage	width	height	start_x	start_y	start_heading	goal	D0	content_sha256
 APEC2002_2002	contest	bmp	single-source	APEC2002		2002			16	16	0	0	N	7-7;8-7;7-8;8-8	84	6c16001da2a780a4db5b287c125529b9ceb4cf63dfb2e26b422ed02eb4f9de77
 AllJapan_001_1980	contest	bmp	single-source	AllJapan	1	1980			16	16	0	0	N	7-7;8-7;7-8;8-8	29	ed0c9269d1e6efcc37ac700721a34837c562802b342336e3fc3899a9d3a93ff4
+AllJapan_001_1980__itani	contest	binary	single-source	AllJapan	1	1980			16	16	0	0	N	7-7;8-7;7-8;8-8	47	81f37bcb4e0ac7177ec50da8280d17349ecfe8bab358c3e16862fe60ae088d1b
 AllJapan_002_1981	contest	bmp	single-source	AllJapan	2	1981			16	16	0	0	N	7-7;8-7;7-8;8-8	39	40cf7925eb29aed80707547d59b26d7241105216a7bf16e25d546aebad2982f9
 AllJapan_003_1982	contest	bmp	single-source	AllJapan	3	1982			16	16	0	0	N	7-7;8-7;7-8;8-8	54	feba5befd7747b501289de22dd60e22999be836e3ad899c3446ffd7898c6f4ad
+AllJapan_003_1982__itani	contest	binary	single-source	AllJapan	3	1982			16	16	0	0	N	7-7;8-7;7-8;8-8	54	feba5befd7747b501289de22dd60e22999be836e3ad899c3446ffd7898c6f4ad
 AllJapan_004_1983	contest	bmp	single-source	AllJapan	4	1983			16	16	0	0	N	7-7;8-7;7-8;8-8	72	986b5a091430e8c9b816f049c34d3cb2ddad366f5c87acb45acbe85c5f9cda2e
+AllJapan_004_1983__itani	contest	binary	single-source	AllJapan	4	1983			16	16	0	0	N	7-7;8-7;7-8;8-8	72	986b5a091430e8c9b816f049c34d3cb2ddad366f5c87acb45acbe85c5f9cda2e
 AllJapan_005_1984	contest	bmp	single-source	AllJapan	5	1984			16	16	0	0	N	7-7;8-7;7-8;8-8	68	becda31afffbaf5e0a782d24adee36c21304b018ee56481dacd70dce8b348b6c
+AllJapan_005_1984__itani	contest	binary	single-source	AllJapan	5	1984			16	16	0	0	N	7-7;8-7;7-8;8-8	66	247f479fd02b94b9f8d49e77d23f824889f651f90cbcb63256f9186c187c1efa
 AllJapan_006_1985_fin	contest	bmp	single-source	AllJapan	6	1985		final	16	16	0	0	N	7-7;8-7;7-8;8-8	65	9dd87130b6ad2602ac31f3ca32c324a2f524b1c3f2db491d268d4eb600a0f051
 AllJapan_006_1985_pre	contest	bmp	single-source	AllJapan	6	1985		preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	71	6c9ec2e20ec19b1eeab6f0a1172a559b8c1bc940a5432c6bd347ef4268ca655e
+AllJapan_006_1985_pre__itani	contest	binary	single-source	AllJapan	6	1985		preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	71	6c9ec2e20ec19b1eeab6f0a1172a559b8c1bc940a5432c6bd347ef4268ca655e
 AllJapan_007_1986_fin	contest	bmp	single-source	AllJapan	7	1986		final	16	16	0	0	N	7-7;8-7;7-8;8-8	68	ae518f5d627744eca6be7bd6d491a1fd3b9ac8c6347ff2bf2061ce4e27bf0447
+AllJapan_007_1986_fin__itani	contest	binary	single-source	AllJapan	7	1986		final	16	16	0	0	N	7-7;8-7;7-8;8-8	68	ae518f5d627744eca6be7bd6d491a1fd3b9ac8c6347ff2bf2061ce4e27bf0447
 AllJapan_007_1986_pre	contest	bmp	single-source	AllJapan	7	1986		preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	84	b539a80e11714030a22fbc5a37795f2030082dd79e1ad9c382b8f666f6b4d74d
 AllJapan_008_1987_fin	contest	bmp	single-source	AllJapan	8	1987		final	16	16	0	0	N	7-7;8-7;7-8;8-8	92	48491342cb18d0d5aff4ec07bfb84cfdfda313d0c11cb1ede4c410b90775f8da
+AllJapan_008_1987_fin__itani	contest	binary	single-source	AllJapan	8	1987		final	16	16	0	0	N	7-7;8-7;7-8;8-8	92	48491342cb18d0d5aff4ec07bfb84cfdfda313d0c11cb1ede4c410b90775f8da
 AllJapan_008_1987_pre	contest	bmp	single-source	AllJapan	8	1987		preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	59	90a0bb1caafd22ca8a684e9fe8e877e2a710a3389bc90c58fdd9ddf716189374
+AllJapan_008_1987_pre__itani	contest	binary	single-source	AllJapan	8	1987		preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	59	26cf83f7b990ff70fd542a8abbd3b9391f411cdf355990934a680e3346c01f43
 AllJapan_009_1988_fin	contest	bmp	single-source	AllJapan	9	1988		final	16	16	0	0	N	7-7;8-7;7-8;8-8	76	9f3c62a86f3892450973fba49e01cc019bfe353e3cb44d0cf029ca0a50fcc15b
+AllJapan_009_1988_fin__itani	contest	binary	single-source	AllJapan	9	1988		final	16	16	0	0	N	7-7;8-7;7-8;8-8	76	b49fa518ecf8ace85ff3f442de965700a2090b4309594037bf2b343aaf70e556
 AllJapan_009_1988_pre	contest	bmp	single-source	AllJapan	9	1988		preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	53	d73af7505f3f4189ccb082ab662ce3913108cd94a7e71ac3f450a180fba32c9f
+AllJapan_009_1988_pre__itani	contest	binary	single-source	AllJapan	9	1988		preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	53	1643033a68b8c595b475db90325423151013c03651a9b9c62d36ab26683d4aea
 AllJapan_010_1989_fin	contest	bmp	single-source	AllJapan	10	1989		final	16	16	0	0	N	7-7;8-7;7-8;8-8	66	e6a328d7256b7558adac8d2021252e331bdf4aacbcf58721950235ef1b3f2639
+AllJapan_010_1989_fin__itani	contest	binary	single-source	AllJapan	10	1989		final	16	16	0	0	N	7-7;8-7;7-8;8-8	66	e6a328d7256b7558adac8d2021252e331bdf4aacbcf58721950235ef1b3f2639
 AllJapan_010_1989_pre	contest	bmp	single-source	AllJapan	10	1989		preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	60	4b775a371b2d66171cd397352ea4c81c1aa954ad30d45a5b4b126a0552e8f95d
+AllJapan_010_1989_pre__itani	contest	binary	single-source	AllJapan	10	1989		preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	62	f7eaac10c1993982f89dccd7d8cea9ae50931e5a18e0b48bae951b707b98f324
 AllJapan_011_1990_exp_fin	contest	bmp	single-source	AllJapan	11	1990	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	84	86faacda9c46e1ab293c9caba1b1d5ca738d9ac2af54a4e1255bcd85a2434bae
+AllJapan_011_1990_exp_fin__itani	contest	binary	single-source	AllJapan	11	1990	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	84	86faacda9c46e1ab293c9caba1b1d5ca738d9ac2af54a4e1255bcd85a2434bae
 AllJapan_011_1990_exp_pre	contest	bmp	single-source	AllJapan	11	1990	expert	preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	98	da066cc684f3c93ad8003a87ce0da961ec9f4004490c1f06b5b922ca2db45924
 AllJapan_011_1990_frsh	contest	bmp	single-source	AllJapan	11	1990	freshman		16	16	0	0	N	7-7;8-7;7-8;8-8	66	4b89305e4ddcf16528f213033936a1a62123735d09c4bfbb27c19682c3508555
 AllJapan_012_1991_exp_fin	contest	bmp	single-source	AllJapan	12	1991	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	64	b12694548ee3edd2c30bdc171968c9b97a9f33c42217f657f93b556364ba370b
+AllJapan_012_1991_exp_fin__itani	contest	binary	single-source	AllJapan	12	1991	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	64	b12694548ee3edd2c30bdc171968c9b97a9f33c42217f657f93b556364ba370b
 AllJapan_012_1991_frsh	contest	bmp	single-source	AllJapan	12	1991	freshman		16	16	0	0	N	7-7;8-7;7-8;8-8	47	674b5800042e7619f77f1200f4b45e326369a53702bf0db460bf315a3af99338
 AllJapan_013_1992_exp_fin	contest	bmp	single-source	AllJapan	13	1992	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	64	c759defc68e7833a3a4b25fc2fb4d68e11140981eddc0851e0e36421d2d59b9f
+AllJapan_013_1992_exp_fin__itani	contest	binary	single-source	AllJapan	13	1992	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	64	c759defc68e7833a3a4b25fc2fb4d68e11140981eddc0851e0e36421d2d59b9f
 AllJapan_013_1992_exp_pre	contest	bmp	single-source	AllJapan	13	1992	expert	preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	46	00f1620b52b613400d199074995a2b551e08a5baeb8e4126c4871f815d6fc5bd
 AllJapan_013_1992_frsh	contest	bmp	single-source	AllJapan	13	1992	freshman		16	16	0	0	N	7-7;8-7;7-8;8-8	46	74be6694e631dcdba975b480b0e8c2d41515a09acdf1edde1f523d2adb55ad8c
 AllJapan_014_1993_exp_fin	contest	bmp	single-source	AllJapan	14	1993	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	66	b78f56d77e105b21460746670966591a704ebebbbc65fb7759adc4f063a18d06
+AllJapan_014_1993_exp_fin__itani	contest	binary	single-source	AllJapan	14	1993	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	72	9c4c7532c72ffa5744d3fc8166eae4ac759b4eea2015ebc60d27252aed6d3e97
 AllJapan_014_1993_exp_pre	contest	bmp	single-source	AllJapan	14	1993	expert	preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	54	4a12ac5031cb7eb22ed61cbedbc403c910150b37478f9eb1a603928744af6688
 AllJapan_014_1993_frsh	contest	bmp	single-source	AllJapan	14	1993	freshman		16	16	0	0	N	7-7;8-7;7-8;8-8	48	0766c17cbd035692fe4e966314646dd6823b37e10647a1747e5743a84a334e8c
 AllJapan_015_1994_exp_fin	contest	bmp	single-source	AllJapan	15	1994	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	66	238387610d36b0d747a4f266e7949856e8d612bc294a7451fe4180c279979ee2
@@ -41,6 +57,23 @@ AllJapan_018_1997_frsh	contest	bmp	single-source	AllJapan	18	1997	freshman		16	1
 AllJapan_019_1998_exp_fin	contest	bmp	single-source	AllJapan	19	1998	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	67	03950bfa4aca11746b4c9913d019aa942f820023477b6e75867d03617d394403
 AllJapan_019_1998_exp_pre	contest	bmp	single-source	AllJapan	19	1998	expert	preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	53	aefff2cb6953381c082674eeb4a28651582aa2d94f854ea1e7531c3c18d52b96
 AllJapan_019_1998_frsh	contest	bmp	single-source	AllJapan	19	1998	freshman		16	16	0	0	N	7-7;8-7;7-8;8-8	45	8724c8b63b8509c8b1c7a4e3ecd5b5dee9294cd015eb6386e56a3ff4cfbfb38e
+AllJapan_020_1999_exp_fin	contest	ascii	single-source	AllJapan	20	1999	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	77	6fe54b13e873f8c93273cd0e393597e011eb8c2af788e4286d9127b7dd650eda
+AllJapan_020_1999_exp_pre	contest	ascii	single-source	AllJapan	20	1999	expert	preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	52	5bf43038f2cb1970bc49c8225ab202256ac4b9e2bf6cff6c28f22863be15fe6e
+AllJapan_020_1999_frsh	contest	ascii	single-source	AllJapan	20	1999	freshman		16	16	0	0	N	7-7;8-7;7-8;8-8	42	6a67b8d69358e4e62f7002e44ce85232746e0bdfd2c74217d8ba51eb7added36
+AllJapan_021_2000_exp_fin	contest	bmp	single-source	AllJapan	21	2000	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	66	98741a4605496a3bf80ff60dec38c93790e068fc68d641351ef9592ce51ab334
+AllJapan_021_2000_exp_pre	contest	bmp	single-source	AllJapan	21	2000	expert	preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	61	00c5f0d1fb97b8e2f41cb0d127dc97f6f77319beb5ddf4af0388c10941cd3e47
+AllJapan_021_2000_frsh	contest	bmp	single-source	AllJapan	21	2000	freshman		16	16	0	0	N	7-7;8-7;7-8;8-8	46	bb904aa9fce431c2b279f69e2c3af8fbfc30ae46a1ed4b8e2f0e091340bffa43
+AllJapan_022_2001_exp_fin	contest	bmp	single-source	AllJapan	22	2001	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	70	525e7720683b828abb2fedddd5a18d526aa3b4cfd93aa9632756187d543a4587
+AllJapan_022_2001_exp_pre	contest	bmp	single-source	AllJapan	22	2001	expert	preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	55	e885640607a827bbd5a15485a4a0078ea09659406be66377709945f14b7c21ba
+AllJapan_022_2001_frsh	contest	bmp	single-source	AllJapan	22	2001	freshman		16	16	0	0	N	7-7;8-7;7-8;8-8	52	09c40f693e087f455393ffdd9ea670ff67cd785a08dd59289634c78a8f794eba
+AllJapan_023_2002_exp_fin	contest	bmp	single-source	AllJapan	23	2002	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	68	d27c23bf00177dd600aaee2683a620c925d8e19ae1282d24de3bc962264e0f1f
+AllJapan_023_2002_exp_pre	contest	bmp	single-source	AllJapan	23	2002	expert	preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	61	26b1146a2e922815f0e390d0ba7349401a12079bca66db57d25090ff66213fc6
+AllJapan_023_2002_frsh	contest	bmp	single-source	AllJapan	23	2002	freshman		16	16	0	0	N	7-7;8-7;7-8;8-8	53	2025ce0126d6dea0513237202e0c4a4bb5a93ea21402a136fb8d758eadf9e731
+AllJapan_024_2003_exp_fin	contest	bmp	single-source	AllJapan	24	2003	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	74	1294b1bd82e5d964cfb5b0e4b5ce2c2f9dcd1ffa9898e82d5cb741b3c538898b
+AllJapan_024_2003_exp_pre	contest	bmp	single-source	AllJapan	24	2003	expert	preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	51	7f748fc1f606fbdd9254c5198d66a8e041b0d28738079a93a7e2c912784cd19e
+AllJapan_024_2003_frsh	contest	bmp	single-source	AllJapan	24	2003	freshman		16	16	0	0	N	7-7;8-7;7-8;8-8	40	042422c0a0191d9684ddfd7baf7c09b0c2f1e1d19a4ef506a6b426a9c8d20e1d
+AllJapan_025_2004_exp_fin	contest	bmp	single-source	AllJapan	25	2004	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	86	690625bce2af00606138dcf143af8f8a72bc01bc928a5724aa96f3ada7646240
+AllJapan_027_2006_exp_fin	contest	bmp	single-source	AllJapan	27	2006	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	69	ab12724f57ae3682f055348b5d7ac70ea70e9fb47882f544a2e7d6ab7875d8be
 AllJapan_028_2007_exp_fin	contest	bmp	single-source	AllJapan	28	2007	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	71	1658fd03c8f53a4174b491495454646c97302c7332ead645a452e874a89993bd
 AllJapan_028_2007_frsh	contest	bmp	single-source	AllJapan	28	2007	freshman		16	16	0	0	N	7-7;8-7;7-8;8-8	46	de448ada845ad265b3af4619831e78bf069a2611966ef1846bda0122d5432fff
 AllJapan_029_2008_exp_fin	contest	bmp	single-source	AllJapan	29	2008	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	72	8ae1c7927b80ba092404130e6cb87f0b658b050e1cf57f1f8cfb0d952a32de8f
@@ -60,8 +93,14 @@ AllJapan_033_2012_exp_fin__kerikun11	contest	ascii	confirmed	AllJapan	33	2012	ex
 AllJapan_033_2012_exp_pre	contest	bmp	single-source	AllJapan	33	2012	expert	preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	68	f00d16b709aa1b94597c9b9876b3a7356dfaf2abf7c1226be1e47d1617bd99c6
 AllJapan_033_2012_frsh_fin	contest	bmp	single-source	AllJapan	33	2012	freshman	final	16	16	0	0	N	7-7;8-7;7-8;8-8	55	4e2e154e5d6133207469d9b2ba2ab2095598fd6eb5c90fb6b0bb68b32ee22628
 AllJapan_034_2013_exp_fin	contest	ascii	single-source	AllJapan	34	2013	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	105	2e28c15eb5308ab3d08e959d4ad364b019b340a5df6be66b793f4040c66b8877
+AllJapan_034_2013_exp_pre	contest	bmp	single-source	AllJapan	34	2013	expert	preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	52	1404bb7e3c6cb55a13e024d6b28338dfae12d76e14056ea981bddb3e7eb316fe
+AllJapan_034_2013_frsh_fin	contest	bmp	single-source	AllJapan	34	2013	freshman	final	16	16	0	0	N	7-7;8-7;7-8;8-8	51	29f4f27bc912697894261e963c54c1f44bf6bdf0fe5121ecce6394e8b9e5e66a
 AllJapan_035_2014_exp_fin	contest	ascii	single-source	AllJapan	35	2014	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	104	0a5434671cdc35f492afb78a2c148d8eef176ad7702a2c29e4698cc1ce668662
+AllJapan_035_2014_exp_pre	contest	bmp	single-source	AllJapan	35	2014	expert	preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	50	571ec96e07eab8bee92d95ff5eb7a86364e7fa3bee8e6b4268a99dd9b6396d2e
+AllJapan_035_2014_frsh_fin	contest	bmp	single-source	AllJapan	35	2014	freshman	final	16	16	0	0	N	7-7;8-7;7-8;8-8	49	39cfc5ffb174f575d26ab5c5a03fd96dd0578f76075a6f2a4682c4a5000717d6
 AllJapan_036_2015_exp_fin	contest	ascii	single-source	AllJapan	36	2015	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	85	5575d72a889d83d4ca0ad3781713f39ee1d4391059eb17cd5f43c0b9fc3e5bc7
+AllJapan_036_2015_exp_pre	contest	bmp	single-source	AllJapan	36	2015	expert	preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	48	bd8d333293f8d7f239d32a8fc26404c7b872936bbbade09a0d5a81af349c2f32
+AllJapan_036_2015_frsh_fin	contest	bmp	single-source	AllJapan	36	2015	freshman	final	16	16	0	0	N	7-7;8-7;7-8;8-8	59	4a4bd1dae5285e63879c92520bf0a10907818286c7a0f3f8c984d70e58031463
 AllJapan_037_2016_exp_fin	contest	ascii	single-source	AllJapan	37	2016	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	74	738e95042ea84fb821c27031552633b3c0a6560d6f6fad97d377b7ed4742b0fc
 AllJapan_037_2016_frsh_pre	contest	ascii	single-source	AllJapan	37	2016	freshman	preliminary	8	8	0	0	N	7-7	24	0e8e8cb3eb91dbc17565087d161ecde87cb5f80efe97fafc22eddf6194055cbb
 AllJapan_038_2017_exp_fin	contest	ascii	single-source	AllJapan	38	2017	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	99	6be2257de2293208351eda87d6b9084ff31fc726b8bc76cab3871f7267d07a73
@@ -73,6 +112,10 @@ AllJapan_040_2019_exp_fin	contest	ascii	single-source	AllJapan	40	2019	expert	fi
 AllJapan_040_2019_k11h_semi	contest	ascii	single-source	AllJapan	40	2019			16	16	0	0	N	8-7;9-7;8-8;9-8	78	611cd839eb86194a46ae229c4116b70cf12b902952e8b9cb0130932c870f2b57
 AllJapan_041_2020_exp_fin	contest	ascii	single-source	AllJapan	41	2020	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	41	b15da56e749d3b5ebe9d9440009c96fefde52037bb67f5f605152f156504d7cc
 AllJapan_042_2021_k11h_semi	contest	ascii	single-source	AllJapan	42	2021			16	16	0	0	N	6-9;7-9;6-10;7-10	70	e1d6f953e74f3fbbb7a368e5f437131a8d41c68af305309175650ed04dbf7d18
+AllJapan_043_2022_exp_fin	contest	bmp	single-source	AllJapan	43	2022	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	85	f125a48a6678706d552a127ec389aec52392c26fd3395ec655bf2646c21cc5b0
+AllJapan_044_2023_exp_fin	contest	bmp	single-source	AllJapan	44	2023	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	51	2291b47e82065b705725b15c5e16957bcfc376d6db2e34b50423b2d8fb312210
+AllJapan_045_2024_exp_fin	contest	bmp	single-source	AllJapan	45	2024	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	62	63d46fbed3b8cee6b8abea6b4423faa5957e5aff588525706c132af9803f5615
+AllJapan_046_2025_exp_fin	contest	bmp	single-source	AllJapan	46	2025	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	43	78e21e81b9565d498e7723074b0aa1fc8e32a865f132d69004e4e6da8b8b6571
 Cheese9_2019_k11c	contest	ascii	single-source	Cheese9		2019			9	9	0	0	N	7-7;8-7;7-8;8-8	25	5e3edeb060217afeedde415dba05f24fd741024f586dc8bd30275e21f216d707
 Cheese9_2019_k11c_cand	contest	ascii	single-source	Cheese9		2019			9	9	0	0	N	7-7;8-7;7-8;8-8	25	22afe40051252d0acbb56c37e81e27ad46d12cdda5c3e189ab446aab5b5d9ebd
 Cheese_2017_k11h	contest	ascii	single-source	Cheese		2017			16	16	0	0	N	3-3;4-3;3-4;4-4	58	6b0ac65f9ddd51283869a4a121304fcab320e3f8533923c3ce2b389e346ecd4a
@@ -154,3 +197,96 @@ Taiwan_2018_k11hx	contest	ascii	single-source	Taiwan		2018			21	21	0	0	N	14-2;15
 Tashiro_2017_k11h	contest	ascii	single-source	Tashiro		2017			16	16	0	0	N	7-7;8-7;7-8;8-8	231	374af0f7cdf1469eb3b10ea765dee80e442f53e094bb5eda2d5753aa09cc82db
 Tashiro_2018_k11h	contest	ascii	single-source	Tashiro		2018			16	16	0	0	N	7-7;8-7;7-8;8-8	249	adc8b71431b9f637ca3260c234bed39cad4e05057d99b059c86ae680ed656aa4
 Tashiro_2019_k11h	contest	ascii	single-source	Tashiro		2019			16	16	0	0	N	6-9;7-9;6-10;7-10	75	8f1a1696251dbbb371095bbfc8e88205e7c54ce252f4dd8d696dde003e30b429
+cut__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	114	7e03f2001d00f36083745278389427ca1e56951a9fd335ca25d94947a8ffadd6
+dame__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	106	2fb5efaca087fe57c53f04e33b1a5ec91058b94ad51b77081cffa55c21d3e49d
+euro-58__itani	contest	binary	single-source	Euro					16	16	0	0	N	7-7;8-7;7-8;8-8	56	03b306c97447ab19bca07cc66aa2b0217b49fbf1035f399dd3647fde1eb4f47f
+euro-v58__itani	contest	binary	single-source	Euro					16	16	0	0	N	7-7;8-7;7-8;8-8	43	1dfad623bdfb479178ba06ae60684471614e8c72bd86b33c84a9fe9e2871b21b
+euro-v59__itani	contest	binary	single-source	Euro					16	16	0	0	N	7-7;8-7;7-8;8-8	63	19f5d31bb0a46b0347f3249881a08fb969389781d2f7aa0df71cb7f0094d6ff2
+hoku4__itani	contest	binary	single-source	Hokuriku					16	16	0	0	N	7-7;8-7;7-8;8-8	52	3462c17248cd115855d89bb6f5946646bf367545bdd022f2fe60b0e90f224ee7
+iee-89f__itani	contest	binary	single-source	IEE		1989		final	16	16	0	0	N	7-7;8-7;7-8;8-8	36	c74b3b30f58ad89de7ffea1432e453a4a40fe2ccd49e346e0a5168d9a6f64e80
+iee-89p__itani	contest	binary	single-source	IEE		1989		preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	47	3f6c513a22f399179381f4023e2c63650c6104bd0244389c9503e2948d7e6ece
+j_stu-87__itani	contest	binary	single-source	JStudent		1987			16	16	0	0	N	7-7;8-7;7-8;8-8	67	4a7da7eedb832095edbc08098a2cc102b0fd1149c4168aee9f839c98fe9f7dc1
+kilkai__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	70	49297a538f11ebdb505b32f50650b481c047f437939bf88e1c407e992a709ef3
+killer__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	70	96c4b1cedd802f42a66fcb3deeb127b8fc73d3cbd35ce77584b5fe924cac8ee8
+kilnew__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	55	b70a1f187d5840700ff70e44beb4181e02d8d1a6bdde661ea41d45567275d6c7
+kirei2__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	48	f009ac1876902337bcfc4265878077960a80b527e782158da7aa475c31073881
+kirei__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	15	fbfecd66015bdad0491be709997ce30565f839c33e4c0036537c9b65ad9a0930
+kyot-89__itani	contest	binary	single-source	Kyoto		1989			16	16	0	0	N	7-7;8-7;7-8;8-8	51	885c25c421744b925320ae6316405ad9dcbf1e7454240c4611726fb224d25b85
+map-1__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	36	d2b18e9ed3d3f1870963797912c51f34fc1be9e59c18d65d8feb5a9f322f4675
+map-2__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	113	9edc76ce170ac6958c26b485a3b0237f9d732c625891fb36d43e48b226c096c0
+map-3__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	62	67a440f3d77b102f05ff0ab1e715c8c6927113477150ffb6cdbaa5237e2bde1b
+map-4__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	48	f0f9d1f58aaf268003b586843bf06c948653fcf058f1eac45ccc41ef770a04f9
+map-5__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	163	f001ecb1fd66826c55c44045cffa3d6e90c9cb57e65e905a3be33b1e297f77e3
+map-6__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	50	7a8db5c555d5484f93401e54ad088f66aa9b34324ef67ac7f4c5e6861e134a55
+map-e5__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	51	c7d908f7c42879fdb90bfaf15121543235c643b8e7c8abe42f609e2477b9641e
+map-e7__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	53	f57b2f29f47f5ab05b50d46698d33a8c37210b69b09f4dd4e4ff3528942d3180
+map-g1__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	60	def6a7ed879b7f4dca6e5e5775254e6bfc09b577c177c867c9a18efca54635af
+map-g2__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	87	768362334b121fe49eb4ae4d9a217770d11c6c4c3d15d28ca6e12749a3e0c82e
+map-g3__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	48	1648210253af78fb42725a1383f3b50a3b1896b10b29e4705210b4d39de562fc
+map-g4__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	47	f0b0ea464862b4f22c48f54fa56b21eac71eb7969409b3f0d83105b5d8e29e80
+map-k5__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	51	885c25c421744b925320ae6316405ad9dcbf1e7454240c4611726fb224d25b85
+map-n3__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	39	573f2e8f9a79a5b786ca1279204c27ea031856620193a68c5c0242f7dbccdb28
+map-s3__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	68	897525c88f0c3b65167a6b9afae143d9dd6f3c8415f652cb7042522f32ffe313
+map-s4__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	59	4cd78af3376a26439b0275b47728f6a02e9d1cf1f2664c387c1bc89396e45c57
+map-t1__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	71	62e49136e698b6a389173876d5d3913c8539ec0000560111cfa5168237ed0926
+map-t2__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	47	e35147790120b074ba8c7837810d485a16dd4ee3b47b20923e6f13a14eb28746
+map-v1__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	47	3e53bb6289b61fe7ddb519d27d8267ba6be3b09527e11369678bd65ca20e207f
+map-v2__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	39	c8d8687afacf2e1b3fab730d04314dd190f5b1dbfac667bd487b74cb07851f69
+map-v3__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	54	feba5befd7747b501289de22dd60e22999be836e3ad899c3446ffd7898c6f4ad
+map-v4__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	72	986b5a091430e8c9b816f049c34d3cb2ddad366f5c87acb45acbe85c5f9cda2e
+map-v5__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	68	becda31afffbaf5e0a782d24adee36c21304b018ee56481dacd70dce8b348b6c
+map-v6__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	71	6c9ec2e20ec19b1eeab6f0a1172a559b8c1bc940a5432c6bd347ef4268ca655e
+map-v7__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	68	ae518f5d627744eca6be7bd6d491a1fd3b9ac8c6347ff2bf2061ce4e27bf0447
+map-v8__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	92	48491342cb18d0d5aff4ec07bfb84cfdfda313d0c11cb1ede4c410b90775f8da
+map-v9__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	76	9f3c62a86f3892450973fba49e01cc019bfe353e3cb44d0cf029ca0a50fcc15b
+map-y10__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	62	f7eaac10c1993982f89dccd7d8cea9ae50931e5a18e0b48bae951b707b98f324
+map-y4-1__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	47	4634401d8f0e8c6211e1d6bd1aad6e4a2be6d3a68659acb9aa702796b000e947
+map-y4-2__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	60	709f5a36bc3d266e8cff6e0febf7f2a7de1947f8153cf5a04fb96f666408fabc
+map-y4-3__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	84	bbe5beab8eee49ccaa329cdcce8a179de8eae724d9f6de97028301e53a70ba7a
+map-y4-4__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	72	a838021a9296ceca1c187985e2b2e245d69b56270ec110a06db82963cb530f90
+map-y5-1__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	46	8934693466281b78202144b8d94eb1079ef423be0a04c8b6d507c5d8043beebe
+map-y5-2__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	46	32c8bb43a55bf5b6def31f82c369201aebef2f0af9d87f7d421a9bd074a4a85c
+map-y5-3__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	48	658ba8b3e32f2242d60c8f93312817f8d40a1c077d1cefc366f3f23304caa429
+map-y5-4__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	52	c2835d1246678f17c7fb1cb55b950e8c8caea5c82b3dfa879ef168398fc9ccb9
+map-y6__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	65	9dd87130b6ad2602ac31f3ca32c324a2f524b1c3f2db491d268d4eb600a0f051
+map1__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	52	eea56124071f266cdb7611c46a8e05f051a184ea0ff81f77197101bcab0e6c88
+mont-88__itani	contest	binary	single-source	Montreal		1988			16	16	0	0	N	7-7;8-7;7-8;8-8	47	d8682cc79511dd72fd927c2a0d85bd053c7ff876c7707d92484161c4e914815c
+mr1__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	23	e890d97eb0217476e8792b3e627046c0f999770cf14abe03f0b56a8d03ee56ec
+mr6__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	23	e890d97eb0217476e8792b3e627046c0f999770cf14abe03f0b56a8d03ee56ec
+mtest__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	77	4cad5e25343b4021c76b80da92fa73cdbba6c47a36fba2fb949b24b1a3d70174
+namae__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	96	211196f1e2d9bbe4441c4348c70bd8ecd33047a99d5fb85fcb51559c8fee159e
+quo4__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	14	df09064dab7f64dd622c798011c9741fbdc9ae87c7ffc013173b39de992fe75e
+shi2__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	20	b00d9f256d67d28bd813569f6ae6a3be469177ad58890f43b8e3234769f26bb8
+shi__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	24	227f6a83095b80659d151b407550d0327e46193eb6c1a75142eef6ff5afe0472
+shiba__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	86	6a30f35bf74dbffd8c3d50e6d998b2255472345c09734a4dd1fa1d33aa514028
+shikai__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	24	118746afd5fbb25d557f4ea59bc0376f76c7a273d2450b64ea2fa1e407416f23
+shima1__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	24	d2aec548b39f14a0ee5941e9688d518ddb8cef6ed9a270bb3a458db421def85c
+sing87__itani	contest	binary	single-source	Singapore		1987			16	16	0	0	N	7-7;8-7;7-8;8-8	48	9489df6b7cda053d949ec5331ba867e83476cffbe884568d68022822cf16df2c
+sing88__itani	contest	binary	single-source	Singapore		1988			16	16	0	0	N	7-7;8-7;7-8;8-8	39	fe30a467d73e9c54ab9dd8462eb98e5454e1a4e064e3f1b3aee75cc5a71cfd07
+sing89__itani	contest	binary	single-source	Singapore		1989			16	16	0	0	N	7-7;8-7;7-8;8-8	87	35907d2007d4c1cf6c67f57d7c1d23bd79b0f22341aa11565146eccb84b8cfe5
+sing89su__itani	contest	binary	single-source	Singapore		1989			16	16	0	0	N	7-7;8-7;7-8;8-8	62	39960e8e44114776eb3b8b1ce897a2cf1dac3554be619ecac86d247582292d7d
+sizuka__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	28	c023c2b9f3d0edda13ee0adea1067f5dc789891dcbd3d6b6545b0c23821491d3
+soulu3__itani	contest	binary	single-source	Soulu					16	16	0	0	N	7-7;8-7;7-8;8-8	44	90a86170e61812ec90d0096e2264c5990aa989becfe8059a7b1e99d7c4cb104d
+sunada__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	23	38fe6cfecf84a1c8270b1e8d131bd9e34b9d22e4cd380c81fb47e4b443505eba
+sundo-1__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	83	0f49270988d5fe01efb37319d20e6d86872a252fd25eac4b2c3d712649e5175a
+sunkai__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	14	90c166622f3cf8859bb89acca34c0fd786e39dfd301dc0a9c46eed0010ed2b37
+supo1__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	111	b6c9984ee32e0cd0a30aa6a464838f97d8ebd70b4f56fd3b73d2dc76884831f4
+supo2__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	110	5bf7d8eaf45bffb00c8256ba5f898b0ed933431a4fad62eea04e71c25e0b39de
+supo3__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	110	18835edeae53c81e07c4943c4ab787a3d6faa6eae842f44c8b8ae8fbd8853379
+supo4__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	44	d0a2e50e25f9fd0f09ba043151f6403888a5302e8407b5f8f32106aebc13dd86
+taisho__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	31	515b3f09970dd1fb2a17069db142eaacb55efbdf97ecec69ac2cbf082d549e16
+us-87__itani	contest	binary	single-source	US		1987			16	16	0	0	N	7-7;8-7;7-8;8-8	81	4c1217844ad481f9ec91ef3764654811768859ab29392b791f1e532901587abc
+us-88__itani	contest	binary	single-source	US		1988			16	16	0	0	N	7-7;8-7;7-8;8-8	75	0eaf1452811368ec27108684bec2f29faca39d1c9efb5cd23bc120834f52b77d
+usa-1__itani	contest	binary	single-source	USA					16	16	0	0	N	7-7;8-7;7-8;8-8	32	720a1493dfc79fbaf575518550bd3f005ebd8490c70db861a30b2c8bc3f593e7
+usa-2__itani	contest	binary	single-source	USA					16	16	0	0	N	7-7;8-7;7-8;8-8	46	6bcb10e0e74db9a987a250f0298e622922c8f2b27e5d20953cee50617553a8d0
+v-supo__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	29	9640cd27c38971d499a0142e60361548602b1815fa4d15e807f50f4afcbaf459
+vm1__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	14	82d3d3fdfd9e5535e0debb406b95d5941917878af70d2e66bc5d0dfc417fb65a
+vm2__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	15	c122af04c4906a51b83511aeb0968153f93f94585053f5407acc543b36c8fe6e
+vm3__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	19	33f70673a46576947a4fe94f268f24fdf2b415d6bb727cd809195bb47834dc5f
+wmmc-v1__itani	contest	binary	single-source	World85		1985			16	16	0	0	N	7-7;8-7;7-8;8-8	85	f125a48a6678706d552a127ec389aec52392c26fd3395ec655bf2646c21cc5b0
+wmmc-v2__itani	contest	binary	single-source	World85		1985			16	16	0	0	N	7-7;8-7;7-8;8-8	35	1ef3967ed45dacfa551a8db54001218fb5f30e2ae3e92494d91798317f1338f6
+wmmc-y1__itani	contest	binary	single-source	World85		1985			16	16	0	0	N	7-7;8-7;7-8;8-8	69	5c67889c04a95edd302b617738a9ae97d13c5f26987c071a9b67d6eb11a35629
+wmmc-y2__itani	contest	binary	single-source	World85		1985			16	16	0	0	N	7-7;8-7;7-8;8-8	69	8e18b4dfc768bdf167455b396b1c39b58e83d7122f521201447be70e328c357c
+world1__itani	contest	binary	single-source	World85		1985			16	16	0	0	N	7-7;8-7;7-8;8-8	85	f125a48a6678706d552a127ec389aec52392c26fd3395ec655bf2646c21cc5b0
+yama7__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	53	b2c1239cd997117f8d5da8f488585d04a498252bc4adb301b6644cb359608754
+yama89__itani	handmade	binary	single-source						16	16	0	0	N	7-7;8-7;7-8;8-8	39	573f2e8f9a79a5b786ca1279204c27ea031856620193a68c5c0242f7dbccdb28
