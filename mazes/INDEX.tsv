@@ -1,0 +1,103 @@
+id	kind	source_type	confidence	series	edition	year	class	stage	width	height	start_x	start_y	start_heading	goal	D0	content_sha256
+APEC2002_2002	contest	bmp	single-source	APEC2002		2002			16	16	0	0	N	7-7;8-7;7-8;8-8	84	6c16001da2a780a4db5b287c125529b9ceb4cf63dfb2e26b422ed02eb4f9de77
+AllJapan_001_1980	contest	bmp	single-source	AllJapan	1	1980			16	16	0	0	N	7-7;8-7;7-8;8-8	29	ed0c9269d1e6efcc37ac700721a34837c562802b342336e3fc3899a9d3a93ff4
+AllJapan_002_1981	contest	bmp	single-source	AllJapan	2	1981			16	16	0	0	N	7-7;8-7;7-8;8-8	39	40cf7925eb29aed80707547d59b26d7241105216a7bf16e25d546aebad2982f9
+AllJapan_003_1982	contest	bmp	single-source	AllJapan	3	1982			16	16	0	0	N	7-7;8-7;7-8;8-8	54	feba5befd7747b501289de22dd60e22999be836e3ad899c3446ffd7898c6f4ad
+AllJapan_004_1983	contest	bmp	single-source	AllJapan	4	1983			16	16	0	0	N	7-7;8-7;7-8;8-8	72	986b5a091430e8c9b816f049c34d3cb2ddad366f5c87acb45acbe85c5f9cda2e
+AllJapan_005_1984	contest	bmp	single-source	AllJapan	5	1984			16	16	0	0	N	7-7;8-7;7-8;8-8	68	becda31afffbaf5e0a782d24adee36c21304b018ee56481dacd70dce8b348b6c
+AllJapan_006_1985_fin	contest	bmp	single-source	AllJapan	6	1985		final	16	16	0	0	N	7-7;8-7;7-8;8-8	65	9dd87130b6ad2602ac31f3ca32c324a2f524b1c3f2db491d268d4eb600a0f051
+AllJapan_006_1985_pre	contest	bmp	single-source	AllJapan	6	1985		preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	71	6c9ec2e20ec19b1eeab6f0a1172a559b8c1bc940a5432c6bd347ef4268ca655e
+AllJapan_007_1986_fin	contest	bmp	single-source	AllJapan	7	1986		final	16	16	0	0	N	7-7;8-7;7-8;8-8	68	ae518f5d627744eca6be7bd6d491a1fd3b9ac8c6347ff2bf2061ce4e27bf0447
+AllJapan_007_1986_pre	contest	bmp	single-source	AllJapan	7	1986		preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	84	b539a80e11714030a22fbc5a37795f2030082dd79e1ad9c382b8f666f6b4d74d
+AllJapan_008_1987_fin	contest	bmp	single-source	AllJapan	8	1987		final	16	16	0	0	N	7-7;8-7;7-8;8-8	92	48491342cb18d0d5aff4ec07bfb84cfdfda313d0c11cb1ede4c410b90775f8da
+AllJapan_008_1987_pre	contest	bmp	single-source	AllJapan	8	1987		preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	59	90a0bb1caafd22ca8a684e9fe8e877e2a710a3389bc90c58fdd9ddf716189374
+AllJapan_009_1988_fin	contest	bmp	single-source	AllJapan	9	1988		final	16	16	0	0	N	7-7;8-7;7-8;8-8	76	9f3c62a86f3892450973fba49e01cc019bfe353e3cb44d0cf029ca0a50fcc15b
+AllJapan_009_1988_pre	contest	bmp	single-source	AllJapan	9	1988		preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	53	d73af7505f3f4189ccb082ab662ce3913108cd94a7e71ac3f450a180fba32c9f
+AllJapan_010_1989_fin	contest	bmp	single-source	AllJapan	10	1989		final	16	16	0	0	N	7-7;8-7;7-8;8-8	66	e6a328d7256b7558adac8d2021252e331bdf4aacbcf58721950235ef1b3f2639
+AllJapan_010_1989_pre	contest	bmp	single-source	AllJapan	10	1989		preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	60	4b775a371b2d66171cd397352ea4c81c1aa954ad30d45a5b4b126a0552e8f95d
+AllJapan_011_1990_exp_fin	contest	bmp	single-source	AllJapan	11	1990	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	84	86faacda9c46e1ab293c9caba1b1d5ca738d9ac2af54a4e1255bcd85a2434bae
+AllJapan_011_1990_exp_pre	contest	bmp	single-source	AllJapan	11	1990	expert	preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	98	da066cc684f3c93ad8003a87ce0da961ec9f4004490c1f06b5b922ca2db45924
+AllJapan_011_1990_frsh	contest	bmp	single-source	AllJapan	11	1990	freshman		16	16	0	0	N	7-7;8-7;7-8;8-8	66	4b89305e4ddcf16528f213033936a1a62123735d09c4bfbb27c19682c3508555
+AllJapan_012_1991_exp_fin	contest	bmp	single-source	AllJapan	12	1991	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	64	b12694548ee3edd2c30bdc171968c9b97a9f33c42217f657f93b556364ba370b
+AllJapan_012_1991_frsh	contest	bmp	single-source	AllJapan	12	1991	freshman		16	16	0	0	N	7-7;8-7;7-8;8-8	47	674b5800042e7619f77f1200f4b45e326369a53702bf0db460bf315a3af99338
+AllJapan_013_1992_exp_fin	contest	bmp	single-source	AllJapan	13	1992	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	64	c759defc68e7833a3a4b25fc2fb4d68e11140981eddc0851e0e36421d2d59b9f
+AllJapan_013_1992_exp_pre	contest	bmp	single-source	AllJapan	13	1992	expert	preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	46	00f1620b52b613400d199074995a2b551e08a5baeb8e4126c4871f815d6fc5bd
+AllJapan_013_1992_frsh	contest	bmp	single-source	AllJapan	13	1992	freshman		16	16	0	0	N	7-7;8-7;7-8;8-8	46	74be6694e631dcdba975b480b0e8c2d41515a09acdf1edde1f523d2adb55ad8c
+AllJapan_014_1993_exp_fin	contest	bmp	single-source	AllJapan	14	1993	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	66	b78f56d77e105b21460746670966591a704ebebbbc65fb7759adc4f063a18d06
+AllJapan_014_1993_exp_pre	contest	bmp	single-source	AllJapan	14	1993	expert	preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	54	4a12ac5031cb7eb22ed61cbedbc403c910150b37478f9eb1a603928744af6688
+AllJapan_014_1993_frsh	contest	bmp	single-source	AllJapan	14	1993	freshman		16	16	0	0	N	7-7;8-7;7-8;8-8	48	0766c17cbd035692fe4e966314646dd6823b37e10647a1747e5743a84a334e8c
+AllJapan_015_1994_exp_fin	contest	bmp	single-source	AllJapan	15	1994	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	66	238387610d36b0d747a4f266e7949856e8d612bc294a7451fe4180c279979ee2
+AllJapan_015_1994_exp_pre	contest	bmp	single-source	AllJapan	15	1994	expert	preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	52	4a7cee9663faee95a016de780d1c1ef13b32685742e38da31d6de9386d6cf9fd
+AllJapan_015_1994_frsh	contest	bmp	single-source	AllJapan	15	1994	freshman		16	16	0	0	N	7-7;8-7;7-8;8-8	44	f7790ff724c5aaf38597cb4995f93c4808266e1ed831ee2d8988271666f94238
+AllJapan_016_1995_exp_fin	contest	bmp	single-source	AllJapan	16	1995	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	64	c759defc68e7833a3a4b25fc2fb4d68e11140981eddc0851e0e36421d2d59b9f
+AllJapan_016_1995_exp_pre	contest	bmp	single-source	AllJapan	16	1995	expert	preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	52	08da79428065ebf02b1a3dfc8254d01348d55dc38c114d66a10fd9c8572cba0b
+AllJapan_016_1995_frsh	contest	bmp	single-source	AllJapan	16	1995	freshman		16	16	0	0	N	7-7;8-7;7-8;8-8	51	2fd889441ea50fed65577224531f85b85b48b8cac57e4e5ebd59463e000eb953
+AllJapan_017_1996_exp_fin	contest	bmp	single-source	AllJapan	17	1996	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	74	dff77eb663017befdc072e8ada33ada55cd8812af876332175a3386a5e48f7ac
+AllJapan_017_1996_exp_pre	contest	bmp	single-source	AllJapan	17	1996	expert	preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	55	a6fd37f6b381b60c02a2f140e642bd95ad93c6994214c1ef0d393f20016f1707
+AllJapan_017_1996_frsh	contest	bmp	single-source	AllJapan	17	1996	freshman		16	16	0	0	N	7-7;8-7;7-8;8-8	43	4bc7d7759b9ca2ae49eb08b8a419b35ebb981cee5e8980e9c6442ddf73b1552c
+AllJapan_018_1997_exp_fin	contest	bmp	single-source	AllJapan	18	1997	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	68	29fc1576b435141051b3a448355bae5848ee20aec041b46539ea1029d1216314
+AllJapan_018_1997_exp_pre	contest	bmp	single-source	AllJapan	18	1997	expert	preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	54	cdb8c2b144a23292e59760a569736066938dbe88f19f56f0f857069275b1d4d4
+AllJapan_018_1997_frsh	contest	bmp	single-source	AllJapan	18	1997	freshman		16	16	0	0	N	7-7;8-7;7-8;8-8	41	cf5f71ae82b4b63c881506cba39e5f66585b91e5223a58f057d13d188283557f
+AllJapan_019_1998_exp_fin	contest	bmp	single-source	AllJapan	19	1998	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	67	03950bfa4aca11746b4c9913d019aa942f820023477b6e75867d03617d394403
+AllJapan_019_1998_exp_pre	contest	bmp	single-source	AllJapan	19	1998	expert	preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	53	aefff2cb6953381c082674eeb4a28651582aa2d94f854ea1e7531c3c18d52b96
+AllJapan_019_1998_frsh	contest	bmp	single-source	AllJapan	19	1998	freshman		16	16	0	0	N	7-7;8-7;7-8;8-8	45	8724c8b63b8509c8b1c7a4e3ecd5b5dee9294cd015eb6386e56a3ff4cfbfb38e
+AllJapan_028_2007_exp_fin	contest	bmp	single-source	AllJapan	28	2007	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	71	1658fd03c8f53a4174b491495454646c97302c7332ead645a452e874a89993bd
+AllJapan_028_2007_frsh	contest	bmp	single-source	AllJapan	28	2007	freshman		16	16	0	0	N	7-7;8-7;7-8;8-8	46	de448ada845ad265b3af4619831e78bf069a2611966ef1846bda0122d5432fff
+AllJapan_029_2008_exp_fin	contest	bmp	single-source	AllJapan	29	2008	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	72	8ae1c7927b80ba092404130e6cb87f0b658b050e1cf57f1f8cfb0d952a32de8f
+AllJapan_029_2008_exp_pre	contest	bmp	single-source	AllJapan	29	2008	expert	preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	64	ff8227d43fa3d8fe1ad1aecc0aaaf72f7b2679237ef17a32548b2f3db9a00495
+AllJapan_029_2008_frsh	contest	bmp	single-source	AllJapan	29	2008	freshman		16	16	0	0	N	7-7;8-7;7-8;8-8	24	8cdf698155758ea5acffc547efa22f009f70a7eaf185198faaf05313f442e6b0
+AllJapan_030_2009_exp_fin	contest	bmp	single-source	AllJapan	30	2009	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	59	7c196548c52e77f95bf6f8128b782e21f20661201e3d78740e1a5e30ab137611
+AllJapan_030_2009_exp_pre	contest	bmp	single-source	AllJapan	30	2009	expert	preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	58	574d4bb4c363a447955cb60078fdcd78b69b5c5266ab6fe5c09420df80c52c13
+AllJapan_030_2009_frsh	contest	bmp	single-source	AllJapan	30	2009	freshman		16	16	0	0	N	7-7;8-7;7-8;8-8	52	7b4286321368fedd4413a4f5f5e915cf22a1efdb6eed98d47207ff7b71fcdda4
+AllJapan_031_2010_exp_fin	contest	bmp	single-source	AllJapan	31	2010	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	57	855ed30fc4a0e65ece8b95ff9b6ec0f0e0cd35d13e522dd59e3ccbd57f107e79
+AllJapan_031_2010_exp_pre	contest	bmp	single-source	AllJapan	31	2010	expert	preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	66	096bda3317eff959bab1d950b1e46730ab743e3e3b41930dfe8589f05a4b0076
+AllJapan_031_2010_frsh	contest	bmp	single-source	AllJapan	31	2010	freshman		16	16	0	0	N	7-7;8-7;7-8;8-8	38	61021c355f4319565e4d273e670b243a989a889f10ad5207b0c61e7bf0633fe5
+AllJapan_032_2011_exp_fin	contest	bmp	single-source	AllJapan	32	2011	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	54	d5c4b3d3b024a750bc79c841fdfe047d2b8e0c5d918686560e4efff9386075a1
+AllJapan_032_2011_exp_pre	contest	bmp	single-source	AllJapan	32	2011	expert	preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	56	c55d4650c535c604a29456424864c8f923ab0fad1efd552b40905722082280d6
+AllJapan_032_2011_frsh_fin	contest	bmp	single-source	AllJapan	32	2011	freshman	final	16	16	0	0	N	7-7;8-7;7-8;8-8	50	02db67f17a8fbad7705f503c3c4ef0cb41236c5279d2394134a5d7add0545c31
+AllJapan_033_2012_exp_fin	contest	bmp	single-source	AllJapan	33	2012	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	69	3d805f963c262716e9c94b35155928f1aa358b1ba828c25b89cacbb5574a4656
+AllJapan_033_2012_exp_pre	contest	bmp	single-source	AllJapan	33	2012	expert	preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	68	f00d16b709aa1b94597c9b9876b3a7356dfaf2abf7c1226be1e47d1617bd99c6
+AllJapan_033_2012_frsh_fin	contest	bmp	single-source	AllJapan	33	2012	freshman	final	16	16	0	0	N	7-7;8-7;7-8;8-8	55	4e2e154e5d6133207469d9b2ba2ab2095598fd6eb5c90fb6b0bb68b32ee22628
+Chubu_014_1995	contest	bmp	single-source	Chubu	14	1995			16	16	0	0	N	7-7;8-7;7-8;8-8	50	165b1e7aa7e10416eac7d887c9c4c05ec7b3efae7c6e820028b34d71f9fdfda0
+Chubu_015_1996	contest	bmp	single-source	Chubu	15	1996			16	16	0	0	N	7-7;8-7;7-8;8-8	47	52f5384005cb568a04eccc24b2cf8c5fae294e5985b9e3a96603e567d94936cc
+Chubu_016_1997	contest	bmp	single-source	Chubu	16	1997			16	16	0	0	N	7-7;8-7;7-8;8-8	48	8d62e71ca664e6862c9249bb2f796ff9762d913732068dfe83d0b0033c39cc88
+Chubu_017_1998	contest	bmp	single-source	Chubu	17	1998			16	16	0	0	N	7-7;8-7;7-8;8-8	54	447b8a3c1d1b5df5e90f58a3948542e3a706bdacf67e1f265a4eb60ccc35097a
+Chubu_018_1999	contest	bmp	single-source	Chubu	18	1999			16	16	0	0	N	7-7;8-7;7-8;8-8	51	77a6772d1d237fdfcdbc0219c50fe0aa1d073278cf8ce6fde0fb1c355dca3527
+EastJapan_013_1995	contest	bmp	single-source	EastJapan	13	1995			16	16	0	0	N	7-7;8-7;7-8;8-8	50	09f60e788ad007fbf03e6274ae85f762b5abc4abdb782200304fc3285945e910
+EastJapan_014_1996	contest	bmp	single-source	EastJapan	14	1996			16	16	0	0	N	7-7;8-7;7-8;8-8	55	4e3549645f14d699a7ba6d3089985ee71aca979be2bd43b4ea4d104b5c0a0751
+EastJapan_015_1997	contest	bmp	single-source	EastJapan	15	1997			16	16	0	0	N	7-7;8-7;7-8;8-8	45	0bebd89b178580883c1061575d4006187471b0a2ab61e6c8fe1293968e830ab2
+EastJapan_016_1998	contest	bmp	single-source	EastJapan	16	1998			16	16	0	0	N	7-7;8-7;7-8;8-8	50	c28d21ec4a24bd3ddcb7827fa67db0216d96c4e0ad68d0ce4afcd6801710c51c
+EastJapan_017_1999	contest	bmp	single-source	EastJapan	17	1999			16	16	0	0	N	7-7;8-7;7-8;8-8	51	6375d0e2bf5c58a562db26ae3dba162455858c4ac17ad717dbf85497a8018480
+EastJapan_024_2006	contest	bmp	single-source	EastJapan	24	2006			16	16	0	0	N	7-7;8-7;7-8;8-8	55	56c4990c7a549f44254a3ded22be79eb52bc370abca3e8a39ec071627a2f9178
+EastJapan_028_2010	contest	bmp	single-source	EastJapan	28	2010			16	16	0	0	N	7-7;8-7;7-8;8-8	52	976faceaa4a1baaae4a1b37d165029ba4766f836c073d41fc09a42b61563314e
+EastJapan_029_2011	contest	bmp	single-source	EastJapan	29	2011			16	16	0	0	N	7-7;8-7;7-8;8-8	57	2b643e0a61d054727b8b4d6c86de1b0a6ec3010d015ae8cfb11d52d8ae0e48fb
+EastJapan_030_2012	contest	bmp	single-source	EastJapan	30	2012			16	16	0	0	N	7-7;8-7;7-8;8-8	56	ec230c246f545537c4bd99708d6524b1669f61127b13784c41f1de8dc6997027
+Hokkaido_008_1995	contest	bmp	single-source	Hokkaido	8	1995			16	16	0	0	N	7-7;8-7;7-8;8-8	51	fb02b387a9b931a91d216a326f23216a99672acfbd27f18ebb0b1773db733699
+Hokuriku_013_1995	contest	bmp	single-source	Hokuriku	13	1995			16	16	0	0	N	7-7;8-7;7-8;8-8	52	3da32ee3847e950fce607989597ed7477b669cc58b9e03d4c7c86df7acdd12bf
+Hokuriku_014_1996	contest	bmp	single-source	Hokuriku	14	1996			16	16	0	0	N	7-7;8-7;7-8;8-8	53	2aa6edd6f8356f71e5728b5c87f6656e55d17624c3abdafa02b97aeba579c0ca
+Hokuriku_015_1997	contest	bmp	single-source	Hokuriku	15	1997			16	16	0	0	N	7-7;8-7;7-8;8-8	51	b5aec2099457260ba8dcb0d7f9c568be2d6205d75a2fcd0de0b90d8cd97b7b07
+Hokuriku_030_2012	contest	bmp	single-source	Hokuriku	30	2012			16	16	0	0	N	7-7;8-7;7-8;8-8	54	432bfee20e71aa317e294d3eca8b1f5102965b639527a6ba9dae7dbe18e1514d
+IEE1993_1993	contest	bmp	single-source	IEE1993		1993			16	16	0	0	N	7-7;8-7;7-8;8-8	47	3f6c513a22f399179381f4023e2c63650c6104bd0244389c9503e2948d7e6ece
+Kyushu_015_1996	contest	bmp	single-source	Kyushu	15	1996			16	16	0	0	N	7-7;8-7;7-8;8-8	51	6be5d65608496b80c7ca1d8ce86bff6fa9ad689c3c1f59cc46c6e6783868c0d9
+Kyushu_016_1997	contest	bmp	single-source	Kyushu	16	1997			16	16	0	0	N	7-7;8-7;7-8;8-8	53	70722282f3ccd0b95bf10d015a693f1d3fd78b8b2a1be631820506ddea67e55f
+Kyushu_017_1998	contest	bmp	single-source	Kyushu	17	1998			16	16	0	0	N	7-7;8-7;7-8;8-8	49	09c11826912496adb800e70ea116c5c63193c99a9b9fd70f8fe0b84472e3f661
+NorthEast_009_1995	contest	bmp	single-source	NorthEast	9	1995			16	16	0	0	N	7-7;8-7;7-8;8-8	50	037ab66d1c8e0fca02ed7889734907a329a745c689fa2adf58b2100f3593cd19
+NorthEast_009_1995_frsh	contest	bmp	single-source	NorthEast	9	1995	freshman		16	16	0	0	N	7-7;8-7;7-8;8-8	40	52acad62c97fffcf5d4b80b7bcc99df02f51c4e23d9677a5aa83f8c66448379b
+NorthEast_010_1996	contest	bmp	single-source	NorthEast	10	1996			16	16	0	0	N	7-7;8-7;7-8;8-8	57	b9229677635f92a6f1f3de89894fca2fd2a63bf5360e8609868375c411ed3702
+NorthEast_010_1996_frsh	contest	bmp	single-source	NorthEast	10	1996	freshman		16	16	0	0	N	7-7;8-7;7-8;8-8	42	9056f702329dbcd98f79574ec8e38f998ced4d277e4e494737d87c2aa6550e4b
+NorthEast_011_1997	contest	bmp	single-source	NorthEast	11	1997			16	16	0	0	N	7-7;8-7;7-8;8-8	50	6b781c7d3da79241b1168e6aa5c3bcc3893efa5c4ba5672c93f740944afdc520
+NorthEast_011_1997_frsh	contest	bmp	single-source	NorthEast	11	1997	freshman		16	16	0	0	N	7-7;8-7;7-8;8-8	45	209b1b171bfe5ed74262ccf4d6f90406b6d4d4195861aabe58edf477d4a08a89
+NorthEast_012_1998	contest	bmp	single-source	NorthEast	12	1998			16	16	0	0	N	7-7;8-7;7-8;8-8	54	35b1545f5dbe1e0fd6a5bf3d846b3b55dedd49907dceb2244b03b6fa4b0cf7d8
+NorthEast_013_1999__maybe	contest	bmp	single-source	NorthEast	13	1999			16	16	0	0	N	7-7;8-7;7-8;8-8	51	6bf6964173f5d1db6c765cc5a4e10d78c27fc51be98930793e2f588f1c67fce6
+Other(HokuRobo)_001_1998	contest	bmp	single-source	Other(HokuRobo)	1	1998			16	16	0	0	N	7-7;8-7;7-8;8-8	52	fff2ff1d9e3a9d71ad3cf37d066a83f5d3b3a8d07c86be6aaa776e6a98f702bb
+Other(HokuRobo)_002_1999	contest	bmp	single-source	Other(HokuRobo)	2	1999			16	16	0	0	N	7-7;8-7;7-8;8-8	45	1b2747a74c48d2ec9753f38eda3874225ca04027b0f51914e8149e97d0d99a4f
+Other(World85Fin)_1985	contest	bmp	single-source	Other(World85Fin)		1985			16	16	0	0	N	7-7;8-7;7-8;8-8	85	f125a48a6678706d552a127ec389aec52392c26fd3395ec655bf2646c21cc5b0
+Other(World85Pre1)_1985	contest	bmp	single-source	Other(World85Pre1)		1985			16	16	0	0	N	7-7;8-7;7-8;8-8	69	6bd0d43d062ebd7c332ea7f8ae1047c84266fd2c13a3758647723a7a1ed30687
+Other(World85Pre2)_1985	contest	bmp	single-source	Other(World85Pre2)		1985			16	16	0	0	N	7-7;8-7;7-8;8-8	69	8e18b4dfc768bdf167455b396b1c39b58e83d7122f521201447be70e328c357c
+Other(uk2000)_2000	contest	bmp	single-source	Other(uk2000)		2000			16	16	0	0	N	7-7;8-7;7-8;8-8	25	5924a6e6582e873ea3d6a78a8c7eb78e7b5e935458dcc47661cd0dfd9b12efb5
+Student_010_1995	contest	bmp	single-source	Student	10	1995			16	16	0	0	N	7-7;8-7;7-8;8-8	50	ab429b30ef3f5194e57116dd954ab4570ae38aecd9b195f408c3c664ce4553f5
+Student_011_1996	contest	bmp	single-source	Student	11	1996			16	16	0	0	N	7-7;8-7;7-8;8-8	59	39c12160ea4fb02d966440e42b1abff32ac4a898ad20cab59cf16066ebf70ac0
+Student_012_1997	contest	bmp	single-source	Student	12	1997			16	16	0	0	N	7-7;8-7;7-8;8-8	50	e8eb2b02894742dc0d35b3b9b8eb121d90ec060012a6eae77a51e7e59e816b63
+Student_013_1998	contest	bmp	single-source	Student	13	1998			16	16	0	0	N	7-7;8-7;7-8;8-8	55	59d18a256cc8ae577e5cdc04fa88e59410f397ae9fea999fe438b5d5db933355
+Student_014_1999	contest	bmp	single-source	Student	14	1999			16	16	0	0	N	7-7;8-7;7-8;8-8	57	03e688d8772c22262576da47b4065ad84315ea6c777b2f7f648ddcde729ef105
+Student_027_2012	contest	bmp	single-source	Student	27	2012			16	16	0	0	N	7-7;8-7;7-8;8-8	46	059806d94491fe8aed26049f16bbd7618629759ebeab14641ae4aa2220e80fb0
