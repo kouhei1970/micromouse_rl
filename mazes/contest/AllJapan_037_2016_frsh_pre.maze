@@ -1,0 +1,36 @@
+---
+id: AllJapan_037_2016_frsh_pre
+size: [8, 8]
+start: [0, 0]
+start_heading: N
+goal: [[7, 7]]
+series: AllJapan
+edition: 37
+year: 2016
+class: freshman
+stage: preliminary
+source_type: ascii
+source: "kerikun11/micromouse-maze-data data/08MM2016CF_pre.maze"
+source_url: "https://github.com/kerikun11/micromouse-maze-data"
+retrieved: 2026-08-23
+confidence: single-source
+notes: "ファイル名 'CF' を X=エキスパートに倣い F=フレッシュマンと解釈した（未確認の推測）。8×8 という小さい区画数は初心者クラスと整合するが一次資料での裏取りはできていない。edition は既存面の年→回の関係式（AllJapan: year-1979）を延長した推定値。"
+content_sha256: 0e8e8cb3eb91dbc17565087d161ecde87cb5f80efe97fafc22eddf6194055cbb
+---
++---+---+---+---+---+---+---+---+
+|       |           |         G |
++   +---+---+---+---+   +---+---+
+|                   |       |   |
++   +---+---+---+   +---+   +   +
+|               |           |   |
++---+   +---+---+   +---+   +---+
+|               |   |           |
++---+---+---+   +   +   +---+   +
+|               |   |       |   |
++   +---+   +---+   +   +---+   +
+|   |   |   |   |   |           |
++   +   +   +   +   +---+   +---+
+|   |   |       |           |   |
++   +   +   +---+---+---+   +   +
+| S |                       |   |
++---+---+---+---+---+---+---+---+

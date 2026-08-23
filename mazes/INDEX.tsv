@@ -55,14 +55,40 @@ AllJapan_031_2010_frsh	contest	bmp	single-source	AllJapan	31	2010	freshman		16	1
 AllJapan_032_2011_exp_fin	contest	bmp	single-source	AllJapan	32	2011	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	54	d5c4b3d3b024a750bc79c841fdfe047d2b8e0c5d918686560e4efff9386075a1
 AllJapan_032_2011_exp_pre	contest	bmp	single-source	AllJapan	32	2011	expert	preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	56	c55d4650c535c604a29456424864c8f923ab0fad1efd552b40905722082280d6
 AllJapan_032_2011_frsh_fin	contest	bmp	single-source	AllJapan	32	2011	freshman	final	16	16	0	0	N	7-7;8-7;7-8;8-8	50	02db67f17a8fbad7705f503c3c4ef0cb41236c5279d2394134a5d7add0545c31
-AllJapan_033_2012_exp_fin	contest	bmp	single-source	AllJapan	33	2012	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	69	3d805f963c262716e9c94b35155928f1aa358b1ba828c25b89cacbb5574a4656
+AllJapan_033_2012_exp_fin	contest	bmp	confirmed	AllJapan	33	2012	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	69	3d805f963c262716e9c94b35155928f1aa358b1ba828c25b89cacbb5574a4656
+AllJapan_033_2012_exp_fin__kerikun11	contest	ascii	confirmed	AllJapan	33	2012	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	69	3d805f963c262716e9c94b35155928f1aa358b1ba828c25b89cacbb5574a4656
 AllJapan_033_2012_exp_pre	contest	bmp	single-source	AllJapan	33	2012	expert	preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	68	f00d16b709aa1b94597c9b9876b3a7356dfaf2abf7c1226be1e47d1617bd99c6
 AllJapan_033_2012_frsh_fin	contest	bmp	single-source	AllJapan	33	2012	freshman	final	16	16	0	0	N	7-7;8-7;7-8;8-8	55	4e2e154e5d6133207469d9b2ba2ab2095598fd6eb5c90fb6b0bb68b32ee22628
+AllJapan_034_2013_exp_fin	contest	ascii	single-source	AllJapan	34	2013	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	105	2e28c15eb5308ab3d08e959d4ad364b019b340a5df6be66b793f4040c66b8877
+AllJapan_035_2014_exp_fin	contest	ascii	single-source	AllJapan	35	2014	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	104	0a5434671cdc35f492afb78a2c148d8eef176ad7702a2c29e4698cc1ce668662
+AllJapan_036_2015_exp_fin	contest	ascii	single-source	AllJapan	36	2015	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	85	5575d72a889d83d4ca0ad3781713f39ee1d4391059eb17cd5f43c0b9fc3e5bc7
+AllJapan_037_2016_exp_fin	contest	ascii	single-source	AllJapan	37	2016	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	74	738e95042ea84fb821c27031552633b3c0a6560d6f6fad97d377b7ed4742b0fc
+AllJapan_037_2016_frsh_pre	contest	ascii	single-source	AllJapan	37	2016	freshman	preliminary	8	8	0	0	N	7-7	24	0e8e8cb3eb91dbc17565087d161ecde87cb5f80efe97fafc22eddf6194055cbb
+AllJapan_038_2017_exp_fin	contest	ascii	single-source	AllJapan	38	2017	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	99	6be2257de2293208351eda87d6b9084ff31fc726b8bc76cab3871f7267d07a73
+AllJapan_038_2017_exp_pre	contest	ascii	single-source	AllJapan	38	2017	expert	preliminary	16	16	0	0	N	7-7;8-7;7-8;8-8	47	c511093fb4a76f778809a17937b9544a0690c724de81c0de56efaab35af9e727
+AllJapan_038_2017_k11hx_pre	contest	ascii	single-source	AllJapan	38	2017			16	16	0	0	N	4-4;5-4;4-5;5-5	54	9e1f836a81da5162790d1e76ddf5fe38572aa751b4aa993c5977f35e574ad2e9
+AllJapan_039_2018_exp_fin	contest	ascii	single-source	AllJapan	39	2018	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	84	6c16001da2a780a4db5b287c125529b9ceb4cf63dfb2e26b422ed02eb4f9de77
+AllJapan_039_2018_k11h_semi	contest	ascii	single-source	AllJapan	39	2018			16	16	0	0	N	12-12;13-12;12-13;13-13	74	1679d0eb663152652e7f0bb56aff6e5c05569c7b906f2cc315426dc6bf2edca9
+AllJapan_040_2019_exp_fin	contest	ascii	single-source	AllJapan	40	2019	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	75	2859ba0a3104b2a55b9a1e9b9a601dd8ae4673f071b9035cfd5148fffe9424be
+AllJapan_040_2019_k11h_semi	contest	ascii	single-source	AllJapan	40	2019			16	16	0	0	N	8-7;9-7;8-8;9-8	78	611cd839eb86194a46ae229c4116b70cf12b902952e8b9cb0130932c870f2b57
+AllJapan_041_2020_exp_fin	contest	ascii	single-source	AllJapan	41	2020	expert	final	16	16	0	0	N	7-7;8-7;7-8;8-8	41	b15da56e749d3b5ebe9d9440009c96fefde52037bb67f5f605152f156504d7cc
+AllJapan_042_2021_k11h_semi	contest	ascii	single-source	AllJapan	42	2021			16	16	0	0	N	6-9;7-9;6-10;7-10	70	e1d6f953e74f3fbbb7a368e5f437131a8d41c68af305309175650ed04dbf7d18
+Cheese9_2019_k11c	contest	ascii	single-source	Cheese9		2019			9	9	0	0	N	7-7;8-7;7-8;8-8	25	5e3edeb060217afeedde415dba05f24fd741024f586dc8bd30275e21f216d707
+Cheese9_2019_k11c_cand	contest	ascii	single-source	Cheese9		2019			9	9	0	0	N	7-7;8-7;7-8;8-8	25	22afe40051252d0acbb56c37e81e27ad46d12cdda5c3e189ab446aab5b5d9ebd
+Cheese_2017_k11h	contest	ascii	single-source	Cheese		2017			16	16	0	0	N	3-3;4-3;3-4;4-4	58	6b0ac65f9ddd51283869a4a121304fcab320e3f8533923c3ce2b389e346ecd4a
+Cheese_2019_k11h	contest	ascii	single-source	Cheese		2019			16	16	0	0	N	4-4;5-4;4-5;5-5	38	acdefac38936dc613b7fc1503939db036435f4e7285d32423e43661ed4c11cac
+Cheese_2019_k11h_cand	contest	ascii	single-source	Cheese		2019			16	16	0	0	N	4-4;5-4;4-5;5-5	35	33dfcbeb95446cbcff25b37017643be15af382ca783a44bc00aa7a678e6db412
 Chubu_014_1995	contest	bmp	single-source	Chubu	14	1995			16	16	0	0	N	7-7;8-7;7-8;8-8	50	165b1e7aa7e10416eac7d887c9c4c05ec7b3efae7c6e820028b34d71f9fdfda0
 Chubu_015_1996	contest	bmp	single-source	Chubu	15	1996			16	16	0	0	N	7-7;8-7;7-8;8-8	47	52f5384005cb568a04eccc24b2cf8c5fae294e5985b9e3a96603e567d94936cc
 Chubu_016_1997	contest	bmp	single-source	Chubu	16	1997			16	16	0	0	N	7-7;8-7;7-8;8-8	48	8d62e71ca664e6862c9249bb2f796ff9762d913732068dfe83d0b0033c39cc88
 Chubu_017_1998	contest	bmp	single-source	Chubu	17	1998			16	16	0	0	N	7-7;8-7;7-8;8-8	54	447b8a3c1d1b5df5e90f58a3948542e3a706bdacf67e1f265a4eb60ccc35097a
 Chubu_018_1999	contest	bmp	single-source	Chubu	18	1999			16	16	0	0	N	7-7;8-7;7-8;8-8	51	77a6772d1d237fdfcdbc0219c50fe0aa1d073278cf8ce6fde0fb1c355dca3527
+Chubu_034_2015_k11c	contest	ascii	single-source	Chubu	34	2015			16	16	0	0	N	7-7;8-7;7-8;8-8	54	730c3113e43bc32a188ca0335369f3c9d88ea08c2ee40a4279aa419f90218300
+Chubu_035_2016_k11c	contest	ascii	single-source	Chubu	35	2016			16	16	0	0	N	7-7;8-7;7-8;8-8	85	624060bcd03155e2aa8abbc57ed999f20b090e03bc3b81e9e8f15cdc63db4c02
+Chubu_036_2017_k11c	contest	ascii	single-source	Chubu	36	2017			16	16	0	0	N	7-7;8-7;7-8;8-8	115	cd660a8eb80577cb4f8743b2286f81bf25e75eaf627c73010dcc7c91aee91cb2
+Chubu_036_2017_k11h	contest	ascii	single-source	Chubu	36	2017			16	16	0	0	N	5-6;6-6;5-7;6-7	191	662778c588d34efd4ce4b5a22e2a4b2b710cca04f48a830d5ffb78d0518f58d6
+Chubu_037_2018_k11h	contest	ascii	single-source	Chubu	37	2018			16	16	0	0	N	9-9;10-9;9-10;10-10	52	5226d328f21653942a268df5bd5fabf2f36a0da9e6c00ef453e4716b6e4fc199
+Chubu_038_2019_k11h	contest	ascii	single-source	Chubu	38	2019			16	16	0	0	N	6-9;7-9;6-10;7-10	57	ef7a32652d4330be1940f777efa3d3d95c4272cb75d6f685e5924a2d8ef49c29
 EastJapan_013_1995	contest	bmp	single-source	EastJapan	13	1995			16	16	0	0	N	7-7;8-7;7-8;8-8	50	09f60e788ad007fbf03e6274ae85f762b5abc4abdb782200304fc3285945e910
 EastJapan_014_1996	contest	bmp	single-source	EastJapan	14	1996			16	16	0	0	N	7-7;8-7;7-8;8-8	55	4e3549645f14d699a7ba6d3089985ee71aca979be2bd43b4ea4d104b5c0a0751
 EastJapan_015_1997	contest	bmp	single-source	EastJapan	15	1997			16	16	0	0	N	7-7;8-7;7-8;8-8	45	0bebd89b178580883c1061575d4006187471b0a2ab61e6c8fe1293968e830ab2
@@ -72,15 +98,26 @@ EastJapan_024_2006	contest	bmp	single-source	EastJapan	24	2006			16	16	0	0	N	7-7
 EastJapan_028_2010	contest	bmp	single-source	EastJapan	28	2010			16	16	0	0	N	7-7;8-7;7-8;8-8	52	976faceaa4a1baaae4a1b37d165029ba4766f836c073d41fc09a42b61563314e
 EastJapan_029_2011	contest	bmp	single-source	EastJapan	29	2011			16	16	0	0	N	7-7;8-7;7-8;8-8	57	2b643e0a61d054727b8b4d6c86de1b0a6ec3010d015ae8cfb11d52d8ae0e48fb
 EastJapan_030_2012	contest	bmp	single-source	EastJapan	30	2012			16	16	0	0	N	7-7;8-7;7-8;8-8	56	ec230c246f545537c4bd99708d6524b1669f61127b13784c41f1de8dc6997027
+EastJapan_035_2017_k11c	contest	ascii	single-source	EastJapan	35	2017			16	16	0	0	N	7-7;8-7;7-8;8-8	70	b694a5193e38b368f82553075c6db90e3737be5866477a0c6d0abe9d1f655d40
+EastJapan_037_2019_k11h	contest	ascii	single-source	EastJapan	37	2019			16	16	0	0	N	6-9;7-9;6-10;7-10	51	e68433cbf22f9875b9017182876d0d9d149011a3ce298a56e257c13a3140b577
 Hokkaido_008_1995	contest	bmp	single-source	Hokkaido	8	1995			16	16	0	0	N	7-7;8-7;7-8;8-8	51	fb02b387a9b931a91d216a326f23216a99672acfbd27f18ebb0b1773db733699
 Hokuriku_013_1995	contest	bmp	single-source	Hokuriku	13	1995			16	16	0	0	N	7-7;8-7;7-8;8-8	52	3da32ee3847e950fce607989597ed7477b669cc58b9e03d4c7c86df7acdd12bf
 Hokuriku_014_1996	contest	bmp	single-source	Hokuriku	14	1996			16	16	0	0	N	7-7;8-7;7-8;8-8	53	2aa6edd6f8356f71e5728b5c87f6656e55d17624c3abdafa02b97aeba579c0ca
 Hokuriku_015_1997	contest	bmp	single-source	Hokuriku	15	1997			16	16	0	0	N	7-7;8-7;7-8;8-8	51	b5aec2099457260ba8dcb0d7f9c568be2d6205d75a2fcd0de0b90d8cd97b7b07
 Hokuriku_030_2012	contest	bmp	single-source	Hokuriku	30	2012			16	16	0	0	N	7-7;8-7;7-8;8-8	54	432bfee20e71aa317e294d3eca8b1f5102965b639527a6ba9dae7dbe18e1514d
+Hokuriku_037_2019_k11h	contest	ascii	single-source	Hokuriku	37	2019			16	16	0	0	N	6-9;7-9;6-10;7-10	63	70b10fbff7d98867e65110c53e2ec61789f48597f5f22f0aeeb262e9d931894e
 IEE1993_1993	contest	bmp	single-source	IEE1993		1993			16	16	0	0	N	7-7;8-7;7-8;8-8	47	3f6c513a22f399179381f4023e2c63650c6104bd0244389c9503e2948d7e6ece
+Kanazawa_2019_k11h	contest	ascii	single-source	Kanazawa		2019			16	16	0	0	N	6-9;7-9;6-10;7-10	59	f1003cd652dbcc9055ad9285fa18c703d9799d2b3ff9464cf2659426ece248ea
+Kansai_2016_k11h	contest	ascii	single-source	Kansai		2016			16	16	0	0	N	11-11;12-11;11-12;12-12	40	c4c1a9014bce74196e370920121f6ef3b38cda017e1b580192495d48c59864bf
+Kansai_2017_k11h	contest	ascii	single-source	Kansai		2017			16	16	0	0	N	5-6;6-6;5-7;6-7	43	92e5597e066382ccfc04429d8d18a427950c27400a2a81ce3d3f0d81efd3ae77
+Kansai_2018_k11h	contest	ascii	single-source	Kansai		2018			16	16	0	0	N	9-9;10-9;9-10;10-10	48	88835d00b79579f59d335b7781cdfebca7fb56d4ac688620abdf5f6d3c94b5fa
+Kansai_2019_k11h	contest	ascii	single-source	Kansai		2019			16	16	0	0	N	6-9;7-9;6-10;7-10	50	24e687326c39046c93c5279e42589d4667d4c677e3efc06004e106183018b5b0
+Kansai_2021_k11h	contest	ascii	single-source	Kansai		2021			16	16	0	0	N	7-7;8-7;7-8;8-8	58	4ed50f485aea589c0e6d57186a1b5f33a2f5491086775a534fe149548bc5256f
 Kyushu_015_1996	contest	bmp	single-source	Kyushu	15	1996			16	16	0	0	N	7-7;8-7;7-8;8-8	51	6be5d65608496b80c7ca1d8ce86bff6fa9ad689c3c1f59cc46c6e6783868c0d9
 Kyushu_016_1997	contest	bmp	single-source	Kyushu	16	1997			16	16	0	0	N	7-7;8-7;7-8;8-8	53	70722282f3ccd0b95bf10d015a693f1d3fd78b8b2a1be631820506ddea67e55f
 Kyushu_017_1998	contest	bmp	single-source	Kyushu	17	1998			16	16	0	0	N	7-7;8-7;7-8;8-8	49	09c11826912496adb800e70ea116c5c63193c99a9b9fd70f8fe0b84472e3f661
+Kyushu_035_2016_k11c	contest	ascii	single-source	Kyushu	35	2016			16	16	0	0	N	7-7;8-7;7-8;8-8	63	d372874ffcb3edeff6f711084deed004a0fa7d498405880d07ac4b0c001265ca
+Kyushu_038_2019_k11h	contest	ascii	single-source	Kyushu	38	2019			16	16	0	0	N	6-9;7-9;6-10;7-10	41	b678f6311665898a44dc9053f2834dee8a787c0183607b4c363c4d799ae4710a
 NorthEast_009_1995	contest	bmp	single-source	NorthEast	9	1995			16	16	0	0	N	7-7;8-7;7-8;8-8	50	037ab66d1c8e0fca02ed7889734907a329a745c689fa2adf58b2100f3593cd19
 NorthEast_009_1995_frsh	contest	bmp	single-source	NorthEast	9	1995	freshman		16	16	0	0	N	7-7;8-7;7-8;8-8	40	52acad62c97fffcf5d4b80b7bcc99df02f51c4e23d9677a5aa83f8c66448379b
 NorthEast_010_1996	contest	bmp	single-source	NorthEast	10	1996			16	16	0	0	N	7-7;8-7;7-8;8-8	57	b9229677635f92a6f1f3de89894fca2fd2a63bf5360e8609868375c411ed3702
@@ -101,3 +138,19 @@ Student_012_1997	contest	bmp	single-source	Student	12	1997			16	16	0	0	N	7-7;8-7
 Student_013_1998	contest	bmp	single-source	Student	13	1998			16	16	0	0	N	7-7;8-7;7-8;8-8	55	59d18a256cc8ae577e5cdc04fa88e59410f397ae9fea999fe438b5d5db933355
 Student_014_1999	contest	bmp	single-source	Student	14	1999			16	16	0	0	N	7-7;8-7;7-8;8-8	57	03e688d8772c22262576da47b4065ad84315ea6c777b2f7f648ddcde729ef105
 Student_027_2012	contest	bmp	single-source	Student	27	2012			16	16	0	0	N	7-7;8-7;7-8;8-8	46	059806d94491fe8aed26049f16bbd7618629759ebeab14641ae4aa2220e80fb0
+Student_032_2017_k11c	contest	ascii	single-source	Student	32	2017			16	16	0	0	N	7-7;8-7;7-8;8-8	103	6cf11a409c7f7926bb1833fe34ce3e0e5ccd67c584e56bc5fd025d135eec5a70
+Student_032_2017_k11h	contest	ascii	single-source	Student	32	2017			16	16	0	0	N	5-6;6-6;5-7;6-7	59	6e1afc379b7cdace6edc5e3cfa0350b7434ed8bef2d23b3603570c046786d3d6
+Student_033_2018_k11c	contest	ascii	single-source	Student	33	2018			16	16	0	0	N	7-7;8-7;7-8;8-8	48	8ddfa9eb2fe82cc56b659130aed2f0ac5886bf1ad59db2f717df325a5a6eaf2c
+Student_033_2018_k11h	contest	ascii	single-source	Student	33	2018			16	16	0	0	N	9-9;10-9;9-10;10-10	50	2a17d5a381b8ff6d913cfc1e4d6fd347d66ea99c68d44d0859bc4d92b263ff3b
+Student_034_2019_k11c	contest	ascii	single-source	Student	34	2019			16	16	0	0	N	7-7;8-7;7-8;8-8	60	2d4a70f86ddbf3e7cc679ad40d45529c250b68ae5ad2ed1d2f1cdbb19fdc31c1
+Student_034_2019_k11h	contest	ascii	single-source	Student	34	2019			16	16	0	0	N	6-9;7-9;6-10;7-10	43	f8588599671ba9dc34d1def08a96794f8a7223c753adc06d3f3ef61ae640b824
+Student_035_2020_k11c	contest	ascii	single-source	Student	35	2020			16	16	0	0	N	7-7;8-7;7-8;8-8	70	291d075a82f697881c632bcfef498003df7d76dee205abbc199086f20b174395
+Student_035_2020_k11h	contest	ascii	single-source	Student	35	2020			16	16	0	0	N	3-3;4-3;3-4;4-4	56	a7103f784b982bc990ae9a9b417940e196e0754c9f10c92a4c27502800209383
+Taiwan_2014_k11hx	contest	ascii	single-source	Taiwan		2014			21	21	0	0	N	5-7;6-7;5-8;6-8	78	1bb4288d1b66d9d035ade366c158c50557ac02790b85db93e58d20de5a742865
+Taiwan_2015_k11hx	contest	ascii	single-source	Taiwan		2015			21	21	0	0	N	13-5;14-5;13-6;14-6	113	e8857d322753d2eaa943c8ea3b8753e77387e0d9db7b44fdc3c36a69ef224af7
+Taiwan_2016_k11hx	contest	ascii	single-source	Taiwan		2016			21	21	0	0	N	17-9;18-9;17-10;18-10	66	c25bd4a9842fb11eeeab55622d31122d8319d0270c539b86bc24a40312cad37d
+Taiwan_2017_k11hx	contest	ascii	single-source	Taiwan		2017			21	21	0	0	N	1-0;2-0;1-1;2-1	97	bf8ba2ec29141e788dd4b92c9590bb185464153749817ae7abbcf817381e384e
+Taiwan_2018_k11hx	contest	ascii	single-source	Taiwan		2018			21	21	0	0	N	14-2;15-2;14-3;15-3	94	5c84db1b6f2473031449d8979eae05d4a66230ac67ad0ecd00f2b4913194803a
+Tashiro_2017_k11h	contest	ascii	single-source	Tashiro		2017			16	16	0	0	N	7-7;8-7;7-8;8-8	231	374af0f7cdf1469eb3b10ea765dee80e442f53e094bb5eda2d5753aa09cc82db
+Tashiro_2018_k11h	contest	ascii	single-source	Tashiro		2018			16	16	0	0	N	7-7;8-7;7-8;8-8	249	adc8b71431b9f637ca3260c234bed39cad4e05057d99b059c86ae680ed656aa4
+Tashiro_2019_k11h	contest	ascii	single-source	Tashiro		2019			16	16	0	0	N	6-9;7-9;6-10;7-10	75	8f1a1696251dbbb371095bbfc8e88205e7c54ce252f4dd8d696dde003e30b429

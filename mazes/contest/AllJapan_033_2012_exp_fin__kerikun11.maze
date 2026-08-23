@@ -1,5 +1,5 @@
 ---
-id: AllJapan_033_2012_exp_fin
+id: AllJapan_033_2012_exp_fin__kerikun11
 size: [16, 16]
 start: [0, 0]
 start_heading: N
@@ -9,12 +9,12 @@ edition: 33
 year: 2012
 class: expert
 stage: final
-source_type: bmp
-source: "NTF ヒストリーアーカイブ MazeImage/AllJapan_033_2012_classic_exp_fin_16x16.bmp"
-source_url: "https://www.ntf.or.jp/mouse/history/index.html"
+source_type: ascii
+source: "kerikun11/micromouse-maze-data data/16MM2012CX.maze"
+source_url: "https://github.com/kerikun11/micromouse-maze-data"
 retrieved: 2026-08-23
 confidence: confirmed
-notes: "kerikun11/micromouse-maze-data の 16MM2012CX（AllJapan_033_2012_exp_fin__kerikun11 として収載）と壁配置が完全一致（指紋照合で確認、2026-08-23）。独立した2出所が一致したため confirmed へ更新した。"
+notes: "NTF ヒストリーアーカイブの AllJapan_033_2012_exp_fin と壁配置が完全一致（指紋照合で確認）。独立した2出所が一致したため、この面と AllJapan_033_2012_exp_fin の両方を confidence: confirmed に更新した。"
 content_sha256: 3d805f963c262716e9c94b35155928f1aa358b1ba828c25b89cacbb5574a4656
 ---
 +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+

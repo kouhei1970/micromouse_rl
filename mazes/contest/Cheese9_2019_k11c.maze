@@ -1,0 +1,38 @@
+---
+id: Cheese9_2019_k11c
+size: [9, 9]
+start: [0, 0]
+start_heading: N
+goal: [[7, 7], [8, 7], [7, 8], [8, 8]]
+series: Cheese9
+edition: 
+year: 2019
+class: 
+stage: 
+source_type: ascii
+source: "kerikun11/micromouse-maze-data data/09MM2019C_Cheese.maze"
+source_url: "https://github.com/kerikun11/micromouse-maze-data"
+retrieved: 2026-08-23
+confidence: single-source
+notes: "9x9 の小型迷路。ゴール 2x2 は中央ではない。'Cheese' 系だが未知壁は含まない。実競技かどうか未確認のため独立の series 'Cheese9' とした。"
+content_sha256: 5e3edeb060217afeedde415dba05f24fd741024f586dc8bd30275e21f216d707
+---
++---+---+---+---+---+---+---+---+---+
+|   |       |       |       | G   G |
++   +   +   +   +   +   +   +   +   +
+|       |       |       |   | G   G |
++   +   +---+---+   +---+   +---+   +
+|   |       |   |       |           |
++   +---+   +---+   +---+---+   +---+
+|       |       |           |       |
++---+   +   +   +---+---+   +---+   +
+|       |   |       |       |       |
++   +   +---+---+   +   +   +   +   +
+|   |   |       |       |       |   |
++   +   +   +   +---+   +---+   +   +
+|   |       |       |           |   |
++   +---+   +---+   +---+   +---+   +
+|       |   |       |           |   |
++   +   +   +   +---+   +---+   +   +
+| S |       |                       |
++---+---+---+---+---+---+---+---+---+

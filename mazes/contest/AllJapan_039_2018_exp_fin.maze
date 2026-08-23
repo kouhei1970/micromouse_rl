@@ -1,20 +1,20 @@
 ---
-id: APEC2002_2002
+id: AllJapan_039_2018_exp_fin
 size: [16, 16]
 start: [0, 0]
 start_heading: N
 goal: [[7, 7], [8, 7], [7, 8], [8, 8]]
-series: APEC2002
-edition: 
-year: 2002
-class: 
-stage: 
-source_type: bmp
-source: "NTF ヒストリーアーカイブ MazeImage/APEC2002__2002_classic___16x16.bmp"
-source_url: "https://www.ntf.or.jp/mouse/history/index.html"
+series: AllJapan
+edition: 39
+year: 2018
+class: expert
+stage: final
+source_type: ascii
+source: "kerikun11/micromouse-maze-data data/16MM2018CX.maze"
+source_url: "https://github.com/kerikun11/micromouse-maze-data"
 retrieved: 2026-08-23
 confidence: single-source
-notes: "🔴 kerikun11/micromouse-maze-data の 16MM2018CX（AllJapan_039_2018_exp_fin として収載、全日本2018年エキスパート決勝と推定）と壁配置が完全一致（指紋照合、2026-08-23）。APEC2002と全日本2018決勝は別大会・別年のはずであり、一致の理由は未確認（同一迷路の意図的な再利用か、いずれかのラベル誤りかは判断できない）。confidence は変更していない。"
+notes: "edition は既存面の年→回の関係式（AllJapan: year-1979）を延長した推定値。 🔴 壁配置が NTF ヒストリーアーカイブの APEC2002_2002（2002年APEC）と完全一致（指紋照合）。全日本2018年エキスパート決勝とAPEC2002は別大会・別年のはずで、一致の理由は未確認（同一迷路の意図的な再利用か、どちらかのラベル誤りかは判断できない）。"
 content_sha256: 6c16001da2a780a4db5b287c125529b9ceb4cf63dfb2e26b422ed02eb4f9de77
 ---
 +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+

@@ -11,6 +11,11 @@
     5. content_sha256 が壁だけから決まること -- test_content_sha256_*
     6. 同じ壁配置なら別の出所でも同じ指紋になること -- test_identical_walls_from_different_years_share_fingerprint
     7. アスキーの文字位置の取り違えを捕まえる検査 -- test_ascii_char_positions_are_fixed
+    8. kerikun11 取り込み（段3）固有の検査 -- test_kerikun11_* 以下
+       - 未知壁を含む実面の往復が1文字単位で一致すること
+       - walls(rec, unknown=...) の3通りの振る舞い
+       - disputes が相互に指していること
+       - 指紋が一致する組を機械的に洗い出せること（既知の3組を含む）
 
     .venv/bin/python -m pytest tests/test_maze_db.py -v
 """
@@ -54,7 +59,8 @@ _CONTEST_NPZ_NAMES = _MANIFEST["mazes"]
 # 0. 前提（データベースが空でないこと）
 # ============================================================================
 def test_database_is_not_empty():
-    assert len(_DB) == 102, "contest/ の 102 面が読み込めていない"
+    # 102 面（NTF・段2）＋ 53 面（kerikun11・段3）＝ 155 面。
+    assert len(_DB) == 155, "contest/ の 155 面（NTF102 + kerikun11 53）が読み込めていない"
     assert len(ALL_MAZE_FILES) == len(_DB)
 
 
@@ -391,7 +397,10 @@ def test_get_raises_for_unknown_id():
 
 def test_query_filters_by_kind_stage_confidence():
     finals = _DB.query(kind="contest", stage="final", confidence="single-source")
-    assert len(finals) == 22  # 実測値（決勝 20 ＋ フレッシュマン決勝 2。note_035 の内訳と整合）
+    # 実測値。NTF 側 22（決勝20＋フレッシュマン決勝2）のうち 2012年面の指紋が
+    # kerikun11 の 2012年面と一致して confirmed へ格上げされ 21 に減り、
+    # kerikun11 側の全日本エキスパート決勝（2013〜2020, confirmed の2012を除く）8 が加わって 29。
+    assert len(finals) == 29
     assert all(r.kind == "contest" and r.stage == "final" for r in finals)
 
 
@@ -405,13 +414,18 @@ def test_query_by_class_accepts_keyword_and_alias():
     via_dict_key = _DB.query(**{"class": "expert"})
     via_alias = _DB.query(maze_class="expert")
     assert {r.id for r in via_dict_key} == {r.id for r in via_alias}
-    assert len(via_dict_key) == 28  # 実測値
+    # 実測値。NTF 側 28 に、kerikun11 の全日本エキスパート（決勝9＋予選1）10 が加わって 38。
+    assert len(via_dict_key) == 38
     assert all(r.maze_class == "expert" for r in via_dict_key)
 
 
 def test_query_by_source_type():
+    # 段2（NTF・bmp）102 ＋ 段3（kerikun11・ascii）53 面。
     bmp_records = _DB.query(source_type="bmp")
-    assert len(bmp_records) == len(_DB), "今回変換した 102 面はすべて source_type=bmp のはず"
+    ascii_records = _DB.query(source_type="ascii")
+    assert len(bmp_records) == 102
+    assert len(ascii_records) == 53
+    assert len(bmp_records) + len(ascii_records) == len(_DB)
 
 
 def test_walls_returns_evaluator_style_uint8_arrays():
@@ -422,3 +436,127 @@ def test_walls_returns_evaluator_style_uint8_arrays():
     assert set(np.unique(h).tolist()) <= {0, 1}
     assert v.shape == (rec.width + 1, rec.height)
     assert h.shape == (rec.width, rec.height + 1)
+
+
+# ============================================================================
+# 8. kerikun11 取り込み（段3）固有の検査
+# ============================================================================
+# 未知壁（'.' → '?'）を実際に含む面。kerikun11 の Cheese 系 3 面のみ
+# （note_036 §6-1 の未解決点はこの3面で答えが出た）。
+_UNKNOWN_WALL_IDS = ("Cheese_2017_k11h", "Cheese_2019_k11h", "Cheese_2019_k11h_cand")
+
+
+def test_kerikun11_unknown_wall_ids_are_exactly_the_cheese_series():
+    """未知壁を含む面を機械的に洗い出すと、上記の3面と一致する（決め打ちの一覧が古くならないことの検査）。"""
+    found = []
+    for rec_id in _ALL_IDS:
+        rec = _DB.get(rec_id)
+        if np.any(rec.v_walls == WallState.UNKNOWN) or np.any(rec.h_walls == WallState.UNKNOWN):
+            found.append(rec_id)
+    assert sorted(found) == sorted(_UNKNOWN_WALL_IDS)
+
+
+@pytest.mark.parametrize("rec_id", _UNKNOWN_WALL_IDS)
+def test_kerikun11_unknown_wall_real_maze_roundtrips_exactly(rec_id):
+    """未知壁を含む実在の面（Cheese 系）も、他の152面と同じく1文字単位で往復すること。"""
+    rec = _DB.get(rec_id)
+    original = rec.path.read_text(encoding="utf-8")
+    rebuilt = dumps(rec)
+    assert rebuilt == original
+    assert "???" in original and "?" in original  # 未知壁の記号（横???・縦?）が実際に出ている
+
+
+@pytest.mark.parametrize("rec_id", _UNKNOWN_WALL_IDS)
+def test_kerikun11_walls_unknown_argument_three_behaviors(rec_id):
+    """walls(rec, unknown=...) の3通りの振る舞いを固定する。"""
+    rec = _DB.get(rec_id)
+
+    # 既定（省略）: 例外（既存の振る舞いを変えていないこと）
+    with pytest.raises(ValueError):
+        _DB.walls(rec)
+
+    # 'wall': 未知を壁ありとみなす（悲観）
+    v_wall, h_wall = _DB.walls(rec, unknown="wall")
+    assert v_wall.dtype == np.uint8 and h_wall.dtype == np.uint8
+    unknown_v = rec.v_walls == WallState.UNKNOWN
+    unknown_h = rec.h_walls == WallState.UNKNOWN
+    assert np.all(v_wall[unknown_v] == 1)
+    assert np.all(h_wall[unknown_h] == 1)
+
+    # 'open': 未知を壁なしとみなす（楽観）
+    v_open, h_open = _DB.walls(rec, unknown="open")
+    assert np.all(v_open[unknown_v] == 0)
+    assert np.all(h_open[unknown_h] == 0)
+
+    # 既知の壁（未知でない部分）は unknown の指定によらず一致する
+    known_v = ~unknown_v
+    known_h = ~unknown_h
+    assert np.array_equal(v_wall[known_v], v_open[known_v])
+    assert np.array_equal(h_wall[known_h], h_open[known_h])
+
+    # 想定外の値は弾く
+    with pytest.raises(ValueError):
+        _DB.walls(rec, unknown="not-a-real-option")
+
+
+def test_kerikun11_walls_unknown_argument_is_noop_when_no_unknown_walls():
+    """未知壁が無い面では、unknown='wall'/'open'/省略のいずれでも同じ結果になる。"""
+    rec = _DB.get("AllJapan_015_1994_exp_fin")
+    v0, h0 = _DB.walls(rec)
+    v_wall, h_wall = _DB.walls(rec, unknown="wall")
+    v_open, h_open = _DB.walls(rec, unknown="open")
+    assert np.array_equal(v0, v_wall) and np.array_equal(h0, h_wall)
+    assert np.array_equal(v0, v_open) and np.array_equal(h0, h_open)
+
+
+def test_disputes_point_at_each_other_bidirectionally():
+    """disputes を使う面があれば、必ず相互に指し合っていること（片方向だけは不正）。
+
+    2026-08-23 時点では disputes を使う面はまだ無い（NTF と kerikun11 の指紋一致は
+    confirmed への格上げか notes での相互参照で扱い、disputes は「食い違い」専用に
+    温存した）。このテストは disputes の仕組み自体の検査であり、使用例が増える
+    段4（map.html の食い違う5面）以降も壊れないことを保証する。
+    """
+    all_recs = {r.id: r for r in _DB.query()}
+    any_disputes = False
+    for rec in all_recs.values():
+        if not rec.disputes:
+            continue
+        any_disputes = True
+        for other_id in rec.disputes:
+            assert other_id in all_recs, f"{rec.id}: disputes が指す {other_id!r} が存在しない"
+            other = all_recs[other_id]
+            assert other.disputes and rec.id in other.disputes, (
+                f"{rec.id} -> {other_id} は片方向（{other_id} 側が {rec.id} を指し返していない）"
+            )
+    # 現状は使用例が無いことも合わせて明示する（今後 disputes が実際に使われたら
+    # このアサーションだけ外せばよい）。
+    assert any_disputes is False, "disputes の使用例が増えた。上のコメントを更新すること"
+
+
+def test_fingerprints_can_be_grouped_mechanically_and_find_known_matches():
+    """content_sha256 で全面を機械的に束ねると、既知の3組が見つかること（note_036 §2-5b の検査）。"""
+    groups: dict = {}
+    for rec in _DB.query():
+        groups.setdefault(rec.content_sha256, []).append(rec.id)
+    duplicate_groups = {sha: sorted(ids) for sha, ids in groups.items() if len(ids) > 1}
+
+    # 1) NTF 内部の重複（note_035 の追記で見つかった1992/1995）
+    assert ["AllJapan_013_1992_exp_fin", "AllJapan_016_1995_exp_fin"] in duplicate_groups.values()
+
+    # 2) NTF と kerikun11 が同じ大会・同じ年で一致した組（段3で確認）
+    assert ["AllJapan_033_2012_exp_fin", "AllJapan_033_2012_exp_fin__kerikun11"] in duplicate_groups.values()
+
+    # 3) 🔴 別大会・別年のはずなのに一致した組（段3で発見。未解決のまま報告済み）
+    assert ["APEC2002_2002", "AllJapan_039_2018_exp_fin"] in duplicate_groups.values()
+
+    # 一致した2組はいずれも confidence: confirmed への格上げか notes の相互参照が
+    # されていること（サイレントな重複のまま放置していないこと）。
+    for a_id, b_id in (
+        ("AllJapan_033_2012_exp_fin", "AllJapan_033_2012_exp_fin__kerikun11"),
+        ("APEC2002_2002", "AllJapan_039_2018_exp_fin"),
+    ):
+        a, b = _DB.get(a_id), _DB.get(b_id)
+        assert (a.confidence == "confirmed" and b.confidence == "confirmed") or (a.notes and b.notes), (
+            f"{a_id} / {b_id}: 指紋一致が記録に反映されていない"
+        )

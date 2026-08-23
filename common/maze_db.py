@@ -492,16 +492,32 @@ class MazeDB:
                 results.append(rec)
         return sorted(results, key=lambda r: r.id)
 
-    def walls(self, rec: MazeRecord) -> Tuple[np.ndarray, np.ndarray]:
+    def walls(self, rec: MazeRecord, unknown: Optional[str] = None) -> Tuple[np.ndarray, np.ndarray]:
         """既存コード（`competition/evaluator.py` 等）へそのまま渡せる形式で返す。
 
-        0=壁なし・1=壁あり の uint8 配列。未知の壁が残っている迷路には使えない
-        （3 値を 2 値へ丸めると情報が失われるため、その場合は例外にする）。
+        0=壁なし・1=壁あり の uint8 配列。
+
+        `unknown` は未知の壁（`WallState.UNKNOWN`）の丸め方を明示する（note_036 §9-1・
+        kerikun11 取り込みで初めて未知壁を含む面が入ったため追加）。
+
+        - 省略（既定・**振る舞いは変えていない**）: 未知の壁が 1 枚でも残っていれば例外。
+          3 値を黙って 2 値へ丸めると情報が失われるため
+        - `"wall"`: 未知を壁ありとみなす（悲観・保守的）
+        - `"open"`: 未知を壁なしとみなす（楽観）
         """
-        if np.any(rec.v_walls == WallState.UNKNOWN) or np.any(rec.h_walls == WallState.UNKNOWN):
+        if unknown is not None and unknown not in ("wall", "open"):
+            raise ValueError(f"unknown 引数が想定外: {unknown!r}（None/'wall'/'open' のいずれか）")
+
+        has_unknown = np.any(rec.v_walls == WallState.UNKNOWN) or np.any(rec.h_walls == WallState.UNKNOWN)
+        if has_unknown and unknown is None:
             raise ValueError(
                 f"{rec.id}: 未知の壁が残っており 0/1 表現へ変換できない"
+                "（unknown='wall'/'open' を指定すると丸められる）"
             )
-        v = np.where(rec.v_walls == WallState.WALL, 1, 0).astype(np.uint8)
-        h = np.where(rec.h_walls == WallState.WALL, 1, 0).astype(np.uint8)
+
+        fill = WallState.WALL if unknown == "wall" else WallState.OPEN
+        v_filled = np.where(rec.v_walls == WallState.UNKNOWN, fill, rec.v_walls)
+        h_filled = np.where(rec.h_walls == WallState.UNKNOWN, fill, rec.h_walls)
+        v = np.where(v_filled == WallState.WALL, 1, 0).astype(np.uint8)
+        h = np.where(h_filled == WallState.WALL, 1, 0).astype(np.uint8)
         return v, h

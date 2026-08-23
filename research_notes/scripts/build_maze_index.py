@@ -97,7 +97,9 @@ def _field(value) -> str:
 
 
 def _row(rec: MazeRecord, db: MazeDB) -> str:
-    v, h = db.walls(rec)
+    # 未知壁（'.'）を含む面（kerikun11 の Cheese 系）が段3で加わったため、D0 の計算は
+    # 未知=壁とみなす悲観側で丸める（保守的な最短距離。楽観側との差は個別に見ればよい）。
+    v, h = db.walls(rec, unknown="wall")
     d0 = shortest_distance(v, h, rec.width, rec.height, rec.start, rec.goal)
     goal_str = ";".join(f"{x}-{y}" for x, y in sorted(rec.goal, key=lambda p: (p[1], p[0])))
     fields = [
