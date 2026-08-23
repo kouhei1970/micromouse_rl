@@ -105,25 +105,49 @@ CELL_SIZE = 0.180
 # ============================================================================
 # 0. 方位 ⇔ 角度の変換（geometry.Pose の座標系に合わせる）
 # ============================================================================
+# 方位 → 角度 [rad]。`Direction` は E=0,N=1,W=2,S=3 の反時計回り順なので
+# 素直には `int(d) * π/2` だが、それだと南が +270°・西が +180° になる。
+# 🔴 **値の分枝は付け替え前と同一に保つ**（E=0, N=+90°, S=-90°, W=-180°）。
+# `classic/explorer.py` が `tracker.reset(heading_deg=math.degrees(psi_start))` へ
+# **巻き戻していない値**を渡しており、同じ向きでも 2π ずれた値を与えると
+# ヨー角の積分器の初期値が変わってしまうため（2026-08-23 の付け替えで実際に
+# 南向き開始の走行が変わり、`tests/test_classic_fast_run_profile.py` が検出した）。
+_DIR_ANGLE_RAD: Dict[Direction, float] = {
+    Direction.E: 0.0,
+    Direction.N: math.pi / 2.0,
+    Direction.S: -math.pi / 2.0,
+    Direction.W: -math.pi,
+}
+
+
 def _dir_angle(d: Direction) -> float:
     """方位 `Direction` を、`geometry.Pose.theta` と同じ座標系の角度 [rad] にする。
 
-    `classic.maze_map._DIR_DELTA` は N=(0,1), E=(1,0), S=(0,-1), W=(-1,0)
-    （x=東、y=北）なので、E=0, N=+90°, W=180°, S=-90°（数学の通常の角度）になる。
+    返す値は (-π, π] ではなく **[-π, π/2] の分枝**（E=0, N=+90°, S=-90°, W=-180°）。
+    分枝を変えると走行が変わる。理由は `_DIR_ANGLE_RAD` の注記を見ること。
     """
-    return math.pi / 2.0 - int(d) * (math.pi / 2.0)
+    return _DIR_ANGLE_RAD[d]
 
 
 def _turn_delta(from_dir: Direction, to_dir: Direction) -> float:
     """`from_dir` から `to_dir` への旋回角 [rad]（正=左/反時計回り。`geometry.arc` と同じ符号）。
 
     `classic.route._turn_type` と同じ mod 4 の判定を角度に翻訳したもの
-    （rel=1→右90°、rel=2→180°、rel=3→左90°。N,E,S,W がこの順で時計回りに
-    並んでいるため、rel の符号を反転すると反時計回り正の数学角になる）。
+    （rel=1→左90°、rel=2→180°、rel=3→右90°。E,N,W,S がこの順で反時計回りに
+    並んでいるため、rel がそのまま反時計回り正の数学角になる）。
+
+    🔴 rel=2（180°折返し）は符号を選ぶ物理的根拠が無い退化ケース（+π も −π も
+    同じ向きを指す）。付け替え前は常に −π を返しており（`_dir_angle` と同様、
+    値の分枝が下流のシミュレーションへ伝播する — 2026-08-23 の付け替えで
+    実際に snap 補正モード・南向き開始の走行が変わり、
+    `tests/test_classic_fast_run_profile.py` が検出した）、その分枝をここでも
+    保つ。rel∈{0,1,3} は分枝の選び方に曖昧さが無いので `d*(π/2)` のままでよい。
     """
     rel = (int(to_dir) - int(from_dir)) % 4
+    if rel == 2:
+        return -math.pi
     signed_rel = rel if rel <= 2 else rel - 4
-    return -signed_rel * (math.pi / 2.0)
+    return signed_rel * (math.pi / 2.0)
 
 
 # ============================================================================

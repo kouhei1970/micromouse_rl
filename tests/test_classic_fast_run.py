@@ -249,7 +249,9 @@ def test_fast_run_reconciles_actual_heading_to_north_before_executing_the_plan(p
         "（上のコメントの前提が成り立たない迷路になっている）"
     )
 
-    expected_first_label_by_rel = {1: "fast:turn_right", 2: "fast:turn_180", 3: "fast:turn_left"}
+    # Direction は E=0,N=1,W=2,S=3 の反時計回り順（2026-08-23 付け替え）なので
+    # rel=1(+1)は左90、rel=3(-1)は右90（付け替え前と左右が逆）。
+    expected_first_label_by_rel = {1: "fast:turn_left", 2: "fast:turn_180", 3: "fast:turn_right"}
     for actual_heading in (Direction.E, Direction.S, Direction.W):
         ex = ClassicExplorer(MAZE_W, MAZE_H, params=params)
         ex.maze = maze

@@ -155,17 +155,18 @@ class Command:
 def _turn_type(from_dir: Direction, to_dir: Direction) -> CommandType:
     """from_dir から to_dir への向き変更をターン種別に変換する。
 
-    Direction は N=0,E=1,S=2,W=3 の時計回り順で定義してある
-    （classic/maze_map.py 参照）ので、差分の mod 4 でそのまま判定できる。
+    Direction は E=0,N=1,W=2,S=3 の反時計回り順で定義してある
+    （classic/maze_map.py 参照。2026-08-23 工学系の流儀へ付け替え）ので、
+    差分の mod 4 でそのまま判定できる（+1=左90, +2=180, +3(-1)=右90）。
     """
     rel = (int(to_dir) - int(from_dir)) % 4
     if rel == 0:
         raise ValueError("同一方向はターンではありません（直進として扱うべき）")
     if rel == 1:
-        return CommandType.TURN_RIGHT90
+        return CommandType.TURN_LEFT90
     if rel == 2:
         return CommandType.TURN_180
-    return CommandType.TURN_LEFT90  # rel == 3
+    return CommandType.TURN_RIGHT90  # rel == 3
 
 
 def path_to_commands(

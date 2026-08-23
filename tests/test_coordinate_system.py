@@ -10,7 +10,7 @@ import math
 import numpy as np
 import pytest
 
-from classic.ideal import CELL_SIZE, _dir_angle
+from classic.ideal import CELL_SIZE, _dir_angle, _turn_delta
 from classic.maze_map import _DIR_DELTA, Direction
 
 
@@ -49,18 +49,50 @@ def test_direction_deltas_match_east_x_north_y():
     assert _DIR_DELTA[Direction.W] == (-1, 0)
 
 
-def test_direction_code_increases_clockwise():
-    """方位コードは時計回りに増える（正本 §10-3）。
+def test_direction_code_increases_counterclockwise():
+    """方位コードは反時計回りに増える（正本 §10-3・2026-08-23 工学系の流儀へ付け替え）。
 
-    ヨー角は反時計回りが正なので、**この 2 つは逆向きである**。
-    ここが逆になっていることを、あえて検査で固定しておく。
+    ヨー角も反時計回りが正なので、**この 2 つは同じ向きである**
+    （付け替え前は逆向きで、`_dir_angle` に符号反転が必要だった）。
     """
-    assert (Direction.N, Direction.E, Direction.S, Direction.W) == (0, 1, 2, 3)
-    # 番号 +1 で右（時計）回り 90°、すなわちヨー角は −90°
-    for d in (Direction.N, Direction.E, Direction.S):
+    assert (Direction.E, Direction.N, Direction.W, Direction.S) == (0, 1, 2, 3)
+    # 番号 +1 で左（反時計）回り 90°、すなわちヨー角は +90°。
+    # `_dir_angle` は分枝を持つ値を返すので、差は 2π で巻き戻して比べる。
+    def wrap(a):
+        return (a + math.pi) % (2 * math.pi) - math.pi
+
+    for d in (Direction.E, Direction.N, Direction.W, Direction.S):
         turned = Direction((int(d) + 1) % 4)
-        delta = _dir_angle(turned) - _dir_angle(d)
-        assert math.isclose(delta, -math.pi / 2.0, abs_tol=1e-12)
+        delta = wrap(_dir_angle(turned) - _dir_angle(d))
+        assert math.isclose(delta, math.pi / 2.0, abs_tol=1e-12), f"{d.name}→{turned.name}"
+    # 🔴 `_dir_angle` の**値の分枝**は付け替え前と同一に保つ
+    # （E=0, N=+90°, S=-90°, W=-180°）。素直な `d * π/2` にすると
+    # 南が +270°・西が +180° になり、`classic/explorer.py` が
+    # `tracker.reset(heading_deg=...)` へ巻き戻していない値を渡しているため
+    # ヨー角の積分器の初期値が 2π ずれて**走行が変わる**
+    # （2026-08-23 の付け替えで実際に起き、fast_run_profile の検査が検出した）。
+    expected = {Direction.E: 0.0, Direction.N: 90.0, Direction.S: -90.0, Direction.W: -180.0}
+    for d, deg in expected.items():
+        assert math.isclose(math.degrees(_dir_angle(d)), deg, abs_tol=1e-9), (
+            f"{d.name} の角度の分枝が変わっている（走行が変わる）"
+        )
+
+
+def test_turn_delta_180_uses_the_negative_branch():
+    """`_turn_delta` の 180°折返し（rel=2）は、+π と −π のどちらも同じ向きを
+    指す退化ケースで、符号を選ぶ物理的根拠が無い。付け替え前は常に −π を
+    返していたので、その分枝を固定する（`_dir_angle` と同じ理由。素直に
+    `signed_rel * π/2` にすると +π になり、snap 補正モード・南向き開始の
+    走行が変わることを実測で確認済み — `test_wall_correction_mode_snap_
+    matches_pre_blend_baseline_exactly` 参照）。
+    """
+    for from_dir, to_dir in [
+        (Direction.N, Direction.S), (Direction.S, Direction.N),
+        (Direction.E, Direction.W), (Direction.W, Direction.E),
+    ]:
+        assert _turn_delta(from_dir, to_dir) == -math.pi, (
+            f"{from_dir.name}->{to_dir.name} の180°折返しの分枝が変わっている（走行が変わる）"
+        )
 
 
 def test_cell_center_conversion():

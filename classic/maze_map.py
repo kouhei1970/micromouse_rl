@@ -41,24 +41,30 @@ class WallState(IntEnum):
 
 
 class Direction(IntEnum):
-    """区画から見た 4 方位。時計回りに N→E→S→W の順で並べてある
-    （+1 で右回り90°、-1 で左回り90°、+2 で180°折返しになるように選んだ
-    順序。route.py のターン種別の判定はこの順序に依存する）。"""
+    """区画から見た 4 方位。反時計回りに E→N→W→S の順で並べてある
+    （工学系の流儀・2026-08-23 ユーザ決定。ヨー角は「0=東・反時計回りが正」
+    （docs/COORDINATE_SYSTEM.md §7）であり、+1 で左回り90°、-1 で右回り90°、
+    +2 で180°折返しになるように選んだ順序。route.py のターン種別の判定は
+    この順序に依存する）。"""
 
-    N = 0
-    E = 1
-    S = 2
-    W = 3
+    E = 0
+    N = 1
+    W = 2
+    S = 3
 
 
 # 各方位に対応する (dx, dy)。座標系は x=東方向、y=北方向。
 _DIR_DELTA: Dict[Direction, Tuple[int, int]] = {
-    Direction.N: (0, 1),
     Direction.E: (1, 0),
-    Direction.S: (0, -1),
+    Direction.N: (0, 1),
     Direction.W: (-1, 0),
+    Direction.S: (0, -1),
 }
 
+# 探索順（N→E→S→W）。route.py の shortest_path 等はタイブレークをこの列挙
+# 順に依存するため、Direction の数値付け替え（2026-08-23）後もこの並びは
+# 変えていない（named member による指定なので、数値が変わっても走査順は
+# 変わらない）。
 ALL_DIRECTIONS: Tuple[Direction, ...] = (Direction.N, Direction.E, Direction.S, Direction.W)
 
 

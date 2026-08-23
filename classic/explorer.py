@@ -326,12 +326,12 @@ DEFAULT_WALL_CORRECTION_LOOKAHEAD_M: float = 0.005
 # 孤立点探索ではない。
 
 # CommandType のターン種別 → (target - heading) mod 4。
-# classic/route.py の _turn_type と同じ規約（Direction は N=0,E=1,S=2,W=3 の
-# 時計回り順）: +1=右90, +2=180, +3(=-1)=左90。
+# classic/route.py の _turn_type と同じ規約（Direction は E=0,N=1,W=2,S=3 の
+# 反時計回り順・2026-08-23 付け替え）: +1=左90, +2=180, +3(=-1)=右90。
 _FAST_TURN_REL = {
-    CommandType.TURN_RIGHT90: 1,
+    CommandType.TURN_RIGHT90: 3,
     CommandType.TURN_180: 2,
-    CommandType.TURN_LEFT90: 3,
+    CommandType.TURN_LEFT90: 1,
 }
 
 
@@ -784,8 +784,10 @@ class ClassicExplorer:
         地図を書き換えない）。"""
         cx, cy = self.cell
         front_dir = self.heading
-        left_dir = Direction((int(self.heading) - 1) % 4)
-        right_dir = Direction((int(self.heading) + 1) % 4)
+        # Direction は E=0,N=1,W=2,S=3 の反時計回り順（2026-08-23 付け替え）
+        # なので、+1 が左90°・-1 が右90°になる。
+        left_dir = Direction((int(self.heading) + 1) % 4)
+        right_dir = Direction((int(self.heading) - 1) % 4)
 
         for direction, state in (
             (front_dir, sensing.front),
@@ -860,21 +862,22 @@ class ClassicExplorer:
         self._active_plan_id = f"{self._phase_prefix()}:straight"
 
     def _issue_turn_towards(self, target: Direction) -> None:
-        # Direction は N=0,E=1,S=2,W=3 の時計回り順（classic/maze_map.py）。
-        # classic/route.py の _turn_type と同じ規約: +1=右90, +2=180, +3(-1)=左90。
+        # Direction は E=0,N=1,W=2,S=3 の反時計回り順（classic/maze_map.py・
+        # 2026-08-23 付け替え）。
+        # classic/route.py の _turn_type と同じ規約: +1=左90, +2=180, +3(-1)=右90。
         rel = (int(target) - int(self.heading)) % 4
         if rel == 1:
-            self.motion.start_turn_right()
-            self._active_kind = MotionKind.TURN_RIGHT_90
-            label = "turn_right"
+            self.motion.start_turn_left()
+            self._active_kind = MotionKind.TURN_LEFT_90
+            label = "turn_left"
         elif rel == 2:
             self.motion.start_turn_180()
             self._active_kind = MotionKind.TURN_180
             label = "turn_180"
         elif rel == 3:
-            self.motion.start_turn_left()
-            self._active_kind = MotionKind.TURN_LEFT_90
-            label = "turn_left"
+            self.motion.start_turn_right()
+            self._active_kind = MotionKind.TURN_RIGHT_90
+            label = "turn_right"
         else:
             raise AssertionError("同一方向への旋回が要求されました（直進として扱われるべきです）")
         self._pending_heading = target

@@ -110,10 +110,13 @@ def wall_follow_reaches_goal(v, h, hand="left"):
     スタート (0,0)・北向きから、(セル, 向き) の状態遷移を追う。同じ状態に
     戻ったら閉路に入って永久にゴールへ到達しないと判定する。
     """
-    # 向き: 0=北, 1=東, 2=南, 3=西
-    d_vec = {0: (0, 1), 1: (1, 0), 2: (0, -1), 3: (-1, 0)}
+    # 向き: 0=東, 1=北, 2=西, 3=南（classic.maze_map.Direction と同じ
+    # E=0,N=1,W=2,S=3 の反時計回り順。2026-08-23 付け替え。本関数は
+    # classic.maze_map には依存しないが、方位インデックスの意味を全体で
+    # 揃えるためここも合わせる。反時計回り順では +1 が左90°になる）。
+    d_vec = {0: (1, 0), 1: (0, 1), 2: (-1, 0), 3: (0, -1)}
     # 左手法: 左→前→右→後 の順に試す。右手法はその鏡像
-    order = [-1, 0, 1, 2] if hand == "left" else [1, 0, -1, 2]
+    order = [1, 0, -1, 2] if hand == "left" else [-1, 0, 1, 2]
 
     def can_go(cell, d):
         cx, cy = cell
@@ -123,7 +126,7 @@ def wall_follow_reaches_goal(v, h, hand="left"):
             return None
         return (nx, ny) if _open(v, h, cell, (nx, ny)) else None
 
-    cell, head = (0, 0), 0
+    cell, head = (0, 0), 1  # 北向きで出発（d_vec[1]=北）
     seen = set()
     for _ in range(100000):
         if cell in GOAL_CELLS:

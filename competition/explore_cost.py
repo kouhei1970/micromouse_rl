@@ -56,21 +56,28 @@ from collections import deque
 import numpy as np
 
 W = H = 16
-# 北, 東, 南, 西
-DIRS = ((0, 1), (1, 0), (0, -1), (-1, 0))
+# 東, 北, 西, 南（classic.maze_map.Direction と同じ E=0,N=1,W=2,S=3 の
+# 反時計回り順。2026-08-23 工学系の流儀へ付け替え。本モジュールは
+# classic.maze_map には依存しないが、方位インデックスの意味を全体で
+# 揃えるためここも合わせる）。
+DIRS = ((1, 0), (0, 1), (-1, 0), (0, -1))
 GOAL_CELLS = ((7, 7), (7, 8), (8, 7), (8, 8))
 TIEBREAKS = ("straight", "compass")
+# 北→東→南→西の順（compass タイブレーク・true_shortest_path のタイブレークで
+# 使う。DIRS が E,N,W,S 順になったので、そのインデックスで N,E,S,W を書くと
+# (1,0,3,2) になる）。
+_NESW_ORDER = (1, 0, 3, 2)
 
 
 def true_wall(v_walls, h_walls, x, y, d):
     """区画 (x,y) の方向 d 側に壁があるか（真の迷路）。1=壁、0=開通。"""
     if d == 0:
-        return int(h_walls[x, y + 1])
-    if d == 1:
         return int(v_walls[x + 1, y])
+    if d == 1:
+        return int(h_walls[x, y + 1])
     if d == 2:
-        return int(h_walls[x, y])
-    return int(v_walls[x, y])
+        return int(v_walls[x, y])
+    return int(h_walls[x, y])
 
 
 def _flood(known, is_wall, goals):
@@ -132,7 +139,7 @@ def _first_run(v_walls, h_walls, start, goals, tiebreak, max_steps):
                 is_wall[nx][ny][(d + 2) % 4] = w
 
     x, y = start
-    heading = 0                      # 北向きで出発（スタート区画は 3 方向が壁）
+    heading = 1                      # 北向きで出発（DIRS[1]=北。スタート区画は 3 方向が壁）
     path = [(x, y)]
     limit = max_steps if max_steps is not None else 16 * W * H
     for _ in range(limit):
@@ -140,8 +147,10 @@ def _first_run(v_walls, h_walls, start, goals, tiebreak, max_steps):
             return path
         observe(x, y)
         dist = _flood(known, is_wall, goals)
-        order = ([heading, (heading + 1) % 4, (heading + 3) % 4, (heading + 2) % 4]
-                 if tiebreak == "straight" else (0, 1, 2, 3))
+        # 直進 > 右折 > 左折 > 後退（実機の定石）。DIRS が反時計回り順に
+        # なったので、+1 が左折・+3(-1) が右折になる（付け替え前と逆）。
+        order = ([heading, (heading + 3) % 4, (heading + 1) % 4, (heading + 2) % 4]
+                 if tiebreak == "straight" else _NESW_ORDER)
         best, best_dir = None, None
         for d in order:
             if known[x][y][d] and is_wall[x][y][d]:
@@ -195,7 +204,8 @@ def true_shortest_path(v_walls, h_walls, start=(0, 0), goals=GOAL_CELLS):
         if c in goals:
             end = c
             break
-        for d, (dx, dy) in enumerate(DIRS):
+        for d in _NESW_ORDER:
+            dx, dy = DIRS[d]
             n = (c[0] + dx, c[1] + dy)
             if not (0 <= n[0] < W and 0 <= n[1] < H) or n in prev:
                 continue
